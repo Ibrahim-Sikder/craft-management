@@ -154,6 +154,37 @@ export const navigationItems: NavigationItem[] = [
     ],
   },
   {
+    title: "Staff",
+    icon: (
+      <ColorfulIcon color="#DB4437">
+        <SupervisorAccount />
+      </ColorfulIcon>
+    ),
+    roles: ["admin", "super_admin", 'teacher'],
+    children: [
+      {
+        path: "/dashboard/super_admin/staff/list",
+        title: "Staff",
+        icon: (
+          <ColorfulIcon color="#DB4437">
+            <People />
+          </ColorfulIcon>
+        ),
+        roles: ["super_admin", "admin", 'teacher', 'student'],
+      },
+      {
+        path: "/dashboard/super_admin/stock/allimg",
+        title: "Salary Report",
+        icon: (
+          <ColorfulIcon color="#DB4437">
+            <ReceiptLong />
+          </ColorfulIcon>
+        ),
+        roles: ["super_admin", "admin"],
+      },
+    ],
+  },
+  {
     title: "Classes",
     icon: (
       <ColorfulIcon color="#0F9D58">

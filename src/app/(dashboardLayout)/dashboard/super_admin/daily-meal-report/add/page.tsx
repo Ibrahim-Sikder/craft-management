@@ -39,6 +39,13 @@ import {
   Tooltip,
   Tabs,
   Tab,
+  LinearProgress,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
 } from "@mui/material"
 import {
   CalendarMonth,
@@ -57,10 +64,33 @@ import {
   Edit,
   School,
   Person,
+  PieChart,
+  LocalDining,
 } from "@mui/icons-material"
 import { useGetAllStudentsQuery } from "@/redux/api/studentApi"
 import { useGetAllTeachersQuery } from "@/redux/api/teacherApi"
+import { useCreateMealReportMutation } from "@/redux/api/mealReport"
 
+// Define enum to match the validation schema
+enum MealType {
+  BREAKFAST = "BREAKFAST",
+  LUNCH = "LUNCH",
+  DINNER = "DINNER",
+}
+
+// Map UI-friendly meal types to enum values
+const mealTypeMapping = {
+  Breakfast: MealType.BREAKFAST,
+  Lunch: MealType.LUNCH,
+  Dinner: MealType.DINNER,
+}
+
+// Map enum values to UI-friendly meal types
+const reverseMealTypeMapping = {
+  [MealType.BREAKFAST]: "Breakfast",
+  [MealType.LUNCH]: "Lunch",
+  [MealType.DINNER]: "Dinner",
+}
 
 const mealTypes = ["Breakfast", "Lunch", "Dinner"]
 const mealTimeMap = {
@@ -89,19 +119,29 @@ interface PersonData {
   staffType?: string
 }
 
+interface MealCountStats {
+  oneMeal: number
+  twoMeals: number
+  threeMeals: number
+}
+
 export default function MealReportAdd() {
   const [date, setDate] = useState<Date | null>(new Date())
-  const [selectedMealTypes, setSelectedMealTypes] = useState<string[]>(mealTypes)
+  const [selectedMealTypes, setSelectedMealTypes] = useState<string[]>(mealTypes) // Default to all meal types
   const [selectedPersons, setSelectedPersons] = useState<Record<string, boolean>>({})
   const [personMeals, setPersonMeals] = useState<Record<string, string[]>>({})
   const [searchQuery, setSearchQuery] = useState("")
   const [selectAll, setSelectAll] = useState(true)
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [filteredPersons, setFilteredPersons] = useState<PersonData[]>([])
   const [filterDesignation, setFilterDesignation] = useState<string | null>(null)
   const [filterType, setFilterType] = useState<PersonType | null>(null)
   const [activeTab, setActiveTab] = useState<PersonType | "all">("all")
+  const [debugInfo, setDebugInfo] = useState<string | null>(null)
+  const [mealCountStats, setMealCountStats] = useState<MealCountStats>({ oneMeal: 0, twoMeals: 0, threeMeals: 0 })
+  const [showMealCountTable, setShowMealCountTable] = useState(false)
 
   // Dialog state
   const [dialogOpen, setDialogOpen] = useState(false)
@@ -125,6 +165,8 @@ export default function MealReportAdd() {
     page: page + 1,
     searchTerm: searchTerm,
   })
+
+  const [createMealReport, { isLoading: isSubmitting }] = useCreateMealReportMutation()
 
   // Combined persons data (students and teachers)
   const [persons, setPersons] = useState<PersonData[]>([])
@@ -178,13 +220,31 @@ export default function MealReportAdd() {
 
       persons.forEach((person) => {
         initialSelection[person.id] = true // All selected by default
-        initialMeals[person.id] = [...mealTypes] // All meals selected by default
+        initialMeals[person.id] = [...selectedMealTypes] // All meals selected by default
       })
 
       setSelectedPersons(initialSelection)
       setPersonMeals(initialMeals)
     }
-  }, [persons])
+  }, [persons, selectedMealTypes])
+
+  // Calculate meal count statistics
+  useEffect(() => {
+    let oneMeal = 0
+    let twoMeals = 0
+    let threeMeals = 0
+
+    Object.keys(personMeals).forEach((personId) => {
+      if (selectedPersons[personId]) {
+        const mealCount = personMeals[personId]?.length || 0
+        if (mealCount === 1) oneMeal++
+        else if (mealCount === 2) twoMeals++
+        else if (mealCount === 3) threeMeals++
+      }
+    })
+
+    setMealCountStats({ oneMeal, twoMeals, threeMeals })
+  }, [personMeals, selectedPersons])
 
   // Apply filters to persons
   useEffect(() => {
@@ -343,39 +403,99 @@ export default function MealReportAdd() {
     return total
   }
 
-  // Handle save
-  const handleSave = () => {
-    setLoading(true)
+  // Get selected students and teachers with their meal data
+  const getSelectedPersonsWithMeals = (type: PersonType) => {
+    return persons
+      .filter((person) => person.type === type && selectedPersons[person.id])
+      .map((person) => ({
+        personId: person.id,
+        mealTypes: (personMeals[person.id] || []).map(
+          (mealType) => mealTypeMapping[mealType as keyof typeof mealTypeMapping],
+        ),
+        mealCount: (personMeals[person.id] || []).length,
+      }))
+  }
 
-    // Prepare data for API
-    const mealData = {
-      date: date?.toISOString(),
-      meals: Object.keys(selectedPersons)
-        .filter((id) => selectedPersons[id])
-        .map((id) => {
-          const person = persons.find((p) => p.id === id)
-          return {
-            personId: id,
-            personType: person?.type,
-            displayId: person?.displayId,
-            name: person?.name,
-            meals: personMeals[id] || [],
-          }
-        }),
+  // Handle save - Updated to match the new schema
+  const handleSave = async () => {
+    setLoading(true)
+    setError(null)
+    setDebugInfo(null)
+
+    if (!date) {
+      setError("Date is required")
+      setLoading(false)
+      return
     }
 
-    console.log("Meal data to save:", mealData)
+    // Get selected students and teachers with their meal data
+    const selectedStudents = getSelectedPersonsWithMeals("student")
+    const selectedTeachers = getSelectedPersonsWithMeals("teacher")
 
-    // Simulate API call
-    setTimeout(() => {
+    // Validate according to schema requirements
+    if (selectedStudents.length === 0) {
+      setError("At least one student is required")
       setLoading(false)
+      return
+    }
+
+    if (selectedTeachers.length === 0) {
+      setError("At least one teacher is required")
+      setLoading(false)
+      return
+    }
+
+    try {
+      // Prepare data according to validation schema
+      const mealReportData = {
+        date: date.toISOString().split("T")[0], // Format as YYYY-MM-DD
+        students: selectedStudents,
+        teachers: selectedTeachers,
+      }
+
+      // Debug info
+      const debugData = JSON.stringify(mealReportData, null, 2)
+      console.log("Submitting meal report data:", debugData)
+      setDebugInfo(`Submitting: ${debugData}`)
+
+      // Call the API directly with fetch for debugging
+      const directResponse = await fetch("http://localhost:5000/api/v1/meal-report", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(mealReportData),
+      })
+
+      const directResult = await directResponse.json()
+      console.log("Direct fetch response:", directResult)
+
+      if (!directResponse.ok) {
+        throw { data: directResult }
+      }
+
       setSuccess(true)
+      setDebugInfo((prev) => `${prev}\n\nResponse: ${JSON.stringify(directResult, null, 2)}`)
 
       // Reset form after successful save
       setTimeout(() => {
         setSuccess(false)
       }, 3000)
-    }, 1500)
+    } catch (err: any) {
+      console.error("Error creating meal report:", err)
+
+      // Handle structured validation errors from the backend
+      if (err.data?.errorSources) {
+        const errorMessages = err.data.errorSources.map((source: any) => `${source.path}: ${source.message}`).join(", ")
+        setError(errorMessages || err.data?.message || "Failed to create meal report")
+        setDebugInfo((prev) => `${prev}\n\nError: ${JSON.stringify(err.data, null, 2)}`)
+      } else {
+        setError(err.data?.message || "Failed to create meal report")
+        setDebugInfo((prev) => `${prev}\n\nError: ${JSON.stringify(err, null, 2)}`)
+      }
+    } finally {
+      setLoading(false)
+    }
   }
 
   // Format date for display
@@ -426,6 +546,32 @@ export default function MealReportAdd() {
   // Get person type text color
   const getPersonTypeTextColor = (type: PersonType) => {
     return type === "student" ? "#1976d2" : "#2e7d32"
+  }
+
+  // Calculate percentage for meal count stats
+  const calculatePercentage = (count: number) => {
+    const total = countSelected()
+    return total > 0 ? Math.round((count / total) * 100) : 0
+  }
+
+  // Get persons grouped by meal count
+  const getPersonsByMealCount = () => {
+    const result = {
+      oneMeal: [] as PersonData[],
+      twoMeals: [] as PersonData[],
+      threeMeals: [] as PersonData[],
+    }
+
+    persons.forEach((person) => {
+      if (selectedPersons[person.id]) {
+        const mealCount = personMeals[person.id]?.length || 0
+        if (mealCount === 1) result.oneMeal.push(person)
+        else if (mealCount === 2) result.twoMeals.push(person)
+        else if (mealCount === 3) result.threeMeals.push(person)
+      }
+    })
+
+    return result
   }
 
   // Loading state
@@ -489,10 +635,13 @@ export default function MealReportAdd() {
                 InputLabelProps={{
                   shrink: true,
                 }}
+                required
+                error={error?.includes("Date")}
+                helperText={error?.includes("Date") ? error : ""}
               />
             </Grid>
             <Grid item xs={12} md={4}>
-              <FormControl fullWidth variant="outlined">
+              <FormControl fullWidth variant="outlined" required error={error?.includes("Meal type")}>
                 <InputLabel>Default Meal Types</InputLabel>
                 <Select
                   multiple
@@ -520,6 +669,11 @@ export default function MealReportAdd() {
                     </MenuItem>
                   ))}
                 </Select>
+                {error?.includes("Meal type") && (
+                  <Typography variant="caption" color="error">
+                    {error}
+                  </Typography>
+                )}
               </FormControl>
             </Grid>
             <Grid item xs={12} md={4}>
@@ -545,6 +699,197 @@ export default function MealReportAdd() {
           </Grid>
         </CardContent>
       </Card>
+
+      {/* Meal Count Statistics */}
+      <Card elevation={3} sx={{ mb: 4, borderRadius: 2, overflow: "hidden" }}>
+        <Box sx={{ p: 2, bgcolor: "#673ab7", color: "white" }}>
+          <Stack direction="row" spacing={1} alignItems="center" justifyContent="space-between">
+            <Stack direction="row" spacing={1} alignItems="center">
+              <PieChart />
+              <Typography variant="h6">Meal Count Statistics</Typography>
+            </Stack>
+            <Button
+              variant="contained"
+              color="secondary"
+              onClick={() => setShowMealCountTable(!showMealCountTable)}
+              sx={{ bgcolor: "rgba(255,255,255,0.2)", "&:hover": { bgcolor: "rgba(255,255,255,0.3)" } }}
+            >
+              {showMealCountTable ? "Hide Details" : "Show Details"}
+            </Button>
+          </Stack>
+        </Box>
+        <CardContent>
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={4}>
+              <Paper elevation={1} sx={{ p: 2, borderRadius: 2, bgcolor: "#f3e5f5" }}>
+                <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+                  <Avatar sx={{ bgcolor: "#9c27b0", width: 30, height: 30 }}>1</Avatar>
+                  <Typography variant="subtitle1">One Meal</Typography>
+                </Stack>
+                <Typography variant="h4" fontWeight="bold">
+                  {mealCountStats.oneMeal}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {calculatePercentage(mealCountStats.oneMeal)}% of selected people
+                </Typography>
+                <LinearProgress
+                  variant="determinate"
+                  value={calculatePercentage(mealCountStats.oneMeal)}
+                  sx={{ mt: 1, height: 8, borderRadius: 4, bgcolor: "#e1bee7" }}
+                  color="secondary"
+                />
+              </Paper>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Paper elevation={1} sx={{ p: 2, borderRadius: 2, bgcolor: "#e8f5e9" }}>
+                <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+                  <Avatar sx={{ bgcolor: "#4caf50", width: 30, height: 30 }}>2</Avatar>
+                  <Typography variant="subtitle1">Two Meals</Typography>
+                </Stack>
+                <Typography variant="h4" fontWeight="bold">
+                  {mealCountStats.twoMeals}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {calculatePercentage(mealCountStats.twoMeals)}% of selected people
+                </Typography>
+                <LinearProgress
+                  variant="determinate"
+                  value={calculatePercentage(mealCountStats.twoMeals)}
+                  sx={{ mt: 1, height: 8, borderRadius: 4, bgcolor: "#c8e6c9" }}
+                  color="success"
+                />
+              </Paper>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Paper elevation={1} sx={{ p: 2, borderRadius: 2, bgcolor: "#e3f2fd" }}>
+                <Stack direction="row" spacing={1} alignItems="center" sx={{ mb: 1 }}>
+                  <Avatar sx={{ bgcolor: "#2196f3", width: 30, height: 30 }}>3</Avatar>
+                  <Typography variant="subtitle1">Three Meals</Typography>
+                </Stack>
+                <Typography variant="h4" fontWeight="bold">
+                  {mealCountStats.threeMeals}
+                </Typography>
+                <Typography variant="body2" color="text.secondary">
+                  {calculatePercentage(mealCountStats.threeMeals)}% of selected people
+                </Typography>
+                <LinearProgress
+                  variant="determinate"
+                  value={calculatePercentage(mealCountStats.threeMeals)}
+                  sx={{ mt: 1, height: 8, borderRadius: 4, bgcolor: "#bbdefb" }}
+                  color="primary"
+                />
+              </Paper>
+            </Grid>
+          </Grid>
+
+          {/* Detailed Meal Count Table */}
+          {showMealCountTable && (
+            <Box sx={{ mt: 3 }}>
+              <Typography variant="h6" gutterBottom>
+                Detailed Meal Count Breakdown
+              </Typography>
+              <TableContainer component={Paper} sx={{ maxHeight: 400, overflow: "auto" }}>
+                <Table stickyHeader size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell sx={{ fontWeight: "bold" }}>Meal Count</TableCell>
+                      <TableCell sx={{ fontWeight: "bold" }}>Person</TableCell>
+                      <TableCell sx={{ fontWeight: "bold" }}>Type</TableCell>
+                      <TableCell sx={{ fontWeight: "bold" }}>ID</TableCell>
+                      <TableCell sx={{ fontWeight: "bold" }}>Meals</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {getPersonsByMealCount().oneMeal.map((person) => (
+                      <TableRow key={`one-${person.id}`}>
+                        <TableCell>1</TableCell>
+                        <TableCell>{person.name}</TableCell>
+                        <TableCell>
+                          <Chip
+                            icon={getPersonTypeIcon(person.type)}
+                            label={person.type === "student" ? "Student" : "Teacher"}
+                            size="small"
+                            sx={{
+                              bgcolor: getPersonTypeColor(person.type),
+                              color: getPersonTypeTextColor(person.type),
+                            }}
+                          />
+                        </TableCell>
+                        <TableCell>{person.displayId}</TableCell>
+                        <TableCell>
+                          <Stack direction="row" spacing={0.5}>
+                            {(personMeals[person.id] || []).map((meal) => (
+                              <Tooltip key={meal} title={meal}>
+                                {mealIconMap[meal as keyof typeof mealIconMap]}
+                              </Tooltip>
+                            ))}
+                          </Stack>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {getPersonsByMealCount().twoMeals.map((person) => (
+                      <TableRow key={`two-${person.id}`}>
+                        <TableCell>2</TableCell>
+                        <TableCell>{person.name}</TableCell>
+                        <TableCell>
+                          <Chip
+                            icon={getPersonTypeIcon(person.type)}
+                            label={person.type === "student" ? "Student" : "Teacher"}
+                            size="small"
+                            sx={{
+                              bgcolor: getPersonTypeColor(person.type),
+                              color: getPersonTypeTextColor(person.type),
+                            }}
+                          />
+                        </TableCell>
+                        <TableCell>{person.displayId}</TableCell>
+                        <TableCell>
+                          <Stack direction="row" spacing={0.5}>
+                            {(personMeals[person.id] || []).map((meal) => (
+                              <Tooltip key={meal} title={meal}>
+                                {mealIconMap[meal as keyof typeof mealIconMap]}
+                              </Tooltip>
+                            ))}
+                          </Stack>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                    {getPersonsByMealCount().threeMeals.map((person) => (
+                      <TableRow key={`three-${person.id}`}>
+                        <TableCell>3</TableCell>
+                        <TableCell>{person.name}</TableCell>
+                        <TableCell>
+                          <Chip
+                            icon={getPersonTypeIcon(person.type)}
+                            label={person.type === "student" ? "Student" : "Teacher"}
+                            size="small"
+                            sx={{
+                              bgcolor: getPersonTypeColor(person.type),
+                              color: getPersonTypeTextColor(person.type),
+                            }}
+                          />
+                        </TableCell>
+                        <TableCell>{person.displayId}</TableCell>
+                        <TableCell>
+                          <Stack direction="row" spacing={0.5}>
+                            {(personMeals[person.id] || []).map((meal) => (
+                              <Tooltip key={meal} title={meal}>
+                                {mealIconMap[meal as keyof typeof mealIconMap]}
+                              </Tooltip>
+                            ))}
+                          </Stack>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </Box>
+          )}
+        </CardContent>
+      </Card>
+
+
 
       {/* Date and Meal Summary */}
       <Card elevation={2} sx={{ mb: 4, borderRadius: 2, bgcolor: "#e8eaf6" }}>
@@ -700,6 +1045,13 @@ export default function MealReportAdd() {
         </Tabs>
       </Box>
 
+      {/* Validation Errors */}
+      {error && (
+        <Alert severity="error" sx={{ mb: 2 }}>
+          {error}
+        </Alert>
+      )}
+
       {/* Person List */}
       <Card elevation={3} sx={{ borderRadius: 2, overflow: "hidden", mb: 4 }}>
         <Box sx={{ p: 2, bgcolor: "#3f51b5", color: "white" }}>
@@ -834,6 +1186,8 @@ export default function MealReportAdd() {
             setActiveTab("all")
             setSearchQuery("")
             setFilterDesignation(null)
+            setError(null)
+            setDebugInfo(null)
           }}
         >
           Reset
@@ -883,6 +1237,10 @@ export default function MealReportAdd() {
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <Edit fontSize="small" />
           <Typography variant="body2">Edit Meals</Typography>
+        </Box>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <LocalDining fontSize="small" />
+          <Typography variant="body2">Meal Count</Typography>
         </Box>
       </Box>
 

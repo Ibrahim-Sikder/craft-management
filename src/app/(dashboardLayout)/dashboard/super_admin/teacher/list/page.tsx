@@ -101,7 +101,6 @@ export default function TeachersDashboard() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [selectedTeachers, setSelectedTeachers] = useState<Teacher[]>([])
   const [filterDepartment, setFilterDepartment] = useState("all")
-
   const [teacherMenuAnchorEl, setTeacherMenuAnchorEl] = useState<null | HTMLElement>(null)
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null)
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
@@ -119,7 +118,6 @@ export default function TeachersDashboard() {
     page: page + 1,
     searchTerm: searchTerm,
   })
-  console.log("teacher", teacherData)
   const handleTeacherMenuOpen = (event: React.MouseEvent<HTMLElement>, teacher: Teacher) => {
     setTeacherMenuAnchorEl(event.currentTarget)
     setSelectedTeacher(teacher)
@@ -174,15 +172,6 @@ export default function TeachersDashboard() {
     setSnackbar({ ...snackbar, open: false })
   }
 
-  // Remove or comment out this useEffect:
-  // useEffect(() => {
-  //   setTimeout(() => {
-  //     setTeachers(generateTeachers(24))
-  //     setLoading(false)
-  //   }, 1000)
-  // }, [])
-
-  // Add this useEffect to use the API data:
   useEffect(() => {
     if (teacherData && !isLoading) {
       // Map the API data to the format expected by the component
@@ -826,7 +815,7 @@ export default function TeachersDashboard() {
                           <StatusChip label={teacher.status} size="small" status={teacher.status} />
                           <Box sx={{ display: "flex", justifyContent: "center", gap: 1 }}>
                             <Tooltip title="View Profile">
-                              <IconButton size="small" color="primary" onClick={() => handleViewTeacher(teacher)}>
+                              <IconButton component={Link} href={`/dashboard/super_admin/teacher/profile?id=${teacher._id}`} size="small" color="primary" onClick={() => handleViewTeacher(teacher)}>
                                 <Visibility fontSize="small" />
                               </IconButton>
                             </Tooltip>
@@ -963,7 +952,7 @@ export default function TeachersDashboard() {
                                 </Box>
                                 <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 1 }}>
                                   <Tooltip title="View Profile">
-                                    <IconButton size="small" color="primary" onClick={() => handleViewTeacher(teacher)}>
+                                    <IconButton component={Link} href={`/dashboard/super_admin/teacher/profile?id=${teacher._id}`} size="small" color="primary">
                                       <Visibility fontSize="small" />
                                     </IconButton>
                                   </Tooltip>

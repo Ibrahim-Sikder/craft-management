@@ -528,6 +528,8 @@ const StudentList = () => {
                         <Box sx={{ display: "flex" }}>
                           <Tooltip title="View Details">
                             <IconButton
+                            component={Link}
+                            href={`/dashboard/super_admin/student/profile?id=${student._id}`}
                               size="small"
                               sx={{
                                 color: customColors.info,
