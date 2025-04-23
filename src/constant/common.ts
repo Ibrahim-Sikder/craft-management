@@ -1,0 +1,1 @@
+export const aboutCategory = ['About', 'Mission', 'Vision','History','Slogan',"Join Us"]
