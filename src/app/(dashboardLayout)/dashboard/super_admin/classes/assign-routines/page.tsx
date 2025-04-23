@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import {
   Box,
   Button,
@@ -9,10 +10,9 @@ import {
   Typography,
   Paper,
   Grid,
-  MenuItem,
-  Select,
+
   FormControl,
-  InputLabel,
+
   Divider,
   Card,
   CardContent,
@@ -23,7 +23,6 @@ import {
   FormHelperText,
   FormControlLabel,
   Switch,
-  Checkbox,
   useTheme,
   useMediaQuery,
   Autocomplete,
@@ -40,8 +39,7 @@ import {
 } from "@mui/material"
 import {
   Save as SaveIcon,
-  Add as AddIcon,
-  Delete as DeleteIcon,
+
   AccessTime as AccessTimeIcon,
   Event as EventIcon,
   School as SchoolIcon,
@@ -52,17 +50,16 @@ import {
   CalendarMonth as CalendarMonthIcon,
   Refresh as RefreshIcon,
   ArrowBack as ArrowBackIcon,
-  Check as CheckIcon,
+
   Close as CloseIcon,
   Info as InfoIcon,
-  Warning as WarningIcon,
+
   Visibility as VisibilityIcon,
-  Edit as EditIcon,
-  ContentCopy as ContentCopyIcon,
+
   ColorLens as ColorLensIcon,
 } from "@mui/icons-material"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+
 import type { TransitionProps } from "@mui/material/transitions"
 import React from "react"
 
@@ -157,9 +154,9 @@ const Transition = React.forwardRef(function Transition(
 
 export default function ClassRoutineNew() {
   const theme = useTheme()
-  const router = useRouter()
+
   const isMobile = useMediaQuery(theme.breakpoints.down("md"))
-  const isTablet = useMediaQuery(theme.breakpoints.down("lg"))
+  
 
   // State for form data
   const [formData, setFormData] = useState({

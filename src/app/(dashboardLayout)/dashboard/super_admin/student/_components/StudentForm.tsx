@@ -117,7 +117,7 @@ const studentSchema = z.object({
 })
 
 interface StudentFormProps {
-  id: string;
+  id?: string; 
 }
 
 const StudentForm = ({ id }: StudentFormProps) => {

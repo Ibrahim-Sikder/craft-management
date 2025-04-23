@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
 
 import INTSelect from "@/components/Forms/Select";
@@ -43,7 +43,7 @@ const events = [
 ];
 
 const Page = () => {
-  const handleSubmit = (data: any) => {
+  const handleSubmit = () => {
 
   };
 
