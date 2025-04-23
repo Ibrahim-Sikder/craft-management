@@ -74,10 +74,10 @@ const sampleTeachers = [
 
 const sampleClasses = [
   { id: 1, name: "Grade 10-A", section: "A", students: 28, schedule: "Morning" },
-  { id: 2, name: "Grade 10-B", section: "B", students: 26, schedule: "Morning" },
+  { id: 2, name: "Grade 10-B", section: "B", students: 26, schedule: "Afternoon" },
   { id: 3, name: "Grade 11-A", section: "A", students: 30, schedule: "Morning" },
   { id: 4, name: "Grade 11-B", section: "B", students: 29, schedule: "Morning" },
-  { id: 5, name: "Grade 12-A", section: "A", students: 25, schedule: "Afternoon" },
+  { id: 5, name: "Grade 12-A", section: "B", students: 20, schedule: "Morning" },
 ]
 
 // test
