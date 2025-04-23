@@ -129,3 +129,59 @@ export const teacherSchema = z.object({
     language: z.string().optional(),
     activeSession: z.string().optional(),
 })
+
+export  const studentSchema = z.object({
+  smartIdCard: z.string().optional(),
+  name: z.string({ required_error: "Name is required" }),
+  email: z.string({ required_error: "Email is required" }),
+  birthDate: z.string({ required_error: "Birth date is required" }),
+  birthRegistrationNo: z.string().optional(),
+  gender: z.enum(["Male", "Female", "Other"], {
+    required_error: "Please select a gender",
+  }),
+  mobile: z.string({ required_error: "Mobile number is required" }),
+  bloodGroup: z.string().optional(),
+  image: z.string().optional(),
+
+  // Family Information
+  fatherName: z.string().optional(),
+  motherName: z.string().optional(),
+  guardianName: z.string().optional(),
+  guardianMobile: z.string().optional(),
+  relation: z.string().optional(),
+  nidFatherMotherGuardian: z.string().optional(),
+
+  // Address Information
+  permanentAddress: z.string({ required_error: "Permanent address is required" }),
+  permanentDistrict: z.string({ required_error: "Permanent district is required" }),
+  permanentThana: z.string({ required_error: "Permanent thana is required" }),
+  sameAsPermanent: z.boolean().default(false),
+  presentAddress: z.string().optional(),
+  presentDistrict: z.string().optional(),
+  presentThana: z.string().optional(),
+
+  // Academic Information
+  className: z.string({ required_error: "Class name is required" }),
+  studentClassRoll: z.string({ required_error: "Student class roll is required" }),
+  batch: z.string().optional(),
+  section: z.string().optional(),
+  activeSession: z.string({ required_error: "Active session is required" }),
+  status: z.string().min(1, "Status is required"),
+  studentType: z.string().min(1, "Student type is required"),
+  additionalNote: z.string().optional(),
+
+  // Fee Information — allow string or number, coerce to number
+  admissionFee: z.coerce.number().default(0),
+  monthlyFee: z.coerce.number().default(0),
+  previousDues: z.coerce.number().default(0),
+  sessionFee: z.coerce.number().default(0),
+  residenceFee: z.coerce.number().default(0),
+  otherFee: z.coerce.number().default(0),
+  transportFee: z.coerce.number().default(0),
+  boardingFee: z.coerce.number().default(0),
+
+  // Settings
+  sendAdmissionSMS: z.boolean().default(false),
+  studentSerial: z.string().optional(),
+  sendAttendanceSMS: z.boolean().default(false),
+})

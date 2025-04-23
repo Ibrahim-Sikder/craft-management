@@ -290,6 +290,9 @@ export default function TeachersDashboard() {
                   transition={{ duration: 0.5, delay: 0.2 }}
                 >
                   <Button
+
+                    component={Link}
+                    href='/dashboard/super_admin/teacher/new'
                     variant="contained"
                     startIcon={<AddIcon />}
                     sx={{

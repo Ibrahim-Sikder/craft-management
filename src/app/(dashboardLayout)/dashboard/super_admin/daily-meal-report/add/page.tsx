@@ -1,3 +1,6 @@
+/* eslint-disable react/no-unescaped-entities */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client"
 
 import type React from "react"
@@ -34,6 +37,8 @@ import {
   DialogActions,
   IconButton,
   Tooltip,
+  Tabs,
+  Tab,
 } from "@mui/material"
 import {
   CalendarMonth,
@@ -50,102 +55,182 @@ import {
   DinnerDining,
   Close,
   Edit,
+  School,
+  Person,
 } from "@mui/icons-material"
+import { useGetAllStudentsQuery } from "@/redux/api/studentApi"
+import { useGetAllTeachersQuery } from "@/redux/api/teacherApi"
 
-// Sample data based on the provided meal sheet
-const students = [
-  { id: 1, name: "Neshar Ahmad", designation: "Chairman", avatar: "/placeholder.svg?height=40&width=40" },
-  { id: 2, name: "Naim Osmani", designation: "Teacher", avatar: "/placeholder.svg?height=40&width=40" },
-  { id: 3, name: "Imtiaz Rassel", designation: "Teacher", avatar: "/placeholder.svg?height=40&width=40" },
-  { id: 4, name: "Junayedul Islam", designation: "Teacher", avatar: "/placeholder.svg?height=40&width=40" },
-  { id: 5, name: "Ashraful Haq", designation: "Teacher", avatar: "/placeholder.svg?height=40&width=40" },
-  { id: 6, name: "A.N.M. Talha", designation: "Teacher", avatar: "/placeholder.svg?height=40&width=40" },
-  { id: 7, name: "Ahmad Ha. Talha", designation: "Teacher", avatar: "/placeholder.svg?height=40&width=40" },
-  { id: 8, name: "Nahidul Islam", designation: "Teacher", avatar: "/placeholder.svg?height=40&width=40" },
-  { id: 9, name: "Muhammad Tamim", designation: "Teacher", avatar: "/placeholder.svg?height=40&width=40" },
-  { id: 10, name: "Shahin", designation: "Cook", avatar: "/placeholder.svg?height=40&width=40" },
-]
 
-// Meal types
 const mealTypes = ["Breakfast", "Lunch", "Dinner"]
-
-// Meal time mapping
 const mealTimeMap = {
   Breakfast: "7:30 AM",
   Lunch: "1:00 PM",
   Dinner: "8:00 PM",
 }
-
-// Meal icon mapping
 const mealIconMap = {
   Breakfast: <FreeBreakfast sx={{ fontSize: 20 }} />,
   Lunch: <LunchDining sx={{ fontSize: 20 }} />,
   Dinner: <DinnerDining sx={{ fontSize: 20 }} />,
 }
+type PersonType = "student" | "teacher"
+
+interface PersonData {
+  id: string
+  displayId: string
+  name: string
+  designation?: string
+  avatar: string
+  type: PersonType
+  email?: string
+  className?: string
+  section?: string
+  department?: string
+  staffType?: string
+}
 
 export default function MealReportAdd() {
   const [date, setDate] = useState<Date | null>(new Date())
-  const [selectedMealTypes, setSelectedMealTypes] = useState<string[]>(mealTypes) // All meal types selected by default
-  const [selectedStudents, setSelectedStudents] = useState<Record<number, boolean>>({})
-  // Track individual meal selections for each student
-  const [studentMeals, setStudentMeals] = useState<Record<number, string[]>>({})
+  const [selectedMealTypes, setSelectedMealTypes] = useState<string[]>(mealTypes)
+  const [selectedPersons, setSelectedPersons] = useState<Record<string, boolean>>({})
+  const [personMeals, setPersonMeals] = useState<Record<string, string[]>>({})
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectAll, setSelectAll] = useState(true) // Select all by default
+  const [selectAll, setSelectAll] = useState(true)
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
-  const [filteredStudents, setFilteredStudents] = useState(students)
+  const [filteredPersons, setFilteredPersons] = useState<PersonData[]>([])
   const [filterDesignation, setFilterDesignation] = useState<string | null>(null)
-  const [showFilters, setShowFilters] = useState(false)
+  const [filterType, setFilterType] = useState<PersonType | null>(null)
+  const [activeTab, setActiveTab] = useState<PersonType | "all">("all")
 
   // Dialog state
   const [dialogOpen, setDialogOpen] = useState(false)
-  const [currentStudent, setCurrentStudent] = useState<number | null>(null)
+  const [currentPerson, setCurrentPerson] = useState<string | null>(null)
   const [tempSelectedMeals, setTempSelectedMeals] = useState<string[]>([])
 
-  // Initialize selected students - all selected by default with all meals
+  // API query params
+  const [page, setPage] = useState(0)
+  const [rowsPerPage, setRowsPerPage] = useState(50)
+  const [searchTerm, setSearchTerm] = useState("")
+
+  // Fetch data from APIs
+  const { data: studentData, isLoading: isLoadingStudents } = useGetAllStudentsQuery({
+    limit: rowsPerPage,
+    page: page + 1,
+    searchTerm: searchTerm,
+  })
+
+  const { data: teacherData, isLoading: isLoadingTeachers } = useGetAllTeachersQuery({
+    limit: rowsPerPage,
+    page: page + 1,
+    searchTerm: searchTerm,
+  })
+
+  // Combined persons data (students and teachers)
+  const [persons, setPersons] = useState<PersonData[]>([])
+
+  // Process API data and combine students and teachers
   useEffect(() => {
-    const initialSelection: Record<number, boolean> = {}
-    const initialMeals: Record<number, string[]> = {}
+    const newPersons: PersonData[] = []
 
-    students.forEach((student) => {
-      initialSelection[student.id] = true // All selected by default
-      initialMeals[student.id] = [...mealTypes] // All meals selected by default
-    })
+    // Process student data
+    if (studentData?.data) {
+      studentData.data.forEach((student: any) => {
+        newPersons.push({
+          id: student._id,
+          displayId: student.studentId,
+          name: student.name,
+          designation: `${student.className || ""} ${student.section || ""}`.trim(),
+          avatar: "/placeholder.svg?height=40&width=40",
+          type: "student",
+          email: student.email,
+          className: student.className,
+          section: student.section,
+        })
+      })
+    }
 
-    setSelectedStudents(initialSelection)
-    setStudentMeals(initialMeals)
-  }, [])
+    // Process teacher data
+    if (teacherData?.data) {
+      teacherData.data.forEach((teacher: any) => {
+        newPersons.push({
+          id: teacher._id,
+          displayId: teacher.teacherId,
+          name: teacher.name,
+          designation: teacher.professionalInfo?.designation || "Teacher",
+          avatar: "/placeholder.svg?height=40&width=40",
+          type: "teacher",
+          email: teacher.email,
+          department: teacher.professionalInfo?.department,
+          staffType: teacher.professionalInfo?.staffType,
+        })
+      })
+    }
 
-  // Handle search and filtering
+    setPersons(newPersons)
+  }, [studentData, teacherData])
+
+  // Initialize selected persons with all meals
   useEffect(() => {
-    let filtered = students
+    if (persons.length > 0) {
+      const initialSelection: Record<string, boolean> = {}
+      const initialMeals: Record<string, string[]> = {}
+
+      persons.forEach((person) => {
+        initialSelection[person.id] = true // All selected by default
+        initialMeals[person.id] = [...mealTypes] // All meals selected by default
+      })
+
+      setSelectedPersons(initialSelection)
+      setPersonMeals(initialMeals)
+    }
+  }, [persons])
+
+  // Apply filters to persons
+  useEffect(() => {
+    let filtered = [...persons]
 
     // Apply search filter
     if (searchQuery) {
-      filtered = filtered.filter((student) => student.name.toLowerCase().includes(searchQuery.toLowerCase()))
+      filtered = filtered.filter(
+        (person) =>
+          person.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          person.displayId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (person.email && person.email.toLowerCase().includes(searchQuery.toLowerCase())),
+      )
     }
 
     // Apply designation filter
     if (filterDesignation) {
-      filtered = filtered.filter((student) => student.designation === filterDesignation)
+      filtered = filtered.filter((person) => person.designation === filterDesignation)
     }
 
-    setFilteredStudents(filtered)
-  }, [searchQuery, filterDesignation])
+    // Apply type filter (student/teacher)
+    if (filterType) {
+      filtered = filtered.filter((person) => person.type === filterType)
+    }
 
-  // Toggle individual student selection
-  const toggleStudent = (studentId: number) => {
-    setSelectedStudents((prev) => {
+    // Apply tab filter
+    if (activeTab !== "all") {
+      filtered = filtered.filter((person) => person.type === activeTab)
+    }
+
+    setFilteredPersons(filtered)
+  }, [searchQuery, filterDesignation, filterType, activeTab, persons])
+
+  // Toggle individual person selection
+  const togglePerson = (personId: string) => {
+    setSelectedPersons((prev) => {
       const newState = {
         ...prev,
-        [studentId]: !prev[studentId],
+        [personId]: !prev[personId],
       }
 
       // If toggling to selected and no meals are selected, select all meals
-      if (newState[studentId] && (!studentMeals[studentId] || studentMeals[studentId].length === 0)) {
-        setStudentMeals((prevMeals) => ({
+      if (newState[personId] && (!personMeals[personId] || personMeals[personId].length === 0)) {
+        setPersonMeals((prevMeals) => ({
           ...prevMeals,
-          [studentId]: [...selectedMealTypes],
+          [personId]: [...selectedMealTypes],
         }))
       }
 
@@ -153,40 +238,40 @@ export default function MealReportAdd() {
     })
   }
 
-  // Open meal selection dialog for a student
-  const openMealDialog = (studentId: number, event: React.MouseEvent) => {
-    event.stopPropagation() // Prevent toggling the student selection
-    setCurrentStudent(studentId)
-    setTempSelectedMeals(studentMeals[studentId] || [])
+  // Open meal selection dialog for a person
+  const openMealDialog = (personId: string, event: React.MouseEvent) => {
+    event.stopPropagation() // Prevent toggling the person selection
+    setCurrentPerson(personId)
+    setTempSelectedMeals(personMeals[personId] || [])
     setDialogOpen(true)
   }
 
   // Close meal selection dialog
   const closeMealDialog = () => {
     setDialogOpen(false)
-    setCurrentStudent(null)
+    setCurrentPerson(null)
   }
 
   // Save meal selections from dialog
   const saveMealSelections = () => {
-    if (currentStudent !== null) {
-      // Update student meals
-      setStudentMeals((prev) => ({
+    if (currentPerson !== null) {
+      // Update person meals
+      setPersonMeals((prev) => ({
         ...prev,
-        [currentStudent]: tempSelectedMeals,
+        [currentPerson]: tempSelectedMeals,
       }))
 
-      // If no meals selected, deselect the student
+      // If no meals selected, deselect the person
       if (tempSelectedMeals.length === 0) {
-        setSelectedStudents((prev) => ({
+        setSelectedPersons((prev) => ({
           ...prev,
-          [currentStudent]: false,
+          [currentPerson]: false,
         }))
       } else {
-        // Otherwise ensure the student is selected
-        setSelectedStudents((prev) => ({
+        // Otherwise ensure the person is selected
+        setSelectedPersons((prev) => ({
           ...prev,
-          [currentStudent]: true,
+          [currentPerson]: true,
         }))
       }
 
@@ -210,49 +295,49 @@ export default function MealReportAdd() {
     const newSelectAll = !selectAll
     setSelectAll(newSelectAll)
 
-    const updatedSelection = { ...selectedStudents }
-    const updatedMeals = { ...studentMeals }
+    const updatedSelection = { ...selectedPersons }
+    const updatedMeals = { ...personMeals }
 
-    filteredStudents.forEach((student) => {
-      updatedSelection[student.id] = newSelectAll
+    filteredPersons.forEach((person) => {
+      updatedSelection[person.id] = newSelectAll
       if (newSelectAll) {
-        updatedMeals[student.id] = [...selectedMealTypes]
+        updatedMeals[person.id] = [...selectedMealTypes]
       } else {
-        updatedMeals[student.id] = []
+        updatedMeals[person.id] = []
       }
     })
 
-    setSelectedStudents(updatedSelection)
-    setStudentMeals(updatedMeals)
+    setSelectedPersons(updatedSelection)
+    setPersonMeals(updatedMeals)
   }
 
-  // Handle meal type selection for all students
+  // Handle meal type selection for all persons
   const handleMealTypeChange = (event: React.ChangeEvent<{ value: unknown }>) => {
     const value = event.target.value as string[]
     setSelectedMealTypes(value)
 
-    // Update all selected students to have these meal types
-    const updatedMeals = { ...studentMeals }
-    Object.keys(selectedStudents).forEach((studentId) => {
-      if (selectedStudents[Number(studentId)]) {
-        updatedMeals[Number(studentId)] = [...value]
+    // Update all selected persons to have these meal types
+    const updatedMeals = { ...personMeals }
+    Object.keys(selectedPersons).forEach((personId) => {
+      if (selectedPersons[personId]) {
+        updatedMeals[personId] = [...value]
       }
     })
 
-    setStudentMeals(updatedMeals)
+    setPersonMeals(updatedMeals)
   }
 
-  // Count selected students
+  // Count selected persons
   const countSelected = () => {
-    return Object.values(selectedStudents).filter(Boolean).length
+    return Object.values(selectedPersons).filter(Boolean).length
   }
 
   // Count total meals
   const countTotalMeals = () => {
     let total = 0
-    Object.keys(studentMeals).forEach((studentId) => {
-      if (selectedStudents[Number(studentId)]) {
-        total += studentMeals[Number(studentId)].length
+    Object.keys(personMeals).forEach((personId) => {
+      if (selectedPersons[personId]) {
+        total += personMeals[personId].length
       }
     })
     return total
@@ -261,6 +346,25 @@ export default function MealReportAdd() {
   // Handle save
   const handleSave = () => {
     setLoading(true)
+
+    // Prepare data for API
+    const mealData = {
+      date: date?.toISOString(),
+      meals: Object.keys(selectedPersons)
+        .filter((id) => selectedPersons[id])
+        .map((id) => {
+          const person = persons.find((p) => p.id === id)
+          return {
+            personId: id,
+            personType: person?.type,
+            displayId: person?.displayId,
+            name: person?.name,
+            meals: personMeals[id] || [],
+          }
+        }),
+    }
+
+    console.log("Meal data to save:", mealData)
 
     // Simulate API call
     setTimeout(() => {
@@ -287,11 +391,11 @@ export default function MealReportAdd() {
   }
 
   // Get unique designations for filter
-  const designations = Array.from(new Set(students.map((s) => s.designation)))
+  const designations = Array.from(new Set(persons.map((p) => p.designation || "Unknown")))
 
-  // Render meal icons for a student
-  const renderStudentMealIcons = (studentId: number) => {
-    const meals = studentMeals[studentId] || []
+  // Render meal icons for a person
+  const renderPersonMealIcons = (personId: string) => {
+    const meals = personMeals[personId] || []
 
     return (
       <Stack direction="row" spacing={0.5} sx={{ mt: 0.5 }}>
@@ -301,6 +405,38 @@ export default function MealReportAdd() {
           </Tooltip>
         ))}
       </Stack>
+    )
+  }
+
+  // Handle tab change
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: PersonType | "all") => {
+    setActiveTab(newValue)
+  }
+
+  // Get person type icon
+  const getPersonTypeIcon = (type: PersonType) => {
+    return type === "student" ? <School fontSize="small" /> : <Person fontSize="small" />
+  }
+
+  // Get person type color
+  const getPersonTypeColor = (type: PersonType) => {
+    return type === "student" ? "#e3f2fd" : "#e8f5e9"
+  }
+
+  // Get person type text color
+  const getPersonTypeTextColor = (type: PersonType) => {
+    return type === "student" ? "#1976d2" : "#2e7d32"
+  }
+
+  // Loading state
+  if (isLoadingStudents || isLoadingTeachers) {
+    return (
+      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
+        <CircularProgress />
+        <Typography variant="h6" sx={{ ml: 2 }}>
+          Loading data...
+        </Typography>
+      </Box>
     )
   }
 
@@ -394,10 +530,10 @@ export default function MealReportAdd() {
                   </Avatar>
                   <Box>
                     <Typography variant="body2" color="textSecondary">
-                      Students Selected
+                      People Selected
                     </Typography>
                     <Typography variant="h5" fontWeight="bold">
-                      {countSelected()} / {students.length}
+                      {countSelected()} / {persons.length}
                     </Typography>
                     <Typography variant="body2" color="textSecondary" sx={{ mt: 0.5 }}>
                       Total Meals: {countTotalMeals()}
@@ -450,46 +586,31 @@ export default function MealReportAdd() {
         </CardContent>
       </Card>
 
-      {/* Search and Filter */}
-      <Box sx={{ mb: 3, display: "flex", justifyContent: "space-between", flexWrap: "wrap", gap: 2 }}>
-        <TextField
-          placeholder="Search by name..."
-          variant="outlined"
-          size="small"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          InputProps={{
-            startAdornment: <Search sx={{ mr: 1, color: "text.secondary" }} />,
-          }}
-          sx={{ width: 300 }}
-        />
-        <Stack direction="row" spacing={2}>
-          <Button
-            variant="outlined"
-            startIcon={<FilterList />}
-            onClick={() => setShowFilters(!showFilters)}
-            color={showFilters ? "primary" : "inherit"}
-          >
-            Filter
-          </Button>
-          <FormControlLabel
-            control={<Switch checked={selectAll} onChange={handleSelectAll} color="primary" />}
-            label="Select All"
-          />
-        </Stack>
-      </Box>
-
-      {/* Filters */}
-      {showFilters && (
-        <Card sx={{ mb: 3, p: 2, borderRadius: 2 }}>
+      {/* Persistent Filter Bar */}
+      <Card elevation={3} sx={{ mb: 3, borderRadius: 2, overflow: "hidden" }}>
+        <Box sx={{ p: 2, bgcolor: "#f5f5f5" }}>
           <Grid container spacing={2} alignItems="center">
-            <Grid item xs={12} md={4}>
+            <Grid item xs={12} md={3}>
+              <TextField
+                placeholder="Search by name, ID or email..."
+                variant="outlined"
+                size="small"
+                fullWidth
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                InputProps={{
+                  startAdornment: <Search sx={{ mr: 1, color: "text.secondary" }} />,
+                }}
+              />
+            </Grid>
+            <Grid item xs={12} md={3}>
               <FormControl fullWidth size="small">
                 <InputLabel>Filter by Designation</InputLabel>
                 <Select
                   value={filterDesignation || ""}
                   onChange={(e) => setFilterDesignation(e.target.value || null)}
                   label="Filter by Designation"
+                  startAdornment={<FilterList sx={{ mr: 1, color: "text.secondary" }} />}
                 >
                   <MenuItem value="">All Designations</MenuItem>
                   {designations.map((designation) => (
@@ -500,34 +621,109 @@ export default function MealReportAdd() {
                 </Select>
               </FormControl>
             </Grid>
+            <Grid item xs={12} md={3}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Meal Type Filter</InputLabel>
+                <Select
+                  multiple
+                  value={selectedMealTypes}
+                  onChange={(e) => handleMealTypeChange(e as any)}
+                  input={<OutlinedInput label="Meal Type Filter" />}
+                  renderValue={(selected) => (
+                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                      {(selected as string[]).map((value) => (
+                        <Chip
+                          key={value}
+                          label={value}
+                          size="small"
+                          icon={mealIconMap[value as keyof typeof mealIconMap]}
+                        />
+                      ))}
+                    </Box>
+                  )}
+                  startAdornment={<RestaurantMenu sx={{ mr: 1, color: "text.secondary" }} />}
+                >
+                  {mealTypes.map((type) => (
+                    <MenuItem key={type} value={type}>
+                      <Checkbox checked={selectedMealTypes.indexOf(type) > -1} />
+                      <ListItemText primary={type} />
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} md={3}>
+              <Stack direction="row" spacing={2} justifyContent="flex-end">
+                <Button
+                  variant="outlined"
+                  color="primary"
+                  onClick={() => {
+                    setSearchQuery("")
+                    setFilterDesignation(null)
+                    setSelectedMealTypes(mealTypes)
+                    setActiveTab("all")
+                  }}
+                  startIcon={<Close />}
+                  size="medium"
+                >
+                  Clear Filters
+                </Button>
+                <FormControlLabel
+                  control={<Switch checked={selectAll} onChange={handleSelectAll} color="primary" />}
+                  label="Select All"
+                />
+              </Stack>
+            </Grid>
           </Grid>
-        </Card>
+        </Box>
+      </Card>
+
+      {/* Filter Results Summary */}
+      {(searchQuery || filterDesignation || activeTab !== "all") && (
+        <Box sx={{ mb: 2, display: "flex", alignItems: "center", gap: 1 }}>
+          <FilterList fontSize="small" color="primary" />
+          <Typography variant="body2" color="primary">
+            Showing {filteredPersons.length} of {persons.length} people
+            {searchQuery && <span> matching "{searchQuery}"</span>}
+            {filterDesignation && <span> with designation "{filterDesignation}"</span>}
+            {activeTab !== "all" && <span> of type "{activeTab}"</span>}
+          </Typography>
+        </Box>
       )}
 
-      {/* Students List */}
+      {/* Person Selection Tabs */}
+      <Box sx={{ borderBottom: 1, borderColor: "divider", mb: 2 }}>
+        <Tabs value={activeTab} onChange={handleTabChange} aria-label="person type tabs">
+          <Tab label="All" value="all" icon={<FilterList />} iconPosition="start" />
+          <Tab label="Students" value="student" icon={<School />} iconPosition="start" />
+          <Tab label="Teachers" value="teacher" icon={<Person />} iconPosition="start" />
+        </Tabs>
+      </Box>
+
+      {/* Person List */}
       <Card elevation={3} sx={{ borderRadius: 2, overflow: "hidden", mb: 4 }}>
         <Box sx={{ p: 2, bgcolor: "#3f51b5", color: "white" }}>
           <Typography variant="h6">
-            Student Selection
+            Person Selection
             <Typography component="span" variant="body2" sx={{ ml: 2 }}>
-              (Click on a student to toggle selection, click edit icon to customize meals)
+              (Click on a person to toggle selection, click edit icon to customize meals)
             </Typography>
           </Typography>
         </Box>
         <Divider />
-        <Box sx={{ maxHeight: "400px", overflow: "auto", p: 2 }}>
+        <Box sx={{ maxHeight: "500px", overflow: "auto", p: 2 }}>
           <Grid container spacing={2}>
-            {filteredStudents.length > 0 ? (
-              filteredStudents.map((student) => (
-                <Grid item xs={12} sm={6} md={4} lg={3} key={student.id}>
+            {filteredPersons.length > 0 ? (
+              filteredPersons.map((person) => (
+                <Grid item xs={12} sm={6} md={4} lg={3} key={person.id}>
                   <Paper
                     elevation={1}
                     sx={{
                       p: 2,
                       borderRadius: 2,
                       cursor: "pointer",
-                      border: selectedStudents[student.id] ? "2px solid #3f51b5" : "1px solid #e0e0e0",
-                      bgcolor: selectedStudents[student.id] ? "rgba(63, 81, 181, 0.1)" : "white",
+                      border: selectedPersons[person.id] ? "2px solid #3f51b5" : "1px solid #e0e0e0",
+                      bgcolor: selectedPersons[person.id] ? "rgba(63, 81, 181, 0.1)" : "white",
                       transition: "all 0.2s ease",
                       "&:hover": {
                         boxShadow: 3,
@@ -535,7 +731,7 @@ export default function MealReportAdd() {
                       },
                       position: "relative",
                     }}
-                    onClick={() => toggleStudent(student.id)}
+                    onClick={() => togglePerson(person.id)}
                   >
                     {/* Edit button for meal customization */}
                     <IconButton
@@ -547,45 +743,44 @@ export default function MealReportAdd() {
                         bgcolor: "rgba(255,255,255,0.8)",
                         "&:hover": { bgcolor: "rgba(255,255,255,1)" },
                       }}
-                      onClick={(e) => openMealDialog(student.id, e)}
+                      onClick={(e) => openMealDialog(person.id, e)}
                     >
                       <Edit fontSize="small" />
                     </IconButton>
 
                     <Stack direction="row" spacing={2} alignItems="center">
-                      <Avatar src={student.avatar} sx={{ width: 50, height: 50 }} />
+                      <Avatar src={person.avatar} sx={{ width: 50, height: 50 }} />
                       <Box sx={{ flexGrow: 1 }}>
                         <Typography variant="subtitle1" fontWeight="medium">
-                          {student.name}
+                          {person.name}
                         </Typography>
-                        <Chip
-                          label={student.designation}
-                          size="small"
-                          sx={{
-                            bgcolor:
-                              student.designation === "Chairman"
-                                ? "#e3f2fd"
-                                : student.designation === "Teacher"
-                                  ? "#e8f5e9"
-                                  : "#fff3e0",
-                            color:
-                              student.designation === "Chairman"
-                                ? "#1976d2"
-                                : student.designation === "Teacher"
-                                  ? "#2e7d32"
-                                  : "#e65100",
-                          }}
-                        />
-                        {selectedStudents[student.id] && (
+                        <Stack direction="row" spacing={1} sx={{ mb: 1 }}>
+                          <Chip
+                            icon={getPersonTypeIcon(person.type)}
+                            label={person.type === "student" ? "Student" : "Teacher"}
+                            size="small"
+                            sx={{
+                              bgcolor: getPersonTypeColor(person.type),
+                              color: getPersonTypeTextColor(person.type),
+                            }}
+                          />
+                          <Chip label={person.displayId} size="small" sx={{ bgcolor: "#f5f5f5" }} />
+                        </Stack>
+                        {person.designation && (
+                          <Typography variant="body2" color="text.secondary">
+                            {person.designation}
+                          </Typography>
+                        )}
+                        {selectedPersons[person.id] && (
                           <Box sx={{ mt: 1 }}>
-                            {renderStudentMealIcons(student.id)}
+                            {renderPersonMealIcons(person.id)}
                             <Typography variant="caption" display="block" sx={{ mt: 0.5 }}>
-                              {(studentMeals[student.id] || []).length} meals
+                              {(personMeals[person.id] || []).length} meals
                             </Typography>
                           </Box>
                         )}
                       </Box>
-                      {selectedStudents[student.id] ? (
+                      {selectedPersons[person.id] ? (
                         <CheckCircle sx={{ color: "#4caf50", fontSize: 24 }} />
                       ) : (
                         <Cancel sx={{ color: "#f44336", fontSize: 24 }} />
@@ -598,13 +793,14 @@ export default function MealReportAdd() {
               <Grid item xs={12}>
                 <Box sx={{ p: 4, textAlign: "center" }}>
                   <Typography variant="h6" color="text.secondary">
-                    No students found matching your criteria
+                    No people found matching your criteria
                   </Typography>
                   <Button
                     variant="text"
                     onClick={() => {
                       setSearchQuery("")
                       setFilterDesignation(null)
+                      setActiveTab("all")
                     }}
                     sx={{ mt: 2 }}
                   >
@@ -626,15 +822,18 @@ export default function MealReportAdd() {
             // Reset form to default values (all selected)
             setDate(new Date())
             setSelectedMealTypes(mealTypes)
-            const resetSelection: Record<number, boolean> = {}
-            const resetMeals: Record<number, string[]> = {}
-            students.forEach((student) => {
-              resetSelection[student.id] = true
-              resetMeals[student.id] = [...mealTypes]
+            const resetSelection: Record<string, boolean> = {}
+            const resetMeals: Record<string, string[]> = {}
+            persons.forEach((person) => {
+              resetSelection[person.id] = true
+              resetMeals[person.id] = [...mealTypes]
             })
-            setSelectedStudents(resetSelection)
-            setStudentMeals(resetMeals)
+            setSelectedPersons(resetSelection)
+            setPersonMeals(resetMeals)
             setSelectAll(true)
+            setActiveTab("all")
+            setSearchQuery("")
+            setFilterDesignation(null)
           }}
         >
           Reset
@@ -674,6 +873,14 @@ export default function MealReportAdd() {
           </Box>
         ))}
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <School fontSize="small" />
+          <Typography variant="body2">Student</Typography>
+        </Box>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <Person fontSize="small" />
+          <Typography variant="body2">Teacher</Typography>
+        </Box>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
           <Edit fontSize="small" />
           <Typography variant="body2">Edit Meals</Typography>
         </Box>
@@ -702,10 +909,10 @@ export default function MealReportAdd() {
           </IconButton>
         </DialogTitle>
         <DialogContent>
-          {currentStudent !== null && (
+          {currentPerson !== null && (
             <>
               <Typography variant="subtitle1" gutterBottom>
-                {students.find((s) => s.id === currentStudent)?.name}
+                {persons.find((p) => p.id === currentPerson)?.name}
               </Typography>
               <Typography variant="body2" color="textSecondary" gutterBottom>
                 Select which meals this person will eat:
@@ -752,7 +959,7 @@ export default function MealReportAdd() {
           <Button onClick={closeMealDialog} color="inherit">
             Cancel
           </Button>
-          <Button onClick={saveMealSelections} variant="contained" color="primary" disabled={currentStudent === null}>
+          <Button onClick={saveMealSelections} variant="contained" color="primary" disabled={currentPerson === null}>
             Save
           </Button>
         </DialogActions>
