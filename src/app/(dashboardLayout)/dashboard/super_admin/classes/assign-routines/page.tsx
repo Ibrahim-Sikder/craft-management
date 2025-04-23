@@ -80,6 +80,8 @@ const sampleClasses = [
   { id: 5, name: "Grade 12-A", section: "A", students: 25, schedule: "Afternoon" },
 ]
 
+// test purpose
+
 const sampleSubjects = [
   { id: 1, name: "Physics", code: "PHY101", department: "Science", credits: 4 },
   { id: 2, name: "Chemistry", code: "CHM101", department: "Science", credits: 4 },
