@@ -63,7 +63,7 @@ import { studentSchema } from "@/schema"
 
 
 interface StudentFormProps {
-  id: string;
+  id?: string; 
 }
 
 const StudentForm = ({ id }: StudentFormProps) => {

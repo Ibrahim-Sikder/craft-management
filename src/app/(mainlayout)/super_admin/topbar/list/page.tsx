@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
+
 "use client";
 
 import {
@@ -40,7 +40,7 @@ const Page = () => {
   const handleClose = () => setOpen(false)
   
 
-  const handleSubmit = (data: any) => {
+  const handleSubmit = () => {
 
   };
 

@@ -42,7 +42,6 @@ const CraftDatePicker = ({
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DesktopDatePicker
               label={label}
-              InputProps={InputProps} 
               {...field}
               onChange={(date) => onChange(date ? date.toISOString() : null)} 
               value={dateValue}
@@ -56,6 +55,7 @@ const CraftDatePicker = ({
                   variant: "outlined",
                   fullWidth: fullWidth,
                   margin: margin,
+                  InputProps: InputProps, // Move InputProps here
                 },
               }}
             />

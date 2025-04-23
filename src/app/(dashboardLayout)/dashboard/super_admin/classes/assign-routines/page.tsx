@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import {
   Box,
   Button,
@@ -9,10 +10,9 @@ import {
   Typography,
   Paper,
   Grid,
-  MenuItem,
-  Select,
+
   FormControl,
-  InputLabel,
+
   Divider,
   Card,
   CardContent,
@@ -23,7 +23,6 @@ import {
   FormHelperText,
   FormControlLabel,
   Switch,
-  Checkbox,
   useTheme,
   useMediaQuery,
   Autocomplete,
@@ -40,8 +39,7 @@ import {
 } from "@mui/material"
 import {
   Save as SaveIcon,
-  Add as AddIcon,
-  Delete as DeleteIcon,
+
   AccessTime as AccessTimeIcon,
   Event as EventIcon,
   School as SchoolIcon,
@@ -52,17 +50,16 @@ import {
   CalendarMonth as CalendarMonthIcon,
   Refresh as RefreshIcon,
   ArrowBack as ArrowBackIcon,
-  Check as CheckIcon,
+
   Close as CloseIcon,
   Info as InfoIcon,
-  Warning as WarningIcon,
+
   Visibility as VisibilityIcon,
-  Edit as EditIcon,
-  ContentCopy as ContentCopyIcon,
+
   ColorLens as ColorLensIcon,
 } from "@mui/icons-material"
 import Link from "next/link"
-import { useRouter } from "next/navigation"
+
 import type { TransitionProps } from "@mui/material/transitions"
 import React from "react"
 
@@ -77,11 +74,13 @@ const sampleTeachers = [
 
 const sampleClasses = [
   { id: 1, name: "Grade 10-A", section: "A", students: 28, schedule: "Morning" },
-  { id: 2, name: "Grade 10-B", section: "B", students: 26, schedule: "Morning" },
-  { id: 3, name: "Grade 11-A", section: "A", students: 30, schedule: "Morning" },
-  { id: 4, name: "Grade 11-B", section: "B", students: 29, schedule: "Morning" },
-  { id: 5, name: "Grade 12-A", section: "A", students: 25, schedule: "Afternoon" },
+  { id: 2, name: "Grade 10-B", section: "B", students: 20, schedule: "Afternoon" },
+  { id: 3, name: "Grade 11-A", section: "A", students: 25, schedule: "Morning" },
+  { id: 4, name: "Grade 11-B", section: "B", students: 30, schedule: "Morning" },
+  { id: 5, name: "Grade 12-A", section: "B", students: 29, schedule: "Morning" },
 ]
+
+// test
 
 const sampleSubjects = [
   { id: 1, name: "Physics", code: "PHY101", department: "Science", credits: 4 },
@@ -157,9 +156,9 @@ const Transition = React.forwardRef(function Transition(
 
 export default function ClassRoutineNew() {
   const theme = useTheme()
-  const router = useRouter()
+
   const isMobile = useMediaQuery(theme.breakpoints.down("md"))
-  const isTablet = useMediaQuery(theme.breakpoints.down("lg"))
+  
 
   // State for form data
   const [formData, setFormData] = useState({

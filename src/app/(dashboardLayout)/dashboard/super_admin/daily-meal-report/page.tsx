@@ -116,7 +116,7 @@ export default function MealReport() {
   })
 
   const days = getDaysInMonth(month, year)
-  const totalDays = days.length
+
 
   // Calculate total meals for each student
   const calculateTotalMeals = (studentId: number) => {

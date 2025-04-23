@@ -1,6 +1,6 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client"
+
+import type React from "react"
 
 import { useState, useEffect } from "react"
 import {
@@ -42,16 +42,17 @@ import {
   Switch,
   Zoom,
   Collapse,
-  useTheme,
-  useMediaQuery,
+  // useTheme,
+  // useMediaQuery,
   LinearProgress,
   Drawer,
   List,
-  ListItem,
   ListItemText,
   ListItemIcon,
   Backdrop,
   CircularProgress,
+  type ChipProps,
+  ListItem,
 } from "@mui/material"
 import {
   Add as AddIcon,
@@ -226,13 +227,13 @@ const sampleCurriculums = [
 ]
 
 export default function CurriculumList() {
-  const theme = useTheme()
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"))
+  // const theme = useTheme()
+  // const isMobile = useMediaQuery(theme.breakpoints.down("md"))
   const [searchTerm, setSearchTerm] = useState("")
   const [tabValue, setTabValue] = useState(0)
-  const [filterAnchorEl, setFilterAnchorEl] = useState(null)
-  const [actionAnchorEl, setActionAnchorEl] = useState(null)
-  const [currentCurriculumId, setCurrentCurriculumId] = useState(null)
+  const [filterAnchorEl, setFilterAnchorEl] = useState<null | HTMLElement>(null)
+  const [actionAnchorEl, setActionAnchorEl] = useState<null | HTMLElement>(null)
+  const [currentCurriculumId, setCurrentCurriculumId] = useState<number | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [departmentFilter, setDepartmentFilter] = useState("all")
   const [gradeLevelFilter, setGradeLevelFilter] = useState("all")
@@ -244,7 +245,7 @@ export default function CurriculumList() {
   const [loading, setLoading] = useState(false)
   const [showFavoritesOnly, setShowFavoritesOnly] = useState(false)
   const [detailsDrawerOpen, setDetailsDrawerOpen] = useState(false)
-  const [selectedCurriculum, setSelectedCurriculum] = useState(null)
+  const [selectedCurriculum, setSelectedCurriculum] = useState<(typeof sampleCurriculums)[0] | null>(null)
   const [showWelcomeCard, setShowWelcomeCard] = useState(true)
   const [curriculums, setCurriculums] = useState(sampleCurriculums)
 
@@ -256,16 +257,13 @@ export default function CurriculumList() {
     }, 1000)
   }, [])
 
-interface TabChangeEvent {
-    target: EventTarget & { value: number }
-}
-
-const handleTabChange = (event: TabChangeEvent, newValue: number): void => {
+  // Fix 1: Properly type the handleTabChange function
+  const handleTabChange = (_event: React.SyntheticEvent, newValue: number): void => {
     setTabValue(newValue)
     setPage(1)
-}
+  }
 
-  const handleFilterClick = (event:any) => {
+  const handleFilterClick = (event: React.MouseEvent<HTMLElement>) => {
     setFilterAnchorEl(event.currentTarget)
   }
 
@@ -273,7 +271,7 @@ const handleTabChange = (event: TabChangeEvent, newValue: number): void => {
     setFilterAnchorEl(null)
   }
 
-  const handleActionClick = (event:any, id:any) => {
+  const handleActionClick = (event: React.MouseEvent<HTMLElement>, id: number) => {
     setActionAnchorEl(event.currentTarget)
     setCurrentCurriculumId(id)
   }
@@ -292,26 +290,26 @@ const handleTabChange = (event: TabChangeEvent, newValue: number): void => {
     setDeleteDialogOpen(false)
   }
 
-  const handlePageChange = (event:any, value:any) => {
+  const handlePageChange = (_event: React.ChangeEvent<unknown>, value: number) => {
     setPage(value)
     window.scrollTo(0, 0)
   }
 
-  const handleViewDetails = (curriculum:any) => {
+  const handleViewDetails = (curriculum: (typeof sampleCurriculums)[0]) => {
     setSelectedCurriculum(curriculum)
     setDetailsDrawerOpen(true)
     handleActionClose()
   }
 
-  const handleToggleFavorite = (id:any) => {
+  const handleToggleFavorite = (id: number) => {
     setCurriculums(curriculums.map((c) => (c.id === id ? { ...c, favorite: !c.favorite } : c)))
   }
 
-  const handleChangeRating = (id:any, newRating:any) => {
+  const handleChangeRating = (id: number, newRating: number) => {
     setCurriculums(curriculums.map((c) => (c.id === id ? { ...c, rating: newRating } : c)))
   }
 
-  const handleSortChange = (field:any) => {
+  const handleSortChange = (field: string) => {
     if (sortBy === field) {
       setSortDirection(sortDirection === "asc" ? "desc" : "asc")
     } else {
@@ -374,8 +372,8 @@ const handleTabChange = (event: TabChangeEvent, newValue: number): void => {
   const paginatedCurriculums = filteredCurriculums.slice((page - 1) * rowsPerPage, page * rowsPerPage)
 
   // Get unique departments and grade levels for filters
-  const departments = ["all", ...new Set(curriculums.map((c) => c.department))]
-  const gradeLevels = ["all", ...new Set(curriculums.map((c) => c.gradeLevel))]
+  const departments = ["all", ...Array.from(new Set(curriculums.map((c) => c.department)))]
+  const gradeLevels = ["all", ...Array.from(new Set(curriculums.map((c) => c.gradeLevel)))]
 
   // Stats
   const totalCurriculums = curriculums.length
@@ -383,7 +381,7 @@ const handleTabChange = (event: TabChangeEvent, newValue: number): void => {
   const draftCurriculums = curriculums.filter((c) => c.status === "draft").length
   const archivedCurriculums = curriculums.filter((c) => c.status === "archived").length
 
-  const renderRatingStars = (rating:any, id:any, interactive = false) => {
+  const renderRatingStars = (rating: number, id: number, interactive = false) => {
     return (
       <Box sx={{ display: "flex", alignItems: "center" }}>
         {[1, 2, 3, 4, 5].map((star) => (
@@ -404,33 +402,33 @@ const handleTabChange = (event: TabChangeEvent, newValue: number): void => {
     )
   }
 
-  const renderStatusChip = (status:any) => {
-    let color, icon
+  // Fix 2: Properly type the renderStatusChip function
+  const renderStatusChip = (status: string) => {
+    // Define the color and icon based on status
+    let chipColor: ChipProps["color"] = "default"
+    let chipIcon: React.ReactElement | undefined = undefined
 
     switch (status) {
       case "active":
-        color = "success"
-        icon = <CheckCircleIcon fontSize="small" />
+        chipColor = "success"
+        chipIcon = <CheckCircleIcon fontSize="small" />
         break
       case "draft":
-        color = "warning"
-        icon = <EditIcon fontSize="small" />
+        chipColor = "warning"
+        chipIcon = <EditIcon fontSize="small" />
         break
       case "archived":
-        color = "default"
-        icon = <BookmarkIcon fontSize="small" />
+        chipColor = "default"
+        chipIcon = <BookmarkIcon fontSize="small" />
         break
-      default:
-        color = "default"
-        icon = null
     }
 
     return (
       <Chip
         label={status.charAt(0).toUpperCase() + status.slice(1)}
-        color={color}
+        color={chipColor}
         size="small"
-        icon={icon}
+        icon={chipIcon}
         sx={{
           borderRadius: 1,
           "& .MuiChip-label": {
@@ -775,10 +773,11 @@ const handleTabChange = (event: TabChangeEvent, newValue: number): void => {
                 <InputLabel id="rows-per-page-label" size="small">
                   Rows
                 </InputLabel>
+                {/* Fix 3: Properly type the onChange handler for Select */}
                 <Select
                   labelId="rows-per-page-label"
                   value={rowsPerPage}
-                  onChange={(e) => setRowsPerPage(e.target.value)}
+                  onChange={(e) => setRowsPerPage(Number(e.target.value))}
                   label="Rows"
                   size="small"
                   sx={{ borderRadius: 2 }}
@@ -876,7 +875,7 @@ const handleTabChange = (event: TabChangeEvent, newValue: number): void => {
                   <FormControl fullWidth size="small">
                     <Select
                       value={departmentFilter}
-                      onChange={(e) => setDepartmentFilter(e.target.value)}
+                      onChange={(e) => setDepartmentFilter(e.target.value as string)}
                       displayEmpty
                       sx={{ borderRadius: 2 }}
                     >
@@ -900,7 +899,7 @@ const handleTabChange = (event: TabChangeEvent, newValue: number): void => {
                   <FormControl fullWidth size="small">
                     <Select
                       value={gradeLevelFilter}
-                      onChange={(e) => setGradeLevelFilter(e.target.value)}
+                      onChange={(e) => setGradeLevelFilter(e.target.value as string)}
                       displayEmpty
                       sx={{ borderRadius: 2 }}
                     >
@@ -925,7 +924,7 @@ const handleTabChange = (event: TabChangeEvent, newValue: number): void => {
                     <Select
                       value={sortBy}
                       onChange={(e) => {
-                        setSortBy(e.target.value)
+                        setSortBy(e.target.value as string)
                         setSortDirection("asc")
                       }}
                       displayEmpty
@@ -943,7 +942,7 @@ const handleTabChange = (event: TabChangeEvent, newValue: number): void => {
                   <FormControl fullWidth size="small">
                     <Select
                       value={sortDirection}
-                      onChange={(e) => setSortDirection(e.target.value)}
+                      onChange={(e) => setSortDirection(e.target.value as string)}
                       displayEmpty
                       sx={{ borderRadius: 2 }}
                     >
@@ -1436,7 +1435,9 @@ const handleTabChange = (event: TabChangeEvent, newValue: number): void => {
         <MenuItem
           onClick={() => {
             const curriculum = curriculums.find((c) => c.id === currentCurriculumId)
-            handleViewDetails(curriculum)
+            if (curriculum) {
+              handleViewDetails(curriculum)
+            }
           }}
         >
           <VisibilityIcon fontSize="small" sx={{ mr: 1 }} />
@@ -1619,13 +1620,19 @@ const handleTabChange = (event: TabChangeEvent, newValue: number): void => {
 
             <List>
               <ListItem
-                button
+                component="button"
                 sx={{
                   borderRadius: 2,
                   mb: 1,
                   "&:hover": {
                     bgcolor: "rgba(25,118,210,0.1)",
                   },
+                  textAlign: "left",
+                  width: "100%",
+                  border: "none",
+                  background: "none",
+                  padding: "8px 16px",
+                  cursor: "pointer",
                 }}
               >
                 <ListItemIcon>
@@ -1634,13 +1641,19 @@ const handleTabChange = (event: TabChangeEvent, newValue: number): void => {
                 <ListItemText primary="Edit Curriculum" />
               </ListItem>
               <ListItem
-                button
+                component="button"
                 sx={{
                   borderRadius: 2,
                   mb: 1,
                   "&:hover": {
                     bgcolor: "rgba(25,118,210,0.1)",
                   },
+                  textAlign: "left",
+                  width: "100%",
+                  border: "none",
+                  background: "none",
+                  padding: "8px 16px",
+                  cursor: "pointer",
                 }}
               >
                 <ListItemIcon>
@@ -1649,13 +1662,19 @@ const handleTabChange = (event: TabChangeEvent, newValue: number): void => {
                 <ListItemText primary="Print Curriculum" />
               </ListItem>
               <ListItem
-                button
+                component="button"
                 sx={{
                   borderRadius: 2,
                   mb: 1,
                   "&:hover": {
                     bgcolor: "rgba(25,118,210,0.1)",
                   },
+                  textAlign: "left",
+                  width: "100%",
+                  border: "none",
+                  background: "none",
+                  padding: "8px 16px",
+                  cursor: "pointer",
                 }}
               >
                 <ListItemIcon>
@@ -1664,13 +1683,19 @@ const handleTabChange = (event: TabChangeEvent, newValue: number): void => {
                 <ListItemText primary="Export as PDF" />
               </ListItem>
               <ListItem
-                button
+                component="button"
                 sx={{
                   borderRadius: 2,
                   mb: 1,
                   "&:hover": {
                     bgcolor: "rgba(25,118,210,0.1)",
                   },
+                  textAlign: "left",
+                  width: "100%",
+                  border: "none",
+                  background: "none",
+                  padding: "8px 16px",
+                  cursor: "pointer",
                 }}
               >
                 <ListItemIcon>
@@ -1679,13 +1704,19 @@ const handleTabChange = (event: TabChangeEvent, newValue: number): void => {
                 <ListItemText primary="Share Curriculum" />
               </ListItem>
               <ListItem
-                button
+                component="button"
                 sx={{
                   borderRadius: 2,
                   color: "error.main",
                   "&:hover": {
                     bgcolor: "rgba(211,47,47,0.1)",
                   },
+                  textAlign: "left",
+                  width: "100%",
+                  border: "none",
+                  background: "none",
+                  padding: "8px 16px",
+                  cursor: "pointer",
                 }}
                 onClick={() => {
                   setCurrentCurriculumId(selectedCurriculum.id)
