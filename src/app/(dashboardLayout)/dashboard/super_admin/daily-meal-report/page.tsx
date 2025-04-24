@@ -1,7 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo, useCallback } from "react"
+import type React from "react"
+
 import {
   Paper,
   Table,
@@ -179,13 +181,12 @@ export default function MealReport() {
   const [updateMealReport, { isLoading: isUpdating }] = useUpdateMealReportMutation()
   const [deleteMealReport, { isLoading: isDeleting }] = useDeleteMealReportMutation()
 
-  const days = getDaysInMonth(month, year)
+  // Memoize days to prevent unnecessary recalculations
+  const days = useMemo(() => getDaysInMonth(month, year), [month, year])
 
   // Process meal report data
   useEffect(() => {
     if (mealReportResponse?.data?.mealReports) {
-      console.log("Processing meal report data:", mealReportResponse)
-
       // Extract all unique persons (students and teachers)
       const allPersons: any[] = []
       const mealDataMap: Record<string, Record<number, { eaten: boolean; type: string[] }>> = {}
@@ -213,7 +214,7 @@ export default function MealReport() {
               displayId: student.personId.studentId || student.personId.displayId || "N/A",
               type: "student",
               designation: `${student.personId.className || ""} ${student.personId.section || ""}`.trim() || "Student",
-              avatar: "/placeholder.svg?height=40&width=40",
+              avatar: "/assets/images/avatar-placeholder.png", // Use a local image instead of placeholder.svg
             }
 
             // Add person if not already in the list
@@ -256,7 +257,7 @@ export default function MealReport() {
               displayId: teacher.personId.teacherId || teacher.personId.displayId || "N/A",
               type: "teacher",
               designation: teacher.personId.professionalInfo?.designation || "Teacher",
-              avatar: "/placeholder.svg?height=40&width=40",
+              avatar: "/assets/images/avatar-placeholder.png", // Use a local image instead of placeholder.svg
             }
 
             // Add person if not already in the list
@@ -313,37 +314,44 @@ export default function MealReport() {
     }
   }, [mealReportResponse, month, year, days])
 
-  // Handle search
+  // Handle search - memoized to prevent unnecessary re-renders
   useEffect(() => {
-    if (combinedPersons.length > 0) {
+    if (combinedPersons.length > 0 && searchTerm) {
+      const lowercaseSearch = searchTerm.toLowerCase()
       const filtered = combinedPersons.filter(
         (person) =>
-          person.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          person.displayId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          person.designation.toLowerCase().includes(searchTerm.toLowerCase()),
+          person.name.toLowerCase().includes(lowercaseSearch) ||
+          person.displayId.toLowerCase().includes(lowercaseSearch) ||
+          person.designation.toLowerCase().includes(lowercaseSearch),
       )
       setFilteredPersons(filtered)
+    } else if (combinedPersons.length > 0) {
+      setFilteredPersons(combinedPersons)
     }
   }, [searchTerm, combinedPersons])
 
-  // Calculate total meals for each person
-  const calculateTotalMeals = (personId: string) => {
-    if (!mealData[personId]) return 0
-    return days.reduce((total, day) => total + (mealData[personId][day]?.eaten ? 1 : 0), 0)
-  }
+  // Memoized calculation functions to improve performance
+  const calculateTotalMeals = useCallback(
+    (personId: string) => {
+      if (!mealData[personId]) return 0
+      return days.reduce((total, day) => total + (mealData[personId][day]?.eaten ? 1 : 0), 0)
+    },
+    [mealData, days],
+  )
 
-  // Calculate total meals for each day
-  const calculateDailyTotal = (day: number) => {
-    return Object.keys(mealData).reduce((total, personId) => total + (mealData[personId][day]?.eaten ? 1 : 0), 0)
-  }
+  const calculateDailyTotal = useCallback(
+    (day: number) => {
+      return Object.keys(mealData).reduce((total, personId) => total + (mealData[personId][day]?.eaten ? 1 : 0), 0)
+    },
+    [mealData],
+  )
 
-  // Calculate grand total of all meals
-  const calculateGrandTotal = () => {
+  const calculateGrandTotal = useCallback(() => {
     return Object.keys(mealData).reduce((total, personId) => total + calculateTotalMeals(personId), 0)
-  }
+  }, [mealData, calculateTotalMeals])
 
-  // Calculate meal type statistics
-  const calculateMealTypeStats = () => {
+  // Memoize meal type statistics to prevent recalculation on every render
+  const mealStats = useMemo(() => {
     let breakfast = 0
     let lunch = 0
     let dinner = 0
@@ -360,20 +368,21 @@ export default function MealReport() {
     })
 
     return { breakfast, lunch, dinner }
-  }
+  }, [mealData, days])
 
-  const mealStats = calculateMealTypeStats()
+  // Open meal update modal - memoized to prevent unnecessary re-renders
+  const openMealModal = useCallback(
+    (personId: string, day: number) => {
+      setSelectedPerson(personId)
+      setSelectedDay(day)
+      setTempMealTypes(mealData[personId]?.[day]?.type || [])
+      setModalOpen(true)
+    },
+    [mealData],
+  )
 
-  // Open meal update modal
-  const openMealModal = (personId: string, day: number) => {
-    setSelectedPerson(personId)
-    setSelectedDay(day)
-    setTempMealTypes(mealData[personId]?.[day]?.type || [])
-    setModalOpen(true)
-  }
-
-  // Handle meal type checkbox change
-  const handleMealTypeChange = (mealType: string) => {
+  // Handle meal type checkbox change - memoized to prevent unnecessary re-renders
+  const handleMealTypeChange = useCallback((mealType: string) => {
     setTempMealTypes((prev) => {
       if (prev.includes(mealType)) {
         return prev.filter((type) => type !== mealType)
@@ -381,10 +390,10 @@ export default function MealReport() {
         return [...prev, mealType]
       }
     })
-  }
+  }, [])
 
-  // Convert UI meal types to backend format
-  const convertToBackendMealTypes = (uiMealTypes: string[]) => {
+  // Convert UI meal types to backend format - memoized to prevent unnecessary re-renders
+  const convertToBackendMealTypes = useCallback((uiMealTypes: string[]) => {
     return uiMealTypes.map((type) => {
       switch (type) {
         case "breakfast":
@@ -397,10 +406,10 @@ export default function MealReport() {
           return type.toUpperCase()
       }
     })
-  }
+  }, [])
 
-  // Save meal updates
-  const saveMealUpdates = async () => {
+  // Save meal updates - memoized to prevent unnecessary re-renders
+  const saveMealUpdates = useCallback(async () => {
     if (selectedPerson !== null && selectedDay !== null) {
       try {
         const reportId = reportIdMap[selectedDay]
@@ -472,16 +481,25 @@ export default function MealReport() {
         })
       }
     }
-  }
+  }, [
+    selectedPerson,
+    selectedDay,
+    reportIdMap,
+    combinedPersons,
+    tempMealTypes,
+    convertToBackendMealTypes,
+    updateMealReport,
+    refetch,
+  ])
 
-  // Open delete confirmation dialog
-  const openDeleteDialog = (reportId: string) => {
+  // Open delete confirmation dialog - memoized to prevent unnecessary re-renders
+  const openDeleteDialog = useCallback((reportId: string) => {
     setReportToDelete(reportId)
     setDeleteDialogOpen(true)
-  }
+  }, [])
 
-  // Handle delete meal report
-  const handleDeleteReport = async () => {
+  // Handle delete meal report - memoized to prevent unnecessary re-renders
+  const handleDeleteReport = useCallback(async () => {
     if (reportToDelete) {
       try {
         await deleteMealReport(reportToDelete).unwrap()
@@ -506,63 +524,72 @@ export default function MealReport() {
         setReportToDelete(null)
       }
     }
-  }
+  }, [reportToDelete, deleteMealReport, refetch])
 
-  // Toggle meal status (now opens the modal)
-  const toggleMeal = (personId: string, day: number) => {
-    openMealModal(personId, day)
-  }
+  // Toggle meal status (now opens the modal) - memoized to prevent unnecessary re-renders
+  const toggleMeal = useCallback(
+    (personId: string, day: number) => {
+      openMealModal(personId, day)
+    },
+    [openMealModal],
+  )
 
-  // Navigate to update page
-  const navigateToUpdate = (reportId: string) => {
-    router.push(`/dashboard/super_admin/daily-meal-report/edit/${reportId}`)
-  }
+  // Navigate to update page - memoized to prevent unnecessary re-renders
+  const navigateToUpdate = useCallback(
+    (reportId: string) => {
+      router.push(`/dashboard/super_admin/daily-meal-report/edit/${reportId}`)
+    },
+    [router],
+  )
 
-  // Add this function to render meal type indicators:
-  const renderMealTypeIndicator = (personId: string, day: number) => {
-    const mealInfo = mealData[personId]?.[day]
+  // Render meal type indicators - memoized to prevent unnecessary re-renders
+  const renderMealTypeIndicator = useCallback(
+    (personId: string, day: number) => {
+      const mealInfo = mealData[personId]?.[day]
 
-    if (!mealInfo || !mealInfo.eaten) {
-      return <Cancel sx={{ color: "#f44336", fontSize: 18 }} />
-    }
+      if (!mealInfo || !mealInfo.eaten) {
+        return <Cancel sx={{ color: "#f44336", fontSize: 18 }} />
+      }
 
-    return (
-      <Tooltip
-        title={
-          <div>
-            {mealInfo.type.includes("breakfast") && <div>Breakfast</div>}
-            {mealInfo.type.includes("lunch") && <div>Lunch</div>}
-            {mealInfo.type.includes("dinner") && <div>Dinner</div>}
+      return (
+        <Tooltip
+          title={
+            <div>
+              {mealInfo.type.includes("breakfast") && <div>Breakfast</div>}
+              {mealInfo.type.includes("lunch") && <div>Lunch</div>}
+              {mealInfo.type.includes("dinner") && <div>Dinner</div>}
+            </div>
+          }
+        >
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+            <CheckCircle sx={{ color: "#4caf50", fontSize: 18 }} />
+            {mealInfo.type.length > 0 && (
+              <Typography variant="caption" sx={{ fontSize: "0.6rem" }}>
+                {mealInfo.type.length}
+              </Typography>
+            )}
           </div>
-        }
-      >
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
-          <CheckCircle sx={{ color: "#4caf50", fontSize: 18 }} />
-          {mealInfo.type.length > 0 && (
-            <Typography variant="caption" sx={{ fontSize: "0.6rem" }}>
-              {mealInfo.type.length}
-            </Typography>
-          )}
-        </div>
-      </Tooltip>
-    )
-  }
+        </Tooltip>
+      )
+    },
+    [mealData],
+  )
 
-  // Handle month change
-  const handleMonthChange = (event: SelectChangeEvent<number>) => {
+  // Handle month change - memoized to prevent unnecessary re-renders
+  const handleMonthChange = useCallback((event: SelectChangeEvent<number>) => {
     setMonth(Number(event.target.value))
     setLoading(true)
-  }
+  }, [])
 
-  // Get month name
-  const getMonthName = (monthNumber: number) => {
+  // Get month name - memoized to prevent unnecessary re-renders
+  const getMonthName = useCallback((monthNumber: number) => {
     const date = new Date()
     date.setMonth(monthNumber - 1)
     return date.toLocaleString("en-US", { month: "long" })
-  }
+  }, [])
 
-  // Navigate to previous month
-  const prevMonth = () => {
+  // Navigate to previous month - memoized to prevent unnecessary re-renders
+  const prevMonth = useCallback(() => {
     if (month === 1) {
       setMonth(12)
       setYear(year - 1)
@@ -570,10 +597,10 @@ export default function MealReport() {
       setMonth(month - 1)
     }
     setLoading(true)
-  }
+  }, [month, year])
 
-  // Navigate to next month
-  const nextMonth = () => {
+  // Navigate to next month - memoized to prevent unnecessary re-renders
+  const nextMonth = useCallback(() => {
     if (month === 12) {
       setMonth(1)
       setYear(year + 1)
@@ -581,36 +608,44 @@ export default function MealReport() {
       setMonth(month + 1)
     }
     setLoading(true)
-  }
+  }, [month, year])
 
-  // Get person name by ID
-  const getPersonName = (id: string) => {
-    const person = combinedPersons.find((p) => p.id === id)
-    return person ? person.name : ""
-  }
+  // Get person name by ID - memoized to prevent unnecessary re-renders
+  const getPersonName = useCallback(
+    (id: string) => {
+      const person = combinedPersons.find((p) => p.id === id)
+      return person ? person.name : ""
+    },
+    [combinedPersons],
+  )
 
-  // Handle snackbar close
-  const handleCloseSnackbar = () => {
-    setSnackbar({
-      ...snackbar,
+  // Handle snackbar close - memoized to prevent unnecessary re-renders
+  const handleCloseSnackbar = useCallback(() => {
+    setSnackbar((prev) => ({
+      ...prev,
       open: false,
-    })
-  }
+    }))
+  }, [])
 
-  // Get person type icon
-  const getPersonTypeIcon = (type: string) => {
+  // Get person type icon - memoized to prevent unnecessary re-renders
+  const getPersonTypeIcon = useCallback((type: string) => {
     return type === "student" ? <School fontSize="small" /> : <Person fontSize="small" />
-  }
+  }, [])
 
-  // Get person type color
-  const getPersonTypeColor = (type: string) => {
+  // Get person type color - memoized to prevent unnecessary re-renders
+  const getPersonTypeColor = useCallback((type: string) => {
     return type === "student" ? "#e3f2fd" : "#e8f5e9"
-  }
+  }, [])
 
-  // Get person type text color
-  const getPersonTypeTextColor = (type: string) => {
+  // Get person type text color - memoized to prevent unnecessary re-renders
+  const getPersonTypeTextColor = useCallback((type: string) => {
     return type === "student" ? "#1976d2" : "#2e7d32"
-  }
+  }, [])
+
+  // Handle search input change - memoized to prevent unnecessary re-renders
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(e.target.value)
+  }, [])
 
   return (
     <Box
@@ -930,7 +965,7 @@ export default function MealReport() {
                   placeholder="Search by name, ID or designation..."
                   variant="outlined"
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={handleSearchChange}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">

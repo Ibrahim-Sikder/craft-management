@@ -446,19 +446,15 @@ export default function MealReportAdd() {
     }
 
     try {
-      // Prepare data according to validation schema
+  
       const mealReportData = {
-        date: date.toISOString().split("T")[0], // Format as YYYY-MM-DD
+        date: date.toISOString().split("T")[0], 
         students: selectedStudents,
         teachers: selectedTeachers,
       }
-
-      // Debug info
       const debugData = JSON.stringify(mealReportData, null, 2)
-      console.log("Submitting meal report data:", debugData)
       setDebugInfo(`Submitting: ${debugData}`)
 
-      // Call the API directly with fetch for debugging
       const directResponse = await fetch("http://localhost:5000/api/v1/meal-report", {
         method: "POST",
         headers: {
@@ -468,8 +464,6 @@ export default function MealReportAdd() {
       })
 
       const directResult = await directResponse.json()
-      console.log("Direct fetch response:", directResult)
-
       if (!directResponse.ok) {
         throw { data: directResult }
       }

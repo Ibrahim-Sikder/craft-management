@@ -143,7 +143,6 @@ const StudentForm = ({ id }: StudentFormProps) => {
   }
 
   const handleSubmit = async (data: any) => {
-    console.log(data)
     const submissionData = {
       ...data,
       ...formData,
@@ -159,7 +158,7 @@ const StudentForm = ({ id }: StudentFormProps) => {
 
     try {
       const res = await updateStudent({ id, ...submissionData }).unwrap()
-      console.log(res)
+
       if (res.success) {
         setSuccess(true)
         setSnackbar({
@@ -194,10 +193,9 @@ const StudentForm = ({ id }: StudentFormProps) => {
       transportFee: Number(data.transportFee),
       boardingFee: Number(data.boardingFee),
     }
-    console.log('submission data', submissionData)
+  
     try {
       const res = await createStudents(submissionData).unwrap()
-      console.log(res)
       if (res.success) {
         setSuccess(true)
         setSnackbar({

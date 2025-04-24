@@ -415,8 +415,6 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
 
 
   const handleSubmit = async (data : any) => {
-
-    console.log("Form submitted", data)
     setIsSubmitting(true)
 
     try {
@@ -460,7 +458,7 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
         }
       } else {
         const res = await createTeacher(submissionData).unwrap()
-        console.log(res)
+       
         if (res.success) {
           setSuccess(true)
           setSnackbar({

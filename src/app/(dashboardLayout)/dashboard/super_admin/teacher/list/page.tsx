@@ -525,7 +525,7 @@ export default function TeachersDashboard() {
             <Grid item xs={12}>
               <Grid container spacing={3}>
                 {filteredTeachers.map((teacher, index) => {
-                  console.log("teacher id for ", teacher)
+                
                   return (
                     <Grid item xs={12} sm={6} md={4} lg={3} key={teacher.id}>
                       <motion.div

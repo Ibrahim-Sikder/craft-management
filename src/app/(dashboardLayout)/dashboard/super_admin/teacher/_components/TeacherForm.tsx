@@ -105,14 +105,10 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
       refetchOnMountOrArgChange: true,
     },
   )
-
-  console.log("single teacher data", singlesTeacher)
-
-  // Set default values when teacher data is loaded
   useEffect(() => {
     if (singlesTeacher && singlesTeacher.data) {
       const teacher = singlesTeacher.data
-      console.log("Setting default values from:", teacher)
+     
 
       // Set selected subjects if available
       if (teacher.professionalInfo?.subjectsTaught) {
@@ -189,8 +185,6 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
         "socialMedia.linkedin": teacher.socialMedia?.linkedin || "",
         "socialMedia.instagram": teacher.socialMedia?.instagram || "",
       }
-
-      console.log("Setting form default values:", formDefaultValues)
       setDefaultValues(formDefaultValues)
     }
   }, [singlesTeacher])
@@ -231,7 +225,6 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
   }
 
   const handleSubmit = async (data: any) => {
-    console.log("Form submitted", data)
     setIsSubmitting(true)
 
     try {
@@ -293,7 +286,7 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
         }
       } else {
         const res = await createTeacher(submissionData).unwrap()
-        console.log(res)
+   
         if (res.success) {
           setSuccess(true)
           setSnackbar({
