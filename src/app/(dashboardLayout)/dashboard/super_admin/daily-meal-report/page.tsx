@@ -192,6 +192,7 @@ export default function MealReport() {
       const mealDataMap: Record<string, Record<number, { eaten: boolean; type: string[] }>> = {}
       const dayToReportIdMap: Record<number, string> = {}
 
+      // Process each meal report
       mealReportResponse.data.mealReports.forEach((report: MealReport) => {
         const reportDate = new Date(report.date)
         const reportDay = reportDate.getDate()
@@ -206,90 +207,101 @@ export default function MealReport() {
         // Only process reports for the selected month and year
         if (reportMonth === month && reportYear === year) {
           // Process students
-          report.students.forEach((student) => {
-            const personId = student.personId._id
-            const personData = {
-              id: personId,
-              name: student.personId.name,
-              displayId: student.personId.studentId || student.personId.displayId || "N/A",
-              type: "student",
-              designation: `${student.personId.className || ""} ${student.personId.section || ""}`.trim() || "Student",
-              avatar: "/assets/images/avatar-placeholder.png", // Use a local image instead of placeholder.svg
-            }
+          if (report.students && Array.isArray(report.students)) {
+            report.students.forEach((student) => {
+              if (!student.personId || typeof student.personId !== "object") return
 
-            // Add person if not already in the list
-            if (!allPersons.some((p) => p.id === personId)) {
-              allPersons.push(personData)
-            }
+              const personId = student.personId._id
+              const personData = {
+                id: personId,
+                name: student.personId.name || "Unknown",
+                displayId: student.personId.studentId || student.personId.displayId || "N/A",
+                type: "student",
+                designation:
+                  `${student.personId.className || ""} ${student.personId.section || ""}`.trim() || "Student",
+                avatar: "/assets/images/avatar-placeholder.png",
+              }
 
-            // Initialize meal data for this person if not exists
-            if (!mealDataMap[personId]) {
-              mealDataMap[personId] = {}
-            }
+              // Add person if not already in the list
+              if (!allPersons.some((p) => p.id === personId)) {
+                allPersons.push(personData)
+              }
 
-            // Map meal types from backend format to UI format
-            const uiMealTypes = student.mealTypes.map((type) => {
-              switch (type) {
-                case "BREAKFAST":
-                  return "breakfast"
-                case "LUNCH":
-                  return "lunch"
-                case "DINNER":
-                  return "dinner"
-                default:
-                  return type.toLowerCase()
+              // Initialize meal data for this person if not exists
+              if (!mealDataMap[personId]) {
+                mealDataMap[personId] = {}
+              }
+
+              // Map meal types from backend format to UI format
+              const uiMealTypes = student.mealTypes.map((type) => {
+                switch (type) {
+                  case "BREAKFAST":
+                    return "breakfast"
+                  case "LUNCH":
+                    return "lunch"
+                  case "DINNER":
+                    return "dinner"
+                  default:
+                    return type.toLowerCase()
+                }
+              })
+
+              // Set meal data for this day
+              mealDataMap[personId][reportDay] = {
+                eaten: student.mealCount > 0,
+                type: uiMealTypes,
               }
             })
-
-            // Set meal data for this day
-            mealDataMap[personId][reportDay] = {
-              eaten: student.mealCount > 0,
-              type: uiMealTypes,
-            }
-          })
+          }
 
           // Process teachers
-          report.teachers.forEach((teacher) => {
-            const personId = teacher.personId._id
-            const personData = {
-              id: personId,
-              name: teacher.personId.name,
-              displayId: teacher.personId.teacherId || teacher.personId.displayId || "N/A",
-              type: "teacher",
-              designation: teacher.personId.professionalInfo?.designation || "Teacher",
-              avatar: "/assets/images/avatar-placeholder.png", // Use a local image instead of placeholder.svg
-            }
+          if (report.teachers && Array.isArray(report.teachers)) {
+            report.teachers.forEach((teacher) => {
+              if (!teacher.personId || typeof teacher.personId !== "object") return
 
-            // Add person if not already in the list
-            if (!allPersons.some((p) => p.id === personId)) {
-              allPersons.push(personData)
-            }
+              const personId = teacher.personId._id
+              const designation = teacher.personId.professionalInfo?.designation || "Teacher"
 
-            // Initialize meal data for this person if not exists
-            if (!mealDataMap[personId]) {
-              mealDataMap[personId] = {}
-            }
+              const personData = {
+                id: personId,
+                name: teacher.personId.name || "Unknown",
+                displayId: teacher.personId.teacherId || teacher.personId.displayId || "N/A",
+                type: "teacher",
+                designation: designation,
+                avatar: "/assets/images/avatar-placeholder.png",
+              }
 
-            // Map meal types from backend format to UI format
-            const uiMealTypes = teacher.mealTypes.map((type) => {
-              switch (type) {
-                case "BREAKFAST":
-                  return "breakfast"
-                case "LUNCH":
-                  return "lunch"
-                case "DINNER":
-                  return "dinner"
-                default:
-                  return type.toLowerCase()
+              // Add person if not already in the list
+              if (!allPersons.some((p) => p.id === personId)) {
+                allPersons.push(personData)
+              }
+
+              // Initialize meal data for this person if not exists
+              if (!mealDataMap[personId]) {
+                mealDataMap[personId] = {}
+              }
+
+              // Map meal types from backend format to UI format
+              const uiMealTypes = teacher.mealTypes.map((type) => {
+                switch (type) {
+                  case "BREAKFAST":
+                    return "breakfast"
+                  case "LUNCH":
+                    return "lunch"
+                  case "DINNER":
+                    return "dinner"
+                  default:
+                    return type.toLowerCase()
+                }
+              })
+
+              // Set meal data for this day
+              mealDataMap[personId][reportDay] = {
+                eaten: teacher.mealCount > 0,
+                type: uiMealTypes,
               }
             })
-
-            // Set meal data for this day
-            mealDataMap[personId][reportDay] = {
-              eaten: teacher.mealCount > 0,
-              type: uiMealTypes,
-            }
-          })
+          }
         }
       })
 
@@ -392,22 +404,6 @@ export default function MealReport() {
     })
   }, [])
 
-  // Convert UI meal types to backend format - memoized to prevent unnecessary re-renders
-  const convertToBackendMealTypes = useCallback((uiMealTypes: string[]) => {
-    return uiMealTypes.map((type) => {
-      switch (type) {
-        case "breakfast":
-          return "BREAKFAST"
-        case "lunch":
-          return "LUNCH"
-        case "dinner":
-          return "DINNER"
-        default:
-          return type.toUpperCase()
-      }
-    })
-  }, [])
-
   // Save meal updates - memoized to prevent unnecessary re-renders
   const saveMealUpdates = useCallback(async () => {
     if (selectedPerson !== null && selectedDay !== null) {
@@ -431,12 +427,38 @@ export default function MealReport() {
         }
 
         // Convert UI meal types to backend format
-        const backendMealTypes = convertToBackendMealTypes(tempMealTypes)
+        const backendMealTypes = tempMealTypes.map((type) => {
+          switch (type) {
+            case "breakfast":
+              return "BREAKFAST"
+            case "lunch":
+              return "LUNCH"
+            case "dinner":
+              return "DINNER"
+            default:
+              return type.toUpperCase()
+          }
+        })
+
+        // Ensure at least one meal type is selected
+        if (backendMealTypes.length === 0) {
+          setSnackbar({
+            open: true,
+            message: "At least one meal type is required",
+            severity: "error",
+          })
+          return
+        }
+
+        // Get the date for the selected day
+        const selectedDate = getDateFromDay(selectedDay, month, year)
 
         // Prepare update data
         const updateData = {
           id: reportId,
           data: {
+            // Include the date field required by the backend validation
+            date: selectedDate,
             // We need to update either students or teachers array based on person type
             [person.type === "student" ? "students" : "teachers"]: [
               {
@@ -451,7 +473,12 @@ export default function MealReport() {
         // Call the update API
         const result = await updateMealReport(updateData).unwrap()
 
-        // Update local state
+        // Validate the API response
+        if (!result || !result.success) {
+          throw new Error(result?.message || "Failed to update meal")
+        }
+
+        // Update local state with the selected meal types
         setMealData((prev) => ({
           ...prev,
           [selectedPerson]: {
@@ -476,21 +503,12 @@ export default function MealReport() {
         console.error("Error updating meal:", error)
         setSnackbar({
           open: true,
-          message: "Failed to update meal. Please try again.",
+          message: error instanceof Error ? error.message : "Failed to update meal. Please try again.",
           severity: "error",
         })
       }
     }
-  }, [
-    selectedPerson,
-    selectedDay,
-    reportIdMap,
-    combinedPersons,
-    tempMealTypes,
-    convertToBackendMealTypes,
-    updateMealReport,
-    refetch,
-  ])
+  }, [selectedPerson, selectedDay, reportIdMap, combinedPersons, tempMealTypes, updateMealReport, refetch, month, year])
 
   // Open delete confirmation dialog - memoized to prevent unnecessary re-renders
   const openDeleteDialog = useCallback((reportId: string) => {
@@ -1220,23 +1238,10 @@ export default function MealReport() {
                             {Object.keys(reportIdMap).length > 0 && (
                               <Tooltip title="Edit Report">
                                 <IconButton
+                                  component={Link}
+                                  href={`/dashboard/super_admin/daily-meal-report/update?id=${person.id}`}
                                   size="small"
                                   color="primary"
-                                  onClick={() => {
-                                    // Get the first available report ID for this person
-                                    const reportDay = Object.keys(reportIdMap).find(
-                                      (day) => mealData[person.id]?.[Number(day)]?.eaten,
-                                    )
-                                    if (reportDay) {
-                                      navigateToUpdate(reportIdMap[Number(reportDay)])
-                                    } else {
-                                      setSnackbar({
-                                        open: true,
-                                        message: "No report found for this person",
-                                        severity: "error",
-                                      })
-                                    }
-                                  }}
                                   sx={{
                                     bgcolor: "rgba(33, 150, 243, 0.1)",
                                     "&:hover": { bgcolor: "rgba(33, 150, 243, 0.2)" },
