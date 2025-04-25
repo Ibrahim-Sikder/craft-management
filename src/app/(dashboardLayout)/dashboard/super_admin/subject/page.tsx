@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
@@ -52,12 +53,8 @@ import {
     AccessTime as AccessTimeIcon,
     Download as DownloadIcon,
     Print as PrintIcon,
-    Refresh as RefreshIcon,
-    Person,
-    AdminPanelSettings,
-    School,
-    SupervisorAccount,
-    Engineering,
+    Refresh as RefreshIcon,  
+    Book,
 } from "@mui/icons-material"
 import { Roboto } from "next/font/google"
 import Link from "next/link"
@@ -67,7 +64,6 @@ const roboto = Roboto({
     subsets: ["latin"],
 })
 
-// Create a custom theme with vibrant colors
 const customTheme = createTheme({
     palette: {
         primary: {
@@ -183,54 +179,47 @@ const customTheme = createTheme({
     },
 })
 
-// Define user roles with icons and colors
 const roles = [
     {
-        name: "Super Admin",
-        icon: <AdminPanelSettings fontSize="small" />,
+        name: "5",     
         color: "primary" as const
     },
     {
-        name: "Admin",
-        icon: <AdminPanelSettings fontSize="small" />,
+        name: "7",  
         color: "secondary" as const
     },
     {
-        name: "Supervisor",
-        icon: <SupervisorAccount fontSize="small" />,
+        name: "4",  
         color: "info" as const
     },
     {
-        name: "Teacher",
-        icon: <School fontSize="small" />,
+        name: "4",    
         color: "warning" as const
     },
     {
-        name: "Student",
-        icon: <Person fontSize="small" />,
+        name: "7",     
         color: "success" as const
     },
     {
-        name: "Staff",
-        icon: <Engineering fontSize="small" />,
+        name: "4",    
         color: "default" as const
     }
 ]
 
 // Sample data for users
 const generateUsersData = () => {
-    const statuses = ["Active", "Inactive", "Pending"]
+    const statuses = ["six", "five", "four", "three", "two", "one"]
     const users = [
-        { name: "Dr. Smith", email: "smith@example.com" },
-        { name: "Prof. Johnson", email: "johnson@example.com" },
-        { name: "Mrs. Williams", email: "williams@example.com" },
-        { name: "Mr. Brown", email: "brown@example.com" },
-        { name: "Ms. Davis", email: "davis@example.com" },
+        { name: "Bangla", email: "" },
+        { name: "English", email: "1st" },
+        { name: "Math", email: "" },
+        { name: "Islam", email: "" },
+        { name: "ICT", email: "" },
     ]
 
     return Array.from({ length: 20 }, (_, i) => ({
         id: i + 1,
-        code: `USER-${1000 + i}`,
+        code: `Sub-${1000 + i}`,
         user: users[i % users.length],
         role: roles[i % roles.length],
         status: statuses[i % statuses.length],
@@ -240,7 +229,7 @@ const generateUsersData = () => {
     }))
 }
 
-export default function UserManagementPage() {
+export default function Subject() {
     const [users, setUsers] = useState<any[]>([])
     const [loading, setLoading] = useState(true)
     const [page, setPage] = useState(0)
@@ -251,7 +240,6 @@ export default function UserManagementPage() {
     const [orderBy, setOrderBy] = useState<string>("name")
     const [order, setOrder] = useState<"asc" | "desc">("asc")
     const [filterAnchorEl, setFilterAnchorEl] = useState<null | HTMLElement>(null)
-    const [roleFilterAnchorEl, setRoleFilterAnchorEl] = useState<null | HTMLElement>(null)
     const [selectedUser, setSelectedUser] = useState<any | null>(null)
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
     const [refreshKey, setRefreshKey] = useState(0)
@@ -290,26 +278,15 @@ export default function UserManagementPage() {
         setFilterAnchorEl(event.currentTarget)
     }
 
-    const handleRoleFilterClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-        setRoleFilterAnchorEl(event.currentTarget)
-    }
-
     const handleFilterClose = () => {
-        setFilterAnchorEl(null)
-        setRoleFilterAnchorEl(null)
+        setFilterAnchorEl(null)        
     }
 
     const handleStatusFilterSelect = (status: string | null) => {
         setStatusFilter(status)
         setFilterAnchorEl(null)
         setPage(0)
-    }
-
-    const handleRoleFilterSelect = (role: string | null) => {
-        setRoleFilter(role)
-        setRoleFilterAnchorEl(null)
-        setPage(0)
-    }
+    }   
 
     const handleSort = (property: string) => {
         const isAsc = orderBy === property && order === "asc"
@@ -373,19 +350,19 @@ export default function UserManagementPage() {
 
     const getStatusChipProps = (status: string) => {
         switch (status) {
-            case "Active":
+            case "class 6":
                 return {
                     color: "success" as const,
                     icon: <CheckCircleIcon fontSize="small" />,
                     sx: { bgcolor: alpha(theme.palette.success.main, 0.1) },
                 }
-            case "Inactive":
+            case "class 5":
                 return {
                     color: "error" as const,
                     icon: <CancelIcon fontSize="small" />,
                     sx: { bgcolor: alpha(theme.palette.error.main, 0.1) },
                 }
-            case "Pending":
+            case "class 4":
                 return {
                     color: "warning" as const,
                     icon: <AccessTimeIcon fontSize="small" />,
@@ -421,8 +398,8 @@ export default function UserManagementPage() {
                         <Box>
                             <div className="md:flex justify-between items-center mb-3 flex-wrap gap-2 pt-2">
                                 <div className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center">
-                                    <Person sx={{ height: 40, width: 40, color: "#4285F4" }} />
-                                    User Management
+                                    <Book sx={{ height: 40, width: 40, color: "#4285F4" }} />
+                                    Subject
                                 </div>
                                 <Box sx={{ display: "flex", gap: 2 }}>
                                     <Button
@@ -438,13 +415,13 @@ export default function UserManagementPage() {
                                         color="primary"
                                         startIcon={<AddIcon />}
                                         component={Link}
-                                        href="/dashboard/super_admin/user-management/new"
+                                        href="/dashboard/super_admin/subject/new"
                                         sx={{
                                             borderRadius: 2,
                                             boxShadow: "0px 4px 10px rgba(99, 102, 241, 0.2)",
                                         }}
                                     >
-                                        Add New User
+                                        Add New Subject
                                     </Button>
                                 </Box>
                             </div>
@@ -455,7 +432,7 @@ export default function UserManagementPage() {
                                         <Grid item xs={6} md={4.5}>
                                             <TextField
                                                 fullWidth
-                                                placeholder="Search by Name, Email or ID..."
+                                                placeholder="Search by Name, Code or Class..."
                                                 variant="outlined"
                                                 value={searchTerm}
                                                 onChange={handleSearchChange}
@@ -496,7 +473,7 @@ export default function UserManagementPage() {
                                                         }),
                                                     }}
                                                 >
-                                                    {statusFilter || "Filter by Status"}
+                                                    {statusFilter || "Filter by Class"}
                                                 </Button>
                                                 <Menu
                                                     anchorEl={filterAnchorEl}
@@ -565,70 +542,7 @@ export default function UserManagementPage() {
                                                     </MenuItem>
                                                 </Menu>
 
-                                                <Button
-                                                    variant="outlined"
-                                                    color="inherit"
-                                                    startIcon={<FilterListIcon />}
-                                                    onClick={handleRoleFilterClick}
-                                                    sx={{
-                                                        borderColor: "rgba(0, 0, 0, 0.12)",
-                                                        color: "text.secondary",
-                                                        "&:hover": {
-                                                            borderColor: "primary.main",
-                                                            bgcolor: "rgba(99, 102, 241, 0.04)",
-                                                        },
-                                                        ...(roleFilter && {
-                                                            borderColor: "primary.main",
-                                                            color: "primary.main",
-                                                            bgcolor: "rgba(99, 102, 241, 0.04)",
-                                                        }),
-                                                    }}
-                                                >
-                                                    {roleFilter || "Filter by Role"}
-                                                </Button>
-                                                <Menu
-                                                    anchorEl={roleFilterAnchorEl}
-                                                    open={Boolean(roleFilterAnchorEl)}
-                                                    onClose={handleFilterClose}
-                                                    PaperProps={{
-                                                        elevation: 3,
-                                                        sx: {
-                                                            mt: 1,
-                                                            minWidth: 180,
-                                                            borderRadius: 2,
-                                                            overflow: "hidden",
-                                                        },
-                                                    }}
-                                                >
-                                                    <MenuItem
-                                                        onClick={() => handleRoleFilterSelect(null)}
-                                                        sx={{
-                                                            py: 1.5,
-                                                            ...(roleFilter === null && {
-                                                                bgcolor: "rgba(99, 102, 241, 0.08)",
-                                                                color: "primary.main",
-                                                            }),
-                                                        }}
-                                                    >
-                                                        All Roles
-                                                    </MenuItem>
-                                                    {roles.map((role) => (
-                                                        <MenuItem
-                                                            key={role.name}
-                                                            onClick={() => handleRoleFilterSelect(role.name)}
-                                                            sx={{
-                                                                py: 1.5,
-                                                                ...(roleFilter === role.name && {
-                                                                    bgcolor: "rgba(99, 102, 241, 0.08)",
-                                                                    color: "primary.main",
-                                                                }),
-                                                            }}
-                                                        >
-                                                            {role.icon}
-                                                            <Typography sx={{ ml: 1 }}>{role.name}</Typography>
-                                                        </MenuItem>
-                                                    ))}
-                                                </Menu>
+                                               
 
                                                 {!isMobile && (
                                                     <>
@@ -702,7 +616,7 @@ export default function UserManagementPage() {
                                                                 }}
                                                                 onClick={() => handleSort("code")}
                                                             >
-                                                                User ID
+                                                                Sub Code
                                                                 {orderBy === "code" && (
                                                                     <Box component="span" sx={{ display: "inline-flex", ml: 0.5 }}>
                                                                         {order === "asc" ? (
@@ -737,7 +651,8 @@ export default function UserManagementPage() {
                                                                 )}
                                                             </Box>
                                                         </TableCell>
-                                                        <TableCell>Email</TableCell>
+                                                        <TableCell>Paper</TableCell>
+                                                        <TableCell>Total Lesson</TableCell>
                                                         <TableCell>
                                                             <Box
                                                                 sx={{
@@ -749,7 +664,7 @@ export default function UserManagementPage() {
                                                                 }}
                                                                 onClick={() => handleSort("role")}
                                                             >
-                                                                Role
+                                                                Class
                                                                 {orderBy === "role" && (
                                                                     <Box component="span" sx={{ display: "inline-flex", ml: 0.5 }}>
                                                                         {order === "asc" ? (
@@ -760,8 +675,7 @@ export default function UserManagementPage() {
                                                                     </Box>
                                                                 )}
                                                             </Box>
-                                                        </TableCell>
-                                                        <TableCell>Status</TableCell>
+                                                        </TableCell>                                                   
                                                         <TableCell align="right">Actions</TableCell>
                                                     </TableRow>
                                                 </TableHead>
