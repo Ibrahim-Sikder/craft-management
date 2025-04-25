@@ -3,7 +3,7 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState } from "react"
 import {
   Box,
   Container,
@@ -36,7 +36,7 @@ import {
   Skeleton,
   Fade,
   alpha,
-  createTheme,
+
   ThemeProvider,
 } from "@mui/material"
 import {
@@ -47,11 +47,6 @@ import {
   Edit as EditIcon,
   Delete as DeleteIcon,
   Visibility as VisibilityIcon,
-  // School as SchoolIcon,
-  // Dashboard as DashboardIcon,
-  // AccountTree as BranchIcon,
-  // Home as HomeIcon,
-  // Notifications as NotificationsIcon,
   ArrowUpward as ArrowUpwardIcon,
   ArrowDownward as ArrowDownwardIcon,
   CheckCircle as CheckCircleIcon,
@@ -60,169 +55,18 @@ import {
   Download as DownloadIcon,
   Print as PrintIcon,
   Refresh as RefreshIcon,
+  Person as PersonIcon,
+  Book as BookIcon,
+  School as SchoolIcon,
 } from "@mui/icons-material"
-import { Roboto } from "next/font/google"
 import Link from "next/link"
+import { useGetAllClassesQuery } from "@/redux/api/classApi"
+import { theme } from "@/lib/Theme/Theme"
 
-const roboto = Roboto({
-  weight: ["300", "400", "500", "700"],
-  subsets: ["latin"],
-})
 
-// Create a custom theme with vibrant colors
-const customTheme = createTheme({
-  palette: {
-    primary: {
-      main: "#6366f1",
-      light: "#818cf8",
-      dark: "#4f46e5",
-    },
-    secondary: {
-      main: "#ec4899",
-      light: "#f472b6",
-      dark: "#db2777",
-    },
-    background: {
-      default: "#f9fafb",
-      paper: "#ffffff",
-    },
-    success: {
-      main: "#10b981",
-      light: "#34d399",
-      dark: "#059669",
-    },
-    warning: {
-      main: "#f59e0b",
-      light: "#fbbf24",
-      dark: "#d97706",
-    },
-    error: {
-      main: "#ef4444",
-      light: "#f87171",
-      dark: "#dc2626",
-    },
-    info: {
-      main: "#3b82f6",
-      light: "#60a5fa",
-      dark: "#2563eb",
-    },
-  },
-  typography: {
-    fontFamily: roboto.style.fontFamily,
-    h4: {
-      fontWeight: 600,
-    },
-    h6: {
-      fontWeight: 500,
-    },
-  },
-  shape: {
-    borderRadius: 12,
-  },
-  components: {
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          textTransform: "none",
-          borderRadius: 8,
-          padding: "10px 20px",
-          boxShadow: "none",
-          "&:hover": {
-            boxShadow: "0px 4px 8px rgba(99, 102, 241, 0.2)",
-          },
-        },
-      },
-    },
-    MuiPaper: {
-      styleOverrides: {
-        root: {
-          borderRadius: 12,
-          boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.05)",
-        },
-      },
-    },
-    MuiCard: {
-      styleOverrides: {
-        root: {
-          borderRadius: 12,
-          boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.05)",
-          overflow: "visible",
-        },
-      },
-    },
-    MuiTableCell: {
-      styleOverrides: {
-        root: {
-          borderBottom: "1px solid rgba(0, 0, 0, 0.06)",
-          padding: "16px",
-        },
-        head: {
-          fontWeight: 600,
-          backgroundColor: "rgba(99, 102, 241, 0.04)",
-          color: "#6366f1",
-        },
-      },
-    },
-    MuiTableRow: {
-      styleOverrides: {
-        root: {
-          "&:hover": {
-            backgroundColor: "rgba(99, 102, 241, 0.04)",
-          },
-          "&:last-child td": {
-            borderBottom: 0,
-          },
-        },
-      },
-    },
-    MuiChip: {
-      styleOverrides: {
-        root: {
-          fontWeight: 500,
-        },
-      },
-    },
-  },
-})
 
-// Sample data for classes
-const generateClassesData = () => {
-  const statuses = ["Active", "Inactive", "Pending"]
-  const subjects = [
-    "Mathematics",
-    "Science",
-    "English",
-    "History",
-    "Computer Science",
-    "Physics",
-    "Chemistry",
-    "Biology",
-    "Art",
-    "Music",
-  ]
-  const teachers = [
-    { name: "Dr. Smith", avatar: "S" },
-    { name: "Prof. Johnson", avatar: "J" },
-    { name: "Mrs. Williams", avatar: "W" },
-    { name: "Mr. Brown", avatar: "B" },
-    { name: "Ms. Davis", avatar: "D" },
-  ]
-
-  return Array.from({ length: 50 }, (_, i) => ({
-    id: i + 1,
-    name: `${subjects[Math.floor(Math.random() * subjects.length)]} ${Math.floor(Math.random() * 12) + 1}`,
-    code: `CLS-${Math.floor(1000 + Math.random() * 9000)}`,
-    students: Math.floor(Math.random() * 40) + 10,
-    teacher: teachers[Math.floor(Math.random() * teachers.length)],
-    status: statuses[Math.floor(Math.random() * statuses.length)],
-    createdAt: new Date(Date.now() - Math.floor(Math.random() * 10000000000)),
-    lastUpdated: new Date(Date.now() - Math.floor(Math.random() * 1000000000)),
-  }))
-}
 
 export default function ClassesListPage() {
-  const [classes, setClasses] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(10)
   const [searchTerm, setSearchTerm] = useState("")
@@ -233,23 +77,22 @@ export default function ClassesListPage() {
   const [filterAnchorEl, setFilterAnchorEl] = useState<null | HTMLElement>(null)
   const [selectedClass, setSelectedClass] = useState<any | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [refreshKey, setRefreshKey] = useState(0)
 
-  const theme = customTheme
+  const {
+    data: classData,
+    isLoading,
+    refetch,
+  } = useGetAllClassesQuery({
+    limit: rowsPerPage,
+    page: page + 1,
+    searchTerm: searchTerm,
+  })
+
+
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"))
 
-
-  useEffect(() => {
-    setLoading(true)
-    // Simulate API call
-    setTimeout(() => {
-      setClasses(generateClassesData())
-      setLoading(false)
-    }, 1000)
-  }, [refreshKey])
-
   const handleRefresh = () => {
-    setRefreshKey((prev) => prev + 1)
+    refetch()
   }
 
   const handleChangePage = (event: unknown, newPage: number) => {
@@ -301,7 +144,7 @@ export default function ClassesListPage() {
   }
 
   const handleDeleteConfirm = () => {
-    setClasses(classes.filter((c) => c.id !== selectedClass?.id))
+    // Implement actual delete logic here
     setDeleteDialogOpen(false)
     setSelectedClass(null)
   }
@@ -310,85 +153,29 @@ export default function ClassesListPage() {
     setDeleteDialogOpen(false)
   }
 
+  // Get the classes from the API response
+  const classes = classData?.data?.classes || []
 
-  const filteredClasses = classes
-    .filter(
-      (classItem) =>
-        (searchTerm === "" ||
-          classItem.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          classItem.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          classItem.teacher.name.toLowerCase().includes(searchTerm.toLowerCase())) &&
-        (statusFilter === null || classItem.status === statusFilter),
-    )
-    .sort((a, b) => {
-      const aValue = a[orderBy]
-      const bValue = b[orderBy]
-
-      if (orderBy === "teacher") {
-        return order === "asc"
-          ? a.teacher.name.localeCompare(b.teacher.name)
-          : b.teacher.name.localeCompare(a.teacher.name)
-      }
-
-      if (typeof aValue === "string" && typeof bValue === "string") {
-        return order === "asc" ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue)
-      }
-
-      if (aValue instanceof Date && bValue instanceof Date) {
-        return order === "asc" ? aValue.getTime() - bValue.getTime() : bValue.getTime() - aValue.getTime()
-      }
-
-      return order === "asc" ? aValue - bValue : bValue - aValue
-    })
+  // Get the total count from the API response
+  const totalCount = classData?.data?.meta?.total || 0
 
 
-  const paginatedClasses = filteredClasses.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-
-
-  const getStatusChipProps = (status: string) => {
-    switch (status) {
-      case "Active":
-        return {
-          color: "success" as const,
-          icon: <CheckCircleIcon fontSize="small" />,
-          sx: { bgcolor: alpha(theme.palette.success.main, 0.1) },
-        }
-      case "Inactive":
-        return {
-          color: "error" as const,
-          icon: <CancelIcon fontSize="small" />,
-          sx: { bgcolor: alpha(theme.palette.error.main, 0.1) },
-        }
-      case "Pending":
-        return {
-          color: "warning" as const,
-          icon: <AccessTimeIcon fontSize="small" />,
-          sx: { bgcolor: alpha(theme.palette.warning.main, 0.1) },
-        }
-      default:
-        return {
-          color: "default" as const,
-          icon: undefined,
-          sx: {},
-        }
-    }
-  }
 
   return (
     <ThemeProvider theme={theme}>
-      <Box sx={{ flexGrow: 1, bgcolor: "background.default", minHeight: "100vh", borderRadius:2 }}>
-        <Container maxWidth="xl" sx={{ mt: 0, mb: 8, borderRadius:2 }}>
+      <Box sx={{ flexGrow: 1, bgcolor: "background.default", minHeight: "100vh", borderRadius: 2 }}>
+        <Container maxWidth="xl" sx={{ mt: 0, mb: 8, borderRadius: 2 }}>
           <Fade in={true} timeout={800}>
             <Box>
               <Box
                 sx={{
                   display: "flex",
                   justifyContent: "space-between",
-                  alignItems: "center",               
+                  alignItems: "center",
                   mb: 3,
                   flexWrap: "wrap",
                   gap: 2,
-                  paddingTop:2 
+                  paddingTop: 2,
                 }}
               >
                 <Typography variant="h4" component="h1" sx={{ fontWeight: 700, color: "text.primary" }}>
@@ -574,7 +361,7 @@ export default function ClassesListPage() {
                   </Grid>
                 </Box>
 
-                {loading ? (
+                {isLoading ? (
                   <Box sx={{ p: 2 }}>
                     {Array.from(new Array(5)).map((_, index) => (
                       <Box key={index} sx={{ display: "flex", py: 2, px: 2, alignItems: "center" }}>
@@ -603,12 +390,12 @@ export default function ClassesListPage() {
                                   alignItems: "center",
                                   cursor: "pointer",
                                   userSelect: "none",
-                                  color: orderBy === "name" ? "primary.main" : "inherit",
+                                  color: orderBy === "className" ? "primary.main" : "inherit",
                                 }}
-                                onClick={() => handleSort("name")}
+                                onClick={() => handleSort("className")}
                               >
                                 Class Name
-                                {orderBy === "name" && (
+                                {orderBy === "className" && (
                                   <Box component="span" sx={{ display: "inline-flex", ml: 0.5 }}>
                                     {order === "asc" ? (
                                       <ArrowUpwardIcon fontSize="small" />
@@ -626,20 +413,9 @@ export default function ClassesListPage() {
                                   alignItems: "center",
                                   cursor: "pointer",
                                   userSelect: "none",
-                                  color: orderBy === "code" ? "primary.main" : "inherit",
                                 }}
-                                onClick={() => handleSort("code")}
                               >
-                                Code
-                                {orderBy === "code" && (
-                                  <Box component="span" sx={{ display: "inline-flex", ml: 0.5 }}>
-                                    {order === "asc" ? (
-                                      <ArrowUpwardIcon fontSize="small" />
-                                    ) : (
-                                      <ArrowDownwardIcon fontSize="small" />
-                                    )}
-                                  </Box>
-                                )}
+                                Description
                               </Box>
                             </TableCell>
                             <TableCell>
@@ -649,20 +425,9 @@ export default function ClassesListPage() {
                                   alignItems: "center",
                                   cursor: "pointer",
                                   userSelect: "none",
-                                  color: orderBy === "teacher" ? "primary.main" : "inherit",
                                 }}
-                                onClick={() => handleSort("teacher")}
                               >
                                 Teacher
-                                {orderBy === "teacher" && (
-                                  <Box component="span" sx={{ display: "inline-flex", ml: 0.5 }}>
-                                    {order === "asc" ? (
-                                      <ArrowUpwardIcon fontSize="small" />
-                                    ) : (
-                                      <ArrowDownwardIcon fontSize="small" />
-                                    )}
-                                  </Box>
-                                )}
                               </Box>
                             </TableCell>
                             <TableCell>
@@ -672,20 +437,9 @@ export default function ClassesListPage() {
                                   alignItems: "center",
                                   cursor: "pointer",
                                   userSelect: "none",
-                                  color: orderBy === "students" ? "primary.main" : "inherit",
                                 }}
-                                onClick={() => handleSort("students")}
                               >
                                 Students
-                                {orderBy === "students" && (
-                                  <Box component="span" sx={{ display: "inline-flex", ml: 0.5 }}>
-                                    {order === "asc" ? (
-                                      <ArrowUpwardIcon fontSize="small" />
-                                    ) : (
-                                      <ArrowDownwardIcon fontSize="small" />
-                                    )}
-                                  </Box>
-                                )}
                               </Box>
                             </TableCell>
                             <TableCell>
@@ -695,20 +449,9 @@ export default function ClassesListPage() {
                                   alignItems: "center",
                                   cursor: "pointer",
                                   userSelect: "none",
-                                  color: orderBy === "status" ? "primary.main" : "inherit",
                                 }}
-                                onClick={() => handleSort("status")}
                               >
-                                Status
-                                {orderBy === "status" && (
-                                  <Box component="span" sx={{ display: "inline-flex", ml: 0.5 }}>
-                                    {order === "asc" ? (
-                                      <ArrowUpwardIcon fontSize="small" />
-                                    ) : (
-                                      <ArrowDownwardIcon fontSize="small" />
-                                    )}
-                                  </Box>
-                                )}
+                                Subjects
                               </Box>
                             </TableCell>
                             <TableCell>
@@ -738,27 +481,42 @@ export default function ClassesListPage() {
                           </TableRow>
                         </TableHead>
                         <TableBody>
-                          {paginatedClasses.length > 0 ? (
-                            paginatedClasses.map((classItem) => {
-                              const statusChipProps = getStatusChipProps(classItem.status)
+                          {classes.length > 0 ? (
+                            classes.map((classItem: any) => {
+                              // Get the teacher name from the teachers array
+                              const teacherName =
+                                classItem.teachers && classItem.teachers.length > 0
+                                  ? classItem.teachers[0].name
+                                  : "No Teacher"
+
+                              // Get the number of students
+                              const studentCount = classItem.students ? classItem.students.length : 0
+
+                              // Get the number of subjects
+                              const subjectCount = classItem.subjects ? classItem.subjects.length : 0
+
+                              // Format the date
+                              const createdDate = new Date(classItem.createdAt).toLocaleDateString()
 
                               return (
-                                <TableRow key={classItem.id} sx={{ transition: "all 0.2s" }}>
+                                <TableRow key={classItem._id} sx={{ transition: "all 0.2s" }}>
                                   <TableCell component="th" scope="row">
                                     <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                                      {classItem.name}
+                                      {classItem.className}
                                     </Typography>
                                   </TableCell>
                                   <TableCell>
-                                    <Chip
-                                      label={classItem.code}
-                                      size="small"
+                                    <Typography
+                                      variant="body2"
                                       sx={{
-                                        bgcolor: "rgba(99, 102, 241, 0.08)",
-                                        color: "primary.main",
-                                        fontWeight: 500,
+                                        maxWidth: 200,
+                                        overflow: "hidden",
+                                        textOverflow: "ellipsis",
+                                        whiteSpace: "nowrap",
                                       }}
-                                    />
+                                    >
+                                      {classItem.description || "No description"}
+                                    </Typography>
                                   </TableCell>
                                   <TableCell>
                                     <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -771,29 +529,36 @@ export default function ClassesListPage() {
                                           fontSize: "0.875rem",
                                         }}
                                       >
-                                        {classItem.teacher.avatar}
+                                        <PersonIcon fontSize="small" />
                                       </Avatar>
-                                      <Typography variant="body2">{classItem.teacher.name}</Typography>
+                                      <Typography variant="body2">{teacherName}</Typography>
                                     </Box>
                                   </TableCell>
                                   <TableCell>
-                                    <Typography variant="body2">{classItem.students}</Typography>
+                                    <Chip
+                                      icon={<SchoolIcon fontSize="small" />}
+                                      label={`${studentCount} student${studentCount !== 1 ? "s" : ""}`}
+                                      size="small"
+                                      sx={{
+                                        bgcolor: alpha(theme.palette.info.main, 0.1),
+                                        color: "info.main",
+                                      }}
+                                    />
                                   </TableCell>
                                   <TableCell>
                                     <Chip
-                                      icon={statusChipProps.icon}
-                                      label={classItem.status}
-                                      color={statusChipProps.color}
+                                      icon={<BookIcon fontSize="small" />}
+                                      label={`${subjectCount} subject${subjectCount !== 1 ? "s" : ""}`}
                                       size="small"
                                       sx={{
-                                        ...statusChipProps.sx,
-                                        fontWeight: 500,
+                                        bgcolor: alpha(theme.palette.secondary.main, 0.1),
+                                        color: "secondary.main",
                                       }}
                                     />
                                   </TableCell>
                                   <TableCell>
                                     <Typography variant="body2" color="text.secondary">
-                                      {classItem.createdAt.toLocaleDateString()}
+                                      {createdDate}
                                     </Typography>
                                   </TableCell>
                                   <TableCell align="right">
@@ -817,6 +582,8 @@ export default function ClassesListPage() {
                                           </Tooltip>
                                           <Tooltip title="Edit Class">
                                             <IconButton
+                                            component={Link} 
+                                            href={`/dashboard/super_admin/classes/class/update?id=${classItem._id}`}
                                               size="small"
                                               sx={{
                                                 color: "warning.main",
@@ -873,7 +640,7 @@ export default function ClassesListPage() {
                     <TablePagination
                       rowsPerPageOptions={[5, 10, 25, 50]}
                       component="div"
-                      count={filteredClasses.length}
+                      count={totalCount}
                       rowsPerPage={rowsPerPage}
                       page={page}
                       onPageChange={handleChangePage}
@@ -939,7 +706,8 @@ export default function ClassesListPage() {
         </DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete the class &#34;{selectedClass?.name}&#34;? This action cannot be undone.
+            Are you sure you want to delete the class &#34;{selectedClass?.className}&#34;? This action cannot be
+            undone.
           </DialogContentText>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3 }}>
@@ -959,4 +727,3 @@ export default function ClassesListPage() {
     </ThemeProvider>
   )
 }
-

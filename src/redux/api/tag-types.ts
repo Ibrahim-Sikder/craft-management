@@ -2,6 +2,9 @@ export const tagTypesList = [
   "student",
   'teacher',
   'meal-report',
+  'class',
+  'subject',
+  
   
 ] as const;
 

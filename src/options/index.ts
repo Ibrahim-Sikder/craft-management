@@ -177,4 +177,25 @@ export const teacherName = [
   
 
   export const statusOptions = ["Active", "On Leave", "Suspended", "Terminated"]
+  export const mockStudents = [
+    { id: "1", name: "Abir Rahman", roll: "101" },
+    { id: "2", name: "Nusrat Jahan", roll: "102" },
+    { id: "3", name: "Fahim Ahmed", roll: "103" },
+    { id: "4", name: "Tasnim Akter", roll: "104" },
+    { id: "5", name: "Rafid Hassan", roll: "105" },
+  ]
   
+  export const mockSubjects = [
+    { id: "1", name: "Mathematics", code: "MATH101" },
+    { id: "2", name: "Science", code: "SCI101" },
+    { id: "3", name: "English", code: "ENG101" },
+    { id: "4", name: "Bangla", code: "BAN101" },
+    { id: "5", name: "Social Studies", code: "SOC101" },
+  ]
+  
+  export const mockSections = [
+    { id: "1", name: "Section A" },
+    { id: "2", name: "Section B" },
+    { id: "3", name: "Section C" },
+    { id: "4", name: "Section D" },
+  ]
