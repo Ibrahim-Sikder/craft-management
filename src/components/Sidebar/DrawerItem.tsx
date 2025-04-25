@@ -105,6 +105,7 @@ import {
   Folder,
   Image as Photos,
   Logout,
+  Book,
 } from "@mui/icons-material"
 import { ColorfulIcon } from "./ColorfulIcon"
 import { NavigationItem } from "@/types/common"
@@ -859,6 +860,7 @@ export const navigationItems: NavigationItem[] = [
       },
     ],
   },
+  
   {
     title: "Attendance",
     icon: (
@@ -1604,6 +1606,16 @@ export const navigationItems: NavigationItem[] = [
         roles: ["super_admin", "admin", "teacher", "student"],
       },
     ],
+  },
+  {
+    title: "Subject",
+    path: "/dashboard/super_admin/subject",
+    icon: (
+      <ColorfulIcon color="#0F9D58">
+        <Book />
+      </ColorfulIcon>
+    ),
+    roles: ["super_admin", "admin"],
   },
   {
     title: "User Management",

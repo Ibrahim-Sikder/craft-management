@@ -54,29 +54,29 @@ import {
 import { useRouter } from "next/navigation"
 
 // Custom gradient background component
-const GradientBackground = ({ children, startColor, endColor, direction = "to right" }: any) => {
-  return (
-    <Box
-      sx={{
-        background: `linear-gradient(${direction}, ${startColor}, ${endColor})`,
-        borderRadius: 2,
-        height: "100%",
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "space-between",
-        overflow: "hidden",
-        position: "relative",
-        transition: "all 0.3s ease",
-        "&:hover": {
-          transform: "translateY(-5px)",
-          boxShadow: "0 10px 20px rgba(0,0,0,0.1)",
-        },
-      }}
-    >
-      {children}
-    </Box>
-  )
-}
+// const GradientBackground = ({ children, startColor, endColor, direction = "to right" }: any) => {
+//   return (
+//     <Box
+//       sx={{
+//         background: `linear-gradient(${direction}, ${startColor}, ${endColor})`,
+//         borderRadius: 2,
+//         height: "100%",
+//         display: "flex",
+//         flexDirection: "column",
+//         justifyContent: "space-between",
+//         overflow: "hidden",
+//         position: "relative",
+//         transition: "all 0.3s ease",
+//         "&:hover": {
+//           transform: "translateY(-5px)",
+//           boxShadow: "0 10px 20px rgba(0,0,0,0.1)",
+//         },
+//       }}
+//     >
+//       {children}
+//     </Box>
+//   )
+// }
 
 // Animated stat card component
 const StatCard = ({ icon, title, value, trend, trendValue, color }: any) => {
@@ -337,14 +337,7 @@ const DashboardHome = () => {
     },
   ]
 
-  // Handle menu open/close
-  // const handleMenuOpen = (event:any) => {
-  //   setAnchorEl(event.currentTarget)
-  // }
 
-  // const handleMenuClose = () => {
-  //   setAnchorEl(null)
-  // }
 
   // Handle profile menu open/close
   const handleProfileMenuOpen = (event: any) => {
@@ -371,40 +364,25 @@ const DashboardHome = () => {
   return (
     <Box
       sx={{
-        // height: "100vh",        
-        // overflow: "auto",
-        background: `linear-gradient(135deg, ${alpha(theme.palette.primary.light, 0.05)} 0%, ${alpha(theme.palette.background.default, 0.8)} 100%)`,
+        background: `linear-gradient(135deg, ${alpha(theme.palette.primary.light, 0.2)} 0%, ${alpha(theme.palette.background.default, 0.7)} 100%)`,
         borderRadius: 6,
-        p: { xs: 2, sm: 3 },
+        p: { xs: 1, sm: 3 },
       }}
+
     >
       {/* Header */}
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          mb: 4,
-          flexDirection: { xs: "column", sm: "row" },
-          gap: { xs: 2, sm: 0 },
-        }}
-      >
-        <Box>
-          <Typography variant="h4" fontWeight="bold" sx={{ mb: 0.5 }} color="#4F0187">
+      <div className="md:flex justify-between items-center mb-4 gap-2">
+        <div>
+          <h1 className="text-center md:text-left md:mb-2 text-[#4F0187] font-[1000] text-4xl md:text-5xl">
             Craft Dashboard
-          </Typography>
-          <Typography variant="body1" color="#9AA6B2">
-            {currentDate}
-          </Typography>
+          </h1>
 
-          {/* <Typography variant="body1" color="gray"> */}
-          {/* <div className="text-white">
+          <h3 className="text-center md:text-left text-[#9AA6B2] md:font-medium mb-2">
             {currentDate}
-            </div> */}
-          {/* </Typography> */}
-        </Box>
+          </h3>
+        </div>
 
-        <Box sx={{ display: "flex", gap: 1 }}>
+        <div className="flex gap-1">
           <Grid item xs={12} md={6}>
             <TextField
               fullWidth
@@ -428,27 +406,10 @@ const DashboardHome = () => {
               }}
             />
           </Grid>
-          {/* <Paper
-            elevation={0}
-            sx={{
-              width:400,
-              display: { xs: "none", md: "flex" },
-              alignItems: "center",
-              px: 2,
-              py: 1,
-              borderRadius: 3,
-              border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-            }}
-          >
-            <Search sx={{ color: "text.secondary", mr: 1 }} />
-            <Typography variant="body2" color="text.secondary">
-              Search...
-            </Typography>
-          </Paper> */}
 
           <IconButton
             sx={{
-              px: 2,
+              px: { xs: 1, md: 2 },
               borderRadius: 3,
               bgcolor: alpha(theme.palette.primary.main, 0.1),
               color: theme.palette.primary.main,
@@ -468,7 +429,7 @@ const DashboardHome = () => {
               display: "flex",
               alignItems: "center",
               gap: 1,
-              px: 2,
+              px: { xs: 1, sm: 2 },
               py: 1,
               borderRadius: 3,
               bgcolor: alpha(theme.palette.primary.main, 0.1),
@@ -521,8 +482,8 @@ const DashboardHome = () => {
               <Logout fontSize="small" sx={{ mr: 1 }} /> Logout
             </MenuItem>
           </Menu>
-        </Box>
-      </Box>
+        </div>
+      </div>
 
       {/* Stats Overview */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
@@ -569,217 +530,207 @@ const DashboardHome = () => {
       </Grid>
 
       {/* Attendance & SMS Overview */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} md={8}>
-          <Card
-            elevation={0}
-            sx={{
-              borderRadius: 3,
-              height: "100%",
-              border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-              background: alpha(theme.palette.background.paper, 0.8),
-              backdropFilter: "blur(10px)",
-            }}
-          >
-            <CardContent>
-              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-                <Typography variant="h6" fontWeight="bold">
-                  Today&apos;s Attendance
-                </Typography>
-                <IconButton size="small">
-                  <MoreVert fontSize="small" />
-                </IconButton>
-              </Box>
+      <div className="grid grid-cols-12 gap-2 space-y-2">
 
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
-                  <Box sx={{ mb: 3 }}>
-                    <Typography variant="subtitle2" fontWeight="medium" sx={{ mb: 2 }}>
-                      Student Attendance
-                    </Typography>
-                    <AttendanceProgress
-                      title="Present"
-                      present={stats.attendance.students.present}
-                      total={stats.attendance.students.total}
-                      color={theme.palette.success.main}
-                    />
-                    <AttendanceProgress
-                      title="Absent"
-                      present={stats.attendance.students.total - stats.attendance.students.present}
-                      total={stats.attendance.students.total}
-                      color={theme.palette.error.main}
-                    />
-                  </Box>
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <Box>
-                    <Typography variant="subtitle2" fontWeight="medium" sx={{ mb: 2 }}>
-                      Teacher Attendance
-                    </Typography>
-                    <AttendanceProgress
-                      title="Present"
-                      present={stats.attendance.teachers.present}
-                      total={stats.attendance.teachers.total}
-                      color={theme.palette.success.main}
-                    />
-                    <AttendanceProgress
-                      title="Absent"
-                      present={stats.attendance.teachers.total - stats.attendance.teachers.present}
-                      total={stats.attendance.teachers.total}
-                      color={theme.palette.error.main}
-                    />
-                  </Box>
-                </Grid>
-              </Grid>
+        <div className="lg:col-span-8 col-span-full rounded-lg h-full border border-[rgba(0,0,0,0.1)] bg-white/80 backdrop-blur text-black"
+        >
+          <div className="p-2 md:p-6">
+            {/* Header */}
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-lg font-bold">Today&apos;s Attendance</h2>
+              <button className="p-1 rounded hover:bg-gray-100">
+                <MoreVert fontSize="small" />
+              </button>
+            </div>
 
-              <Divider sx={{ my: 3 }} />
+            {/* Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Student Attendance */}
+              <div className="mb-6">
+                <h3 className="text-sm font-medium mb-2">Student Attendance</h3>
+                <AttendanceProgress
+                  title="Present"
+                  present={stats.attendance.students.present}
+                  total={stats.attendance.students.total}
+                  color={theme.palette.success.main}
+                />
+                <AttendanceProgress
+                  title="Absent"
+                  present={stats.attendance.students.total - stats.attendance.students.present}
+                  total={stats.attendance.students.total}
+                  color={theme.palette.error.main}
+                />
+              </div>
 
-              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <Box sx={{ display: "flex", alignItems: "center" }}>
-                  <Avatar
-                    sx={{ bgcolor: alpha(theme.palette.success.main, 0.1), color: theme.palette.success.main, mr: 1.5 }}
+              {/* Teacher Attendance */}
+              <div>
+                <h3 className="text-sm font-medium mb-2">Teacher Attendance</h3>
+                <AttendanceProgress
+                  title="Present"
+                  present={stats.attendance.teachers.present}
+                  total={stats.attendance.teachers.total}
+                  color={theme.palette.success.main}
+                />
+                <AttendanceProgress
+                  title="Absent"
+                  present={stats.attendance.teachers.total - stats.attendance.teachers.present}
+                  total={stats.attendance.teachers.total}
+                  color={theme.palette.error.main}
+                />
+              </div>
+            </div>
+
+            {/* Divider */}
+            <hr className="my-6" />
+
+            {/* Summary Footer */}
+            <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+              <div className="flex justify-between items-center gap-2 md:gap-4">
+                {/* Present Today */}
+                <div className="flex items-center">
+                  <div
+                    className="mr-2 md:mr-4 flex items-center justify-center w-9 md:w-10 h-9 md:h-10 rounded-full"
+                    style={{
+                      backgroundColor: alpha(theme.palette.success.main, 0.1),
+                      color: theme.palette.success.main,
+                    }}
                   >
                     <Person />
-                  </Avatar>
-                  <Box>
-                    <Typography variant="body2" color="text.secondary">
-                      Present Today
-                    </Typography>
-                    <Typography variant="h6" fontWeight="bold">
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Present Today</p>
+                    <p className="text-lg font-bold">
                       {stats.attendance.students.present + stats.attendance.teachers.present}
-                    </Typography>
-                  </Box>
-                </Box>
+                    </p>
+                  </div>
+                </div>
 
-                <Box sx={{ display: "flex", alignItems: "center" }}>
-                  <Avatar
-                    sx={{ bgcolor: alpha(theme.palette.error.main, 0.1), color: theme.palette.error.main, mr: 1.5 }}
+                {/* Absent Today */}
+                <div className="flex items-center">
+                  <div
+                    className="mr-2 md:mr-4 flex items-center justify-center w-9 md:w-10 h-9 md:h-10 rounded-full"
+                    style={{
+                      backgroundColor: alpha(theme.palette.error.main, 0.1),
+                      color: theme.palette.error.main,
+                    }}
                   >
                     <PersonOff />
-                  </Avatar>
-                  <Box>
-                    <Typography variant="body2" color="text.secondary">
-                      Absent Today
-                    </Typography>
-                    <Typography variant="h6" fontWeight="bold">
+                  </div>
+                  <div>
+                    <p className="text-sm text-gray-500">Absent Today</p>
+                    <p className="text-lg font-bold">
                       {stats.attendance.students.total -
                         stats.attendance.students.present +
                         (stats.attendance.teachers.total - stats.attendance.teachers.present)}
-                    </Typography>
-                  </Box>
-                </Box>
+                    </p>
+                  </div>
+                </div>
+              </div>
 
-                <Button
-                  variant="contained"
-                  color="primary"
-                  sx={{
-                    borderRadius: 2,
-                    textTransform: "none",
-                    px: 3,
-                  }}
-                  onClick={() => navigateToModule("/attendance")}
-                >
-                  View Details
-                </Button>
-              </Box>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} md={4}>
-          <Card
-            elevation={0}
-            sx={{
-              borderRadius: 3,
-              height: "100%",
-              border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-              background: alpha(theme.palette.background.paper, 0.8),
-              backdropFilter: "blur(10px)",
-            }}
-          >
-            <CardContent>
-              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-                <Typography variant="h6" fontWeight="bold">
-                  SMS Overview
-                </Typography>
-                <IconButton size="small">
-                  <MoreVert fontSize="small" />
-                </IconButton>
-              </Box>
-
-              <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-                <Box sx={{ display: "flex", alignItems: "center" }}>
-                  <Avatar
-                    sx={{ bgcolor: alpha(theme.palette.primary.main, 0.1), color: theme.palette.primary.main, mr: 2 }}
-                  >
-                    <Sms />
-                  </Avatar>
-                  <Box>
-                    <Typography variant="body2" color="text.secondary">
-                      SMS Balance
-                    </Typography>
-                    <Typography variant="h5" fontWeight="bold">
-                      {stats.smsBalance}
-                    </Typography>
-                  </Box>
-                </Box>
-
-                <Box sx={{ display: "flex", alignItems: "center" }}>
-                  <Avatar
-                    sx={{ bgcolor: alpha(theme.palette.warning.main, 0.1), color: theme.palette.warning.main, mr: 2 }}
-                  >
-                    <Sms />
-                  </Avatar>
-                  <Box>
-                    <Typography variant="body2" color="text.secondary">
-                      SMS Sent Today
-                    </Typography>
-                    <Typography variant="h5" fontWeight="bold">
-                      {stats.smsSent}
-                    </Typography>
-                  </Box>
-                </Box>
-
-                <Box sx={{ display: "flex", alignItems: "center" }}>
-                  <Avatar sx={{ bgcolor: alpha(theme.palette.info.main, 0.1), color: theme.palette.info.main, mr: 2 }}>
-                    <Language />
-                  </Avatar>
-                  <Box>
-                    <Typography variant="body2" color="text.secondary">
-                      Website Visits
-                    </Typography>
-                    <Typography variant="h5" fontWeight="bold">
-                      {stats.websiteVisits}
-                    </Typography>
-                  </Box>
-                </Box>
-              </Box>
-
-              <Divider sx={{ my: 3 }} />
-
+              {/* View Details Button */}
               <Button
                 variant="contained"
-                color="primary"
-                fullWidth
-                sx={{
-                  borderRadius: 2,
-                  textTransform: "none",
-                  py: 1.5,
-                }}
-                onClick={() => navigateToModule("/sms")}
+                sx={{ px: 2, py: 1, borderRadius: 2 }}
+                onClick={() => navigateToModule("/attendance")}
               >
-                Send New SMS
+                View Details
               </Button>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+            </div>
+          </div>
+
+
+        </div>
+
+        <div className="lg:col-span-4 col-span-full rounded-lg h-full border border-[rgba(0,0,0,0.1)] bg-white/80 backdrop-blur text-black"
+        >
+          <div className="p-6">
+            {/* Header */}
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-lg font-bold">SMS Overview</h2>
+              <button className="p-1 rounded hover:bg-gray-100">
+                <MoreVert fontSize="small" />
+              </button>
+            </div>
+
+            {/* Stats Boxes */}
+            <div className="flex flex-col gap-6">
+              {/* SMS Balance */}
+              <div className="flex items-center">
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center mr-4"
+                  style={{
+                    backgroundColor: alpha(theme.palette.primary.main, 0.1),
+                    color: theme.palette.primary.main,
+                  }}
+                >
+                  <Sms />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">SMS Balance</p>
+                  <p className="text-2xl font-bold">{stats.smsBalance}</p>
+                </div>
+              </div>
+
+              {/* SMS Sent Today */}
+              <div className="flex items-center">
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center mr-4"
+                  style={{
+                    backgroundColor: alpha(theme.palette.warning.main, 0.1),
+                    color: theme.palette.warning.main,
+                  }}
+                >
+                  <Sms />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">SMS Sent Today</p>
+                  <p className="text-2xl font-bold">{stats.smsSent}</p>
+                </div>
+              </div>
+
+              {/* Website Visits */}
+              <div className="flex items-center">
+                <div
+                  className="w-10 h-10 rounded-full flex items-center justify-center mr-4"
+                  style={{
+                    backgroundColor: alpha(theme.palette.info.main, 0.1),
+                    color: theme.palette.info.main,
+                  }}
+                >
+                  <Language />
+                </div>
+                <div>
+                  <p className="text-sm text-gray-500">Website Visits</p>
+                  <p className="text-2xl font-bold">{stats.websiteVisits}</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Divider */}
+            <hr className="my-6" />
+
+            {/* Send SMS Button */}
+            <Button
+              fullWidth
+              variant="contained"
+              sx={{ px: 2, py: 1, borderRadius: 2 }}
+              onClick={() => navigateToModule("/sms")}
+            >
+              Send New SMS
+            </Button>
+          </div>
+        </div>
+      </div>
 
       {/* Modules Grid */}
-      <Box sx={{ mb: 2 }}>
+      <div className="mb-2">
+
+      <h1 className="font-bold text-black text-2xl my-3"> Quick Access Modules</h1>
+      {/* <Box sx={{ mb: 2 }}>
+
         <Typography variant="h6" fontWeight="bold" sx={{ mb: 3 }}>
           Quick Access Modules
-        </Typography>
+        </Typography> */}
         <Grid container spacing={3}>
           {modules.map((module, index) => (
             <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
@@ -794,7 +745,9 @@ const DashboardHome = () => {
             </Grid>
           ))}
         </Grid>
-      </Box>
+      {/* </Box> */}
+
+      </div>
     </Box>
   )
 }

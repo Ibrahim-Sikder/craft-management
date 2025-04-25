@@ -130,8 +130,8 @@ const CustomSidebar: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   // Filter navigation items based on userRole
   const roleBasedItems = userRole
     ? navigationItems.filter((item) =>
-        item.roles ? item.roles.includes(userRole) : true
-      )
+      item.roles ? item.roles.includes(userRole) : true
+    )
     : [];
 
   return (
@@ -169,7 +169,7 @@ const CustomSidebar: React.FC<{ children: React.ReactNode }> = ({ children }) =>
           <IconButton onClick={handleProfileMenuOpen} color="inherit"><Avatar /></IconButton>
         </Toolbar>
       </AppBar>
-
+      {/* profile menu */}
       <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleProfileMenuClose}>
         <MenuItem onClick={handleProfileMenuClose}><Person /> Profile</MenuItem>
         <MenuItem onClick={handleProfileMenuClose}><Settings /> Settings</MenuItem>
@@ -177,6 +177,7 @@ const CustomSidebar: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         <MenuItem onClick={handleProfileMenuClose}><Logout /> Logout</MenuItem>
       </Menu>
 
+      {/* drawer */}
       <Drawer
         variant={isMobile ? "temporary" : "permanent"}
         open={isMobile ? mobileOpen : open}
@@ -194,8 +195,8 @@ const CustomSidebar: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         <Toolbar />
         <List sx={{ padding: '8px' }}>{renderNavigationItems(roleBasedItems)}</List>
       </Drawer>
-
-      <Box component="main" sx={{ flexGrow: 1, p: 3, marginTop: "64px" }}>{children}</Box>
+      {/*Main content page  */}
+      <Box component="main" sx={{ flexGrow: 1, p: { xs: 1, sm: 3 }, marginTop: { xs: 7, sm: 7 }, background: "white" }}>{children}</Box>
     </Box>
   );
 };
