@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
@@ -26,9 +27,10 @@ import {
   DialogTitle,
   Skeleton,
   Fade,
-  createTheme,
   ThemeProvider,
   Checkbox,
+  Alert,
+  Snackbar,
 } from "@mui/material"
 import {
   Search as SearchIcon,
@@ -42,21 +44,21 @@ import TodayLesson from "./_components/TodayLesson"
 import TodayTask from "./_components/TodayTask"
 import CraftForm from "@/components/Forms/Form"
 import CraftDatePicker from "@/components/Forms/DatePicker"
-import CraftAutoComplete from "@/components/Forms/AutoComplete"
 import CraftSelect from "@/components/Forms/Select"
 import CraftTextArea from "@/components/Forms/TextArea"
 import { classHour, className, subjectName, teacherName } from "@/options"
 import CraftIntAutoComplete from "@/components/Forms/CruftAutocomplete"
 import CraftSelectWithSearch from "@/components/Forms/CraftSelectWithSearch "
-import { customTheme, generateStudentsData } from "@/data"
-import { getUserInfo } from "@/services/auth.services"
-import { UserRole } from "@/types"
+import { customTheme } from "@/data"
 import { getFromLocalStorage } from "@/utils/local.storage"
+import type { FieldValues } from "react-hook-form"
+import { useGetAllStudentsQuery } from "@/redux/api/studentApi"
+import toast from "react-hot-toast"
+import { useRouter } from "next/navigation"
+import { useCreateClassReportMutation } from "@/redux/api/classReportApi"
 
-
-export default function ClassesListPage() {
-  const [students, setStudents] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
+export default function DailyReport() {
+  const router = useRouter()
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(10)
   const [searchTerm, setSearchTerm] = useState("")
@@ -70,34 +72,84 @@ export default function ClassesListPage() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [selectedBrand, setSelectedBrand] = useState("")
   const [filteredSubjects, setFilteredVehicles] = useState<any[]>([])
-
   const [selectedStudent, setSelectedStudent] = useState<any | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
+  const [snackbarOpen, setSnackbarOpen] = useState(false)
+  const [snackbarMessage, setSnackbarMessage] = useState("")
+  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success")
+  const [studentEvaluations, setStudentEvaluations] = useState<any[]>([])
+  const [todayLessonId, setTodayLessonId] = useState<string | null>(null)
+  const [homeTaskId, setHomeTaskId] = useState<string | null>(null)
 
-  const [openTask, setTaskOpen] = useState(false)
-  const handleTaskOpen = () => setTaskOpen(true)
-  const handleTaskClose = () => setTaskOpen(false)
-
-  const [openLesson, setLessonOpen] = useState(false)
-  const handleLessonOpen = () => setLessonOpen(true)
-  const handleLessonClose = () => setLessonOpen(false)
-  const storedUser = getFromLocalStorage('user-info');
+  const storedUser = getFromLocalStorage("user-info")
 
   const theme = customTheme
-  // const isMobile = useMediaQuery(theme.breakpoints.down("sm"))
 
+  // Fetch students from API
+  const {
+    data: studentData,
+    isLoading,
+    refetch,
+  } = useGetAllStudentsQuery({
+    limit: rowsPerPage,
+    page: page + 1,
+    searchTerm: searchTerm,
+  })
+  const [createClassReport] = useCreateClassReportMutation()
+
+  // Get students from API response
+  const students = studentData?.data || []
+
+  // Initialize student evaluations when students data is loaded
   useEffect(() => {
-    setLoading(true)
-    // Simulate API call
-    setTimeout(() => {
-      setStudents(generateStudentsData())
-      setLoading(false)
-    }, 1000)
-  }, [refreshKey])
+    if (students.length > 0) {
+      const initialEvaluations = students.map((student: any) => ({
+        studentId: student._id,
+        lessonEvaluation: "পড়া শিখেছে",
+        handwriting: "লিখেছে",
+        attendance: "উপস্থিত",
+        parentSignature: false,
+        comments: "",
+      }))
+      setStudentEvaluations(initialEvaluations)
+    }
+  }, [students])
 
-  const handleSubmit = (data) => {
-    console.log(data)
+  const handleSubmit = async (data: FieldValues) => {
+    try {
+      // Format data according to the Mongoose model
+      const formattedData = {
+        teacherId: data.teacher,
+        classId: data.class,
+        subjectId: data.subject,
+        hour: data.hour,
+        date: data.date,
+        studentEvaluations: studentEvaluations,
+        todayLesson: todayLessonId,
+        homeTask: homeTaskId,
+      }
+
+      console.log("Submitting class report:", formattedData)
+
+      const response = await createClassReport(formattedData).unwrap()
+      console.log(response)
+      if (response.success) {
+        setSnackbarMessage("Class report saved successfully!")
+        setSnackbarSeverity("success")
+        setSnackbarOpen(true)
+        toast.success("Class report saved successfully!")
+      }
+
+      // Optionally redirect to a list page
+      // router.push("/dashboard/admin/class-reports")
+    } catch (error: any) {
+      console.error("Error saving class report:", error)
+      setSnackbarMessage(error?.data?.message || "Failed to save class report")
+      setSnackbarSeverity("error")
+      setSnackbarOpen(true)
+      toast.error("Failed to save class report")
+    }
   }
 
   const handleMenuClose = () => {
@@ -110,7 +162,6 @@ export default function ClassesListPage() {
   }
 
   const handleDeleteConfirm = () => {
-    setStudents(students.filter((s) => s.id !== selectedStudent?.id))
     setDeleteDialogOpen(false)
     setSelectedStudent(null)
   }
@@ -119,28 +170,51 @@ export default function ClassesListPage() {
     setDeleteDialogOpen(false)
   }
 
-  const handleCheckboxChange = (id: number) => {
-    setStudents(
-      students.map((student) => (student.id === id ? { ...student, dairyFillUp: !student.dairyFillUp } : student)),
+  const handleSnackbarClose = () => {
+    setSnackbarOpen(false)
+  }
+
+  // Update student evaluation fields
+  const handleLessonEvaluationChange = (studentId: string, value: string) => {
+    setStudentEvaluations(
+      studentEvaluations.map((evaluation) =>
+        evaluation.studentId === studentId ? { ...evaluation, lessonEvaluation: value } : evaluation,
+      ),
     )
   }
 
-  const handleTaskStatusChange = (id: number, value: string) => {
-    setStudents(students.map((student) => (student.id === id ? { ...student, taskStatus: value } : student)))
+  const handleHandwritingChange = (studentId: string, value: string) => {
+    setStudentEvaluations(
+      studentEvaluations.map((evaluation) =>
+        evaluation.studentId === studentId ? { ...evaluation, handwriting: value } : evaluation,
+      ),
+    )
   }
 
-  const handleHandwritingChange = (id: number, value: string) => {
-    setStudents(students.map((student) => (student.id === id ? { ...student, handwriting: value } : student)))
+  const handleAttendanceChange = (studentId: string, value: string) => {
+    setStudentEvaluations(
+      studentEvaluations.map((evaluation) =>
+        evaluation.studentId === studentId ? { ...evaluation, attendance: value } : evaluation,
+      ),
+    )
   }
 
-  const filteredStudents = students.filter(
-    (student) =>
-      (searchTerm === "" || student.name.toLowerCase().includes(searchTerm.toLowerCase())) &&
-      (filters.class === "" || student.class === filters.class) &&
-      (filters.batch === "" || student.batch === filters.batch) &&
-      (filters.teacher === "" || student.teacher === filters.teacher) &&
-      (filters.day === "" || student.day === filters.day),
-  )
+  const handleParentSignatureChange = (studentId: string, checked: boolean) => {
+    setStudentEvaluations(
+      studentEvaluations.map((evaluation) =>
+        evaluation.studentId === studentId ? { ...evaluation, parentSignature: checked } : evaluation,
+      ),
+    )
+  }
+
+  const handleCommentsChange = (studentId: string, value: string) => {
+    setStudentEvaluations(
+      studentEvaluations.map((evaluation) =>
+        evaluation.studentId === studentId ? { ...evaluation, comments: value } : evaluation,
+      ),
+    )
+  }
+
   const sortedVehicleName = subjectName.sort((a, b) => {
     if (a.value < b.value) return -1
     if (a.value > b.value) return 1
@@ -157,7 +231,19 @@ export default function ClassesListPage() {
 
     setFilteredVehicles(filtered)
   }
-  const paginatedStudents = filteredStudents.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+
+  // Get evaluation for a specific student
+  const getStudentEvaluation = (studentId: string) => {
+    return (
+      studentEvaluations.find((evaluation) => evaluation.studentId === studentId) || {
+        lessonEvaluation: "পড়া শিখেছে",
+        handwriting: "লিখেছে",
+        attendance: "উপস্থিত",
+        parentSignature: false,
+        comments: "",
+      }
+    )
+  }
 
   return (
     <>
@@ -186,37 +272,33 @@ export default function ClassesListPage() {
                         variant="contained"
                         color="primary"
                         startIcon={<Add />}
-                        onClick={handleTaskOpen}
+                      
                         sx={{
                           bgcolor: "",
                           borderRadius: 2,
                           boxShadow: "0px 4px 10px rgba(99, 102, 241, 0.2)",
                         }}
                       >
-                        {/* Add Today Task  */}
                         আজকের পাঠ
                       </Button>
                       <Button
                         variant="contained"
                         color="primary"
                         startIcon={<Add />}
-                        onClick={handleLessonOpen}
+                       
                         sx={{
                           bgcolor: "#3792de",
                           borderRadius: 2,
                           boxShadow: "0px 4px 10px rgba(99, 102, 241, 0.2)",
                         }}
                       >
-                        {/* Add Home Task  */}
                         বাড়ির কাজ
                       </Button>
                       <Button
-                      type="submit"
+                        type="submit"
                         variant="contained"
                         color="primary"
                         startIcon={<Save />}
-                        // component={Link}
-                        // href="/dashboard/super_admin/classes/report"
                         sx={{
                           bgcolor: "#4F0187",
                           borderRadius: 2,
@@ -230,66 +312,53 @@ export default function ClassesListPage() {
 
                   <Paper elevation={0} sx={{ mb: 4, overflow: "hidden" }}>
                     <Box sx={{ p: 3, borderBottom: "1px solid rgba(0, 0, 0, 0.06)" }}>
-                   
-                        <Grid container spacing={2} alignItems="center" gap={3}>
-                          <Grid container spacing={2}>
-                            {/* Teacher Name */}
-                            <Grid item xs={12} md={4}>
+                      <Grid container spacing={2} alignItems="center" gap={3}>
+                        <Grid container spacing={2}>
+                          {/* Teacher Name */}
+                          <Grid item xs={12} md={4}>
+                            <CraftSelectWithSearch
+                              name="teacher"
+                              label="শিক্ষকের নাম"
+                              placeholder="শিক্ষকের নাম লিখুন"
+                              options={teacherName}
+                            />
+                          </Grid>
 
-                              <CraftSelectWithSearch
-                                name="teacher"
-                                label="শিক্ষকের নাম"
-                                placeholder="শিক্ষকের নাম লিখুন"
-                                options={teacherName}
-                                defaultValue={storedUser?.name}
-
-                              />
-
-                            </Grid>
-
-                            <Grid item xs={12} md={2}>
-                              <CraftIntAutoComplete
-                                name="class"
-                                label="শ্রেণীর নাম লিখুন"
-                                fullWidth
-                                freeSolo
-                                multiple={false}
-                                options={className.map((option) => option.label)}
-
-
-                                onInputChange={(event, newValue) => { }}
-                                onChange={handleClassName}
-                              />
-                            </Grid>
-                            <Grid item xs={12} md={3}>
-                              <CraftIntAutoComplete
-                                name="subject"
-                                label="বিষয়ের নাম লিখুন"
-                                fullWidth
-                                freeSolo
-                                multiple={false}
-                                options={filteredSubjects.map((option) => option.value)}
-                                onInputChange={(event, newValue) => { }}
-                              />
-                            </Grid>
-                            <Grid item xs={12} md={1}>
-                              <CraftSelect
-                                name="hour"
-                                label="ঘন্টা"
-                                items={classHour}
-                                sx={{ minWidth: 100 }}
-                              />
-                            </Grid>
-                            {/* Date */}
-                            <Grid item xs={12} md={2}>
-                              <CraftDatePicker name="date" label="তারিখ" />
-                            </Grid>
+                          <Grid item xs={12} md={2}>
+                            <CraftIntAutoComplete
+                              name="class"
+                              label="শ্রেণীর নাম লিখুন"
+                              fullWidth
+                              freeSolo
+                              multiple={false}
+                              options={className.map((option) => option.label)}
+                              onInputChange={(event, newValue) => {}}
+                              onChange={handleClassName}
+                            />
+                          </Grid>
+                          <Grid item xs={12} md={3}>
+                            <CraftIntAutoComplete
+                              name="subject"
+                              label="বিষয়ের নাম লিখুন"
+                              fullWidth
+                              freeSolo
+                              multiple={false}
+                              options={filteredSubjects.map((option) => option.value)}
+                              onInputChange={(event, newValue) => {}}
+                            />
+                          </Grid>
+                          <Grid item xs={12} md={1}>
+                            <CraftSelect name="hour" label="ঘন্টা" items={classHour} sx={{ minWidth: 100 }} />
+                          </Grid>
+                          {/* Date */}
+                          <Grid item xs={12} md={2}>
+                            <CraftDatePicker name="date" label="তারিখ" />
                           </Grid>
                         </Grid>
-                      
+                      </Grid>
                     </Box>
 
-                    {loading ? (
+                    {isLoading ? (
                       <Box sx={{ p: 2 }}>
                         {Array.from(new Array(5)).map((_, index) => (
                           <Box key={index} sx={{ display: "flex", py: 2, px: 2, alignItems: "center" }}>
@@ -320,7 +389,7 @@ export default function ClassesListPage() {
                               </TableRow>
                             </TableHead>
                             <TableBody>
-                              {filteredStudents.length === 0 && (
+                              {students.length === 0 && (
                                 <TableRow>
                                   <TableCell colSpan={6} align="center" sx={{ py: 8 }}>
                                     <Box sx={{ textAlign: "center" }}>
@@ -336,55 +405,65 @@ export default function ClassesListPage() {
                                 </TableRow>
                               )}
 
-                              {paginatedStudents.length > 0 ? (
-                                paginatedStudents.map((student) => (
-                                  <TableRow key={student.id} sx={{ transition: "all 0.2s" }}>
-                                    <TableCell component="th" scope="row">
-                                      <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                                        {student.name}
-                                      </Typography>
-                                    </TableCell>
+                              {students.length > 0 ? (
+                                students.map((student: any) => {
+                                  const evaluation = getStudentEvaluation(student._id)
+                                  return (
+                                    <TableRow key={student._id} sx={{ transition: "all 0.2s" }}>
+                                      <TableCell component="th" scope="row">
+                                        <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                                          {student.name}
+                                        </Typography>
+                                        <Typography variant="caption" color="text.secondary">
+                                          {student.studentId} • {student.className} {student.section}
+                                        </Typography>
+                                      </TableCell>
 
-                                    <TableCell align="center">
-                                      <CraftSelect
-                                        name="read"
-                                        items={["পড়া শিখেছে", "আংশিক শিখেছে", "পড়া শিখেনি"]}
-                                        sx={{ minWidth: 160 }}
-                                      />
-                                    </TableCell>
-
-                                    <TableCell align="center">
-                                      <CraftForm onSubmit={handleSubmit}>
+                                      <TableCell align="center">
                                         <CraftSelect
-                                          name="handwriting"
+                                          name={`lessonEvaluation_${student._id}`}
+                                          items={["পড়া শিখেছে", "আংশিক শিখেছে", "পড়া শিখেনি"]}
+                                          onChange={(e) => handleLessonEvaluationChange(student._id, e.target.value)}
+                                          sx={{ minWidth: 160 }}
+                                        />
+                                      </TableCell>
+
+                                      <TableCell align="center">
+                                        <CraftSelect
+                                          name={`handwriting_${student._id}`}
                                           items={["লিখেছে", "আংশিক লিখেছে", "লিখেনি"]}
+                                          onChange={(e) => handleHandwritingChange(student._id, e.target.value)}
                                           sx={{ minWidth: 160 }}
                                         />
-                                      </CraftForm>
-                                    </TableCell>
-                                    <TableCell align="center">
-                                      <CraftForm onSubmit={handleSubmit}>
+                                      </TableCell>
+                                      <TableCell align="center">
                                         <CraftSelect
-                                          name="attendance"
+                                          name={`attendance_${student._id}`}
                                           items={["উপস্থিত", "অনুপস্থিত", "ছুটি"]}
+                                          onChange={(e) => handleAttendanceChange(student._id, e.target.value)}
                                           sx={{ minWidth: 160 }}
                                         />
-                                      </CraftForm>
-                                    </TableCell>
-                                    <TableCell align="center">
-                                      <Checkbox
-                                        color="primary"
-                                        checked={student.dairyFillUp}
-                                        onChange={() => handleCheckboxChange(student.id)}
-                                      />
-                                    </TableCell>
-                                    <TableCell>
-                                      <CraftForm onSubmit={handleSubmit}>
-                                        <CraftTextArea name="comments" label="মন্তব্য" placeholder="মন্তব্য" minRows={1} />
-                                      </CraftForm>
-                                    </TableCell>
-                                  </TableRow>
-                                ))
+                                      </TableCell>
+                                      <TableCell align="center">
+                                        <Checkbox
+                                          color="primary"
+                                          checked={evaluation.parentSignature}
+                                          onChange={(e) => handleParentSignatureChange(student._id, e.target.checked)}
+                                        />
+                                      </TableCell>
+                                      <TableCell>
+                                        <CraftTextArea
+                                          name={`comments_${student._id}`}
+                                          label="মন্তব্য"
+                                          placeholder="মন্তব্য"
+                                          minRows={1}
+                                          value={evaluation.comments}
+                                          onChange={(e) => handleCommentsChange(student._id, e.target.value)}
+                                        />
+                                      </TableCell>
+                                    </TableRow>
+                                  )
+                                })
                               ) : (
                                 <TableRow>
                                   <TableCell colSpan={8} align="center" sx={{ py: 8 }}>
@@ -478,10 +557,21 @@ export default function ClassesListPage() {
               </Button>
             </DialogActions>
           </Dialog>
+
+          {/* Snackbar for notifications */}
+          <Snackbar
+            open={snackbarOpen}
+            autoHideDuration={6000}
+            onClose={handleSnackbarClose}
+            anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+          >
+            <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} variant="filled" sx={{ width: "100%" }}>
+              {snackbarMessage}
+            </Alert>
+          </Snackbar>
         </CraftForm>
       </ThemeProvider>
-      {openTask && <TodayTask open={openTask} setOpen={handleTaskClose} />}
-      {openLesson && <TodayLesson open={openLesson} setOpen={handleLessonClose} />}
+     
     </>
   )
 }

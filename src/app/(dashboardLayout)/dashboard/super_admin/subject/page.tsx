@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
@@ -56,12 +57,14 @@ import {
   Class as ClassIcon,
   MenuBook as MenuBookIcon,
   Assignment as AssignmentIcon,
-  Person as PersonIcon,
   List as ListIcon,
 } from "@mui/icons-material"
 import { Roboto } from "next/font/google"
 import Link from "next/link"
 import { format } from "date-fns"
+import { useDeleteSubjectMutation, useGetAllSubjectsQuery } from "@/redux/api/subjectApi"
+import { useRouter } from "next/navigation"
+import toast from "react-hot-toast"
 
 const roboto = Roboto({
   weight: ["300", "400", "500", "700"],
@@ -184,61 +187,8 @@ const customTheme = createTheme({
   },
 })
 
-// Sample data for subjects (replace with actual API data)
-const generateSampleSubjects = () => {
-  return [
-    {
-      _id: "1",
-      name: "Mathematics",
-      code: "MATH101",
-      image: "/placeholder.svg?height=100&width=100",
-      paper: "Paper 1",
-      lessons: [
-        { lessonNo: 1, lessonName: "Algebra Basics" },
-        { lessonNo: 2, lessonName: "Linear Equations" },
-      ],
-      classId: { _id: "c1", name: "Class 10" },
-      teacherId: { _id: "t1", name: "Dr. Smith" },
-      isOptional: false,
-      createdAt: "2025-04-20T10:30:00.000Z",
-      updatedAt: "2025-04-22T14:15:00.000Z",
-    },
-    {
-      _id: "2",
-      name: "Physics",
-      code: "PHYS101",
-      image: "/placeholder.svg?height=100&width=100",
-      paper: "Paper 2",
-      lessons: [
-        { lessonNo: 1, lessonName: "Mechanics" },
-        { lessonNo: 2, lessonName: "Thermodynamics" },
-      ],
-      classId: { _id: "c2", name: "Class 11" },
-      teacherId: { _id: "t2", name: "Prof. Johnson" },
-      isOptional: true,
-      createdAt: "2025-04-18T09:45:00.000Z",
-      updatedAt: "2025-04-21T11:30:00.000Z",
-    },
-    {
-      _id: "3",
-      name: "Chemistry",
-      code: "CHEM101",
-      image: "/placeholder.svg?height=100&width=100",
-      paper: "Paper 1",
-      lessons: [
-        { lessonNo: 1, lessonName: "Periodic Table" },
-        { lessonNo: 2, lessonName: "Chemical Bonding" },
-      ],
-      classId: { _id: "c2", name: "Class 11" },
-      teacherId: { _id: "t3", name: "Dr. Williams" },
-      isOptional: false,
-      createdAt: "2025-04-19T14:20:00.000Z",
-      updatedAt: "2025-04-22T16:40:00.000Z",
-    },
-  ]
-}
-
 export default function SubjectManagementPage() {
+  const router = useRouter()
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(10)
   const [searchTerm, setSearchTerm] = useState("")
@@ -257,32 +207,24 @@ export default function SubjectManagementPage() {
   const [snackbarMessage, setSnackbarMessage] = useState("")
   const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success")
 
-  // Replace with actual API hooks when available
-  // const { data: subjectsData, isLoading, refetch } = useGetAllSubjectsQuery({})
-  // const [deleteSubject, { isLoading: isDeleting }] = useDeleteSubjectMutation()
+  // API integration
+  const {
+    data: subjectData,
+    isLoading,
+    refetch,
+  } = useGetAllSubjectsQuery({
+    limit: rowsPerPage,
+    page: page + 1,
+    searchTerm: searchTerm,
+  })
 
-  // For demo purposes, using sample data
-  const [subjects, setSubjects] = useState(generateSampleSubjects())
-  const isLoading = false
-  const isDeleting = false
-
-  const refetch = () => {
-    // This would be replaced with actual API refetch
-    setSubjects(generateSampleSubjects())
-  }
-
-  const deleteSubject = async (id: string) => {
-    // This would be replaced with actual API call
-    return new Promise((resolve) => {
-      setTimeout(() => {
-        setSubjects(subjects.filter((subject) => subject._id !== id))
-        resolve({ success: true })
-      }, 500)
-    })
-  }
+  const [deleteSubject, { isLoading: isDeleting }] = useDeleteSubjectMutation()
 
   const theme = customTheme
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"))
+
+  // Get subjects from API response
+  const subjects = subjectData?.data?.subjects || []
 
   const handleRefresh = () => {
     refetch()
@@ -358,15 +300,19 @@ export default function SubjectManagementPage() {
     if (!selectedSubject) return
 
     try {
-      await deleteSubject(selectedSubject._id)
-      setSnackbarMessage(`Subject "${selectedSubject.name}" deleted successfully`)
-      setSnackbarSeverity("success")
-      setSnackbarOpen(true)
-      refetch() // Refresh the subject list
+      const res = await deleteSubject(selectedSubject._id).unwrap()
+      if (res.success) {
+        setSnackbarMessage(`Subject "${selectedSubject.name}" deleted successfully`)
+        setSnackbarSeverity("success")
+        setSnackbarOpen(true)
+        toast.success("Subject deleted successfully")
+        refetch() // Refresh the subject list
+      }
     } catch (error: any) {
       setSnackbarMessage(error?.data?.message || "Failed to delete subject")
       setSnackbarSeverity("error")
       setSnackbarOpen(true)
+      toast.error("Failed to delete subject")
     } finally {
       setDeleteDialogOpen(false)
       setSelectedSubject(null)
@@ -386,6 +332,10 @@ export default function SubjectManagementPage() {
     setViewLessonsDialogOpen(false)
   }
 
+  const handleEditSubject = (id: string) => {
+    router.push(`/dashboard/admin/subject-management/update?id=${id}`)
+  }
+
   // Process and filter subjects
   const filteredSubjects = subjects
     .filter(
@@ -394,7 +344,7 @@ export default function SubjectManagementPage() {
           subject.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
           subject.code.toLowerCase().includes(searchTerm.toLowerCase())) &&
         (paperFilter === null || subject.paper === paperFilter) &&
-        (classFilter === null || subject.classId.name === classFilter) &&
+        (classFilter === null || (subject.classes && subject.classes.some((c: any) => c.className === classFilter))) &&
         (optionalFilter === null || subject.isOptional === optionalFilter),
     )
     .sort((a: any, b: any) => {
@@ -410,19 +360,6 @@ export default function SubjectManagementPage() {
         return order === "asc" ? a.paper.localeCompare(b.paper) : b.paper.localeCompare(a.paper)
       }
 
-      if (orderBy === "class") {
-        return order === "asc"
-          ? a.classId.name.localeCompare(b.classId.name)
-          : b.classId.name.localeCompare(a.classId.name)
-      }
-
-      if (orderBy === "teacher") {
-        if (!a.teacherId || !b.teacherId) return 0
-        return order === "asc"
-          ? a.teacherId.name.localeCompare(b.teacherId.name)
-          : b.teacherId.name.localeCompare(a.teacherId.name)
-      }
-
       if (orderBy === "createdAt") {
         return order === "asc"
           ? new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
@@ -436,7 +373,14 @@ export default function SubjectManagementPage() {
 
   // Get unique papers and classes from the data for filters
   const availablePapers = Array.from(new Set(subjects.map((subject: any) => subject.paper)))
-  const availableClasses = Array.from(new Set(subjects.map((subject: any) => subject.classId.name)))
+  const availableClasses = Array.from(
+    new Set(
+      subjects
+        .flatMap((subject: any) => subject.classes || [])
+        .map((cls: any) => cls.className)
+        .filter(Boolean),
+    ),
+  )
 
   const getSubjectColor = (name: string) => {
     const colors = [
@@ -454,7 +398,7 @@ export default function SubjectManagementPage() {
   const formatDate = (dateString: string) => {
     try {
       return format(new Date(dateString), "MMM dd, yyyy")
-    } catch (error) {
+    } catch (error:any) {
       return "Invalid date"
     }
   }
@@ -484,7 +428,7 @@ export default function SubjectManagementPage() {
                     color="primary"
                     startIcon={<AddIcon />}
                     component={Link}
-                    href="/dashboard/admin/subject-management/new"
+                    href="/dashboard/super_admin/subject/new"
                     sx={{
                       borderRadius: 2,
                       boxShadow: "0px 4px 10px rgba(99, 102, 241, 0.2)",
@@ -570,7 +514,7 @@ export default function SubjectManagementPage() {
                           >
                             All Papers
                           </MenuItem>
-                          {availablePapers.map((paper: string) => (
+                          {/* {availablePapers.map((paper: string) => (
                             <MenuItem
                               key={paper}
                               onClick={() => handlePaperFilterSelect(paper)}
@@ -585,7 +529,7 @@ export default function SubjectManagementPage() {
                               <AssignmentIcon fontSize="small" sx={{ mr: 1 }} />
                               {paper}
                             </MenuItem>
-                          ))}
+                          ))} */}
                         </Menu>
 
                         <Button
@@ -635,7 +579,7 @@ export default function SubjectManagementPage() {
                           >
                             All Classes
                           </MenuItem>
-                          {availableClasses.map((className: string) => (
+                          {/* {availableClasses.map((className: string) => (
                             <MenuItem
                               key={className}
                               onClick={() => handleClassFilterSelect(className)}
@@ -650,7 +594,7 @@ export default function SubjectManagementPage() {
                               <ClassIcon fontSize="small" sx={{ mr: 1 }} />
                               {className}
                             </MenuItem>
-                          ))}
+                          ))} */}
                         </Menu>
 
                         <Button
@@ -858,54 +802,10 @@ export default function SubjectManagementPage() {
                                 )}
                               </Box>
                             </TableCell>
-                            <TableCell>
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  cursor: "pointer",
-                                  userSelect: "none",
-                                  color: orderBy === "class" ? "primary.main" : "inherit",
-                                }}
-                                onClick={() => handleSort("class")}
-                              >
-                                Class
-                                {orderBy === "class" && (
-                                  <Box component="span" sx={{ display: "inline-flex", ml: 0.5 }}>
-                                    {order === "asc" ? (
-                                      <ArrowUpwardIcon fontSize="small" />
-                                    ) : (
-                                      <ArrowDownwardIcon fontSize="small" />
-                                    )}
-                                  </Box>
-                                )}
-                              </Box>
-                            </TableCell>
-                            <TableCell>
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  cursor: "pointer",
-                                  userSelect: "none",
-                                  color: orderBy === "teacher" ? "primary.main" : "inherit",
-                                }}
-                                onClick={() => handleSort("teacher")}
-                              >
-                                Teacher
-                                {orderBy === "teacher" && (
-                                  <Box component="span" sx={{ display: "inline-flex", ml: 0.5 }}>
-                                    {order === "asc" ? (
-                                      <ArrowUpwardIcon fontSize="small" />
-                                    ) : (
-                                      <ArrowDownwardIcon fontSize="small" />
-                                    )}
-                                  </Box>
-                                )}
-                              </Box>
-                            </TableCell>
+                            <TableCell>Classes</TableCell>
                             <TableCell>Lessons</TableCell>
                             <TableCell>Optional</TableCell>
+                            <TableCell>Created At</TableCell>
                             <TableCell align="right">Actions</TableCell>
                           </TableRow>
                         </TableHead>
@@ -927,7 +827,7 @@ export default function SubjectManagementPage() {
                                 <TableCell>
                                   <Box sx={{ display: "flex", alignItems: "center" }}>
                                     <Avatar
-                                      src={subject.image}
+                                      src={subject.image || ""}
                                       sx={{
                                         width: 32,
                                         height: 32,
@@ -953,25 +853,25 @@ export default function SubjectManagementPage() {
                                   />
                                 </TableCell>
                                 <TableCell>
-                                  <Chip
-                                    icon={<ClassIcon fontSize="small" />}
-                                    label={subject.classId.name}
-                                    size="small"
-                                    color="secondary"
-                                    sx={{
-                                      fontWeight: 500,
-                                    }}
-                                  />
-                                </TableCell>
-                                <TableCell>
-                                  {subject.teacherId ? (
-                                    <Box sx={{ display: "flex", alignItems: "center" }}>
-                                      <PersonIcon fontSize="small" sx={{ mr: 0.5, color: "text.secondary" }} />
-                                      <Typography variant="body2">{subject.teacherId.name}</Typography>
+                                  {subject.classes && subject.classes.length > 0 ? (
+                                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
+                                      {subject.classes.map((cls: any, index: number) => (
+                                        <Chip
+                                          key={index}
+                                          icon={<ClassIcon fontSize="small" />}
+                                          label={cls.className}
+                                          size="small"
+                                          color="secondary"
+                                          sx={{
+                                            fontWeight: 500,
+                                            fontSize: "0.7rem",
+                                          }}
+                                        />
+                                      ))}
                                     </Box>
                                   ) : (
                                     <Typography variant="body2" color="text.secondary">
-                                      Not Assigned
+                                      No classes assigned
                                     </Typography>
                                   )}
                                 </TableCell>
@@ -1003,6 +903,7 @@ export default function SubjectManagementPage() {
                                     }}
                                   />
                                 </TableCell>
+                                <TableCell>{formatDate(subject.createdAt)}</TableCell>
                                 <TableCell align="right">
                                   <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
                                     <Tooltip title="View Details">
@@ -1023,8 +924,7 @@ export default function SubjectManagementPage() {
                                     <Tooltip title="Edit Subject">
                                       <IconButton
                                         size="small"
-                                        component={Link}
-                                        href={`/dashboard/admin/subject-management/edit/${subject._id}`}
+                                        onClick={() => handleEditSubject(subject._id)}
                                         sx={{
                                           color: "warning.main",
                                           bgcolor: alpha(theme.palette.warning.main, 0.1),
@@ -1130,7 +1030,7 @@ export default function SubjectManagementPage() {
           </Typography>
         </DialogTitle>
         <DialogContent>
-          {selectedSubject?.lessons.length > 0 ? (
+          {selectedSubject?.lessons && selectedSubject?.lessons.length > 0 ? (
             <Box sx={{ mt: 2 }}>
               {selectedSubject?.lessons.map((lesson: any, index: number) => (
                 <Paper
