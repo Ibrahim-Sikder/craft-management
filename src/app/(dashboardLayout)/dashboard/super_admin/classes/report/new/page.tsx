@@ -56,6 +56,8 @@ import { useGetAllStudentsQuery } from "@/redux/api/studentApi"
 import toast from "react-hot-toast"
 import { useRouter } from "next/navigation"
 import { useCreateClassReportMutation } from "@/redux/api/classReportApi"
+import { useGetAllClassesQuery } from "@/redux/api/classApi"
+import { subjectApi, useGetAllSubjectsQuery } from "@/redux/api/subjectApi"
 
 export default function DailyReport() {
   const router = useRouter()
@@ -81,6 +83,26 @@ export default function DailyReport() {
   const [studentEvaluations, setStudentEvaluations] = useState<any[]>([])
   const [todayLessonId, setTodayLessonId] = useState<string | null>(null)
   const [homeTaskId, setHomeTaskId] = useState<string | null>(null)
+  const {
+    data: classData,
+  } = useGetAllClassesQuery({
+    limit: rowsPerPage,
+    page: page + 1,
+    searchTerm: searchTerm,
+  })
+  const {
+    data: subjectData,
+  } = useGetAllSubjectsQuery({
+    limit: rowsPerPage,
+    page: page + 1,
+    searchTerm: searchTerm,
+  })
+
+  console.log('all class data', classData)
+  console.log('all subject data', subjectData)
+  // New state for dialog controls
+  const [todayLessonDialogOpen, setTodayLessonDialogOpen] = useState(false)
+  const [todayTaskDialogOpen, setTodayTaskDialogOpen] = useState(false)
 
   const storedUser = getFromLocalStorage("user-info")
 
@@ -118,6 +140,17 @@ export default function DailyReport() {
 
   const handleSubmit = async (data: FieldValues) => {
     try {
+      // Check if today's lesson and home task are added
+      if (!todayLessonId) {
+        toast.error("আজকের পাঠ যোগ করুন")
+        return
+      }
+
+      if (!homeTaskId) {
+        toast.error("বাড়ির কাজ যোগ করুন")
+        return
+      }
+
       // Format data according to the Mongoose model
       const formattedData = {
         teacherId: data.teacher,
@@ -245,6 +278,34 @@ export default function DailyReport() {
     )
   }
 
+  // Handle Today's Lesson dialog
+  const handleOpenTodayLessonDialog = () => {
+    setTodayLessonDialogOpen(true)
+  }
+
+  const handleCloseTodayLessonDialog = () => {
+    setTodayLessonDialogOpen(false)
+  }
+
+  const handleSaveTodayLesson = (lessonId: string) => {
+    setTodayLessonId(lessonId)
+    toast.success("আজকের পাঠ যোগ করা হয়েছে!")
+  }
+
+  // Handle Home Task dialog
+  const handleOpenTodayTaskDialog = () => {
+    setTodayTaskDialogOpen(true)
+  }
+
+  const handleCloseTodayTaskDialog = () => {
+    setTodayTaskDialogOpen(false)
+  }
+
+  const handleSaveTodayTask = (taskId: string) => {
+    setHomeTaskId(taskId)
+    toast.success("বাড়ির কাজ যোগ করা হয়েছে!")
+  }
+
   return (
     <>
       <ThemeProvider theme={theme}>
@@ -272,27 +333,27 @@ export default function DailyReport() {
                         variant="contained"
                         color="primary"
                         startIcon={<Add />}
-                      
+                        onClick={handleOpenTodayLessonDialog}
                         sx={{
-                          bgcolor: "",
+                          bgcolor: todayLessonId ? "success.main" : "",
                           borderRadius: 2,
                           boxShadow: "0px 4px 10px rgba(99, 102, 241, 0.2)",
                         }}
                       >
-                        আজকের পাঠ
+                        {todayLessonId ? "আজকের পাঠ যোগ করা হয়েছে" : "আজকের পাঠ"}
                       </Button>
                       <Button
                         variant="contained"
                         color="primary"
                         startIcon={<Add />}
-                       
+                        onClick={handleOpenTodayTaskDialog}
                         sx={{
-                          bgcolor: "#3792de",
+                          bgcolor: homeTaskId ? "success.main" : "#3792de",
                           borderRadius: 2,
                           boxShadow: "0px 4px 10px rgba(99, 102, 241, 0.2)",
                         }}
                       >
-                        বাড়ির কাজ
+                        {homeTaskId ? "বাড়ির কাজ যোগ করা হয়েছে" : "বাড়ির কাজ"}
                       </Button>
                       <Button
                         type="submit"
@@ -345,7 +406,7 @@ export default function DailyReport() {
                               freeSolo
                               multiple={false}
                               options={filteredSubjects.map((option) => option.value)}
-                              onInputChange={(event, newValue) => {}}
+                              onInputChange={(event, newValue) => { }}
                             />
                           </Grid>
                           <Grid item xs={12} md={1}>
@@ -572,7 +633,12 @@ export default function DailyReport() {
           </Snackbar>
         </CraftForm>
       </ThemeProvider>
-     
+
+      {/* Today's Lesson Dialog */}
+      <TodayLesson open={todayLessonDialogOpen} onClose={handleCloseTodayLessonDialog} onSave={handleSaveTodayLesson} />
+
+      {/* Home Task Dialog */}
+      <TodayTask open={todayTaskDialogOpen} onClose={handleCloseTodayTaskDialog} onSave={handleSaveTodayTask} />
     </>
   )
 }

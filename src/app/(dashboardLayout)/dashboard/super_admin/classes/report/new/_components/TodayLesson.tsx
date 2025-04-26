@@ -1,48 +1,108 @@
-"use client";
-import React from "react";
-import { Box, Button, Grid } from "@mui/material";
-import CraftModal from "@/components/Shared/Modal";
-import CraftEditor from "@/components/Forms/JodiEditor";
-import CraftForm from "@/components/Forms/Form";
+"use client"
 
+import { useState } from "react"
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, Box, IconButton } from "@mui/material"
+import { Close as CloseIcon } from "@mui/icons-material"
+import CraftTextArea from "@/components/Forms/TextArea"
+import CraftForm from "@/components/Forms/Form"
+import toast from "react-hot-toast"
 
-export type TProps = {
-    open: boolean;
-    setOpen: React.Dispatch<React.SetStateAction<boolean>>;
-};
+interface TodayLessonProps {
+  open: boolean
+  onClose: () => void
+  onSave: (lessonId: string) => void
+}
 
+export default function TodayLesson({ open, onClose, onSave }: TodayLessonProps) {
+  const [loading, setLoading] = useState(false)
 
-const TodayLesson = ({ open, setOpen }: TProps) => {
-    const handleSubmit = () => {
+  const handleSubmit = async (data: any) => {
+    try {
+      setLoading(true)
+      // Here you would make an API call to save the today's lesson
+      // For example:
+      // const response = await createTodayLesson(data).unwrap()
 
+      // Simulate API call with timeout
+      await new Promise((resolve) => setTimeout(resolve, 1000))
+
+      // Mock response with a fake ID
+      const mockResponse = { success: true, data: { _id: "lesson_" + Date.now() } }
+
+      if (mockResponse.success) {
+        toast.success("আজকের পাঠ সফলভাবে সংরক্ষণ করা হয়েছে!")
+        onSave(mockResponse.data._id)
+        onClose()
+      }
+    } catch (error: any) {
+      console.error("Error saving today's lesson:", error)
+      toast.error(error?.data?.message || "আজকের পাঠ সংরক্ষণ করতে ব্যর্থ হয়েছে")
+    } finally {
+      setLoading(false)
     }
-    return (
-        <CraftModal
-            sx={{ width: "800px", margin: " auto" }}
-            open={open}
-            setOpen={setOpen}
-            title="Add Today Lesson"
+  }
+
+  return (
+    <Dialog
+      open={open}
+      onClose={onClose}
+      fullWidth
+      maxWidth="md"
+      PaperProps={{
+        sx: {
+          borderRadius: 2,
+          boxShadow: "0px 8px 24px rgba(0, 0, 0, 0.15)",
+        },
+      }}
+    >
+      <DialogTitle sx={{ m: 0, p: 2, bgcolor: "#4F0187", color: "white" }}>
+        <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
+          আজকের পাঠ
+        </Typography>
+        <IconButton
+          aria-label="close"
+          onClick={onClose}
+          sx={{
+            position: "absolute",
+            right: 8,
+            top: 8,
+            color: "white",
+          }}
         >
-            <Box padding="5px 10px 10px 10px">
-                {/* all content */}
-                <Grid container spacing={2}>
-                    <Grid item xs={12}>
-                        <Box className="bg-white">
-                            <CraftForm onSubmit={handleSubmit}>
-                                <div>
-                                    <CraftEditor name="Today Lesson" />
-                                </div>
-                                <div className="flex justify-end mt-5">
-                                    <Button variant="contained" sx={{ borderRadius: 6, bgcolor: "#4F0187" }} >Save</Button>
-                                </div>
-                            </CraftForm>
-                        </Box>
-                    </Grid>
-                </Grid>
-            </Box>
-        </CraftModal>
-    );
-};
-
-
-export default TodayLesson;
+          <CloseIcon />
+        </IconButton>
+      </DialogTitle>
+      <CraftForm onSubmit={handleSubmit}>
+        <DialogContent dividers>
+          <Box sx={{ p: 1 }}>
+            <CraftTextArea
+              name="lessonContent"
+              label="আজকের পাঠের বিষয়বস্তু"
+              placeholder="আজকের পাঠের বিষয়বস্তু লিখুন..."
+              minRows={8}
+              required
+            />
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ p: 2, justifyContent: "space-between" }}>
+          <Button onClick={onClose} variant="outlined" color="inherit" sx={{ borderColor: "rgba(0, 0, 0, 0.12)" }}>
+            বাতিল
+          </Button>
+          <Button
+            type="submit"
+            variant="contained"
+            color="primary"
+            disabled={loading}
+            sx={{
+              bgcolor: "#4F0187",
+              borderRadius: 2,
+              boxShadow: "0px 4px 10px rgba(79, 1, 135, 0.2)",
+            }}
+          >
+            {loading ? "সংরক্ষণ হচ্ছে..." : "সংরক্ষণ করুন"}
+          </Button>
+        </DialogActions>
+      </CraftForm>
+    </Dialog>
+  )
+}
