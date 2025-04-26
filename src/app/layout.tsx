@@ -37,10 +37,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${siliguri.className} antialiased`}
       >
-           <Toaster position="top-right" reverseOrder={false} />
-       <Providers>
-       {children}
-       </Providers>
+        <Toaster position="top-right" reverseOrder={false} />
+        <Providers>
+          {children}
+        </Providers>
       </body>
     </html>
   );

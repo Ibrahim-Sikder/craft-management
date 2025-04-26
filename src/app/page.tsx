@@ -51,12 +51,18 @@ const LoginDashboard = () => {
   const [login, { error, isLoading, isSuccess }] = useLoginMutation() as any;
   const router = useRouter()
   const handleSubmit = async (data: FieldValues) => {
-
     try {
       const res = await login(data).unwrap() as LoginResponse;
-   
-      storeUserInfo({ accessToken: res?.data?.accessToken });
+      console.log(res);
+
+      // Store accessToken to cookie
       setCookie('craft-token', res?.data?.accessToken, { expires: 7 });
+
+      // Store entire user data in localStorage
+      localStorage.setItem('user-info', JSON.stringify(res.data.user));
+
+      // Optional: store just the token too if you still want it separately
+      storeUserInfo({ accessToken: res?.data?.accessToken });
 
       toast.success(res.message || 'Login Successful!');
       router.push('/dashboard');
@@ -64,6 +70,7 @@ const LoginDashboard = () => {
       toast.error(err?.data?.message || 'An error occurred during login.');
     }
   };
+
 
   return (
     <div className="min-h-screen flex items-center justify-center relative overflow-hidden">

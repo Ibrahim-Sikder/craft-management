@@ -63,6 +63,7 @@
 // import CraftTextArea from "@/components/Forms/TextArea"
 // import CraftTagsInput from "@/components/Forms/TagsInput"
 // import { className, subjectName, teacherName } from "@/options"
+// import CraftSelectWithSearch from "@/components/Forms/CraftSelectWithSearch "
 
 // const roboto = Roboto({
 //   weight: ["300", "400", "500", "700"],
@@ -403,12 +404,12 @@
 //                         <Grid container spacing={2}  >
 //                           {/* Teacher Name */}
 //                           <Grid item xs={12} md={4}>
-//                             <CraftAutoComplete
+//                           <CraftSelectWithSearch
 //                               name="teacher"
 //                               label="শিক্ষকের নাম"
 //                               placeholder="শিক্ষকের নাম লিখুন"
-//                               fullWidth
 //                               options={teacherName}
+
 //                             />
 
 //                           </Grid>
@@ -463,7 +464,14 @@
 //                               getOptionLabel={(option) => option || ""}
 //                             />
 //                           </Grid>
-
+//                           <Grid item xs={12} md={1}>
+//                             <CraftSelect
+//                               name="hour"
+//                               label="ঘন্টা"
+//                               items={classHour}
+//                               sx={{ minWidth: 100 }}
+//                             />
+//                           </Grid>
 //                           {/* Date */}
 //                           <Grid item xs={12} md={2}>
 //                             <CraftDatePicker
