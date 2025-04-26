@@ -61,10 +61,13 @@ import {
 } from "@mui/icons-material"
 import { Roboto } from "next/font/google"
 import Link from "next/link"
+<<<<<<< HEAD
 import { format } from "date-fns"
 import { useDeleteSubjectMutation, useGetAllSubjectsQuery } from "@/redux/api/subjectApi"
 import { useRouter } from "next/navigation"
 import toast from "react-hot-toast"
+=======
+>>>>>>> d8dc3deb93e69079da8234c4fad8daec9de22768
 
 const roboto = Roboto({
   weight: ["300", "400", "500", "700"],
@@ -395,6 +398,7 @@ export default function SubjectManagementPage() {
     return colors[index]
   }
 
+<<<<<<< HEAD
   const formatDate = (dateString: string) => {
     try {
       return format(new Date(dateString), "MMM dd, yyyy")
@@ -402,6 +406,15 @@ export default function SubjectManagementPage() {
       return "Invalid date"
     }
   }
+=======
+  // const formatDate = (dateString: string) => {
+  //   try {
+  //     return format(new Date(dateString), "MMM dd, yyyy")
+  //   } catch (error) {
+  //     return "Invalid date"
+  //   }
+  // }
+>>>>>>> d8dc3deb93e69079da8234c4fad8daec9de22768
 
   return (
     <ThemeProvider theme={theme}>
@@ -428,7 +441,7 @@ export default function SubjectManagementPage() {
                     color="primary"
                     startIcon={<AddIcon />}
                     component={Link}
-                    href="/dashboard/admin/subject-management/new"
+                    href="/dashboard/super_admin/subject/new"
                     sx={{
                       borderRadius: 2,
                       boxShadow: "0px 4px 10px rgba(99, 102, 241, 0.2)",
