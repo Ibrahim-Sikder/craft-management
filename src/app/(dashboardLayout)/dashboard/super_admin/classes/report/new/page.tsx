@@ -392,8 +392,9 @@ export default function DailyReport() {
                               fullWidth
                               freeSolo
                               multiple={false}
-                              options={className.map((option) => option.label)}
-                              onInputChange={(event, newValue) => { }}
+                              // options={className.map((option) => option.label)}
+                              options={className}
+                              onInputChange={(event, newValue) => {}}
                               onChange={handleClassName}
                             />
                           </Grid>
