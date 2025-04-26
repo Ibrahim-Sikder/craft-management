@@ -389,7 +389,7 @@ export default function NewSubject({ id }: any) {
                                         </Box>
                                         <CardContent sx={{ pt: 4, mt: 2 }}>
                                             <Grid container spacing={3}>
-                                                <Grid item xs={12} md={6}>
+                                            <Grid item xs={12} md={6}>
                                                     <CraftInputWithIcon
                                                         name="code"
                                                         label="Subject Code"
@@ -413,6 +413,21 @@ export default function NewSubject({ id }: any) {
                                                         }}
                                                     />
                                                 </Grid>
+                                                <Grid item xs={12} md={6}>
+                                                    <CraftSelect size="medium" name="paper" label="Paper" items={paper} fullWidth required />
+                                                </Grid>
+                                                <Grid item xs={12} md={6}>
+                                                    <CraftInputWithIcon
+                                                        name="lesson"
+                                                        label="Total Lesson"
+                                                        placeholder="Write Total Lesson"
+                                                        fullWidth
+                                                        type="number"
+                                                        InputProps={{
+                                                            startAdornment: <FormatListNumbered sx={{ color: "primary.main", mr: 1 }} />,
+                                                        }}
+                                                    />
+                                                </Grid>
 
                                                 <Grid item xs={12}>
                                                     <Divider sx={{ my: 1 }}>
@@ -428,11 +443,7 @@ export default function NewSubject({ id }: any) {
                                                             }}
                                                         />
                                                     </Divider>
-                                                </Grid>
-
-                                                <Grid item xs={12} md={6}>
-                                                    <CraftSelect size="medium" name="paper" label="Paper" items={paper} fullWidth required />
-                                                </Grid>
+                                                </Grid>                                               
 
                                                 <Grid item xs={12} md={6}>
                                                     <CraftIntAutoCompleteWithIcon

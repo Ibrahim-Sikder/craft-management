@@ -60,9 +60,19 @@ import {
   Download as DownloadIcon,
   Print as PrintIcon,
   Refresh as RefreshIcon,
+  Check,
+  Close,
+  Remove,
 } from "@mui/icons-material"
 import { Roboto } from "next/font/google"
 import Link from "next/link"
+import BookIcon from '@mui/icons-material/Book';
+import ScheduleIcon from '@mui/icons-material/Schedule';
+// import { LocalizationProvider } from '@mui/x-date-pickers';
+// import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+// import { DatePicker } from '@mui/x-date-pickers/DatePicker';
+import CraftDatePicker from "@/components/Forms/DatePicker"
+import CraftForm from "@/components/Forms/Form"
 
 const roboto = Roboto({
   weight: ["300", "400", "500", "700"],
@@ -187,17 +197,17 @@ const customTheme = createTheme({
 
 // Sample data for classes
 const generateClassesData = () => {
-  const statuses = ["Active", "Inactive", "Pending"]
+  const statuses = ["Yes", "NO", "Partial"]
+  const classes = ["1", "2", "3", "4", "5", "6"]
   const subjects = [
     "Mathematics",
     "Science",
     "English",
     "History",
-    "Computer Science",
+    "ICT",
     "Physics",
     "Chemistry",
     "Biology",
-    "Art",
     "Music",
   ]
   const teachers = [
@@ -210,8 +220,9 @@ const generateClassesData = () => {
 
   return Array.from({ length: 50 }, (_, i) => ({
     id: i + 1,
-    name: `${subjects[Math.floor(Math.random() * subjects.length)]} ${Math.floor(Math.random() * 12) + 1}`,
     code: `CLS-${Math.floor(1000 + Math.random() * 9000)}`,
+    name: `${subjects[Math.floor(Math.random() * subjects.length)]} ${Math.floor(Math.random() * 12) + 1}`,
+    class: classes[Math.floor(Math.random() * classes.length)],
     students: Math.floor(Math.random() * 40) + 10,
     teacher: teachers[Math.floor(Math.random() * teachers.length)],
     status: statuses[Math.floor(Math.random() * statuses.length)],
@@ -234,6 +245,11 @@ export default function ClassesListPage() {
   const [selectedClass, setSelectedClass] = useState<any | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
+  const [subjectFilter, setSubjectFilter] = useState<string | null>(null)
+  const [hourFilter, setHourFilter] = useState<string | null>(null)
+  // const [dateFilter, setDateFilter] = useState<Date | null>(null)
+  const [subjectAnchorEl, setSubjectAnchorEl] = useState<null | HTMLElement>(null);
+  const [hourAnchorEl, setHourAnchorEl] = useState<null | HTMLElement>(null);
 
   const theme = customTheme
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"))
@@ -246,6 +262,27 @@ export default function ClassesListPage() {
       setLoading(false)
     }, 1000)
   }, [refreshKey])
+
+  const handleSubmit = () => {
+    console.log()
+  }
+
+  // Add these filter handler functions
+  const handleSubjectFilterSelect = (subject: string | null) => {
+    setSubjectFilter(subject)
+    setPage(0)
+  }
+
+  const handleHourFilterSelect = (hour: string | null) => {
+    setHourFilter(hour)
+    setPage(0)
+  }
+
+  // const handleDateFilterChange = (date: Date | null) => {
+  //   setDateFilter(date)
+  //   setPage(0)
+  // }
+
 
   const handleRefresh = () => {
     setRefreshKey((prev) => prev + 1)
@@ -309,6 +346,7 @@ export default function ClassesListPage() {
     setDeleteDialogOpen(false)
   }
 
+  // Update your filteredClasses logic to include the new filters
   const filteredClasses = classes
     .filter(
       (classItem) =>
@@ -316,7 +354,12 @@ export default function ClassesListPage() {
           classItem.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
           classItem.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
           classItem.teacher.name.toLowerCase().includes(searchTerm.toLowerCase())) &&
-        (statusFilter === null || classItem.status === statusFilter),
+        (statusFilter === null || classItem.status === statusFilter) &&
+        (subjectFilter === null || classItem.name.includes(subjectFilter)) &&
+        (hourFilter === null || classItem.name.includes(` ${hourFilter}`))
+      // && 
+      // (dateFilter === null ||
+      //   classItem.createdAt.toDateString() === dateFilter.toDateString())
     )
     .sort((a, b) => {
       const aValue = a[orderBy]
@@ -343,19 +386,19 @@ export default function ClassesListPage() {
 
   const getStatusChipProps = (status: string) => {
     switch (status) {
-      case "Active":
+      case "Yes":
         return {
           color: "success" as const,
           icon: <CheckCircleIcon fontSize="small" />,
           sx: { bgcolor: alpha(theme.palette.success.main, 0.1) },
         }
-      case "Inactive":
+      case "NO":
         return {
           color: "error" as const,
           icon: <CancelIcon fontSize="small" />,
           sx: { bgcolor: alpha(theme.palette.error.main, 0.1) },
         }
-      case "Pending":
+      case "Partial":
         return {
           color: "warning" as const,
           icon: <AccessTimeIcon fontSize="small" />,
@@ -369,6 +412,18 @@ export default function ClassesListPage() {
         }
     }
   }
+
+  const hourOptions = Array.from({ length: 12 }, (_, i) => `${i + 1}`)
+  const subjectOptions = [
+    "Mathematics",
+    "Science",
+    "English",
+    "History",
+    "ICT",
+    "Physics",
+    "Chemistry",
+    "Biology",
+  ]
 
   return (
     <ThemeProvider theme={theme}>
@@ -442,7 +497,10 @@ export default function ClassesListPage() {
                       />
                     </Grid>
                     <Grid item xs={12} md={6}>
+
+
                       <Box sx={{ display: "flex", gap: 2, justifyContent: { xs: "flex-start", md: "flex-end" } }}>
+                        {/* Status Filter */}
                         <Button
                           variant="outlined"
                           color="inherit"
@@ -462,8 +520,61 @@ export default function ClassesListPage() {
                             }),
                           }}
                         >
-                          {statusFilter || "Filter by Status"}
+                          {statusFilter || "Status"}
                         </Button>
+
+                        {/* Subject Filter */}
+                        <Button
+                          variant="outlined"
+                          color="inherit"
+                          startIcon={<BookIcon />}
+                          onClick={(e) => setSubjectAnchorEl(e.currentTarget)}
+                          sx={{
+                            borderColor: "rgba(0, 0, 0, 0.12)",
+                            color: "text.secondary",
+                            "&:hover": {
+                              borderColor: "primary.main",
+                              bgcolor: "rgba(99, 102, 241, 0.04)",
+                            },
+                            ...(subjectFilter && {
+                              borderColor: "primary.main",
+                              color: "primary.main",
+                              bgcolor: "rgba(99, 102, 241, 0.04)",
+                            }),
+                          }}
+                        >
+                          {subjectFilter || "Subject"}
+                        </Button>
+
+                        {/* Hour Filter */}
+                        <Button
+                          variant="outlined"
+                          color="inherit"
+                          startIcon={<ScheduleIcon />}
+                          onClick={(e) => setHourAnchorEl(e.currentTarget)}
+                          sx={{
+                            borderColor: "rgba(0, 0, 0, 0.12)",
+                            color: "text.secondary",
+                            "&:hover": {
+                              borderColor: "primary.main",
+                              bgcolor: "rgba(99, 102, 241, 0.04)",
+                            },
+                            ...(hourFilter && {
+                              borderColor: "primary.main",
+                              color: "primary.main",
+                              bgcolor: "rgba(99, 102, 241, 0.04)",
+                            }),
+                          }}
+                        >
+                          {hourFilter ? `Hour ${hourFilter}` : "Hour"}
+                        </Button>
+
+                        {/* Date Filter */}
+                        <CraftForm onSubmit={handleSubmit}>
+                          <CraftDatePicker name="date" label="তারিখ" />
+                        </CraftForm>
+
+                        {/* Status Filter Menu */}
                         <Menu
                           anchorEl={filterAnchorEl}
                           open={Boolean(filterAnchorEl)}
@@ -531,6 +642,95 @@ export default function ClassesListPage() {
                           </MenuItem>
                         </Menu>
 
+                        {/* Subject Filter Menu */}
+                        <Menu
+                          anchorEl={subjectAnchorEl}
+                          open={Boolean(subjectAnchorEl)}
+                          onClose={() => setSubjectAnchorEl(null)}
+                          PaperProps={{
+                            elevation: 3,
+                            sx: {
+                              mt: 1,
+                              minWidth: 180,
+                              borderRadius: 2,
+                              overflow: "hidden",
+                            },
+                          }}
+                        >
+                          <MenuItem
+                            onClick={() => handleSubjectFilterSelect(null)}
+                            sx={{
+                              py: 1.5,
+                              ...(subjectFilter === null && {
+                                bgcolor: "rgba(99, 102, 241, 0.08)",
+                                color: "primary.main",
+                              }),
+                            }}
+                          >
+                            All Subjects
+                          </MenuItem>
+                          {subjectOptions.map((subject) => (
+                            <MenuItem
+                              key={subject}
+                              onClick={() => handleSubjectFilterSelect(subject)}
+                              sx={{
+                                py: 1.5,
+                                ...(subjectFilter === subject && {
+                                  bgcolor: "rgba(99, 102, 241, 0.08)",
+                                  color: "primary.main",
+                                }),
+                              }}
+                            >
+                              {subject}
+                            </MenuItem>
+                          ))}
+                        </Menu>
+
+                        {/* Hour Filter Menu */}
+                        <Menu
+                          anchorEl={hourAnchorEl}
+                          open={Boolean(hourAnchorEl)}
+                          onClose={() => setHourAnchorEl(null)}
+                          PaperProps={{
+                            elevation: 3,
+                            sx: {
+                              mt: 1,
+                              minWidth: 180,
+                              borderRadius: 2,
+                              overflow: "hidden",
+                            },
+                          }}
+                        >
+                          <MenuItem
+                            onClick={() => handleHourFilterSelect(null)}
+                            sx={{
+                              py: 1.5,
+                              ...(hourFilter === null && {
+                                bgcolor: "rgba(99, 102, 241, 0.08)",
+                                color: "primary.main",
+                              }),
+                            }}
+                          >
+                            All Hours
+                          </MenuItem>
+                          {hourOptions.map((hour) => (
+                            <MenuItem
+                              key={hour}
+                              onClick={() => handleHourFilterSelect(hour)}
+                              sx={{
+                                py: 1.5,
+                                ...(hourFilter === hour && {
+                                  bgcolor: "rgba(99, 102, 241, 0.08)",
+                                  color: "primary.main",
+                                }),
+                              }}
+                            >
+                              Hour {hour}
+                            </MenuItem>
+                          ))}
+                        </Menu>
+
+                        {/* Keep your existing export/print buttons */}
                         {!isMobile && (
                           <>
                             <Button
@@ -603,7 +803,7 @@ export default function ClassesListPage() {
                                 }}
                                 onClick={() => handleSort("code")}
                               >
-                                Student Role
+                                Stu. Roll
                                 {orderBy === "code" && (
                                   <Box component="span" sx={{ display: "inline-flex", ml: 0.5 }}>
                                     {order === "asc" ? (
@@ -719,7 +919,7 @@ export default function ClassesListPage() {
                                 }}
                                 onClick={() => handleSort("createdAt")}
                               >
-                                Note
+                                Handwriting
                                 {orderBy === "createdAt" && (
                                   <Box component="span" sx={{ display: "inline-flex", ml: 0.5 }}>
                                     {order === "asc" ? (
@@ -731,11 +931,10 @@ export default function ClassesListPage() {
                                 )}
                               </Box>
                             </TableCell>
-                            <TableCell align="right">Handwriting </TableCell>
-                            <TableCell align="right">Materials </TableCell>
-                            <TableCell align="right">Diary </TableCell>
-                            <TableCell align="right">Signature </TableCell>
-                            <TableCell align="right">Date </TableCell>
+                            <TableCell >Status</TableCell>
+                            <TableCell >Signature </TableCell>
+                            <TableCell >Hour </TableCell>
+                            <TableCell>Date </TableCell>
                             <TableCell align="right">Actions</TableCell>
                           </TableRow>
                         </TableHead>
@@ -743,6 +942,9 @@ export default function ClassesListPage() {
                           {paginatedClasses.length > 0 ? (
                             paginatedClasses.map((classItem) => {
                               const statusChipProps = getStatusChipProps(classItem.status)
+                              // const learnedStatus = ['yes', 'no', 'partial'][Math.floor(Math.random() * 3)];
+                              const handwritingStatus = ['yes', 'no', 'partial'][Math.floor(Math.random() * 2)];
+                              // const signatureStatus = Math.random() > 0.5 ? 'yes' : 'no';
 
                               return (
                                 <TableRow key={classItem.id} sx={{ transition: "all 0.2s" }}>
@@ -757,13 +959,6 @@ export default function ClassesListPage() {
                                       }}
                                     />
                                   </TableCell>
-
-                                  <TableCell component="th" scope="row">
-                                    <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                                      {classItem.name}
-                                    </Typography>
-                                  </TableCell>
-
                                   <TableCell>
                                     <Box sx={{ display: "flex", alignItems: "center" }}>
                                       <Avatar
@@ -780,9 +975,20 @@ export default function ClassesListPage() {
                                       <Typography variant="body2">{classItem.teacher.name}</Typography>
                                     </Box>
                                   </TableCell>
-                                  <TableCell>
-                                    <Typography variant="body2">{classItem.students}</Typography>
+
+                                  <TableCell component="th" scope="row">
+                                    <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                                      {classItem.class}
+                                    </Typography>
                                   </TableCell>
+                                  <TableCell component="th" scope="row">
+                                    <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                                      {classItem.name}
+                                    </Typography>
+                                  </TableCell>
+
+
+
                                   <TableCell>
                                     <Chip
                                       icon={statusChipProps.icon}
@@ -794,30 +1000,58 @@ export default function ClassesListPage() {
                                         fontWeight: 500,
                                       }}
                                     />
+
                                   </TableCell>
+                                  <TableCell align="center">
+
+                                    <Chip
+                                      icon={statusChipProps.icon}
+                                      label={classItem.status}
+                                      color={statusChipProps.color}
+                                      size="small"
+                                      sx={{
+                                        ...statusChipProps.sx,
+                                        fontWeight: 500,
+                                      }}
+                                    />
+
+                                  </TableCell>
+
                                   <TableCell>
                                     <Typography variant="body2" color="text.secondary">
-                                      {classItem.createdAt.toLocaleDateString()}
+                                      <Chip
+                                        icon={statusChipProps.icon}
+                                        label={classItem.status}
+                                        color={statusChipProps.color}
+                                        size="small"
+                                        sx={{
+                                          ...statusChipProps.sx,
+                                          fontWeight: 500,
+                                        }}
+                                      />
                                     </Typography>
                                   </TableCell>
                                   <TableCell>
                                     <Typography variant="body2" color="text.secondary">
-                                      {classItem.createdAt.toLocaleDateString()}
+                                      {handwritingStatus === 'yes' ? (
+                                        <Tooltip title="Good">
+                                          <Check color="success" />
+                                        </Tooltip>
+                                      ) : handwritingStatus === 'no' ? (
+                                        <Tooltip title="Needs Improvement">
+                                          <Close color="error" />
+                                        </Tooltip>
+                                      ) : (
+                                        <Tooltip title="Average">
+                                          <Remove color="warning" />
+                                        </Tooltip>
+                                      )}
                                     </Typography>
                                   </TableCell>
+
                                   <TableCell>
-                                    <Typography variant="body2" color="text.secondary">
-                                      {classItem.createdAt.toLocaleDateString()}
-                                    </Typography>
-                                  </TableCell>
-                                  <TableCell>
-                                    <Typography variant="body2" color="text.secondary">
-                                      {classItem.createdAt.toLocaleDateString()}
-                                    </Typography>
-                                  </TableCell>
-                                  <TableCell>
-                                    <Typography variant="body2" color="text.secondary">
-                                      {classItem.createdAt.toLocaleDateString()}
+                                    <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                                      {classItem.class}
                                     </Typography>
                                   </TableCell>
                                   <TableCell>

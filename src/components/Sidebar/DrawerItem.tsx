@@ -13,15 +13,15 @@ import {
   Sms,
   SupervisorAccount,
   FileCopy,
-  Business,
-  MenuBook,
+  // Business,
+  // MenuBook,
   HowToReg,
-  Groups,
+  // Groups,
   PhotoLibrary,
   Settings,
-  Help,
-  CalendarViewDay,
-  Favorite,
+  // Help,
+  // CalendarViewDay,
+  // Favorite,
   // Add these new imports
   AccessTime,
   Class,
@@ -54,15 +54,15 @@ import {
   RequestPage,
   Paid,
   FactCheck,
-  AccountBox,
+  // AccountBox,
   HomeWork,
-  MeetingRoom,
-  Timer,
-  EventSeat,
+  // MeetingRoom,
+  // Timer,
+  // EventSeat,
   Download,
   Grade,
   Category as ExamCategory,
-  Layers,
+  // Layers,
   Event,
   TableRows,
   Message,
@@ -70,37 +70,37 @@ import {
   Email,
   Report,
   People,
-  FolderSpecial,
+  // FolderSpecial,
   Info,
-  ContactPhone,
-  EmojiTransportation,
-  Group as GoverningBody,
-  Work,
-  Announcement,
-  Celebration,
-  PhotoAlbum,
-  Person as Author,
-  Category as BlogCategory,
-  Article,
-  Menu,
-  Pages,
-  School as Faculty,
-  Domain,
-  VideoLibrary,
+  // ContactPhone,
+  // EmojiTransportation,
+  // Group as GoverningBody,
+  // Work,
+  // Announcement,
+  // Celebration,
+  // PhotoAlbum,
+  // Person as Author,
+  // Category as BlogCategory,
+  // Article,
+  // Menu,
+  // Pages,
+  // School as Faculty,
+  // Domain,
+  // VideoLibrary,
   AdminPanelSettings,
   Tune,
-  LiveHelp,
-  VideoSettings,
+  // LiveHelp,
+  // VideoSettings,
   Addchart,
   RestaurantMenu,
   ListAlt,
   AddCircle,
   AssessmentOutlined,
   ClassOutlined,
-  NoteAdd,
+  // NoteAdd,
   PostAdd,
-  StickyNote2,
-  Summarize,
+  // StickyNote2,
+  // Summarize,
   Storage,
   Folder,
   Image as Photos,
@@ -410,37 +410,37 @@ export const navigationItems: NavigationItem[] = [
       },
     ],
   },
-  {
-    title: "Class Report",
-    icon: (
-      <ColorfulIcon color="#DB4437">
-        <StickyNote2 />
-      </ColorfulIcon>
-    ),
-    roles: ["admin", "super_admin", "teacher"],
-    children: [
-      {
-        path: "/dashboard/super_admin/daily-class-report/add",
-        title: "Add Class Report",
-        icon: (
-          <ColorfulIcon color="#DB4437">
-            <NoteAdd />
-          </ColorfulIcon>
-        ),
-        roles: ["super_admin", "admin", "teacher"],
-      },
-      {
-        path: "/dashboard/super_admin/daily-class-report",
-        title: "Class Report",
-        icon: (
-          <ColorfulIcon color="#DB4437">
-            <Summarize />
-          </ColorfulIcon>
-        ),
-        roles: ["super_admin", "admin", "teacher"],
-      },
-    ],
-  },
+  // {
+  //   title: "Class Report",
+  //   icon: (
+  //     <ColorfulIcon color="#DB4437">
+  //       <StickyNote2 />
+  //     </ColorfulIcon>
+  //   ),
+  //   roles: ["admin", "super_admin", "teacher"],
+  //   children: [
+  //     {
+  //       path: "/dashboard/super_admin/daily-class-report/add",
+  //       title: "Add Class Report",
+  //       icon: (
+  //         <ColorfulIcon color="#DB4437">
+  //           <NoteAdd />
+  //         </ColorfulIcon>
+  //       ),
+  //       roles: ["super_admin", "admin", "teacher"],
+  //     },
+  //     {
+  //       path: "/dashboard/super_admin/daily-class-report",
+  //       title: "Class Report",
+  //       icon: (
+  //         <ColorfulIcon color="#DB4437">
+  //           <Summarize />
+  //         </ColorfulIcon>
+  //       ),
+  //       roles: ["super_admin", "admin", "teacher"],
+  //     },
+  //   ],
+  // },
   {
     segment: "super_admin/contact",
     title: "Fees",
@@ -726,88 +726,88 @@ export const navigationItems: NavigationItem[] = [
       },
     ],
   },
-  {
-    segment: "super_admin/review",
-    title: "Donation",
-    icon: (
-      <ColorfulIcon color="#EA4335">
-        <Favorite />
-      </ColorfulIcon>
-    ),
-    roles: ["admin", "super_admin"],
-    children: [
-      {
-        path: "/dashboard/super_admin/review/add",
-        title: "New Account ",
-        icon: (
-          <ColorfulIcon color="#EA4335">
-            <AccountBox />
-          </ColorfulIcon>
-        ),
-        roles: ["super_admin", "admin"],
-      },
-      {
-        path: "/dashboard/super_admin/review/list",
-        title: "Account List ",
-        icon: (
-          <ColorfulIcon color="#EA4335">
-            <FormatListNumbered />
-          </ColorfulIcon>
-        ),
-        roles: ["super_admin", "admin"],
-      },
-      {
-        path: "/dashboard/super_admin/review/list",
-        title: "Instant Donation ",
-        icon: (
-          <ColorfulIcon color="#EA4335">
-            <Favorite />
-          </ColorfulIcon>
-        ),
-        roles: ["super_admin", "admin"],
-      },
-      {
-        path: "/dashboard/super_admin/review/list",
-        title: "Donar Category List ",
-        icon: (
-          <ColorfulIcon color="#EA4335">
-            <Category />
-          </ColorfulIcon>
-        ),
-        roles: ["super_admin", "admin"],
-      },
-      {
-        path: "/dashboard/super_admin/review/list",
-        title: "Donar List ",
-        icon: (
-          <ColorfulIcon color="#EA4335">
-            <People />
-          </ColorfulIcon>
-        ),
-        roles: ["super_admin", "admin"],
-      },
-      {
-        path: "/dashboard/super_admin/review/list",
-        title: "Receive Donations List ",
-        icon: (
-          <ColorfulIcon color="#EA4335">
-            <Receipt />
-          </ColorfulIcon>
-        ),
-        roles: ["super_admin", "admin"],
-      },
-      {
-        path: "/dashboard/super_admin/review/list",
-        title: "Donation Project List ",
-        icon: (
-          <ColorfulIcon color="#EA4335">
-            <FolderSpecial />
-          </ColorfulIcon>
-        ),
-        roles: ["super_admin", "admin"],
-      },
-    ],
-  },
+  // {
+  //   segment: "super_admin/review",
+  //   title: "Donation",
+  //   icon: (
+  //     <ColorfulIcon color="#EA4335">
+  //       <Favorite />
+  //     </ColorfulIcon>
+  //   ),
+  //   roles: ["admin", "super_admin"],
+  //   children: [
+  //     {
+  //       path: "/dashboard/super_admin/review/add",
+  //       title: "New Account ",
+  //       icon: (
+  //         <ColorfulIcon color="#EA4335">
+  //           <AccountBox />
+  //         </ColorfulIcon>
+  //       ),
+  //       roles: ["super_admin", "admin"],
+  //     },
+  //     {
+  //       path: "/dashboard/super_admin/review/list",
+  //       title: "Account List ",
+  //       icon: (
+  //         <ColorfulIcon color="#EA4335">
+  //           <FormatListNumbered />
+  //         </ColorfulIcon>
+  //       ),
+  //       roles: ["super_admin", "admin"],
+  //     },
+  //     {
+  //       path: "/dashboard/super_admin/review/list",
+  //       title: "Instant Donation ",
+  //       icon: (
+  //         <ColorfulIcon color="#EA4335">
+  //           <Favorite />
+  //         </ColorfulIcon>
+  //       ),
+  //       roles: ["super_admin", "admin"],
+  //     },
+  //     {
+  //       path: "/dashboard/super_admin/review/list",
+  //       title: "Donar Category List ",
+  //       icon: (
+  //         <ColorfulIcon color="#EA4335">
+  //           <Category />
+  //         </ColorfulIcon>
+  //       ),
+  //       roles: ["super_admin", "admin"],
+  //     },
+  //     {
+  //       path: "/dashboard/super_admin/review/list",
+  //       title: "Donar List ",
+  //       icon: (
+  //         <ColorfulIcon color="#EA4335">
+  //           <People />
+  //         </ColorfulIcon>
+  //       ),
+  //       roles: ["super_admin", "admin"],
+  //     },
+  //     {
+  //       path: "/dashboard/super_admin/review/list",
+  //       title: "Receive Donations List ",
+  //       icon: (
+  //         <ColorfulIcon color="#EA4335">
+  //           <Receipt />
+  //         </ColorfulIcon>
+  //       ),
+  //       roles: ["super_admin", "admin"],
+  //     },
+  //     {
+  //       path: "/dashboard/super_admin/review/list",
+  //       title: "Donation Project List ",
+  //       icon: (
+  //         <ColorfulIcon color="#EA4335">
+  //           <FolderSpecial />
+  //         </ColorfulIcon>
+  //       ),
+  //       roles: ["super_admin", "admin"],
+  //     },
+  //   ],
+  // },
   {
     title: "Accounting",
     icon: (
@@ -902,57 +902,57 @@ export const navigationItems: NavigationItem[] = [
       },
     ],
   },
-  {
-    title: "Seat Plan",
-    icon: (
-      <ColorfulIcon color="#DB4437">
-        <CalendarViewDay />
-      </ColorfulIcon>
-    ),
-    roles: ["admin", "super_admin"],
-    children: [
-      {
-        path: "/dashboard/super_admin/stock/allimg",
-        title: "Exam Halls ",
-        icon: (
-          <ColorfulIcon color="#DB4437">
-            <MeetingRoom />
-          </ColorfulIcon>
-        ),
-        roles: ["super_admin", "admin"],
-      },
-      {
-        path: "/dashboard/super_admin/stock/allimg",
-        title: "Exam Duration ",
-        icon: (
-          <ColorfulIcon color="#DB4437">
-            <Timer />
-          </ColorfulIcon>
-        ),
-        roles: ["super_admin", "admin"],
-      },
-      {
-        path: "/dashboard/super_admin/stock/allimg",
-        title: "Seat Plans ",
-        icon: (
-          <ColorfulIcon color="#DB4437">
-            <EventSeat />
-          </ColorfulIcon>
-        ),
-        roles: ["super_admin", "admin"],
-      },
-      {
-        path: "/dashboard/super_admin/stock/allimg",
-        title: "Download Seat Plans",
-        icon: (
-          <ColorfulIcon color="#DB4437">
-            <Download />
-          </ColorfulIcon>
-        ),
-        roles: ["super_admin", "admin"],
-      },
-    ],
-  },
+  // {
+  //   title: "Seat Plan",
+  //   icon: (
+  //     <ColorfulIcon color="#DB4437">
+  //       <CalendarViewDay />
+  //     </ColorfulIcon>
+  //   ),
+  //   roles: ["admin", "super_admin"],
+  //   children: [
+  //     {
+  //       path: "/dashboard/super_admin/stock/allimg",
+  //       title: "Exam Halls ",
+  //       icon: (
+  //         <ColorfulIcon color="#DB4437">
+  //           <MeetingRoom />
+  //         </ColorfulIcon>
+  //       ),
+  //       roles: ["super_admin", "admin"],
+  //     },
+  //     {
+  //       path: "/dashboard/super_admin/stock/allimg",
+  //       title: "Exam Duration ",
+  //       icon: (
+  //         <ColorfulIcon color="#DB4437">
+  //           <Timer />
+  //         </ColorfulIcon>
+  //       ),
+  //       roles: ["super_admin", "admin"],
+  //     },
+  //     {
+  //       path: "/dashboard/super_admin/stock/allimg",
+  //       title: "Seat Plans ",
+  //       icon: (
+  //         <ColorfulIcon color="#DB4437">
+  //           <EventSeat />
+  //         </ColorfulIcon>
+  //       ),
+  //       roles: ["super_admin", "admin"],
+  //     },
+  //     {
+  //       path: "/dashboard/super_admin/stock/allimg",
+  //       title: "Download Seat Plans",
+  //       icon: (
+  //         <ColorfulIcon color="#DB4437">
+  //           <Download />
+  //         </ColorfulIcon>
+  //       ),
+  //       roles: ["super_admin", "admin"],
+  //     },
+  //   ],
+  // },
   {
     title: "Exam",
     icon: (
@@ -982,16 +982,16 @@ export const navigationItems: NavigationItem[] = [
         ),
         roles: ["super_admin", "admin"],
       },
-      {
-        path: "/dashboard/super_admin/stock/allimg",
-        title: "Exam Group ",
-        icon: (
-          <ColorfulIcon color="#0F9D58">
-            <Layers />
-          </ColorfulIcon>
-        ),
-        roles: ["super_admin", "admin"],
-      },
+      // {
+      //   path: "/dashboard/super_admin/stock/allimg",
+      //   title: "Exam Group ",
+      //   icon: (
+      //     <ColorfulIcon color="#0F9D58">
+      //       <Layers />
+      //     </ColorfulIcon>
+      //   ),
+      //   roles: ["super_admin", "admin"],
+      // },
       {
         path: "/dashboard/super_admin/stock/allimg",
         title: "Exams",
@@ -1198,158 +1198,158 @@ export const navigationItems: NavigationItem[] = [
       },
     ],
   },
-  {
-    title: "Institute ",
-    icon: (
-      <ColorfulIcon color="#F4B400">
-        <Business />
-      </ColorfulIcon>
-    ),
-    roles: ["admin", "super_admin"],
-    children: [
-      {
-        path: "/dashboard/super_admin/stock/allimg",
-        title: "Institute Messages ",
-        icon: (
-          <ColorfulIcon color="#F4B400">
-            <Info />
-          </ColorfulIcon>
-        ),
-        roles: ["super_admin", "admin"],
-      },
-      {
-        path: "/dashboard/super_admin/stock/allimg",
-        title: "Contacts",
-        icon: (
-          <ColorfulIcon color="#F4B400">
-            <ContactPhone />
-          </ColorfulIcon>
-        ),
-        roles: ["super_admin", "admin"],
-      },
-      {
-        path: "/dashboard/super_admin/stock/allimg",
-        title: "Facilities",
-        icon: (
-          <ColorfulIcon color="#F4B400">
-            <EmojiTransportation />
-          </ColorfulIcon>
-        ),
-        roles: ["super_admin", "admin"],
-      },
-      {
-        path: "/dashboard/super_admin/stock/allimg",
-        title: "Governing Body ",
-        icon: (
-          <ColorfulIcon color="#F4B400">
-            <GoverningBody />
-          </ColorfulIcon>
-        ),
-        roles: ["super_admin", "admin"],
-      },
-      {
-        path: "/dashboard/super_admin/stock/allimg",
-        title: "Jobs ",
-        icon: (
-          <ColorfulIcon color="#F4B400">
-            <Work />
-          </ColorfulIcon>
-        ),
-        roles: ["super_admin", "admin"],
-      },
-    ],
-  },
-  {
-    title: "Publication",
-    icon: (
-      <ColorfulIcon color="#4285F4">
-        <MenuBook />
-      </ColorfulIcon>
-    ),
-    roles: ["admin", "super_admin"],
-    children: [
-      {
-        path: "/dashboard/super_admin/stock/allimg",
-        title: "Notices ",
-        icon: (
-          <ColorfulIcon color="#4285F4">
-            <Announcement />
-          </ColorfulIcon>
-        ),
-        roles: ["super_admin", "admin"],
-      },
-      {
-        path: "/dashboard/super_admin/stock/allimg",
-        title: "Events ",
-        icon: (
-          <ColorfulIcon color="#4285F4">
-            <Celebration />
-          </ColorfulIcon>
-        ),
-        roles: ["super_admin", "admin"],
-      },
-      {
-        path: "/dashboard/super_admin/stock/allimg",
-        title: "Gallery ",
-        icon: (
-          <ColorfulIcon color="#4285F4">
-            <PhotoAlbum />
-          </ColorfulIcon>
-        ),
-        roles: ["super_admin", "admin"],
-      },
-      {
-        path: "/dashboard/super_admin/stock/allimg",
-        title: "Authors ",
-        icon: (
-          <ColorfulIcon color="#4285F4">
-            <Author />
-          </ColorfulIcon>
-        ),
-        roles: ["super_admin", "admin"],
-      },
-      {
-        path: "/dashboard/super_admin/stock/allimg",
-        title: "Blog Category ",
-        icon: (
-          <ColorfulIcon color="#4285F4">
-            <BlogCategory />
-          </ColorfulIcon>
-        ),
-        roles: ["super_admin", "admin"],
-      },
-      {
-        path: "/dashboard/super_admin/stock/allimg",
-        title: "Blogs ",
-        icon: (
-          <ColorfulIcon color="#4285F4">
-            <Article />
-          </ColorfulIcon>
-        ),
-        roles: ["super_admin", "admin"],
-      },
-      {
-        path: "/dashboard/super_admin/stock/allimg",
-        title: "Menu ",
-        icon: (
-          <ColorfulIcon color="#4285F4">
-            <Menu />
-          </ColorfulIcon>
-        ),
-        roles: ["super_admin", "admin"],
-      },
-      {
-        path: "/dashboard/super_admin/stock/allimg",
-        title: "Page ",
-        icon: (
-          <ColorfulIcon color="#4285F4">
-            <Pages />
-          </ColorfulIcon>
-        ),
-        roles: ["super_admin", "admin"],
-      },
-    ],
-  },
+  // {
+  //   title: "Institute ",
+  //   icon: (
+  //     <ColorfulIcon color="#F4B400">
+  //       <Business />
+  //     </ColorfulIcon>
+  //   ),
+  //   roles: ["admin", "super_admin"],
+  //   children: [
+  //     {
+  //       path: "/dashboard/super_admin/stock/allimg",
+  //       title: "Institute Messages ",
+  //       icon: (
+  //         <ColorfulIcon color="#F4B400">
+  //           <Info />
+  //         </ColorfulIcon>
+  //       ),
+  //       roles: ["super_admin", "admin"],
+  //     },
+  //     {
+  //       path: "/dashboard/super_admin/stock/allimg",
+  //       title: "Contacts",
+  //       icon: (
+  //         <ColorfulIcon color="#F4B400">
+  //           <ContactPhone />
+  //         </ColorfulIcon>
+  //       ),
+  //       roles: ["super_admin", "admin"],
+  //     },
+  //     {
+  //       path: "/dashboard/super_admin/stock/allimg",
+  //       title: "Facilities",
+  //       icon: (
+  //         <ColorfulIcon color="#F4B400">
+  //           <EmojiTransportation />
+  //         </ColorfulIcon>
+  //       ),
+  //       roles: ["super_admin", "admin"],
+  //     },
+  //     {
+  //       path: "/dashboard/super_admin/stock/allimg",
+  //       title: "Governing Body ",
+  //       icon: (
+  //         <ColorfulIcon color="#F4B400">
+  //           <GoverningBody />
+  //         </ColorfulIcon>
+  //       ),
+  //       roles: ["super_admin", "admin"],
+  //     },
+  //     {
+  //       path: "/dashboard/super_admin/stock/allimg",
+  //       title: "Jobs ",
+  //       icon: (
+  //         <ColorfulIcon color="#F4B400">
+  //           <Work />
+  //         </ColorfulIcon>
+  //       ),
+  //       roles: ["super_admin", "admin"],
+  //     },
+  //   ],
+  // },
+  // {
+  //   title: "Publication",
+  //   icon: (
+  //     <ColorfulIcon color="#4285F4">
+  //       <MenuBook />
+  //     </ColorfulIcon>
+  //   ),
+  //   roles: ["admin", "super_admin"],
+  //   children: [
+  //     {
+  //       path: "/dashboard/super_admin/stock/allimg",
+  //       title: "Notices ",
+  //       icon: (
+  //         <ColorfulIcon color="#4285F4">
+  //           <Announcement />
+  //         </ColorfulIcon>
+  //       ),
+  //       roles: ["super_admin", "admin"],
+  //     },
+  //     {
+  //       path: "/dashboard/super_admin/stock/allimg",
+  //       title: "Events ",
+  //       icon: (
+  //         <ColorfulIcon color="#4285F4">
+  //           <Celebration />
+  //         </ColorfulIcon>
+  //       ),
+  //       roles: ["super_admin", "admin"],
+  //     },
+  //     {
+  //       path: "/dashboard/super_admin/stock/allimg",
+  //       title: "Gallery ",
+  //       icon: (
+  //         <ColorfulIcon color="#4285F4">
+  //           <PhotoAlbum />
+  //         </ColorfulIcon>
+  //       ),
+  //       roles: ["super_admin", "admin"],
+  //     },
+  //     {
+  //       path: "/dashboard/super_admin/stock/allimg",
+  //       title: "Authors ",
+  //       icon: (
+  //         <ColorfulIcon color="#4285F4">
+  //           <Author />
+  //         </ColorfulIcon>
+  //       ),
+  //       roles: ["super_admin", "admin"],
+  //     },
+  //     {
+  //       path: "/dashboard/super_admin/stock/allimg",
+  //       title: "Blog Category ",
+  //       icon: (
+  //         <ColorfulIcon color="#4285F4">
+  //           <BlogCategory />
+  //         </ColorfulIcon>
+  //       ),
+  //       roles: ["super_admin", "admin"],
+  //     },
+  //     {
+  //       path: "/dashboard/super_admin/stock/allimg",
+  //       title: "Blogs ",
+  //       icon: (
+  //         <ColorfulIcon color="#4285F4">
+  //           <Article />
+  //         </ColorfulIcon>
+  //       ),
+  //       roles: ["super_admin", "admin"],
+  //     },
+  //     {
+  //       path: "/dashboard/super_admin/stock/allimg",
+  //       title: "Menu ",
+  //       icon: (
+  //         <ColorfulIcon color="#4285F4">
+  //           <Menu />
+  //         </ColorfulIcon>
+  //       ),
+  //       roles: ["super_admin", "admin"],
+  //     },
+  //     {
+  //       path: "/dashboard/super_admin/stock/allimg",
+  //       title: "Page ",
+  //       icon: (
+  //         <ColorfulIcon color="#4285F4">
+  //           <Pages />
+  //         </ColorfulIcon>
+  //       ),
+  //       roles: ["super_admin", "admin"],
+  //     },
+  //   ],
+  // },
   {
     title: "Admission",
     icon: (
@@ -1381,108 +1381,108 @@ export const navigationItems: NavigationItem[] = [
       },
     ],
   },
-  {
-    title: "Faculty",
-    icon: (
-      <ColorfulIcon color="#0F9D58">
-        <Groups />
-      </ColorfulIcon>
-    ),
-    roles: ["admin", "super_admin"],
-    children: [
-      {
-        path: "/dashboard/super_admin/stock/allimg",
-        title: "New Faculty",
-        icon: (
-          <ColorfulIcon color="#0F9D58">
-            <Faculty />
-          </ColorfulIcon>
-        ),
-        roles: ["super_admin", "admin"],
-      },
-      {
-        path: "/dashboard/super_admin/stock/allimg",
-        title: "Faculty List",
-        icon: (
-          <ColorfulIcon color="#0F9D58">
-            <FormatListNumbered />
-          </ColorfulIcon>
-        ),
-        roles: ["super_admin", "admin"],
-      },
-      {
-        path: "/dashboard/super_admin/stock/allimg",
-        title: "New Department",
-        icon: (
-          <ColorfulIcon color="#0F9D58">
-            <Domain />
-          </ColorfulIcon>
-        ),
-        roles: ["super_admin", "admin"],
-      },
-      {
-        path: "/dashboard/super_admin/stock/allimg",
-        title: "Department List",
-        icon: (
-          <ColorfulIcon color="#0F9D58">
-            <FormatListNumbered />
-          </ColorfulIcon>
-        ),
-        roles: ["super_admin", "admin"],
-      },
-    ],
-  },
-  {
-    title: "Institute Media ",
-    icon: (
-      <ColorfulIcon color="#F4B400">
-        <PhotoLibrary />
-      </ColorfulIcon>
-    ),
-    roles: ["admin", "super_admin"],
-    children: [
-      {
-        path: "/dashboard/super_admin/stock/allimg",
-        title: "New Media ",
-        icon: (
-          <ColorfulIcon color="#F4B400">
-            <PhotoLibrary />
-          </ColorfulIcon>
-        ),
-        roles: ["super_admin", "admin"],
-      },
-      {
-        path: "/dashboard/super_admin/stock/allimg",
-        title: "Media List",
-        icon: (
-          <ColorfulIcon color="#F4B400">
-            <FormatListNumbered />
-          </ColorfulIcon>
-        ),
-        roles: ["super_admin", "admin"],
-      },
-      {
-        path: "/dashboard/super_admin/stock/allimg",
-        title: "New Video",
-        icon: (
-          <ColorfulIcon color="#F4B400">
-            <VideoLibrary />
-          </ColorfulIcon>
-        ),
-        roles: ["super_admin", "admin"],
-      },
-      {
-        path: "/dashboard/super_admin/stock/allimg",
-        title: "Video List",
-        icon: (
-          <ColorfulIcon color="#F4B400">
-            <FormatListNumbered />
-          </ColorfulIcon>
-        ),
-        roles: ["super_admin", "admin"],
-      },
-    ],
-  },
+  // {
+  //   title: "Faculty",
+  //   icon: (
+  //     <ColorfulIcon color="#0F9D58">
+  //       <Groups />
+  //     </ColorfulIcon>
+  //   ),
+  //   roles: ["admin", "super_admin"],
+  //   children: [
+  //     {
+  //       path: "/dashboard/super_admin/stock/allimg",
+  //       title: "New Faculty",
+  //       icon: (
+  //         <ColorfulIcon color="#0F9D58">
+  //           <Faculty />
+  //         </ColorfulIcon>
+  //       ),
+  //       roles: ["super_admin", "admin"],
+  //     },
+  //     {
+  //       path: "/dashboard/super_admin/stock/allimg",
+  //       title: "Faculty List",
+  //       icon: (
+  //         <ColorfulIcon color="#0F9D58">
+  //           <FormatListNumbered />
+  //         </ColorfulIcon>
+  //       ),
+  //       roles: ["super_admin", "admin"],
+  //     },
+  //     {
+  //       path: "/dashboard/super_admin/stock/allimg",
+  //       title: "New Department",
+  //       icon: (
+  //         <ColorfulIcon color="#0F9D58">
+  //           <Domain />
+  //         </ColorfulIcon>
+  //       ),
+  //       roles: ["super_admin", "admin"],
+  //     },
+  //     {
+  //       path: "/dashboard/super_admin/stock/allimg",
+  //       title: "Department List",
+  //       icon: (
+  //         <ColorfulIcon color="#0F9D58">
+  //           <FormatListNumbered />
+  //         </ColorfulIcon>
+  //       ),
+  //       roles: ["super_admin", "admin"],
+  //     },
+  //   ],
+  // },
+  // {
+  //   title: "Institute Media ",
+  //   icon: (
+  //     <ColorfulIcon color="#F4B400">
+  //       <PhotoLibrary />
+  //     </ColorfulIcon>
+  //   ),
+  //   roles: ["admin", "super_admin"],
+  //   children: [
+  //     {
+  //       path: "/dashboard/super_admin/stock/allimg",
+  //       title: "New Media ",
+  //       icon: (
+  //         <ColorfulIcon color="#F4B400">
+  //           <PhotoLibrary />
+  //         </ColorfulIcon>
+  //       ),
+  //       roles: ["super_admin", "admin"],
+  //     },
+  //     {
+  //       path: "/dashboard/super_admin/stock/allimg",
+  //       title: "Media List",
+  //       icon: (
+  //         <ColorfulIcon color="#F4B400">
+  //           <FormatListNumbered />
+  //         </ColorfulIcon>
+  //       ),
+  //       roles: ["super_admin", "admin"],
+  //     },
+  //     {
+  //       path: "/dashboard/super_admin/stock/allimg",
+  //       title: "New Video",
+  //       icon: (
+  //         <ColorfulIcon color="#F4B400">
+  //           <VideoLibrary />
+  //         </ColorfulIcon>
+  //       ),
+  //       roles: ["super_admin", "admin"],
+  //     },
+  //     {
+  //       path: "/dashboard/super_admin/stock/allimg",
+  //       title: "Video List",
+  //       icon: (
+  //         <ColorfulIcon color="#F4B400">
+  //           <FormatListNumbered />
+  //         </ColorfulIcon>
+  //       ),
+  //       roles: ["super_admin", "admin"],
+  //     },
+  //   ],
+  // },
   {
     title: "Administration",
     icon: (
@@ -1545,37 +1545,37 @@ export const navigationItems: NavigationItem[] = [
       },
     ],
   },
-  {
-    title: "Help",
-    icon: (
-      <ColorfulIcon color="#0F9D58">
-        <Help />
-      </ColorfulIcon>
-    ),
-    roles: ["admin", "super_admin", "teacher", "student"],
-    children: [
-      {
-        path: "/dashboard/super_admin/stock/help",
-        title: "Help",
-        icon: (
-          <ColorfulIcon color="#0F9D58">
-            <LiveHelp />
-          </ColorfulIcon>
-        ),
-        roles: ["super_admin", "admin", "teacher", "student"],
-      },
-      {
-        path: "/dashboard/super_admin/stock/help",
-        title: "Tutorials",
-        icon: (
-          <ColorfulIcon color="#0F9D58">
-            <VideoSettings />
-          </ColorfulIcon>
-        ),
-        roles: ["super_admin", "admin", "teacher", "student"],
-      },
-    ],
-  },
+  // {
+  //   title: "Help",
+  //   icon: (
+  //     <ColorfulIcon color="#0F9D58">
+  //       <Help />
+  //     </ColorfulIcon>
+  //   ),
+  //   roles: ["admin", "super_admin", "teacher", "student"],
+  //   children: [
+  //     {
+  //       path: "/dashboard/super_admin/stock/help",
+  //       title: "Help",
+  //       icon: (
+  //         <ColorfulIcon color="#0F9D58">
+  //           <LiveHelp />
+  //         </ColorfulIcon>
+  //       ),
+  //       roles: ["super_admin", "admin", "teacher", "student"],
+  //     },
+  //     {
+  //       path: "/dashboard/super_admin/stock/help",
+  //       title: "Tutorials",
+  //       icon: (
+  //         <ColorfulIcon color="#0F9D58">
+  //           <VideoSettings />
+  //         </ColorfulIcon>
+  //       ),
+  //       roles: ["super_admin", "admin", "teacher", "student"],
+  //     },
+  //   ],
+  // },
   {
     title: "Gallery",
     icon: (
