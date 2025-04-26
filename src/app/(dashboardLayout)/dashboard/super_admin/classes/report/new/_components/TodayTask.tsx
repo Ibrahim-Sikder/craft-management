@@ -18,12 +18,9 @@ interface TodayTaskProps {
 export default function TodayTask({ open, onClose, onSave }: TodayTaskProps) {
   const [loading, setLoading] = useState(false)
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async () => {
     try {
       setLoading(true)
-      // Here you would make an API call to save the home task
-      // For example:
-      // const response = await createHomeTask(data).unwrap()
 
       // Simulate API call with timeout
       await new Promise((resolve) => setTimeout(resolve, 1000))

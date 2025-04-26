@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
 import { useState } from "react"
@@ -16,12 +17,9 @@ interface TodayLessonProps {
 export default function TodayLesson({ open, onClose, onSave }: TodayLessonProps) {
   const [loading, setLoading] = useState(false)
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async () => {
     try {
-      setLoading(true)
-      // Here you would make an API call to save the today's lesson
-      // For example:
-      // const response = await createTodayLesson(data).unwrap()
+      setLoading(true)     
 
       // Simulate API call with timeout
       await new Promise((resolve) => setTimeout(resolve, 1000))
