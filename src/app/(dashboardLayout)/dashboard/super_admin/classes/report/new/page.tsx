@@ -82,7 +82,11 @@ export default function ClassesListPage() {
   const [openLesson, setLessonOpen] = useState(false)
   const handleLessonOpen = () => setLessonOpen(true)
   const handleLessonClose = () => setLessonOpen(false)
-  const storedUser = getFromLocalStorage('user-info');
+  // const storedUser = getFromLocalStorage('user-info');
+
+  const storedUserString = getFromLocalStorage('user-info');
+  const storedUser = storedUserString ? JSON.parse(storedUserString) : null;
+
 
   const theme = customTheme
   // const isMobile = useMediaQuery(theme.breakpoints.down("sm"))
@@ -96,7 +100,7 @@ export default function ClassesListPage() {
     }, 1000)
   }, [refreshKey])
 
-  const handleSubmit = (data) => {
+  const handleSubmit = (data: any) => {
     console.log(data)
   }
 
@@ -211,7 +215,7 @@ export default function ClassesListPage() {
                         বাড়ির কাজ
                       </Button>
                       <Button
-                      type="submit"
+                        type="submit"
                         variant="contained"
                         color="primary"
                         startIcon={<Save />}
@@ -230,63 +234,61 @@ export default function ClassesListPage() {
 
                   <Paper elevation={0} sx={{ mb: 4, overflow: "hidden" }}>
                     <Box sx={{ p: 3, borderBottom: "1px solid rgba(0, 0, 0, 0.06)" }}>
-                   
-                        <Grid container spacing={2} alignItems="center" gap={3}>
-                          <Grid container spacing={2}>
-                            {/* Teacher Name */}
-                            <Grid item xs={12} md={4}>
 
-                              <CraftSelectWithSearch
-                                name="teacher"
-                                label="শিক্ষকের নাম"
-                                placeholder="শিক্ষকের নাম লিখুন"
-                                options={teacherName}
-                                defaultValue={storedUser?.name}
+                      <Grid container spacing={2} alignItems="center" gap={3}>
+                        <Grid container spacing={2}>
+                          {/* Teacher Name */}
+                          <Grid item xs={12} md={4}>
 
-                              />
+                            <CraftSelectWithSearch
+                              name="teacher"
+                              label="শিক্ষকের নাম"
+                              placeholder="শিক্ষকের নাম লিখুন"
+                              options={teacherName}
+                              defaultValue={storedUser?.name}
+                            />
 
-                            </Grid>
+                          </Grid>
 
-                            <Grid item xs={12} md={2}>
-                              <CraftIntAutoComplete
-                                name="class"
-                                label="শ্রেণীর নাম লিখুন"
-                                fullWidth
-                                freeSolo
-                                multiple={false}
-                                options={className.map((option) => option.label)}
-
-
-                                onInputChange={(event, newValue) => { }}
-                                onChange={handleClassName}
-                              />
-                            </Grid>
-                            <Grid item xs={12} md={3}>
-                              <CraftIntAutoComplete
-                                name="subject"
-                                label="বিষয়ের নাম লিখুন"
-                                fullWidth
-                                freeSolo
-                                multiple={false}
-                                options={filteredSubjects.map((option) => option.value)}
-                                onInputChange={(event, newValue) => { }}
-                              />
-                            </Grid>
-                            <Grid item xs={12} md={1}>
-                              <CraftSelect
-                                name="hour"
-                                label="ঘন্টা"
-                                items={classHour}
-                                sx={{ minWidth: 100 }}
-                              />
-                            </Grid>
-                            {/* Date */}
-                            <Grid item xs={12} md={2}>
-                              <CraftDatePicker name="date" label="তারিখ" />
-                            </Grid>
+                          <Grid item xs={12} md={2}>
+                            <CraftIntAutoComplete
+                              name="class"
+                              label="শ্রেণীর নাম লিখুন"
+                              fullWidth
+                              freeSolo
+                              multiple={false}
+                              // options={className.map((option) => option.label)}
+                              options={className}
+                              onInputChange={(event, newValue) => { }}
+                              onChange={handleClassName}
+                            />
+                          </Grid>
+                          <Grid item xs={12} md={3}>
+                            <CraftIntAutoComplete
+                              name="subject"
+                              label="বিষয়ের নাম লিখুন"
+                              fullWidth
+                              freeSolo
+                              multiple={false}
+                              options={filteredSubjects.map((option) => option.value)}
+                              onInputChange={(event, newValue) => { }}
+                            />
+                          </Grid>
+                          <Grid item xs={12} md={1}>
+                            <CraftSelect
+                              name="hour"
+                              label="ঘন্টা"
+                              items={classHour}
+                              sx={{ minWidth: 100 }}
+                            />
+                          </Grid>
+                          {/* Date */}
+                          <Grid item xs={12} md={2}>
+                            <CraftDatePicker name="date" label="তারিখ" />
                           </Grid>
                         </Grid>
-                      
+                      </Grid>
+
                     </Box>
 
                     {loading ? (

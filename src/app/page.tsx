@@ -36,16 +36,22 @@ const loginSchema = z.object({
 });
 
 interface LoginResponse {
+
   data: {
     accessToken: string;
+    user: {
+      id: string;
+      name: string;
+      email: string;
+    }
   };
   message: string;
 }
 
-const defualtValues = {
-  email: '',
-  password: '',
-}
+// const defualtValues = {
+//   email: '',
+//   password: '',
+// }
 
 const LoginDashboard = () => {
   const [login, { error, isLoading, isSuccess }] = useLoginMutation() as any;
@@ -59,7 +65,7 @@ const LoginDashboard = () => {
       setCookie('craft-token', res?.data?.accessToken, { expires: 7 });
 
       // Store entire user data in localStorage
-      localStorage.setItem('user-info', JSON.stringify(res.data.user));
+      localStorage.setItem('user-info', JSON.stringify(res.data?.user));
 
       // Optional: store just the token too if you still want it separately
       storeUserInfo({ accessToken: res?.data?.accessToken });

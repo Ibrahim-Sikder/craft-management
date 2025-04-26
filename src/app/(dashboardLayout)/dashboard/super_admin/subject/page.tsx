@@ -61,7 +61,6 @@ import {
 } from "@mui/icons-material"
 import { Roboto } from "next/font/google"
 import Link from "next/link"
-import { format } from "date-fns"
 
 const roboto = Roboto({
   weight: ["300", "400", "500", "700"],
@@ -451,13 +450,13 @@ export default function SubjectManagementPage() {
     return colors[index]
   }
 
-  const formatDate = (dateString: string) => {
-    try {
-      return format(new Date(dateString), "MMM dd, yyyy")
-    } catch (error) {
-      return "Invalid date"
-    }
-  }
+  // const formatDate = (dateString: string) => {
+  //   try {
+  //     return format(new Date(dateString), "MMM dd, yyyy")
+  //   } catch (error) {
+  //     return "Invalid date"
+  //   }
+  // }
 
   return (
     <ThemeProvider theme={theme}>
