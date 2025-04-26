@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
@@ -20,12 +21,13 @@ import {
     Switch,
     FormControlLabel,
     Tooltip,
+    IconButton,
 } from "@mui/material"
-
+import { Class as ClassIcon, Person as PersonIcon, Add as AddIcon, Remove as RemoveIcon } from "@mui/icons-material"
 import { Roboto } from "next/font/google"
 import CraftForm from "@/components/Forms/Form"
 import CraftSelect from "@/components/Forms/Select"
-import { classes, className, paper } from "@/options"
+import { paper } from "@/options"
 
 import CraftInput from "@/components/Forms/Input"
 import {
@@ -38,14 +40,15 @@ import {
     Save as SaveIcon,
     CloudUpload as CloudUploadIcon,
 } from "@mui/icons-material"
-import { useState } from "react"
-import CraftIntAutoComplete from "@/components/Forms/CruftAutocomplete"
+import { useMemo, useState } from "react"
 import CraftInputWithIcon from "@/components/Forms/inputWithIcon"
 import FileUploadWithIcon from "@/components/Forms/Upload"
 import type { FieldValues } from "react-hook-form"
-import { useCreateSubjectMutation, useGetSingleSubjectQuery, useUpdateSubjectMutation } from "@/redux/api/subjectApi"
+import { useCreateSubjectMutation, useUpdateSubjectMutation } from "@/redux/api/subjectApi"
 import toast from "react-hot-toast"
 import { useRouter } from "next/navigation"
+import { useGetAllClassesQuery } from "@/redux/api/classApi"
+import CraftIntAutoCompleteWithIcon from "@/components/Forms/AutocompleteWithIcon"
 
 const roboto = Roboto({
     weight: ["300", "400", "500", "700"],
@@ -171,37 +174,113 @@ export default function NewSubject({ id }: any) {
     const router = useRouter()
     const [createSubject] = useCreateSubjectMutation()
     const [updateSubject] = useUpdateSubjectMutation()
-    const { } = useGetSingleSubjectQuery({ id })
+    const [page, setPage] = useState(0)
+    const [rowsPerPage, setRowsPerPage] = useState(10)
+    const [searchTerm, setSearchTerm] = useState("")
+    // const { data: singleSubject } = useGetSingleSubjectQuery({ id })
+    const { data: classData } = useGetAllClassesQuery({
+        limit: rowsPerPage,
+        page: page + 1,
+        searchTerm: searchTerm,
+    })
     const [isOptional, setIsOptional] = useState(false)
+    const [lessons, setLessons] = useState([{ lessonNo: 1, lessonName: "" }])
     const theme = customTheme
 
+
+    const classOption = useMemo(() => {
+        if (!classData?.data?.classes) return []
+        return classData?.data?.classes.map((clg: any) => ({
+            label: clg.className,
+            value: clg._id,
+        }))
+    }, [classData])
+
+
     const handleSubmit = async (data: FieldValues) => {
+        const classArray = Array.isArray(data.classes)
+            ? data.classes
+                .map((item: any) => {
+                    if (item && typeof item === "object" && "value" in item) {
+                        return item.value
+                    }
+                    return null
+                })
+                .filter(Boolean)
+            : []
+
+        const teacherArray = Array.isArray(data.teachers)
+            ? data.teachers
+                .map((item: any) => {
+                    if (item && typeof item === "object" && "value" in item) {
+                        return item.value
+                    }
+                    return null
+                })
+                .filter(Boolean)
+            : []
+
+        // Format lessons array from form data
+        const formattedLessons = lessons.map((lesson, index) => ({
+            lessonNo: index + 1,
+            lessonName: lesson.lessonName,
+        }))
+
+        const modifyValues = {
+            ...data,
+            classes: classArray,
+            teachers: teacherArray,
+            isOptional: isOptional,
+            lessons: formattedLessons,
+        }
+        console.log(modifyValues)
         try {
-            let res;
+            let res
 
             if (!id) {
-
-                res = await createSubject({ ...data }).unwrap();
+                res = await createSubject(modifyValues).unwrap()
                 if (res.success) {
-                    toast.success("User created successfully!");
-                    router.push('/dashboard/super_admin/user-management');
-
+                    toast.success("Subject created successfully!")
+                    router.push("/dashboard/super_admin/subject")
                 }
             } else {
-
-                res = await updateSubject({ id, ...data }).unwrap();
+                res = await updateSubject({ id, body: modifyValues }).unwrap()
                 if (res.success) {
-                    toast.success("User updated successfully!");
-                    router.push('/dashboard/super_admin/user-management');
+                    toast.success("Subject updated successfully!")
+                    router.push("/dashboard/super_admin/subject")
                 }
             }
         } catch (err) {
-            toast.error(err instanceof Error ? err.message : "Failed to process user!");
+            toast.error(err instanceof Error ? err.message : "Failed to process subject!")
         }
-    };
+    }
 
     const handleOptionalChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setIsOptional(event.target.checked)
+    }
+
+    const handleLessonChange = (index: number, value: string) => {
+        const updatedLessons = [...lessons]
+        updatedLessons[index] = { ...updatedLessons[index], lessonName: value }
+        setLessons(updatedLessons)
+    }
+
+    const addLessonField = () => {
+        setLessons([...lessons, { lessonNo: lessons.length + 1, lessonName: "" }])
+    }
+
+    const removeLessonField = (index: number) => {
+        if (lessons.length === 1) return
+        const updatedLessons = [...lessons]
+        updatedLessons.splice(index, 1)
+
+        // Renumber lessons
+        const renumberedLessons = updatedLessons.map((lesson, idx) => ({
+            ...lesson,
+            lessonNo: idx + 1,
+        }))
+
+        setLessons(renumberedLessons)
     }
 
     return (
@@ -260,10 +339,12 @@ export default function NewSubject({ id }: any) {
                                                     gap: 1,
                                                 }}
                                             >
-                                                <MenuBook fontSize="large" /> Add New Subject
+                                                <MenuBook fontSize="large" /> {id ? "Update Subject" : "Add New Subject"}
                                             </Typography>
                                             <Typography variant="body1" color="text.secondary">
-                                                Create a new subject with lessons, class assignment, and more
+                                                {id
+                                                    ? "Update existing subject details"
+                                                    : "Create a new subject with lessons, class assignment, and more"}
                                             </Typography>
                                         </Box>
                                         <Box sx={{ display: "flex", gap: 2 }}></Box>
@@ -350,14 +431,28 @@ export default function NewSubject({ id }: any) {
                                                 </Grid>
 
                                                 <Grid item xs={12} md={6}>
-                                                    <CraftSelect size="medium" name="Paper" label="Paper" items={paper} fullWidth required />
-                                                </Grid>
-                                                <Grid item xs={12} md={6}>
-                                                    <CraftSelect size="medium" name="Class" label="Class" items={classes} fullWidth required />
+                                                    <CraftSelect size="medium" name="paper" label="Paper" items={paper} fullWidth required />
                                                 </Grid>
 
                                                 <Grid item xs={12} md={6}>
-                                                    <CraftIntAutoComplete name="classId" label="Select Class" options={className} fullWidth />
+                                                    <CraftIntAutoCompleteWithIcon
+                                                        name="classes"
+                                                        label="Select Classes"
+                                                        options={classOption}
+                                                        fullWidth
+                                                        multiple
+                                                        icon={<ClassIcon color="primary" />}
+                                                    />
+                                                </Grid>
+                                                <Grid item xs={12} md={6}>
+                                                    <CraftIntAutoCompleteWithIcon
+                                                        name="teachers"
+                                                        label="Select Teachers"
+                                                        options={classOption}
+                                                        fullWidth
+                                                        multiple
+                                                        icon={<PersonIcon color="secondary" />}
+                                                    />
                                                 </Grid>
 
                                                 <Grid item xs={12} md={6}>
@@ -399,18 +494,52 @@ export default function NewSubject({ id }: any) {
                                                     </Divider>
                                                 </Grid>
 
-                                                <Grid item xs={12} md={6}>
-                                                    <CraftInputWithIcon
-                                                        name="lesson"
-                                                        label="Total Lesson"
-                                                        placeholder="Write Total Lesson"
-                                                        fullWidth
-                                                        type="number"
-                                                        InputProps={{
-                                                            startAdornment: <FormatListNumbered sx={{ color: "primary.main", mr: 1 }} />,
-                                                        }}
-                                                    />
-                                                </Grid>
+                                                {lessons.map((lesson, index) => (
+                                                    <Grid item xs={12} key={index}>
+                                                        <Box
+                                                            sx={{
+                                                                display: "flex",
+                                                                alignItems: "center",
+                                                                gap: 2,
+                                                                p: 2,
+                                                                borderRadius: 2,
+                                                                border: "1px solid rgba(0, 0, 0, 0.08)",
+                                                                bgcolor: "rgba(99, 102, 241, 0.02)",
+                                                            }}
+                                                        >
+                                                            <Chip label={`Lesson ${lesson.lessonNo}`} color="primary" sx={{ minWidth: 100 }} />
+                                                            <CraftInput
+                                                                name={`lessonName_${index}`}
+                                                                label="Lesson Name"
+                                                                placeholder="Enter lesson name"
+                                                                value={lesson.lessonName}
+                                                                onChange={(e: any) => handleLessonChange(index, e.target.value)}
+                                                                sx={{ flexGrow: 1 }}
+                                                            />
+                                                            <IconButton
+                                                                color="error"
+                                                                onClick={() => removeLessonField(index)}
+                                                                disabled={lessons.length === 1}
+                                                                sx={{
+                                                                    border: "1px solid rgba(239, 68, 68, 0.5)",
+                                                                    borderRadius: "50%",
+                                                                }}
+                                                            >
+                                                                <RemoveIcon />
+                                                            </IconButton>
+                                                            <IconButton
+                                                                color="primary"
+                                                                onClick={addLessonField}
+                                                                sx={{
+                                                                    border: "1px solid rgba(99, 102, 241, 0.5)",
+                                                                    borderRadius: "50%",
+                                                                }}
+                                                            >
+                                                                <AddIcon />
+                                                            </IconButton>
+                                                        </Box>
+                                                    </Grid>
+                                                ))}
 
                                                 <Grid item xs={12}>
                                                     <Divider sx={{ my: 1 }}>
@@ -460,9 +589,7 @@ export default function NewSubject({ id }: any) {
                                                             },
                                                         }}
                                                     >
-                                                        {
-                                                            id ? 'Update Subject' : '  Save Subject'
-                                                        }
+                                                        {id ? "Update Subject" : "Save Subject"}
                                                     </Button>
                                                 </Grid>
                                             </Grid>
