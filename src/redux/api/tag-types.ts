@@ -4,6 +4,7 @@ export const tagTypesList = [
   'meal-report',
   'class',
   'subject',
+  'user'
   
   
 ] as const;

@@ -1,30 +1,56 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
+import type React from "react"
+
 import {
     Box,
     Container,
     Button,
-    Paper,
     Fade,
     createTheme,
     ThemeProvider,
+    Grid,
+    Typography,
+    Divider,
+    Chip,
+    alpha,
+    Card,
+    CardContent,
+    Switch,
+    FormControlLabel,
+    Tooltip,
 } from "@mui/material"
 
 import { Roboto } from "next/font/google"
 import CraftForm from "@/components/Forms/Form"
 import CraftSelect from "@/components/Forms/Select"
-import { classes, paper } from "@/options"
+import { classes, className, paper } from "@/options"
 
 import CraftInput from "@/components/Forms/Input"
-import { Add, Remove } from "@mui/icons-material"
+import {
+    MenuBook,
+    School,
+    Assignment,
+    Code,
+    FormatListNumbered,
+    Info as InfoIcon,
+    Save as SaveIcon,
+    CloudUpload as CloudUploadIcon,
+} from "@mui/icons-material"
 import { useState } from "react"
+import CraftIntAutoComplete from "@/components/Forms/CruftAutocomplete"
+import CraftInputWithIcon from "@/components/Forms/inputWithIcon"
+import FileUploadWithIcon from "@/components/Forms/Upload"
+import type { FieldValues } from "react-hook-form"
+import { useCreateSubjectMutation, useGetSingleSubjectQuery, useUpdateSubjectMutation } from "@/redux/api/subjectApi"
+import toast from "react-hot-toast"
+import { useRouter } from "next/navigation"
 
 const roboto = Roboto({
     weight: ["300", "400", "500", "700"],
     subsets: ["latin"],
 })
-
 
 const customTheme = createTheme({
     palette: {
@@ -141,141 +167,312 @@ const customTheme = createTheme({
     },
 })
 
-export default function NewUser() {
-    const [lessonNames, setLessonNames] = useState<string[]>([""])
-
+export default function NewSubject({ id }: any) {
+    const router = useRouter()
+    const [createSubject] = useCreateSubjectMutation()
+    const [updateSubject] = useUpdateSubjectMutation()
+    const { } = useGetSingleSubjectQuery({ id })
+    const [isOptional, setIsOptional] = useState(false)
     const theme = customTheme
 
-    const handleSubmit = () => {
-    }
+    const handleSubmit = async (data: FieldValues) => {
+        try {
+            let res;
 
-    const handleLessonChange = (index: number, value: string) => {
-        const updated = [...lessonNames]
-        updated[index] = value
-        setLessonNames(updated)
-    }
+            if (!id) {
 
-    const addLessonField = () => {
-        setLessonNames([...lessonNames, ""])
-    }
+                res = await createSubject({ ...data }).unwrap();
+                if (res.success) {
+                    toast.success("User created successfully!");
+                    router.push('/dashboard/super_admin/user-management');
 
-    const removeLessonField = (index: number) => {
-        if (lessonNames.length === 1) return 
-        const updated = [...lessonNames]
-        updated.splice(index, 1)
-        setLessonNames(updated)
-    }
-    
+                }
+            } else {
 
+                res = await updateSubject({ id, ...data }).unwrap();
+                if (res.success) {
+                    toast.success("User updated successfully!");
+                    router.push('/dashboard/super_admin/user-management');
+                }
+            }
+        } catch (err) {
+            toast.error(err instanceof Error ? err.message : "Failed to process user!");
+        }
+    };
+
+    const handleOptionalChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setIsOptional(event.target.checked)
+    }
 
     return (
         <>
             <ThemeProvider theme={theme}>
-                <Box sx={{ flexGrow: 1, bgcolor: "background.default", minHeight: "100vh", borderRadius: 2 }}>
-                    <Container maxWidth="xl" sx={{ mt: 0, mb: 8, borderRadius: 2 }}>
-                        <Fade in={true} timeout={800}>
-                            <Box>
-                                <Box
-                                    sx={{
-                                        display: "flex",
-                                        justifyContent: "space-between",
-                                        alignItems: "center",
-                                        mb: 3,
-                                        flexWrap: "wrap",
-                                        gap: 2,
-                                        paddingTop: 2,
-                                    }}
-                                >
-                                    <h1 className="font-[900] text-black text-2xl md:text-5xl text-left">+ Add New Subject</h1>
-                                    <Box sx={{ display: "flex", gap: 2 }}>
-                                        <Button
-                                            variant="contained"
-                                            color="primary"
-                                            startIcon={<Add />}
+                <CraftForm onSubmit={handleSubmit}>
+                    <Box
+                        sx={{
+                            flexGrow: 1,
+                            bgcolor: "background.default",
+                            minHeight: "100vh",
+                            borderRadius: 2,
+                            background: "linear-gradient(135deg, #f5f7fa 0%, #e4e7eb 100%)",
+                        }}
+                    >
+                        <Container maxWidth="xl" sx={{ mt: 0, mb: 8, borderRadius: 2, pt: 2 }}>
+                            <Fade in={true} timeout={800}>
+                                <Box>
+                                    <Box
+                                        sx={{
+                                            display: "flex",
+                                            justifyContent: "space-between",
+                                            alignItems: "center",
+                                            mb: 4,
+                                            flexWrap: "wrap",
+                                            gap: 2,
+                                            paddingTop: 2,
+                                            position: "relative",
+                                            "&::after": {
+                                                content: '""',
+                                                position: "absolute",
+                                                bottom: -10,
+                                                left: 0,
+                                                width: "100%",
+                                                height: "4px",
+                                                background: "linear-gradient(90deg, #6366f1, #818cf8, #6366f1)",
+                                                borderRadius: "2px",
+                                                opacity: 0.7,
+                                            },
+                                        }}
+                                    >
+                                        <Box>
+                                            <Typography
+                                                variant="h4"
+                                                component="h1"
+                                                sx={{
+                                                    fontWeight: 900,
+                                                    background: "linear-gradient(45deg, #6366f1, #818cf8)",
+                                                    backgroundClip: "text",
+                                                    textFillColor: "transparent",
+                                                    mb: 1,
+                                                    letterSpacing: "-0.5px",
+                                                    textShadow: "0px 2px 4px rgba(0,0,0,0.1)",
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    gap: 1,
+                                                }}
+                                            >
+                                                <MenuBook fontSize="large" /> Add New Subject
+                                            </Typography>
+                                            <Typography variant="body1" color="text.secondary">
+                                                Create a new subject with lessons, class assignment, and more
+                                            </Typography>
+                                        </Box>
+                                        <Box sx={{ display: "flex", gap: 2 }}></Box>
+                                    </Box>
+
+                                    <Card
+                                        elevation={0}
+                                        sx={{
+                                            mb: 4,
+                                            border: "1px solid rgba(0,0,0,0.08)",
+                                            position: "relative",
+                                            overflow: "visible",
+                                            borderRadius: "16px",
+                                            boxShadow: "0 10px 30px rgba(0, 0, 0, 0.05)",
+                                            transition: "all 0.3s ease",
+                                            "&:hover": {
+                                                boxShadow: "0 15px 35px rgba(0, 0, 0, 0.1)",
+                                            },
+                                        }}
+                                    >
+                                        <Box
                                             sx={{
-                                                bgcolor: "#4F0187",
-                                                borderRadius: 2,
-                                                boxShadow: "0px 4px 10px rgba(99, 102, 241, 0.2)",
+                                                position: "absolute",
+                                                top: -20,
+                                                left: 24,
+                                                bgcolor: "#6366f1",
+                                                color: "white",
+                                                py: 1,
+                                                px: 3,
+                                                borderRadius: "12px",
+                                                boxShadow: "0 8px 20px rgba(99, 102, 241, 0.25)",
+                                                zIndex: 1,
+                                                display: "flex",
+                                                alignItems: "center",
+                                                gap: 1,
                                             }}
                                         >
-                                            Add
-                                        </Button>
-                                    </Box>
-                                </Box>
+                                            <Assignment />
+                                            <Typography variant="subtitle1" fontWeight="bold">
+                                                Subject Information
+                                            </Typography>
+                                        </Box>
+                                        <CardContent sx={{ pt: 4, mt: 2 }}>
+                                            <Grid container spacing={3}>
+                                                <Grid item xs={12} md={6}>
+                                                    <CraftInputWithIcon
+                                                        name="code"
+                                                        label="Subject Code"
+                                                        placeholder="Write Subject Code"
+                                                        required
+                                                        fullWidth
+                                                        InputProps={{
+                                                            startAdornment: <Code sx={{ color: "primary.main", mr: 1 }} />,
+                                                        }}
+                                                    />
+                                                </Grid>
+                                                <Grid item xs={12} md={6}>
+                                                    <CraftInputWithIcon
+                                                        name="name"
+                                                        label="Subject Name"
+                                                        placeholder="Write Subject Name"
+                                                        required
+                                                        fullWidth
+                                                        InputProps={{
+                                                            startAdornment: <MenuBook sx={{ color: "primary.main", mr: 1 }} />,
+                                                        }}
+                                                    />
+                                                </Grid>
 
-                                <Paper elevation={0} sx={{ mb: 4, overflow: "hidden" }}>
-                                    <Box sx={{ p: 3, borderBottom: "1px solid rgba(0, 0, 0, 0.06)" }}>
-                                        <CraftForm onSubmit={handleSubmit}>
+                                                <Grid item xs={12}>
+                                                    <Divider sx={{ my: 1 }}>
+                                                        <Chip
+                                                            label="Classification"
+                                                            icon={<School />}
+                                                            sx={{
+                                                                bgcolor: alpha(theme.palette.primary.main, 0.1),
+                                                                color: "primary.main",
+                                                                fontWeight: 500,
+                                                                borderRadius: "8px",
+                                                                py: 0.5,
+                                                            }}
+                                                        />
+                                                    </Divider>
+                                                </Grid>
 
-                                            <div className="md:flex gap-5 space-y-4">
-                                                <CraftInput
-                                                    name="code"
-                                                    label="Subject Code"
-                                                    placeholder="Write Subject Code"
-                                                    sx={{ minWidth: 150 }}
-                                                />
-                                                <CraftInput
-                                                    name="name"
-                                                    label="Subject Name"
-                                                    placeholder="Write Subject Name"
-                                                    sx={{ minWidth: 350 }}
-                                                />
-                                                <CraftSelect
-                                                    size="medium"
-                                                    name="Paper"
-                                                    label="Paper"
-                                                    items={paper}
-                                                    sx={{ minWidth: 50 }}
-                                                />
+                                                <Grid item xs={12} md={6}>
+                                                    <CraftSelect size="medium" name="Paper" label="Paper" items={paper} fullWidth required />
+                                                </Grid>
+                                                <Grid item xs={12} md={6}>
+                                                    <CraftSelect size="medium" name="Class" label="Class" items={classes} fullWidth required />
+                                                </Grid>
 
-                                                <CraftSelect
-                                                    size="medium"
-                                                    name="Class"
-                                                    label="Role"
-                                                    items={classes}
-                                                    sx={{ minWidth: 50 }}
-                                                />
+                                                <Grid item xs={12} md={6}>
+                                                    <CraftIntAutoComplete name="classId" label="Select Class" options={className} fullWidth />
+                                                </Grid>
 
-                                                <CraftInput
-                                                    name="lesson"
-                                                    label="Total Lesson"
-                                                    placeholder="Write Total Lesson"
-                                                    sx={{ minWidth: 150 }}
-                                                />
-
-                                                <div className="flex flex-col gap-3 w-full">
-                                                    {lessonNames.map((lesson: any, index: any) => (
-                                                        <div key={index} className="flex gap-3 items-center">
-                                                            <CraftInput
-                                                                name={`lessonName_${index}`}
-                                                                label={`Lesson Name ${index + 1}`}
-                                                                placeholder="Write Lesson Name"
-                                                                value={lesson}
-                                                                onChange={(e: any) => handleLessonChange(index, e.target.value)}
-                                                                sx={{ minWidth: 350, flexGrow: 1 }}
+                                                <Grid item xs={12} md={6}>
+                                                    <FormControlLabel
+                                                        control={
+                                                            <Switch
+                                                                checked={isOptional}
+                                                                onChange={handleOptionalChange}
+                                                                name="isOptional"
+                                                                color="primary"
                                                             />
-                                                            <button                                                            
-                                                                className="border border-red-400 rounded-full p-1 cursor-pointer"
-                                                                onClick={() => removeLessonField(index)}
-                                                            >
-                                                                <Remove sx={{ color: "red" }} />
-                                                            </button>
-                                                            <button className="border border-blue-400 rounded-full p-1 cursor-pointer" onClick={addLessonField}>
-                                                                <Add />
-                                                            </button>
-                                                        </div>
-                                                    ))}
+                                                        }
+                                                        label={
+                                                            <Box sx={{ display: "flex", alignItems: "center" }}>
+                                                                <Typography variant="body1" sx={{ mr: 1 }}>
+                                                                    Optional Subject
+                                                                </Typography>
+                                                                <Tooltip title="Mark this subject as optional for students">
+                                                                    <InfoIcon fontSize="small" color="action" />
+                                                                </Tooltip>
+                                                            </Box>
+                                                        }
+                                                    />
+                                                </Grid>
 
-                                                </div>
+                                                <Grid item xs={12}>
+                                                    <Divider sx={{ my: 1 }}>
+                                                        <Chip
+                                                            label="Lesson Information"
+                                                            icon={<FormatListNumbered />}
+                                                            sx={{
+                                                                bgcolor: alpha(theme.palette.primary.main, 0.1),
+                                                                color: "primary.main",
+                                                                fontWeight: 500,
+                                                                borderRadius: "8px",
+                                                                py: 0.5,
+                                                            }}
+                                                        />
+                                                    </Divider>
+                                                </Grid>
 
-                                            </div>
-                                        </CraftForm>
-                                    </Box>
-                                </Paper>
-                            </Box>
-                        </Fade>
-                    </Container>
-                </Box>
+                                                <Grid item xs={12} md={6}>
+                                                    <CraftInputWithIcon
+                                                        name="lesson"
+                                                        label="Total Lesson"
+                                                        placeholder="Write Total Lesson"
+                                                        fullWidth
+                                                        type="number"
+                                                        InputProps={{
+                                                            startAdornment: <FormatListNumbered sx={{ color: "primary.main", mr: 1 }} />,
+                                                        }}
+                                                    />
+                                                </Grid>
+
+                                                <Grid item xs={12}>
+                                                    <Divider sx={{ my: 1 }}>
+                                                        <Chip
+                                                            label="Resources"
+                                                            icon={<CloudUploadIcon />}
+                                                            sx={{
+                                                                bgcolor: alpha(theme.palette.primary.main, 0.1),
+                                                                color: "primary.main",
+                                                                fontWeight: 500,
+                                                                borderRadius: "8px",
+                                                                py: 0.5,
+                                                            }}
+                                                        />
+                                                    </Divider>
+                                                </Grid>
+
+                                                <Grid item xs={12} md={6}>
+                                                    <FileUploadWithIcon name="image" label="Subject Image" />
+                                                </Grid>
+
+                                                <Grid item xs={12} md={6}>
+                                                    <CraftInput
+                                                        name="paper"
+                                                        label="Paper Document URL"
+                                                        placeholder="Enter paper document URL or upload"
+                                                        fullWidth
+                                                    />
+                                                </Grid>
+                                                <Grid item xs={12} sx={{ mt: 3, display: "flex", justifyContent: "flex-end" }}>
+                                                    <Button
+                                                        variant="contained"
+                                                        color="primary"
+                                                        startIcon={<SaveIcon />}
+                                                        type="submit"
+                                                        sx={{
+                                                            bgcolor: "#6366f1",
+                                                            borderRadius: "12px",
+                                                            boxShadow: "0px 8px 20px rgba(99, 102, 241, 0.25)",
+                                                            px: 4,
+                                                            py: 1.5,
+                                                            transition: "all 0.3s ease",
+                                                            "&:hover": {
+                                                                bgcolor: "#4f46e5",
+                                                                transform: "translateY(-2px)",
+                                                                boxShadow: "0px 10px 25px rgba(99, 102, 241, 0.35)",
+                                                            },
+                                                        }}
+                                                    >
+                                                        {
+                                                            id ? 'Update Subject' : '  Save Subject'
+                                                        }
+                                                    </Button>
+                                                </Grid>
+                                            </Grid>
+                                        </CardContent>
+                                    </Card>
+                                </Box>
+                            </Fade>
+                        </Container>
+                    </Box>
+                </CraftForm>
             </ThemeProvider>
         </>
     )

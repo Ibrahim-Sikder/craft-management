@@ -612,6 +612,7 @@ const StudentForm = ({ id }: StudentFormProps) => {
               placeholder="Select Batch"
               items={batches}
               adornment={<People color="action" />}
+              
             />
           </Grid>
 
