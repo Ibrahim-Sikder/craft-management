@@ -57,7 +57,7 @@ import toast from "react-hot-toast"
 import { useRouter } from "next/navigation"
 import { useCreateClassReportMutation } from "@/redux/api/classReportApi"
 
-export default function ClassesReportListPage() {
+export default function DailyReport() {
   const router = useRouter()
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(10)
@@ -82,19 +82,6 @@ export default function ClassesReportListPage() {
   const [todayLessonId, setTodayLessonId] = useState<string | null>(null)
   const [homeTaskId, setHomeTaskId] = useState<string | null>(null)
 
-  const [openTask, setTaskOpen] = useState(false)
-  const handleTaskOpen = () => {
-    setHomeTaskId(null) // Reset when opening new modal
-    setTaskOpen(true)
-  }
-  const handleTaskClose = () => setTaskOpen(false)
-
-  const [openLesson, setLessonOpen] = useState(false)
-  const handleLessonOpen = () => {
-    setTodayLessonId(null) // Reset when opening new modal
-    setLessonOpen(true)
-  }
-  const handleLessonClose = () => setLessonOpen(false)
   const storedUser = getFromLocalStorage("user-info")
 
   const theme = customTheme
@@ -285,7 +272,7 @@ export default function ClassesReportListPage() {
                         variant="contained"
                         color="primary"
                         startIcon={<Add />}
-                        onClick={handleTaskOpen}
+                      
                         sx={{
                           bgcolor: "",
                           borderRadius: 2,
@@ -298,7 +285,7 @@ export default function ClassesReportListPage() {
                         variant="contained"
                         color="primary"
                         startIcon={<Add />}
-                        onClick={handleLessonOpen}
+                       
                         sx={{
                           bgcolor: "#3792de",
                           borderRadius: 2,
@@ -584,32 +571,7 @@ export default function ClassesReportListPage() {
           </Snackbar>
         </CraftForm>
       </ThemeProvider>
-      {openTask && (
-        <TodayTask
-          open={openTask}
-          setOpen={handleTaskClose}
-          onSave={(taskId) => {
-            // Update form data with the homeTask ID
-            const formData = new FormData()
-            formData.append("homeTask", taskId)
-            // You can access this value in your handleSubmit function
-            console.log("Home Task ID saved:", taskId)
-          }}
-        />
-      )}
-      {openLesson && (
-        <TodayLesson
-          open={openLesson}
-          setOpen={handleLessonClose}
-          onSave={(lessonId) => {
-            // Update form data with the todayLesson ID
-            const formData = new FormData()
-            formData.append("todayLesson", lessonId)
-            // You can access this value in your handleSubmit function
-            console.log("Today's Lesson ID saved:", lessonId)
-          }}
-        />
-      )}
+     
     </>
   )
 }
