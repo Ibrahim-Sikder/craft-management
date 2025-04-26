@@ -483,7 +483,7 @@ export default function SubjectManagementPage() {
                     color="primary"
                     startIcon={<AddIcon />}
                     component={Link}
-                    href="/dashboard/admin/subject-management/new"
+                    href="/dashboard/super_admin/subject/new"
                     sx={{
                       borderRadius: 2,
                       boxShadow: "0px 4px 10px rgba(99, 102, 241, 0.2)",
