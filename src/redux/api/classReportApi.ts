@@ -29,10 +29,10 @@ export const classReportApi = baseApi.injectEndpoints({
     }),
 
     updateClassReport: build.mutation({
-      query: ({ id, ...data }) => ({
+      query: ({ id, body }) => ({
         url: `/class-report/${id}`,
         method: "PATCH",
-        body: data,
+        data: body,
       }),
       invalidatesTags: ["class-report"],
     }),

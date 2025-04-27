@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
 import { useState } from "react"
@@ -6,6 +7,8 @@ import { Close as CloseIcon } from "@mui/icons-material"
 import CraftTextArea from "@/components/Forms/TextArea"
 import CraftForm from "@/components/Forms/Form"
 import toast from "react-hot-toast"
+import { useCreateTodayLessonMutation } from "@/redux/api/todayLessonApi"
+import { FieldValues } from "react-hook-form"
 
 interface TodayLessonProps {
   open: boolean
@@ -14,28 +17,20 @@ interface TodayLessonProps {
 }
 
 export default function TodayLesson({ open, onClose, onSave }: TodayLessonProps) {
+  const [createTodayLesson] = useCreateTodayLessonMutation()
   const [loading, setLoading] = useState(false)
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (data: FieldValues) => {
     try {
       setLoading(true)
-      // Here you would make an API call to save the today's lesson
-      // For example:
-      // const response = await createTodayLesson(data).unwrap()
-
-      // Simulate API call with timeout
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      // Mock response with a fake ID
-      const mockResponse = { success: true, data: { _id: "lesson_" + Date.now() } }
-
-      if (mockResponse.success) {
+      const res = await createTodayLesson(data).unwrap()
+      if (res.success) {
         toast.success("আজকের পাঠ সফলভাবে সংরক্ষণ করা হয়েছে!")
-        onSave(mockResponse.data._id)
         onClose()
+        onSave(res.data._id)
       }
+
     } catch (error: any) {
-      console.error("Error saving today's lesson:", error)
       toast.error(error?.data?.message || "আজকের পাঠ সংরক্ষণ করতে ব্যর্থ হয়েছে")
     } finally {
       setLoading(false)

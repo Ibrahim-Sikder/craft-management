@@ -28,15 +28,15 @@ export const subjectApi = baseApi.injectEndpoints({
       providesTags: ["subject"],
     }),
 
-    updateSubject: build.mutation({
-      query: ({ id, ...data }) => ({
-        url: `/subject/${id}`,
-        method: "PATCH",
-        body: data,
-      }),
-      invalidatesTags: ["subject"],
-    }),
-
+// In your API file
+updateSubject: build.mutation({
+  query: ({ id, body }) => ({
+    url: `/subject/${id}`,
+    method: "PATCH",
+    data: body,
+  }),
+  invalidatesTags: ["subject"],
+}),
     deleteSubject: build.mutation({
       query: (id) => ({
         url: `/subject/${id}`,

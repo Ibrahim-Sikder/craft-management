@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
@@ -8,6 +9,8 @@ import CraftTextArea from "@/components/Forms/TextArea"
 import CraftForm from "@/components/Forms/Form"
 import CraftDatePicker from "@/components/Forms/DatePicker"
 import toast from "react-hot-toast"
+import { useCreateTodayTaskMutation } from "@/redux/api/todayTaskApi"
+import { FieldValues } from "react-hook-form"
 
 interface TodayTaskProps {
   open: boolean
@@ -16,34 +19,25 @@ interface TodayTaskProps {
 }
 
 export default function TodayTask({ open, onClose, onSave }: TodayTaskProps) {
+  const [createTodayTask] = useCreateTodayTaskMutation()
   const [loading, setLoading] = useState(false)
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (data: FieldValues) => {
     try {
       setLoading(true)
-      // Here you would make an API call to save the home task
-      // For example:
-      // const response = await createHomeTask(data).unwrap()
-
-      // Simulate API call with timeout
-      await new Promise((resolve) => setTimeout(resolve, 1000))
-
-      // Mock response with a fake ID
-      const mockResponse = { success: true, data: { _id: "task_" + Date.now() } }
-
-      if (mockResponse.success) {
-        toast.success("বাড়ির কাজ সফলভাবে সংরক্ষণ করা হয়েছে!")
-        onSave(mockResponse.data._id)
+      const res = await createTodayTask(data).unwrap()
+      if (res.success) {
+        toast.success("আজকের বাড়ির কাজ সফলভাবে সংরক্ষণ করা হয়েছে!")
         onClose()
+        onSave(res.data._id)
       }
+
     } catch (error: any) {
-      console.error("Error saving home task:", error)
-      toast.error(error?.data?.message || "বাড়ির কাজ সংরক্ষণ করতে ব্যর্থ হয়েছে")
+      toast.error(error?.data?.message || "আজকের বাড়ির কাজ সংরক্ষণ করতে ব্যর্থ হয়েছে")
     } finally {
       setLoading(false)
     }
   }
-
   return (
     <Dialog
       open={open}

@@ -1,15 +1,15 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 
 'use client'
-import React from 'react';
-
+import React from 'react';;
 import { useSearchParams } from 'next/navigation';
-import SubjectForm from '../_components/SubjectForm';
+import ClassReportForm from '../new/_components/ClassReportForm';
 
 const page = () => {
     const searchParams = useSearchParams();
     const id = searchParams.get('id') || '';
-    return <SubjectForm id={id} />
+    return <ClassReportForm id={id} />
 };
 
 export default page;
+

@@ -1,37 +1,16 @@
-// /* eslint-disable react-hooks/rules-of-hooks */
-
-// 'use client'
-// import React from 'react';;
-// import { useSearchParams } from 'next/navigation';
-// import UserForm from '../_components/UserForm';
-
-// const page = () => {
-//     const searchParams = useSearchParams();
-//     const id = searchParams.get('id') || '';
-//     return <UserForm id={id} />
-// };
-
-// export default page;
-
+/* eslint-disable react-hooks/rules-of-hooks */
 
 'use client'
-
-import React, { Suspense } from 'react';
-import UserForm from '../_components/UserForm';
+import React from 'react';;
 import { useSearchParams } from 'next/navigation';
+import UserForm from '../_components/UserForm';
 
-const Page = () => {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <UserFormWrapper />
-    </Suspense>
-  );
+const page = () => {
+    const searchParams = useSearchParams();
+    const id = searchParams.get('id') || '';
+    return <UserForm id={id} />
 };
 
-const UserFormWrapper = () => {
-  const searchParams = useSearchParams();
-  const id = searchParams.get('id') || '';
-  return <UserForm id={id} />;
-};
+export default page;
 
-export default Page;
+
