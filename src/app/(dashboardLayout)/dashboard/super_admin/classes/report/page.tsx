@@ -63,6 +63,9 @@ import {
   Download as DownloadIcon,
   Print as PrintIcon,
   Refresh as RefreshIcon,
+  Check,
+  Close,
+  Remove,
 } from "@mui/icons-material"
 import Link from "next/link"
 import { customTheme } from "@/ThemeStyle"
@@ -93,6 +96,11 @@ export default function ClassReportList({ id }: ClassReportProps) {
   const [selectedReport, setSelectedReport] = useState<any | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
+  const [subjectFilter, setSubjectFilter] = useState<string | null>(null)
+  const [hourFilter, setHourFilter] = useState<string | null>(null)
+  // const [dateFilter, setDateFilter] = useState<Date | null>(null)
+  const [subjectAnchorEl, setSubjectAnchorEl] = useState<null | HTMLElement>(null);
+  const [hourAnchorEl, setHourAnchorEl] = useState<null | HTMLElement>(null);
 
   // API queries
   const {
@@ -282,6 +290,9 @@ export default function ClassReportList({ id }: ClassReportProps) {
         }
     }
   }
+
+  const hourOptions = Array.from({ length: 12 }, (_, i) => `${i + 1}`)
+
 
   return (
     <ThemeProvider theme={theme}>
@@ -649,6 +660,14 @@ export default function ClassReportList({ id }: ClassReportProps) {
                                   <TableCell>
                                     <Typography variant="body2">{studentCount}</Typography>
                                   </TableCell>
+                                  <TableCell component="th" scope="row">
+                                    <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                                      {/* {classItem.name} */}
+                                    </Typography>
+                                  </TableCell>
+
+
+
                                   <TableCell>
                                     <Chip
                                       icon={
@@ -688,7 +707,23 @@ export default function ClassReportList({ id }: ClassReportProps) {
                                           : alpha(theme.palette.error.main, 0.1),
                                       }}
                                     />
+
                                   </TableCell>
+                                  <TableCell align="center">
+{/* 
+                                    <Chip
+                                      icon={statusChipProps.icon}
+                                      label={classItem.status}
+                                      color={statusChipProps.color}
+                                      size="small"
+                                      sx={{
+                                        ...statusChipProps.sx,
+                                        fontWeight: 500,
+                                      }}
+                                    /> */}
+
+                                  </TableCell>
+
                                   <TableCell>
                                     <Typography variant="body2" color="text.secondary">
                                       {formatDate(report.createdAt)}

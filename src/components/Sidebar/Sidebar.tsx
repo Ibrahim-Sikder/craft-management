@@ -34,99 +34,99 @@ interface SidebarProps {
 const Sidebar: React.FC<SidebarProps> = ({ open }) => {
   const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
 
-  const toggleNestedList = (title: string) => {
-    setOpenItems(prev => ({
-      ...prev,
-      [title]: !prev[title]
-    }));
-  };
+  // const toggleNestedList = (title: string) => {
+  //   setOpenItems(prev => ({
+  //     ...prev,
+  //     [title]: !prev[title]
+  //   }));
+  // };
 
-  const renderNavigationItems = (items: NavigationItem[], nested = false) => {
-    return items.map((item) => (
-      <React.Fragment key={item.title}>
-        {item.path ? (
-          <Link href={item.path} passHref>
-            <ListItem
-              component="div"
-              onClick={() => item.children && toggleNestedList(item.title)}
-              sx={{
-                pl: nested ? 4 : 2,
-                justifyContent: !open && !nested ? 'center' : 'flex-start',
-                cursor: 'pointer'
-              }}
-            >
-              {item.icon && (
-                <ListItemIcon
-                  sx={{
-                    minWidth: 'auto',
-                    mr: open ? 2 : 0,
-                    justifyContent: 'center'
-                  }}
-                >
-                  {item.icon}
-                </ListItemIcon>
-              )}
-              {open && <ListItemText primary={item.title} />}
-              {item.children && open && (
-                openItems[item.title] ? <ExpandMore /> : <ChevronRight />
-              )}
-            </ListItem>
-          </Link>
-        ) : (
-          <ListItem
-            component="div"
-            onClick={() => toggleNestedList(item.title)}
-            sx={{
-              pl: nested ? 4 : 2,
-              justifyContent: !open && !nested ? 'center' : 'flex-start',
-              cursor: 'pointer'
-            }}
-          >
-            {item.icon && (
-              <ListItemIcon
-                sx={{
-                  minWidth: 'auto',
-                  mr: open ? 2 : 0,
-                  justifyContent: 'center'
-                }}
-              >
-                {item.icon}
-              </ListItemIcon>
-            )}
-            {open && <ListItemText primary={item.title} />}
-            {item.children && open && (
-              openItems[item.title] ? <ExpandMore /> : <ChevronRight />
-            )}
-          </ListItem>
-        )}
+  // const renderNavigationItems = (items: NavigationItem[], nested = false) => {
+  //   return items.map((item) => (
+  //     <React.Fragment key={item.title}>
+  //       {item.path ? (
+  //         <Link href={item.path} passHref>
+  //           <ListItem
+  //             component="div"
+  //             onClick={() => item.children && toggleNestedList(item.title)}
+  //             sx={{
+  //               pl: nested ? 4 : 2,
+  //               justifyContent: !open && !nested ? 'center' : 'flex-start',
+  //               cursor: 'pointer'
+  //             }}
+  //           >
+  //             {item.icon && (
+  //               <ListItemIcon
+  //                 sx={{
+  //                   minWidth: 'auto',
+  //                   mr: open ? 2 : 0,
+  //                   justifyContent: 'center'
+  //                 }}
+  //               >
+  //                 {item.icon}
+  //               </ListItemIcon>
+  //             )}
+  //             {open && <ListItemText primary={item.title} />}
+  //             {item.children && open && (
+  //               openItems[item.title] ? <ExpandMore /> : <ChevronRight />
+  //             )}
+  //           </ListItem>
+  //         </Link>
+  //       ) : (
+  //         <ListItem
+  //           component="div"
+  //           onClick={() => toggleNestedList(item.title)}
+  //           sx={{
+  //             pl: nested ? 4 : 2,
+  //             justifyContent: !open && !nested ? 'center' : 'flex-start',
+  //             cursor: 'pointer'
+  //           }}
+  //         >
+  //           {item.icon && (
+  //             <ListItemIcon
+  //               sx={{
+  //                 minWidth: 'auto',
+  //                 mr: open ? 2 : 0,
+  //                 justifyContent: 'center'
+  //               }}
+  //             >
+  //               {item.icon}
+  //             </ListItemIcon>
+  //           )}
+  //           {open && <ListItemText primary={item.title} />}
+  //           {item.children && open && (
+  //             openItems[item.title] ? <ExpandMore /> : <ChevronRight />
+  //           )}
+  //         </ListItem>
+  //       )}
 
-        {item.children && (
-          <Collapse
-            in={open && openItems[item.title]}
-            timeout="auto"
-            unmountOnExit
-          >
-            <List component="div" disablePadding>
-              {item.children.map((child) => (
-                <Link key={child.title} href={child.path || ''} passHref>
-                  <ListItem
-                    component="div"
-                    sx={{
-                      pl: 4,
-                      justifyContent: !open ? 'center' : 'flex-start',
-                      cursor: 'pointer'
-                    }}
-                  >
-                    {open && <ListItemText primary={child.title} />}
-                  </ListItem>
-                </Link>
-              ))}
-            </List>
-          </Collapse>
-        )}
-      </React.Fragment>
-    ));
-  };
+  //       {item.children && (
+  //         <Collapse
+  //           in={open && openItems[item.title]}
+  //           timeout="auto"
+  //           unmountOnExit
+  //         >
+  //           <List component="div" disablePadding>
+  //             {item.children.map((child) => (
+  //               <Link key={child.title} href={child.path || ''} passHref>
+  //                 <ListItem
+  //                   component="div"
+  //                   sx={{
+  //                     pl: 4,
+  //                     justifyContent: !open ? 'center' : 'flex-start',
+  //                     cursor: 'pointer'
+  //                   }}
+  //                 >
+  //                   {open && <ListItemText primary={child.title} />}
+  //                 </ListItem>
+  //               </Link>
+  //             ))}
+  //           </List>
+  //         </Collapse>
+  //       )}
+  //     </React.Fragment>
+  //   ));
+  // };
 
   return (
     <Drawer
