@@ -105,10 +105,11 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
       refetchOnMountOrArgChange: true,
     },
   )
+  console.log(singlesTeacher)
   useEffect(() => {
     if (singlesTeacher && singlesTeacher.data) {
       const teacher = singlesTeacher.data
-     
+
 
       // Set selected subjects if available
       if (teacher.professionalInfo?.subjectsTaught) {
@@ -286,7 +287,7 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
         }
       } else {
         const res = await createTeacher(submissionData).unwrap()
-   
+
         if (res.success) {
           setSuccess(true)
           setSnackbar({
@@ -431,9 +432,9 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
               fullWidth
               label="Date of Birth"
               name="dateOfBirth"
-              InputProps={{
-                startAdornment: <Cake sx={{ color: "text.secondary", mr: 1 }} />,
-              }}
+            // InputProps={{
+            //   startAdornment: <Cake sx={{ color: "text.secondary", mr: 1 }} />,
+            // }}
             />
           </Grid>
           <Grid item xs={12} md={4}>
@@ -682,9 +683,9 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
               label="Joining Date"
               name="joiningDate"
               size="medium"
-              InputProps={{
-                startAdornment: <EventNote sx={{ color: "text.secondary", mr: 1 }} />,
-              }}
+            // InputProps={{
+            //   startAdornment: <EventNote sx={{ color: "text.secondary", mr: 1 }} />,
+            // }}
             />
           </Grid>
           <Grid item xs={12} md={4}>
@@ -801,66 +802,66 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
             <Typography variant="h6" color="primary" gutterBottom>
               Certifications
             </Typography>
-            <Paper  elevation={2} sx={{ p: 2, mb: 3, position: "relative", borderRadius: 2 }}>
-            <IconButton
-                    size="small"
-                    sx={{
-                      position: "absolute",
-                      top: 8,
-                      right: 8,
-                      color: "error.main",
+            <Paper elevation={2} sx={{ p: 2, mb: 3, position: "relative", borderRadius: 2 }}>
+              <IconButton
+                size="small"
+                sx={{
+                  position: "absolute",
+                  top: 8,
+                  right: 8,
+                  color: "error.main",
+                }}
+              // onClick={() => removeCertification(index)}
+              >
+                <Clear fontSize="small" />
+              </IconButton>
+              <Grid container spacing={3}>
+                <Grid item xs={12} md={6}>
+                  <CraftInputWithIcon
+                    fullWidth
+                    label="Certificate Name"
+                    name="name"
+                    size="medium"
+                    InputProps={{
+                      startAdornment: <CardMembership sx={{ color: "text.secondary", mr: 1 }} />,
                     }}
-                    // onClick={() => removeCertification(index)}
-                  >
-                    <Clear fontSize="small" />
-                  </IconButton>
-                <Grid container spacing={3}>
-                  <Grid item xs={12} md={6}>
-                    <CraftInputWithIcon
-                      fullWidth
-                      label="Certificate Name"
-                      name="name"
-                      size="medium"
-                      InputProps={{
-                        startAdornment: <CardMembership sx={{ color: "text.secondary", mr: 1 }} />,
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12} md={6}>
-                    <CraftInputWithIcon
-                      fullWidth
-                      label="Issued By"
-                      name="issuedBy"
-                      size="medium"
-                      InputProps={{
-                        startAdornment: <BusinessCenter sx={{ color: "text.secondary", mr: 1 }} />,
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12} md={6}>
-                    <CraftInputWithIcon
-                      fullWidth
-                      label="Year"
-                      name="year"
-                      size="medium"
-                      InputProps={{
-                        startAdornment: <CalendarMonth sx={{ color: "text.secondary", mr: 1 }} />,
-                      }}
-                    />
-                  </Grid>
-                  <Grid item xs={12} md={6}>
-                    <CraftInputWithIcon
-                      fullWidth
-                      label="Description"
-                      name="description"
-                      size="medium"
-                      InputProps={{
-                        startAdornment: <CardMembership sx={{ color: "text.secondary", mr: 1 }} />,
-                      }}
-                    />
-                  </Grid>
+                  />
                 </Grid>
-              </Paper>
+                <Grid item xs={12} md={6}>
+                  <CraftInputWithIcon
+                    fullWidth
+                    label="Issued By"
+                    name="issuedBy"
+                    size="medium"
+                    InputProps={{
+                      startAdornment: <BusinessCenter sx={{ color: "text.secondary", mr: 1 }} />,
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <CraftInputWithIcon
+                    fullWidth
+                    label="Year"
+                    name="year"
+                    size="medium"
+                    InputProps={{
+                      startAdornment: <CalendarMonth sx={{ color: "text.secondary", mr: 1 }} />,
+                    }}
+                  />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                  <CraftInputWithIcon
+                    fullWidth
+                    label="Description"
+                    name="description"
+                    size="medium"
+                    InputProps={{
+                      startAdornment: <CardMembership sx={{ color: "text.secondary", mr: 1 }} />,
+                    }}
+                  />
+                </Grid>
+              </Grid>
+            </Paper>
             <Button variant="outlined" startIcon={<Add />} onClick={addCertification} sx={{ mb: 4, borderRadius: 100 }}>
               Add Certification
             </Button>

@@ -127,7 +127,7 @@ export const teacherName = [
   
   export const staffTypes = ["Teacher", "Staff", "Other"]
   export const residenceTypes = ["Residential", "Non-residential"]
- export  const languages = ["English", "Spanish", "French", "German", "Chinese", "Arabic", "Hindi", "Bengali", "Other"]
+ export  const languages = ["English", "Bangla"]
   export const subjects = [
     "Mathematics",
     "Physics",

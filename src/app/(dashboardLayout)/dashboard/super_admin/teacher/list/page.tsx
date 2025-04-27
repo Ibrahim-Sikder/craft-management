@@ -75,6 +75,7 @@ import {
   StyledCard,
   ViewToggleButton,
 } from "@/style/customeStyle"
+import { useRouter } from "next/navigation"
 
 // Mock data
 const departmentColors: Record<string, string> = {
@@ -109,6 +110,7 @@ export default function TeachersDashboard() {
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(10)
   const [searchTerm, setSearchTerm] = useState("")
+  const router = useRouter()
   const {
     data: teacherData,
     isLoading,
@@ -134,6 +136,7 @@ export default function TeachersDashboard() {
   }
 
   const handleEditTeacher = (teacher: Teacher) => {
+    router.push(`/dashboard/super_admin/teacher/update?id=${teacher._id}`)
     setSelectedTeacher(teacher)
     setEditDialogOpen(true)
     handleTeacherMenuClose()
@@ -279,9 +282,8 @@ export default function TeachersDashboard() {
                   transition={{ duration: 0.5, delay: 0.2 }}
                 >
                   <Button
-
                     component={Link}
-                    href='/dashboard/super_admin/teacher/new'
+                    href="/dashboard/super_admin/teacher/new"
                     variant="contained"
                     startIcon={<AddIcon />}
                     sx={{
@@ -525,7 +527,6 @@ export default function TeachersDashboard() {
             <Grid item xs={12}>
               <Grid container spacing={3}>
                 {filteredTeachers.map((teacher, index) => {
-                
                   return (
                     <Grid item xs={12} sm={6} md={4} lg={3} key={teacher.id}>
                       <motion.div
@@ -815,7 +816,13 @@ export default function TeachersDashboard() {
                           <StatusChip label={teacher.status} size="small" status={teacher.status} />
                           <Box sx={{ display: "flex", justifyContent: "center", gap: 1 }}>
                             <Tooltip title="View Profile">
-                              <IconButton component={Link} href={`/dashboard/super_admin/teacher/profile?id=${teacher._id}`} size="small" color="primary" onClick={() => handleViewTeacher(teacher)}>
+                              <IconButton
+                                component={Link}
+                                href={`/dashboard/super_admin/teacher/profile?id=${teacher._id}`}
+                                size="small"
+                                color="primary"
+                                onClick={() => handleViewTeacher(teacher)}
+                              >
                                 <Visibility fontSize="small" />
                               </IconButton>
                             </Tooltip>
@@ -952,7 +959,12 @@ export default function TeachersDashboard() {
                                 </Box>
                                 <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 1 }}>
                                   <Tooltip title="View Profile">
-                                    <IconButton component={Link} href={`/dashboard/super_admin/teacher/profile?id=${teacher._id}`} size="small" color="primary">
+                                    <IconButton
+                                      component={Link}
+                                      href={`/dashboard/super_admin/teacher/profile?id=${teacher._id}`}
+                                      size="small"
+                                      color="primary"
+                                    >
                                       <Visibility fontSize="small" />
                                     </IconButton>
                                   </Tooltip>

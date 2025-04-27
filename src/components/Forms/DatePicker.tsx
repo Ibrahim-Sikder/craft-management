@@ -1,6 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable no-unused-vars */
-/* eslint-disable react/prop-types */
+
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
@@ -27,7 +25,6 @@ const CraftDatePicker = ({
   fullWidth = true,
   margin = "normal",
   sx,
-  disableFuture = true,
 }: ITASDatepickerProps) => {
   const { control } = useFormContext();
 
