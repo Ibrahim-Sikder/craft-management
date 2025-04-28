@@ -930,7 +930,7 @@ export default function UserManagementPage() {
                                         <IconButton
                                           size="small"
                                           component={Link}
-                                          href={`/dashboard/super_admin/user-management/edit?id=${user._id}`}
+                                          href={`/dashboard/super_admin/user-management/edit/${user._id}`}
                                           sx={{
                                             color: "warning.main",
                                             bgcolor: alpha(theme.palette.warning.main, 0.1),

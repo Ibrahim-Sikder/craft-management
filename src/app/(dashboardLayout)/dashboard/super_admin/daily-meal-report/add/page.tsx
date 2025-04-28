@@ -455,7 +455,7 @@ export default function MealReportAdd() {
       const debugData = JSON.stringify(mealReportData, null, 2)
       setDebugInfo(`Submitting: ${debugData}`)
 
-      const directResponse = await fetch("http://localhost:5000/api/v1/meal-report", {
+      const directResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_API_URL}/meal-report`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

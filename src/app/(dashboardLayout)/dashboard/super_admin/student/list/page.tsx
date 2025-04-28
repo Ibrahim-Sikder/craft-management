@@ -542,7 +542,7 @@ const StudentList = () => {
                           <Tooltip title="Edit Student">
                             <IconButton
                             component={Link}
-                            href={`/dashboard/super_admin/student/update?id=${student._id}`}
+                            href={`/dashboard/super_admin/student/update/${student._id}`}
                               size="small"
                               sx={{
                                 color: customColors.primary,

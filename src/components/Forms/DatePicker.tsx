@@ -1,20 +1,20 @@
-import { SxProps } from "@mui/material";
+
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { Controller, useFormContext } from "react-hook-form";
-import dayjs from 'dayjs';
+import dayjs, { Dayjs } from "dayjs";
+import { SxProps } from "@mui/material";
 
-interface IDatePicker {
+interface ITASDatepickerProps {
   name: string;
   size?: "small" | "medium";
   label?: string;
   required?: boolean;
   fullWidth?: boolean;
-  sx?: SxProps;
   margin?: "none" | "normal" | "dense";
-  disablePast?: boolean;
-  InputProps?: object; 
+  sx?: SxProps;
+  disableFuture?: boolean;
 }
 
 const CraftDatePicker = ({
@@ -24,27 +24,29 @@ const CraftDatePicker = ({
   required,
   fullWidth = true,
   margin = "normal",
-  // disablePast = true,
-  InputProps, 
   sx,
-}: IDatePicker) => {
+}: ITASDatepickerProps) => {
   const { control } = useFormContext();
 
   return (
     <Controller
       name={name}
       control={control}
+      defaultValue={dayjs().format("YYYY-MM-DD")} // Set default value
       render={({ field: { onChange, value, ...field } }) => {
-        // Ensure value is a dayjs object or null
-        const dateValue = value ? dayjs(value) : null;
+        const dateValue: Dayjs = value ? dayjs(value) : dayjs();
 
         return (
           <LocalizationProvider dateAdapter={AdapterDayjs}>
             <DesktopDatePicker
               label={label}
               {...field}
-              onChange={(date) => onChange(date ? date.toISOString() : null)} 
+              onChange={(date: Dayjs | null) => {
+                const finalDate = date || dayjs();
+                onChange(finalDate.format("YYYY-MM-DD"));
+              }}
               value={dateValue}
+              // maxDate={disableFuture ? dayjs() : undefined}
               slotProps={{
                 textField: {
                   required: required,
@@ -55,7 +57,6 @@ const CraftDatePicker = ({
                   variant: "outlined",
                   fullWidth: fullWidth,
                   margin: margin,
-                  InputProps: InputProps, // Move InputProps here
                 },
               }}
             />

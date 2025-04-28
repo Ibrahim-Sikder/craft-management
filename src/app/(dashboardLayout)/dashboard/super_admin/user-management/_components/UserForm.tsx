@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client"
 
@@ -45,10 +46,8 @@ import { theme } from "@/lib/Theme/Theme"
 
 import type { FieldValues } from "react-hook-form"
 import { useRouter } from "next/navigation"
-interface UserProps {
-    id: string;
-}
-export default function UserForm({ id }: UserProps) {
+
+export default function UserForm({ id }: any) {
     console.log(id)
     const [activeStep, setActiveStep] = useState(0)
     const [showPassword, setShowPassword] = useState(false)
@@ -78,32 +77,32 @@ export default function UserForm({ id }: UserProps) {
 
     const handleSubmit = async (data: FieldValues) => {
         try {
-          let res;
-      
-          if (!id) {
-     
-            res = await createUser({ ...data }).unwrap();
-            if (res.success) {
-              toast.success("User created successfully!");
-              router.push('/dashboard/super_admin/user-management');
-              setActiveStep(0);
+            let res;
+
+            if (!id) {
+
+                res = await createUser({ ...data }).unwrap();
+                if (res.success) {
+                    toast.success("User created successfully!");
+                    router.push('/dashboard/super_admin/user-management');
+                    setActiveStep(0);
+                }
+            } else {
+
+                res = await updateUser({ id, ...data }).unwrap();
+                if (res.success) {
+                    toast.success("User updated successfully!");
+                    router.push('/dashboard/super_admin/user-management');
+                }
             }
-          } else {
-         
-            res = await updateUser({ id, ...data }).unwrap();
-            if (res.success) {
-              toast.success("User updated successfully!");
-              router.push('/dashboard/super_admin/user-management');
-            }
-          }
         } catch (err) {
-          toast.error(err instanceof Error ? err.message : "Failed to process user!");
+            toast.error(err instanceof Error ? err.message : "Failed to process user!");
         }
-      };
-      
+    };
 
 
-      
+
+
 
     return (
         singleUserLoading ? (

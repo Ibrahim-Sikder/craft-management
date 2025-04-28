@@ -1,18 +1,15 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { styled } from "@mui/material/styles"
+import { styled } from "@mui/material/styles";
 import {
-    Box,
-    Card,
-    Chip,
-
-    Badge,
- 
-    alpha,
-    Button,
-    TextField,
-
-  } from "@mui/material"
-import { TeacherStatus } from "@/interface"
+  Box,
+  Card,
+  Chip,
+  Badge,
+  alpha,
+  Button,
+  TextField,
+} from "@mui/material";
+import { TeacherStatus } from "@/interface";
 
 // Styled components
 export const StyledCard = styled(Card)(({ theme }) => ({
@@ -25,7 +22,7 @@ export const StyledCard = styled(Card)(({ theme }) => ({
     transform: "translateY(-8px)",
     boxShadow: "0 16px 70px rgba(0, 0, 0, 0.2)",
   },
-}))
+}));
 
 export const GradientHeader = styled(Box)(({ theme }) => ({
   background: "linear-gradient(90deg, #3a7bd5 0%, #00d2ff 100%)",
@@ -41,10 +38,11 @@ export const GradientHeader = styled(Box)(({ theme }) => ({
     left: 0,
     width: "100%",
     height: "100%",
-    background: 'url("/placeholder.svg?height=200&width=1000") center/cover no-repeat',
+    background:
+      'url("/placeholder.svg?height=200&width=1000") center/cover no-repeat',
     opacity: 0.1,
   },
-}))
+}));
 
 export const StyledBadge = styled(Badge)(({ theme }) => ({
   "& .MuiBadge-badge": {
@@ -73,29 +71,31 @@ export const StyledBadge = styled(Badge)(({ theme }) => ({
       opacity: 0,
     },
   },
-}))
+}));
 
-export const StatusChip = styled(Chip)<{ status: TeacherStatus }>(({ theme, status }) => ({
-  backgroundColor:
-    status === "active"
-      ? alpha(theme.palette.success.main, 0.1)
-      : status === "on leave"
-        ? alpha(theme.palette.warning.main, 0.1)
-        : alpha(theme.palette.error.main, 0.1),
-  color:
-    status === "active"
-      ? theme.palette.success.dark
-      : status === "on leave"
-        ? theme.palette.warning.dark
-        : theme.palette.error.dark,
-  fontWeight: 600,
-  borderRadius: 8,
-}))
+export const StatusChip = styled(Chip)<{ status: TeacherStatus }>(
+  ({ theme, status }) => ({
+    backgroundColor:
+      status === "active"
+        ? alpha(theme.palette.success.main, 0.1)
+        : status === "on leave"
+          ? alpha(theme.palette.warning.main, 0.1)
+          : alpha(theme.palette.error.main, 0.1),
+    color:
+      status === "active"
+        ? theme.palette.success.dark
+        : status === "on leave"
+          ? theme.palette.warning.dark
+          : theme.palette.error.dark,
+    fontWeight: 600,
+    borderRadius: 8,
+  })
+);
 
 export const DepartmentChip = styled(Chip)(({ theme }) => ({
   fontWeight: 500,
   borderRadius: 8,
-}))
+}));
 export const SearchField = styled(TextField)(({ theme }) => ({
   "& .MuiOutlinedInput-root": {
     borderRadius: 12,
@@ -109,33 +109,107 @@ export const SearchField = styled(TextField)(({ theme }) => ({
       boxShadow: "0 8px 32px rgba(0, 0, 0, 0.16)",
     },
   },
-}))
+}));
 
-export const ViewToggleButton = styled(Button)<{ active: boolean }>(({ theme, active }) => ({
-  backgroundColor: active ? alpha(theme.palette.primary.main, 0.1) : "transparent",
-  color: active ? theme.palette.primary.main : theme.palette.text.secondary,
-  fontWeight: active ? 600 : 400,
-  "&:hover": {
-    backgroundColor: active ? alpha(theme.palette.primary.main, 0.2) : alpha(theme.palette.action.hover, 0.1),
-  },
-}))
+export const ViewToggleButton = styled(Button)<{ active: boolean }>(
+  ({ theme, active }) => ({
+    backgroundColor: active
+      ? alpha(theme.palette.primary.main, 0.1)
+      : "transparent",
+    color: active ? theme.palette.primary.main : theme.palette.text.secondary,
+    fontWeight: active ? 600 : 400,
+    "&:hover": {
+      backgroundColor: active
+        ? alpha(theme.palette.primary.main, 0.2)
+        : alpha(theme.palette.action.hover, 0.1),
+    },
+  })
+);
 
-export const PerformanceIndicator = styled(Box)<{ value: number }>(({ theme, value }) => ({
+export const PerformanceIndicator = styled(Box)<{ value: number }>(
+  ({ theme, value }) => ({
+    position: "relative",
+    height: 4,
+    width: "100%",
+    backgroundColor: alpha(theme.palette.grey[300], 0.5),
+    borderRadius: 2,
+    overflow: "hidden",
+    "&::after": {
+      content: '""',
+      position: "absolute",
+      top: 0,
+      left: 0,
+      height: "100%",
+      width: `${value}%`,
+      backgroundColor:
+        value > 80
+          ? theme.palette.success.main
+          : value > 50
+            ? theme.palette.warning.main
+            : theme.palette.error.main,
+      borderRadius: 2,
+    },
+  })
+);
+
+export const boxStyle = {
+  display: "flex",
+  justifyContent: "space-between",
+  alignItems: "center",
+  mb: 4,
+  flexWrap: "wrap",
+  gap: 2,
+  paddingTop: 2,
   position: "relative",
-  height: 4,
-  width: "100%",
-  backgroundColor: alpha(theme.palette.grey[300], 0.5),
-  borderRadius: 2,
-  overflow: "hidden",
   "&::after": {
     content: '""',
     position: "absolute",
-    top: 0,
+    bottom: -10,
     left: 0,
-    height: "100%",
-    width: `${value}%`,
-    backgroundColor:
-      value > 80 ? theme.palette.success.main : value > 50 ? theme.palette.warning.main : theme.palette.error.main,
-    borderRadius: 2,
+    width: "100%",
+    height: "4px",
+    background: "linear-gradient(90deg, #6366f1, #818cf8, #6366f1)",
+    borderRadius: "2px",
+    opacity: 0.7,
   },
-}))
+};
+export const typographyStyle = {
+  fontWeight: 900,
+  background: "linear-gradient(45deg, #6366f1, #818cf8)",
+  backgroundClip: "text",
+  textFillColor: "transparent",
+  mb: 1,
+  letterSpacing: "-0.5px",
+  textShadow: "0px 2px 4px rgba(0,0,0,0.1)",
+  display: "flex",
+  alignItems: "center",
+  gap: 1,
+};
+
+export const evaluationStle = {
+  mb: 4,
+  border: "1px solid rgba(0,0,0,0.08)",
+  position: "relative",
+  overflow: "visible",
+  borderRadius: "16px",
+  boxShadow: "0 10px 30px rgba(0, 0, 0, 0.05)",
+  transition: "all 0.3s ease",
+  "&:hover": {
+    boxShadow: "0 15px 35px rgba(0, 0, 0, 0.1)",
+  },
+};
+export const evaluationStle2 = {
+  position: "absolute",
+  top: -20,
+  left: 24,
+  bgcolor: "#6366f1",
+  color: "white",
+  py: 1,
+  px: 3,
+  borderRadius: "12px",
+  boxShadow: "0 8px 20px rgba(99, 102, 241, 0.25)",
+  zIndex: 1,
+  display: "flex",
+  alignItems: "center",
+  gap: 1,
+};
