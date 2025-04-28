@@ -459,7 +459,7 @@ export default function MealReportForm({ id }: { id?: string }) {
             const debugData = JSON.stringify(mealReportData, null, 2)
             setDebugInfo(`Submitting: ${debugData}`)
 
-            const directResponse = await fetch("http://localhost:5000/api/v1/meal-report", {
+            const directResponse = await fetch(`http://localhost:5000/api/v1/meal-report`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

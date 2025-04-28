@@ -136,7 +136,7 @@ export default function TeachersDashboard() {
   }
 
   const handleEditTeacher = (teacher: Teacher) => {
-    router.push(`/dashboard/super_admin/teacher/update?id=${teacher._id}`)
+    router.push(`/dashboard/super_admin/teacher/update/${teacher._id}`)
     setSelectedTeacher(teacher)
     setEditDialogOpen(true)
     handleTeacherMenuClose()
@@ -831,7 +831,7 @@ export default function TeachersDashboard() {
                                 component={Link}
                                 size="small"
                                 color="info"
-                                href={`/dashboard/super_admin/teacher/update?id=${teacher._id}`}
+                                href={`/dashboard/super_admin/teacher/update/${teacher._id}`}
                               >
                                 <Edit fontSize="small" />
                               </IconButton>
@@ -973,7 +973,7 @@ export default function TeachersDashboard() {
                                       component={Link}
                                       size="small"
                                       color="info"
-                                      href={`/dashboard/super_admin/teacher/update?id=${teacher._id}`}
+                                      href={`/dashboard/super_admin/teacher/update/${teacher._id}`}
                                     >
                                       <Edit fontSize="small" />
                                     </IconButton>

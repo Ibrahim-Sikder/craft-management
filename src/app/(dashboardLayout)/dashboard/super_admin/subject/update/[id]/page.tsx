@@ -2,18 +2,14 @@
 
 'use client'
 import React from 'react';
-import TeacherForm from '../_components/TeacherForm';
+import SubjectForm from '../../_components/SubjectForm';
 interface PageProps {
     params: {
         id: string;
     };
 }
-
 const page = ({ params }: PageProps) => {
-    return <TeacherForm id={params.id} />
+    return <SubjectForm id={params.id} />
 };
 
-
 export default page;
-
-

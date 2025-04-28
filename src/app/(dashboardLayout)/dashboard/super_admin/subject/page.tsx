@@ -333,7 +333,7 @@ export default function SubjectManagementPage() {
   }
 
   const handleEditSubject = (id: string) => {
-    router.push(`/dashboard/super_admin/subject/update?id=${id}`)
+    router.push(`/dashboard/super_admin/subject/update/${id}`)
   }
 
   // Process and filter subjects
