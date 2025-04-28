@@ -75,10 +75,8 @@ import { useGetAllSubjectsQuery } from "@/redux/api/subjectApi"
 import { useGetAllTeachersQuery } from "@/redux/api/teacherApi"
 import { format } from "date-fns"
 
-type ClassReportProps = {
-  id: string;
-}
-export default function ClassReportList({ id }: ClassReportProps) {
+
+export default function ClassReportList() {
 
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(10)
@@ -754,7 +752,7 @@ export default function ClassReportList({ id }: ClassReportProps) {
                                             <IconButton
                                               size="small"
                                               component={Link}
-                                              href={`/dashboard/super_admin/classes/report/update?id=${report._id}`}
+                                              href={`/dashboard/super_admin/classes/report/list/${report._id}`}
                                               sx={{
                                                 color: "warning.main",
                                                 bgcolor: alpha(theme.palette.warning.main, 0.1),

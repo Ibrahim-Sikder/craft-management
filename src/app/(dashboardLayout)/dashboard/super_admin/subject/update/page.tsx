@@ -2,14 +2,14 @@
 
 'use client'
 import React from 'react';
-
-import { useSearchParams } from 'next/navigation';
 import SubjectForm from '../_components/SubjectForm';
-
-const page = () => {
-    const searchParams = useSearchParams();
-    const id = searchParams.get('id') || '';
-    return <SubjectForm id={id} />
+interface PageProps {
+    params: {
+        id: string;
+    };
+}
+const page = ({ params }: PageProps) => {
+    return <SubjectForm id={params.id} />
 };
 
 export default page;

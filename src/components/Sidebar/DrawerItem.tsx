@@ -281,7 +281,7 @@ export const navigationItems: NavigationItem[] = [
             <BarChart />
           </ColorfulIcon>
         ),
-        path: "/dashboard/super_admin/classes/report",
+        path: "/dashboard/super_admin/classes/report/list",
         roles: ["super_admin", "admin", "teacher"],
       },
       {

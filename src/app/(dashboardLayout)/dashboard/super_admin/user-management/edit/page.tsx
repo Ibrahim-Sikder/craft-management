@@ -2,13 +2,14 @@
 
 'use client'
 import React from 'react';;
-import { useSearchParams } from 'next/navigation';
 import UserForm from '../_components/UserForm';
-
-const page = () => {
-    const searchParams = useSearchParams();
-    const id = searchParams.get('id') || '';
-    return <UserForm id={id} />
+interface PageProps {
+    params: {
+        id: string;
+    };
+}
+const page = ({ params }: PageProps) => {
+    return <UserForm id={params.id}/>
 };
 
 export default page;

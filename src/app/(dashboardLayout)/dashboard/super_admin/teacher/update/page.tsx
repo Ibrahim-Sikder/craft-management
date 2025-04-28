@@ -2,14 +2,17 @@
 
 'use client'
 import React from 'react';
-import { useSearchParams } from 'next/navigation';
 import TeacherForm from '../_components/TeacherForm';
+interface PageProps {
+    params: {
+        id: string;
+    };
+}
 
-const page = () => {
-    const searchParams = useSearchParams();
-    const id = searchParams.get('id') || '';
-    return <TeacherForm id={id} />
+const page = ({ params }: PageProps) => {
+    return <TeacherForm id={params.id} />
 };
+
 
 export default page;
 

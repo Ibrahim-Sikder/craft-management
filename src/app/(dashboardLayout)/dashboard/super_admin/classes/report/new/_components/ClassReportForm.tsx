@@ -64,9 +64,7 @@ import TodayLesson from "./TodayLesson"
 import TodayTask from "./TodayTask"
 import { format } from "date-fns"
 
-type ClassReportProps = {
-  id: string
-}
+
 
 // Define a type for student evaluation
 type StudentEvaluation = {
@@ -76,6 +74,10 @@ type StudentEvaluation = {
   attendance: string
   parentSignature: boolean
   comments: string
+}
+
+interface ClassReportProps {
+  id: string;
 }
 
 export default function ClassReportForm({ id }: ClassReportProps) {
