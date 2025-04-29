@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 "use client"
@@ -9,8 +10,9 @@ import CraftTextArea from "@/components/Forms/TextArea"
 import CraftForm from "@/components/Forms/Form"
 import CraftDatePicker from "@/components/Forms/DatePicker"
 import toast from "react-hot-toast"
-import { useCreateTodayTaskMutation } from "@/redux/api/todayTaskApi"
+import { useCreateTodayTaskMutation, useGetSingleTodayTaskQuery } from "@/redux/api/todayTaskApi"
 import { FieldValues } from "react-hook-form"
+import dayjs from "dayjs"
 
 interface TodayTaskProps {
   open: boolean
@@ -18,11 +20,12 @@ interface TodayTaskProps {
   onSave: (taskId: string) => void
 }
 
-export default function TodayTask({ open, onClose, onSave }: TodayTaskProps) {
+export default function TodayTask({ open, onClose, onSave, }: TodayTaskProps) {
   const [createTodayTask] = useCreateTodayTaskMutation()
   const [loading, setLoading] = useState(false)
-
+  // const {data:singleTodayLesson } = useGetSingleTodayTaskQuery(id)
   const handleSubmit = async (data: FieldValues) => {
+    console.log(data)
     try {
       setLoading(true)
       const res = await createTodayTask(data).unwrap()
@@ -38,6 +41,16 @@ export default function TodayTask({ open, onClose, onSave }: TodayTaskProps) {
       setLoading(false)
     }
   }
+  // if (!singleTodayLesson) {
+  //   return null; // Or show a loader
+  // }
+  
+  // const defaultValues = {
+  //   taskContent: singleTodayLesson?.data.taskContent || '',
+  //   dueDate: singleTodayLesson?.data.dueDate || dayjs().format("YYYY-MM-DD"), 
+  // };
+  
+
   return (
     <Dialog
       open={open}

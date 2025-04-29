@@ -34,7 +34,6 @@ import {
   Save,
   Badge,
   Phone,
-  Cake,
   Bloodtype,
   DriveFileRenameOutline,
   ContactPhone,
@@ -50,7 +49,6 @@ import {
   CardMembership,
   Fingerprint,
   BusinessCenter,
-  EventNote,
   Apartment,
   Work,
   VerifiedUser,
@@ -105,11 +103,10 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
       refetchOnMountOrArgChange: true,
     },
   )
-  console.log(singlesTeacher)
+
   useEffect(() => {
     if (singlesTeacher && singlesTeacher.data) {
       const teacher = singlesTeacher.data
-
 
       // Set selected subjects if available
       if (teacher.professionalInfo?.subjectsTaught) {
@@ -127,11 +124,11 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
         phone: teacher.phone || "",
         email: teacher.email || "",
         dateOfBirth: teacher.dateOfBirth || "",
-        bloodGroup: teacher.additionalInfo?.bloodGroup || "",
+        bloodGroup: teacher.bloodGroup || "",
         gender: teacher.gender || "",
-        nationality: teacher.additionalInfo?.nationality || "",
-        religion: teacher.additionalInfo?.religion || "",
-        maritalStatus: teacher.additionalInfo?.maritalStatus || "",
+        nationality: teacher.nationality || "",
+        religion: teacher.religion || "",
+        maritalStatus: teacher.maritalStatus || "",
 
         // Address Information - Permanent
         address: teacher.permanentAddress?.address || "",
@@ -143,26 +140,18 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
         country: teacher.permanentAddress?.country || "",
         zipCode: teacher.permanentAddress?.zipCode || "",
 
-        // Current Address
-        "currentAddress.address": teacher.currentAddress?.address || "",
-        "currentAddress.village": teacher.currentAddress?.village || "",
-        "currentAddress.postOffice": teacher.currentAddress?.postOffice || "",
-        "currentAddress.thana": teacher.currentAddress?.thana || "",
-        "currentAddress.district": teacher.currentAddress?.district || "",
-        "currentAddress.state": teacher.currentAddress?.state || "",
-        "currentAddress.country": teacher.currentAddress?.country || "",
-        "currentAddress.zipCode": teacher.currentAddress?.zipCode || "",
         sameAsPermanent: teacher.currentAddress?.sameAsPermanent || false,
 
         // Professional Information
-        designation: teacher.professionalInfo?.designation || "",
-        department: teacher.professionalInfo?.department || "",
-        joiningDate: teacher.professionalInfo?.joiningDate || "",
-        monthlySalary: teacher.professionalInfo?.monthlySalary || "",
-        staffType: teacher.professionalInfo?.staffType || "",
-        residenceType: teacher.professionalInfo?.residenceType || "",
+        designation: teacher?.designation || "",
+        department: teacher.department || "",
+        joiningDate: teacher?.joiningDate || "",
+        monthlySalary: teacher?.monthlySalary || "",
+        staffType: teacher?.staffType || "",
+        residenceType: teacher?.residenceType || "",
 
-        // Bank Details
+
+
         accountName: teacher.bankDetails?.accountName || "",
         accountNumber: teacher.bankDetails?.accountNumber || "",
         bankName: teacher.bankDetails?.bankName || "",
@@ -170,9 +159,32 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
         ifscCode: teacher.bankDetails?.ifscCode || "",
 
         // Additional Information
-        status: teacher.additionalInfo?.status || "Active",
-        language: teacher.additionalInfo?.language || "",
-        activeSession: teacher.sessionInfo?.activeSession || "",
+        status: teacher?.status || "Active",
+        language: teacher?.language || "",
+        activeSession: teacher?.activeSession || "",
+
+        // educational info 
+
+        teacherPhoto: teacher.teacherPhoto,
+
+        // Educational Info
+        degree: teacher.educationalQualifications?.[0]?.degree || '',
+        institution: teacher.educationalQualifications?.[0]?.institution || '',
+        specialization: teacher.educationalQualifications?.[0]?.specialization || '',
+        year: teacher.educationalQualifications?.[0]?.year || '',
+
+        // Certificate Info
+        certificateName: teacher.certifications?.[0]?.name || '',
+        issuedBy: teacher.certifications?.[0]?.issuedBy || '',
+        certificateYear: teacher.certifications?.[0]?.year || '',
+        certificateDescription: teacher.certifications?.[0]?.description || '',
+
+        // Work Experience Info
+        organization: teacher.workExperience?.[0]?.organization || '',
+        position: teacher.workExperience?.[0]?.position || '',
+        from: teacher.workExperience?.[0]?.from || '',
+        to: teacher.workExperience?.[0]?.to || '',
+        description: teacher.workExperience?.[0]?.description || '',
 
         // Emergency Contact
         "emergencyContact.name": teacher.emergencyContact?.name || "",
@@ -191,11 +203,11 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
   }, [singlesTeacher])
 
   const handleInputChange = () => {
-    // Your implementation
+
   }
 
   const handleSwitchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Your implementation
+
   }
 
   const addEducation = () => { }
@@ -210,69 +222,113 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
     //
   }
 
-  // Handle next step
   const handleNext = () => {
     setActiveStep((prevActiveStep) => prevActiveStep + 1)
   }
 
-  // Handle back step
   const handleBack = () => {
     setActiveStep((prevActiveStep) => prevActiveStep - 1)
   }
 
-  // Handle reset
   const handleReset = () => {
     setActiveStep(0)
   }
 
   const handleSubmit = async (data: any) => {
     setIsSubmitting(true)
+    console.log(data)
 
     try {
-      const monthlySalaryNum = data.monthlySalary ? Number(data.monthlySalary) : null
+      const monthlySalaryNum = data.monthlySalary ? Number(data.monthlySalary) : undefined
+      const teacherSerialNum = data.teacherSerial ? Number(data.teacherSerial) : undefined
 
       const submissionData = {
         ...data,
-        professionalInfo: {
-          designation: data.designation,
-          department: data.department,
-          joiningDate: data.joiningDate,
-          monthlySalary: monthlySalaryNum,
-          staffType: data.staffType,
-          subjectsTaught: selectedSubjects,
-        },
+        teacherId: data.teacherId,
+        teacherSerial: teacherSerialNum,
+        smartIdCard: data.smartIdCard,
+        name: data.name,
+        phone: data.phone,
+        email: data.email,
+        dateOfBirth: data.dateOfBirth,
+        bloodGroup: data.bloodGroup,
+        gender: data.gender,
+        nationality: data.nationality,
+        religion: data.religion,
+        maritalStatus: data.maritalStatus,
+        teacherPhoto: data.teacherPhoto,
+
+        // Address information
         permanentAddress: {
           address: data.address,
           village: data.village,
           postOffice: data.postOffice,
           thana: data.thana,
           district: data.district,
-          sameAsPermanent: data.sameAsPermanent,
+          state: data.state,
+          country: data.country,
+          zipCode: data.zipCode,
         },
+
         currentAddress: {
           address: data.address,
           village: data.village,
           postOffice: data.postOffice,
           thana: data.thana,
-          district: data.district,
-          sameAsPermanent: data.sameAsPermanent,
+          district: data.thana,
+          state: data.state,
+          country: data.country,
+          zipCode: data.zipCode,
         },
-        additionalInfo: {
-          religion: data.religion,
-          nationality: data.nationality,
-          maritalStatus: data.maritalStatus,
-          bloodGroup: data.bloodGroup,
-          status: data.status,
-          language: data.language,
-        },
-        sessionInfo: {
-          activeSession: data.activeSession,
-        },
+        sameAsPermanent: data.sameAsPermanent,
+        designation: data.designation,
+        department: data.department,
+        joiningDate: data.joiningDate,
+        monthlySalary: monthlySalaryNum,
+        staffType: data.staffType,
+
+        educationalQualifications: [
+          data.degree
+            ? {
+              degree: data.degree,
+              institution: data.institution,
+              year: data.year,
+              specialization: data.specialization,
+            }
+            : null,
+        ].filter(Boolean), 
+        certifications: [
+          data.name
+            ? {
+              name: data.name,
+              issuedBy: data.issuedBy,
+              year: data.year,
+              description: data.description,
+            }
+            : null,
+        ].filter(Boolean),
+
+      
+        workExperience: [
+          data.organization
+            ? {
+              organization: data.organization,
+              position: data.position,
+              from: data.from,
+              to: data.to,
+              description: data.description,
+            }
+            : null,
+        ].filter(Boolean), 
+
+
+        status: data.status || "Active",
+        language: data.language,
+        activeSession: data.activeSession,
       }
 
       if (id) {
-        const res = await updateTeacher({ id, ...submissionData }).unwrap()
-
+        const res = await updateTeacher({ id, data: submissionData }).unwrap()
         if (res.success) {
           setSuccess(true)
           setSnackbar({
@@ -359,7 +415,6 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
               label="Teacher Serial"
               name="teacherSerial"
               type="number"
-              onChange={handleInputChange}
               size="medium"
               InputProps={{
                 startAdornment: <Badge sx={{ color: "text.secondary", mr: 1 }} />,
@@ -390,18 +445,7 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
               }}
             />
           </Grid>
-          <Grid item xs={12} md={6}>
-            <CraftInputWithIcon
-              required
-              fullWidth
-              label="English Name (if different)"
-              name="englishName"
-              size="medium"
-              InputProps={{
-                startAdornment: <DriveFileRenameOutline sx={{ color: "text.secondary", mr: 1 }} />,
-              }}
-            />
-          </Grid>
+
           <Grid item xs={12} md={4}>
             <CraftInputWithIcon
               required
@@ -695,7 +739,7 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
               label="Monthly Salary"
               name="monthlySalary"
               type="number"
-              onChange={handleInputChange}
+
               size="medium"
               InputProps={{
                 startAdornment: <AttachMoney sx={{ color: "text.secondary", mr: 1 }} />,
@@ -748,7 +792,6 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
                     fullWidth
                     label="Degree/Certificate"
                     name="degree"
-
                     size="medium"
                     InputProps={{
                       startAdornment: <School sx={{ color: "text.secondary", mr: 1 }} />,
@@ -761,7 +804,6 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
                     fullWidth
                     label="Institution"
                     name="institution"
-
                     size="medium"
                     InputProps={{
                       startAdornment: <BusinessCenter sx={{ color: "text.secondary", mr: 1 }} />,
@@ -774,7 +816,6 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
                     fullWidth
                     label="Year of Completion"
                     name="year"
-
                     size="medium"
                     InputProps={{
                       startAdornment: <CalendarMonth sx={{ color: "text.secondary", mr: 1 }} />,
@@ -786,7 +827,6 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
                     fullWidth
                     label="Specialization"
                     name="specialization"
-
                     size="medium"
                     InputProps={{
                       startAdornment: <School sx={{ color: "text.secondary", mr: 1 }} />,

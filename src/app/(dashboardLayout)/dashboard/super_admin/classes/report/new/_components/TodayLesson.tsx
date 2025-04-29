@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
@@ -7,7 +8,7 @@ import { Close as CloseIcon } from "@mui/icons-material"
 import CraftTextArea from "@/components/Forms/TextArea"
 import CraftForm from "@/components/Forms/Form"
 import toast from "react-hot-toast"
-import { useCreateTodayLessonMutation } from "@/redux/api/todayLessonApi"
+import { useCreateTodayLessonMutation, useGetSingleTodayLessonQuery } from "@/redux/api/todayLessonApi"
 import { FieldValues } from "react-hook-form"
 
 interface TodayLessonProps {
@@ -16,8 +17,9 @@ interface TodayLessonProps {
   onSave: (lessonId: string) => void
 }
 
-export default function TodayLesson({ open, onClose, onSave }: TodayLessonProps) {
+export default function TodayLesson({ open, onClose, onSave, }: TodayLessonProps) {
   const [createTodayLesson] = useCreateTodayLessonMutation()
+  // const {data:singleTodayLesson } = useGetSingleTodayLessonQuery(id)
   const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (data: FieldValues) => {
@@ -36,6 +38,10 @@ export default function TodayLesson({ open, onClose, onSave }: TodayLessonProps)
       setLoading(false)
     }
   }
+
+  // const defaultValues = {
+  //   lessonContent : singleTodayLesson?.data.lessonContent || ''
+  // }
 
   return (
     <Dialog
@@ -67,7 +73,7 @@ export default function TodayLesson({ open, onClose, onSave }: TodayLessonProps)
           <CloseIcon />
         </IconButton>
       </DialogTitle>
-      <CraftForm onSubmit={handleSubmit}>
+      <CraftForm onSubmit={handleSubmit} >
         <DialogContent dividers>
           <Box sx={{ p: 1 }}>
             <CraftTextArea
