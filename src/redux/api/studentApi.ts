@@ -28,10 +28,10 @@ export const studentApi = baseApi.injectEndpoints({
     }),
 
     updateStudent: build.mutation({
-      query: ({ id, ...data }) => ({
+      query: ({ id, data }) => ({
         url: `/student/${id}`,
         method: "PATCH",
-        body: data,
+         data,
       }),
       invalidatesTags: ["student"],
     }),
@@ -45,6 +45,7 @@ export const studentApi = baseApi.injectEndpoints({
     }),
   }),
 });
+
 
 export const {
   useCreateStudentsMutation,

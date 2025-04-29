@@ -4,7 +4,7 @@
 
 import type React from "react"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import {
   Box,
   Button,
@@ -54,22 +54,29 @@ import { useRouter } from "next/navigation"
 import CraftForm from "@/components/Forms/Form"
 import CraftInputWithIcon from "@/components/Forms/inputWithIcon"
 import CraftSelectWithIcon from "@/components/Forms/selectWithIcon"
-import { batches, bloodGroup, classes, districts, sections, thanas } from "@/options"
+import { batches, bloodGroup, classes, sections } from "@/options"
 import CraftSwitch from "@/components/Forms/switch"
 import { useCreateStudentsMutation, useGetSingleStudentQuery, useUpdateStudentMutation } from "@/redux/api/studentApi"
 import { zodResolver } from "@hookform/resolvers/zod"
 import FileUploadWithIcon from "@/components/Forms/Upload"
 import { studentSchema } from "@/schema"
 
-
 interface StudentFormProps {
-  id?: string; 
+  id?: string
 }
 
 const StudentForm = ({ id }: StudentFormProps) => {
   const [createStudents] = useCreateStudentsMutation()
   const [updateStudent] = useUpdateStudentMutation()
-  const { data, isLoading } = useGetSingleStudentQuery({ id })
+  const { data, isLoading } = useGetSingleStudentQuery(
+    { id },
+    {
+      skip: !id,
+      refetchOnMountOrArgChange: true,
+    },
+  )
+  const formRef = useRef<any>(null)
+
   const router = useRouter()
   const [activeStep, setActiveStep] = useState(0)
   interface FormData {
@@ -82,10 +89,14 @@ const StudentForm = ({ id }: StudentFormProps) => {
     presentThana?: string
     sendAdmissionSMS?: boolean
     sendAttendanceSMS?: boolean
+    studentPhoto?: string | File
     // Add other fields as needed
   }
 
   const [formData, setFormData] = useState<FormData>({})
+  const [defaultValues, setDefaultValues] = useState<any>({})
+
+
   // Set default values when data is loaded
   useEffect(() => {
     if (data?.data) {
@@ -93,6 +104,7 @@ const StudentForm = ({ id }: StudentFormProps) => {
 
       // Set form data for switches and address fields
       setFormData({
+        studentPhoto: studentData.studentPhoto,
         sameAsPermanent: studentData.sameAsPermanent || false,
         permanentAddress: studentData.permanentAddress,
         permanentDistrict: studentData.permanentDistrict,
@@ -103,8 +115,69 @@ const StudentForm = ({ id }: StudentFormProps) => {
         sendAdmissionSMS: studentData.sendAdmissionSMS || false,
         sendAttendanceSMS: studentData.sendAttendanceSMS || false,
       })
+
+      // Create comprehensive default values object
+      const formDefaultValues = {
+        // Basic Information
+        name: studentData.name || "",
+        smartIdCard: studentData.smartIdCard || "",
+        email: studentData.email || "",
+        mobile: studentData.mobile || "",
+        birthDate: studentData.birthDate || "",
+        birthRegistrationNo: studentData.birthRegistrationNo || "",
+        bloodGroup: studentData.bloodGroup || "",
+        gender: studentData.gender || "",
+
+        // Family Information
+        fatherName: studentData.fatherName || "",
+        motherName: studentData.motherName || "",
+        guardianName: studentData.guardianName || "",
+        guardianMobile: studentData.guardianMobile || "",
+        relation: studentData.relation || "",
+        nidFatherMotherGuardian: studentData.nidFatherMotherGuardian || "",
+
+        // Address Information
+        permanentAddress: studentData.permanentAddress || "",
+        permanentDistrict: studentData.permanentDistrict || "",
+        permanentThana: studentData.permanentThana || "",
+        sameAsPermanent: studentData.sameAsPermanent || false,
+        presentAddress: studentData.presentAddress || "",
+        presentDistrict: studentData.presentDistrict || "",
+        presentThana: studentData.presentThana || "",
+
+        // Academic Information
+        className: studentData.className || "",
+        studentClassRoll: studentData.studentClassRoll || "",
+        batch: studentData.batch || "",
+        section: studentData.section || "",
+        activeSession: studentData.activeSession || "",
+        status: studentData.status || "",
+        studentType: studentData.studentType || "",
+        additionalNote: studentData.additionalNote || "",
+
+        // Fee Information
+        admissionFee: studentData.admissionFee || 0,
+        monthlyFee: studentData.monthlyFee || 0,
+        previousDues: studentData.previousDues || 0,
+        sessionFee: studentData.sessionFee || 0,
+        residenceFee: studentData.residenceFee || 0,
+        otherFee: studentData.otherFee || 0,
+        transportFee: studentData.transportFee || 0,
+        boardingFee: studentData.boardingFee || 0,
+
+        // Other Settings
+        studentSerial: studentData.studentSerial || "",
+        sendAdmissionSMS: studentData.sendAdmissionSMS || false,
+        sendAttendanceSMS: studentData.sendAttendanceSMS || false,
+
+        // Photo
+        studentPhoto: studentData.studentPhoto || "",
+      }
+
+      setDefaultValues(formDefaultValues)
     }
   }, [data])
+
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -117,21 +190,21 @@ const StudentForm = ({ id }: StudentFormProps) => {
     const { name, checked } = e.target
 
     // Update the form data with the new switch value
-    setFormData((prev) => ({
-      ...prev,
-      [name]: checked,
-    }))
-
-    // If sameAsPermanent is checked, copy permanent address to present address
-    if (name === "sameAsPermanent" && checked) {
-      setFormData((prev) => ({
+    setFormData((prev) => {
+      const newData = {
         ...prev,
-        presentAddress: prev.permanentAddress || "",
-        presentDistrict: prev.permanentDistrict || "",
-        presentThana: prev.permanentThana || "",
         [name]: checked,
-      }))
-    }
+      }
+
+      // If sameAsPermanent is checked, copy permanent address to present address
+      if (name === "sameAsPermanent" && checked) {
+        newData.presentAddress = prev.permanentAddress || ""
+        newData.presentDistrict = prev.permanentDistrict || ""
+        newData.presentThana = prev.permanentThana || ""
+      }
+
+      return newData
+    })
   }
 
   const handleNext = () => {
@@ -142,58 +215,170 @@ const StudentForm = ({ id }: StudentFormProps) => {
     setActiveStep((prevActiveStep) => prevActiveStep - 1)
   }
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (formValues: any) => {
+    console.log("Raw form values:", formValues)
+
+    // Create a structured submission object
     const submissionData = {
-      ...data,
-      ...formData,
-      admissionFee: Number(data.admissionFee),
-      monthlyFee: Number(data.monthlyFee),
-      previousDues: Number(data.previousDues),
-      sessionFee: Number(data.sessionFee),
-      residenceFee: Number(data.residenceFee),
-      otherFee: Number(data.otherFee),
-      transportFee: Number(data.transportFee),
-      boardingFee: Number(data.boardingFee),
+      // Basic Information
+      name: formValues.name,
+      smartIdCard: formValues.smartIdCard,
+      email: formValues.email,
+      mobile: formValues.mobile,
+      birthDate: formValues.birthDate,
+      birthRegistrationNo: formValues.birthRegistrationNo,
+      bloodGroup: formValues.bloodGroup,
+      gender: formValues.gender,
+
+      // Family Information
+      fatherName: formValues.fatherName,
+      motherName: formValues.motherName,
+      guardianName: formValues.guardianName,
+      guardianMobile: formValues.guardianMobile,
+      relation: formValues.relation,
+      nidFatherMotherGuardian: formValues.nidFatherMotherGuardian,
+
+      // Address Information
+      permanentAddress: formValues.permanentAddress,
+      permanentDistrict: formValues.permanentDistrict,
+      permanentThana: formValues.permanentThana,
+      sameAsPermanent: formData.sameAsPermanent || false,
+      presentAddress: formData.sameAsPermanent ? formValues.permanentAddress : formValues.presentAddress,
+      presentDistrict: formData.sameAsPermanent ? formValues.permanentDistrict : formValues.presentDistrict,
+      presentThana: formData.sameAsPermanent ? formValues.permanentThana : formValues.presentThana,
+
+      // Academic Information
+      className: formValues.className,
+      studentClassRoll: formValues.studentClassRoll,
+      batch: formValues.batch,
+      section: formValues.section,
+      activeSession: formValues.activeSession,
+      status: formValues.status,
+      studentType: formValues.studentType,
+      additionalNote: formValues.additionalNote,
+
+      // Fee Information
+      admissionFee: Number(formValues.admissionFee || 0),
+      monthlyFee: Number(formValues.monthlyFee || 0),
+      previousDues: Number(formValues.previousDues || 0),
+      sessionFee: Number(formValues.sessionFee || 0),
+      residenceFee: Number(formValues.residenceFee || 0),
+      otherFee: Number(formValues.otherFee || 0),
+      transportFee: Number(formValues.transportFee || 0),
+      boardingFee: Number(formValues.boardingFee || 0),
+
+      // Other Settings
+      studentSerial: formValues.studentSerial,
+      sendAdmissionSMS: formData.sendAdmissionSMS || false,
+      sendAttendanceSMS: formData.sendAttendanceSMS || false,
+
+      // Photo - ensure it's included
+      studentPhoto: formValues.studentPhoto || "",
     }
 
+    console.log("Final submission data:", submissionData)
+    console.log("studentPhoto:", submissionData.studentPhoto)
+    console.log("permanentAddress:", submissionData.permanentAddress)
+    console.log("permanentDistrict:", submissionData.permanentDistrict)
+    console.log("permanentThana:", submissionData.permanentThana)
+    console.log("presentAddress:", submissionData.presentAddress)
+    console.log("presentDistrict:", submissionData.presentDistrict)
+    console.log("presentThana:", submissionData.presentThana)
+
     try {
-      const res = await updateStudent({ id, ...submissionData }).unwrap()
+      const res = await updateStudent({ id, data: submissionData }).unwrap()
 
       if (res.success) {
         setSuccess(true)
         setSnackbar({
           open: true,
-          message: "Student update successfully!",
+          message: "Student updated successfully!",
           severity: "success",
         })
-        router.push("/dashboard/super_admin/student/list")
+        setTimeout(() => {
+          router.push("/dashboard/super_admin/student/list")
+        }, 2000)
       }
-
-      setTimeout(() => { }, 2000)
     } catch (error: any) {
       console.error("❌ Submission error:", error)
       setSnackbar({
         open: true,
-        message: error?.data?.message || "Error registering student.",
+        message: error?.data?.message || "Error updating student.",
         severity: "error",
       })
-    } finally {
     }
   }
-  const onSubmit = async (data: any) => {
+
+  const onSubmit = async (formValues: any) => {
+    console.log("Raw form values:", formValues)
+
+    // Create a structured submission object
     const submissionData = {
-      ...data,
-      ...formData,
-      admissionFee: Number(data.admissionFee),
-      monthlyFee: Number(data.monthlyFee),
-      previousDues: Number(data.previousDues),
-      sessionFee: Number(data.sessionFee),
-      residenceFee: Number(data.residenceFee),
-      otherFee: Number(data.otherFee),
-      transportFee: Number(data.transportFee),
-      boardingFee: Number(data.boardingFee),
+      // Basic Information
+      name: formValues.name,
+      smartIdCard: formValues.smartIdCard,
+      email: formValues.email,
+      mobile: formValues.mobile,
+      birthDate: formValues.birthDate,
+      birthRegistrationNo: formValues.birthRegistrationNo,
+      bloodGroup: formValues.bloodGroup,
+      gender: formValues.gender,
+
+      // Family Information
+      fatherName: formValues.fatherName,
+      motherName: formValues.motherName,
+      guardianName: formValues.guardianName,
+      guardianMobile: formValues.guardianMobile,
+      relation: formValues.relation,
+      nidFatherMotherGuardian: formValues.nidFatherMotherGuardian,
+
+      // Address Information
+      permanentAddress: formValues.permanentAddress,
+      permanentDistrict: formValues.permanentDistrict,
+      permanentThana: formValues.permanentThana,
+      sameAsPermanent: formData.sameAsPermanent || false,
+      presentAddress: formData.sameAsPermanent ? formValues.permanentAddress : formValues.presentAddress,
+      presentDistrict: formData.sameAsPermanent ? formValues.permanentDistrict : formValues.presentDistrict,
+      presentThana: formData.sameAsPermanent ? formValues.permanentThana : formValues.presentThana,
+
+      // Academic Information
+      className: formValues.className,
+      studentClassRoll: formValues.studentClassRoll,
+      batch: formValues.batch,
+      section: formValues.section,
+      activeSession: formValues.activeSession,
+      status: formValues.status,
+      studentType: formValues.studentType,
+      additionalNote: formValues.additionalNote,
+
+      // Fee Information
+      admissionFee: Number(formValues.admissionFee || 0),
+      monthlyFee: Number(formValues.monthlyFee || 0),
+      previousDues: Number(formValues.previousDues || 0),
+      sessionFee: Number(formValues.sessionFee || 0),
+      residenceFee: Number(formValues.residenceFee || 0),
+      otherFee: Number(formValues.otherFee || 0),
+      transportFee: Number(formValues.transportFee || 0),
+      boardingFee: Number(formValues.boardingFee || 0),
+
+      // Other Settings
+      studentSerial: formValues.studentSerial,
+      sendAdmissionSMS: formData.sendAdmissionSMS || false,
+      sendAttendanceSMS: formData.sendAttendanceSMS || false,
+
+      // Photo - ensure it's included
+      studentPhoto: formValues.studentPhoto || "",
     }
-  
+
+    console.log("Final submission data:", submissionData)
+    console.log("studentPhoto:", submissionData.studentPhoto)
+    console.log("permanentAddress:", submissionData.permanentAddress)
+    console.log("permanentDistrict:", submissionData.permanentDistrict)
+    console.log("permanentThana:", submissionData.permanentThana)
+    console.log("presentAddress:", submissionData.presentAddress)
+    console.log("presentDistrict:", submissionData.presentDistrict)
+    console.log("presentThana:", submissionData.presentThana)
+
     try {
       const res = await createStudents(submissionData).unwrap()
       if (res.success) {
@@ -203,10 +388,10 @@ const StudentForm = ({ id }: StudentFormProps) => {
           message: "Student registered successfully!",
           severity: "success",
         })
-        router.push("/dashboard/super_admin/student/list")
+        setTimeout(() => {
+          router.push("/dashboard/super_admin/student/list")
+        }, 2000)
       }
-
-      setTimeout(() => { }, 2000)
     } catch (error: any) {
       console.error("❌ Submission error:", error)
       setSnackbar({
@@ -214,9 +399,9 @@ const StudentForm = ({ id }: StudentFormProps) => {
         message: error?.data?.message || "Error registering student.",
         severity: "error",
       })
-    } finally {
     }
   }
+
   const handleCloseSnackbar = () => {
     setSnackbar({
       ...snackbar,
@@ -227,6 +412,9 @@ const StudentForm = ({ id }: StudentFormProps) => {
   const handleReset = () => {
     setFormData({})
     setActiveStep(0)
+    if (formRef.current) {
+      formRef.current.reset()
+    }
   }
 
   const steps = [
@@ -335,7 +523,11 @@ const StudentForm = ({ id }: StudentFormProps) => {
             />
           </Grid>
           <Grid item xs={12}>
-            <FileUploadWithIcon name="studentPhoto" label="Student Photo" />
+            <FileUploadWithIcon
+              name="studentPhoto"
+              label="Student Photo"
+             
+            />
           </Grid>
         </Grid>
       ),
@@ -480,23 +672,27 @@ const StudentForm = ({ id }: StudentFormProps) => {
                   />
                 </Grid>
                 <Grid item xs={12}>
-                  <CraftSelectWithIcon
+                  <CraftInputWithIcon
+                    fullWidth
                     name="permanentDistrict"
-                    size="medium"
                     label="District"
-                    placeholder="Select District"
-                    items={districts}
-                    adornment={<LocationOn color="action" />}
+                    placeholder="District"
+                    size="medium"
+                    InputProps={{
+                      startAdornment: <LocationOn sx={{ color: "text.secondary", mr: 1 }} />,
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12}>
-                  <CraftSelectWithIcon
+                  <CraftInputWithIcon
+                    fullWidth
                     name="permanentThana"
                     size="medium"
                     label="Thana"
                     placeholder="Select Thana"
-                    items={thanas}
-                    adornment={<LocationOn color="action" />}
+                    InputProps={{
+                      startAdornment: <LocationOn sx={{ color: "text.secondary", mr: 1 }} />,
+                    }}
                   />
                 </Grid>
               </Grid>
@@ -547,25 +743,29 @@ const StudentForm = ({ id }: StudentFormProps) => {
                   />
                 </Grid>
                 <Grid item xs={12}>
-                  <CraftSelectWithIcon
+                  <CraftInputWithIcon
+                    fullWidth
                     name="presentDistrict"
-                    size="medium"
                     label="District"
-                    placeholder="Select District"
-                    items={districts}
-                    adornment={<LocationOn color="action" />}
+                    placeholder="District"
+                    size="medium"
                     disabled={formData.sameAsPermanent}
+                    InputProps={{
+                      startAdornment: <LocationOn sx={{ color: "text.secondary", mr: 1 }} />,
+                    }}
                   />
                 </Grid>
                 <Grid item xs={12}>
-                  <CraftSelectWithIcon
+                  <CraftInputWithIcon
+                    fullWidth
                     name="presentThana"
-                    size="medium"
                     label="Thana"
-                    placeholder="Select Thana"
-                    items={thanas}
-                    adornment={<LocationOn color="action" />}
+                    placeholder="Thana"
+                    size="medium"
                     disabled={formData.sameAsPermanent}
+                    InputProps={{
+                      startAdornment: <LocationOn sx={{ color: "text.secondary", mr: 1 }} />,
+                    }}
                   />
                 </Grid>
               </Grid>
@@ -612,7 +812,6 @@ const StudentForm = ({ id }: StudentFormProps) => {
               placeholder="Select Batch"
               items={batches}
               adornment={<People color="action" />}
-              
             />
           </Grid>
 
@@ -854,10 +1053,10 @@ const StudentForm = ({ id }: StudentFormProps) => {
 
                 <Grid item xs={12} md={4}>
                   <CraftSwitch
-                    name="sendAdmissionSMS"
-                    label="Send Admission SMS"
+                    name="sendAttendanceSMS"
+                    label="Send Attendance SMS"
                     onChange={handleSwitchChange}
-                    checked={formData.sendAdmissionSMS || false}
+                    checked={formData.sendAttendanceSMS || false}
                   />
 
                   <Typography variant="caption" color="text.secondary" sx={{ display: "block", ml: 4 }}>
@@ -925,19 +1124,20 @@ const StudentForm = ({ id }: StudentFormProps) => {
           <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
             <Person sx={{ fontSize: 40, mr: 2 }} />
             <Typography variant="h4" component="h1" sx={{ fontWeight: 700 }}>
-              New Student Registration
+              {id ? "Edit Student" : "New Student Registration"}
             </Typography>
           </Box>
           <Typography variant="body1" sx={{ opacity: 0.9, maxWidth: 700 }}>
-            Register a new student by filling in the required information. Follow the steps to complete the registration
-            process.
+            {id
+              ? "Update student information by modifying the required fields."
+              : "Register a new student by filling in the required information. Follow the steps to complete the registration process."}
           </Typography>
         </Container>
       </Box>
 
       <Container maxWidth="xl">
         <Box sx={{ mb: 3 }}>
-          <Link href="/students" passHref>
+          <Link href="/dashboard/super_admin/student/list" passHref>
             <Button
               startIcon={<ArrowBack />}
               variant="outlined"
@@ -953,7 +1153,13 @@ const StudentForm = ({ id }: StudentFormProps) => {
           </Link>
         </Box>
 
-        <CraftForm onSubmit={id ? handleSubmit : onSubmit} resolver={zodResolver(studentSchema)} defaultValues={data?.data}>
+        <CraftForm
+        
+          onSubmit={id ? handleSubmit : onSubmit}
+          resolver={zodResolver(studentSchema)}
+          defaultValues={defaultValues}
+          key={Object.keys(defaultValues).length > 0 ? "form-with-data" : "empty-form"}
+        >
           <Paper
             elevation={3}
             sx={{
@@ -1004,7 +1210,7 @@ const StudentForm = ({ id }: StudentFormProps) => {
                               px: 3,
                             }}
                           >
-                            {id ? 'Update Student' : '    Register Student'}
+                            {id ? "Update Student" : "Register Student"}
                           </Button>
                         ) : (
                           <Button

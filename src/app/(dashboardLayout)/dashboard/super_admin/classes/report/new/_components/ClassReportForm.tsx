@@ -105,7 +105,7 @@ export default function ClassReportForm({ id }: ClassReportProps) {
   const [todayLessonId, setTodayLessonId] = useState<string | null>(null)
   const [homeTaskId, setHomeTaskId] = useState<string | null>(null)
   const { data: singleClassReport, isLoading: singleClassReportLoading } = useGetSingleClassReportQuery({ id })
-
+  console.log(singleClassReport)
   const { data: classData } = useGetAllClassesQuery({
     limit: rowsPerPage,
     page: page + 1,
@@ -168,7 +168,7 @@ export default function ClassReportForm({ id }: ClassReportProps) {
         comments: studentEval.comments || "",
       }))
       setStudentEvaluations(evaluations)
-      console.log("Loaded evaluations from report:", evaluations)
+
     } else if (students.length > 0 && studentEvaluations.length === 0) {
       // Initialize new evaluations for new report
       const initialEvaluations = students.map((student: any) => ({
@@ -180,7 +180,7 @@ export default function ClassReportForm({ id }: ClassReportProps) {
         comments: "",
       }))
       setStudentEvaluations(initialEvaluations)
-      console.log("Initialized evaluations for new students:", initialEvaluations)
+
     }
   }, [students, singleClassReport, studentEvaluations.length])
 
@@ -226,6 +226,7 @@ export default function ClassReportForm({ id }: ClassReportProps) {
   }, [singleClassReport])
 
   const handleSubmit = async (data: FieldValues) => {
+
     // Extract class value - handle both object format and direct value
     let classValue = null
     if (data.classes) {
@@ -305,17 +306,16 @@ export default function ClassReportForm({ id }: ClassReportProps) {
         homeTask: homeTaskId,
       }
 
-      console.log("Submitting class report with evaluations:", allStudentEvaluations)
 
       const response = await createClassReport(formattedData).unwrap()
-      console.log(response)
+
       if (response.success) {
         setSnackbarMessage("Class report saved successfully!")
         setSnackbarSeverity("success")
         setSnackbarOpen(true)
         toast.success("Class report saved successfully!")
         // Redirect to the list page after successful save
-        router.push("/dashboard/super_admin/classes/report")
+        // router.push("/dashboard/super_admin/classes/report/list")
       }
     } catch (error: any) {
       console.error("Error saving class report:", error)
@@ -372,7 +372,6 @@ export default function ClassReportForm({ id }: ClassReportProps) {
     }
 
     setStudentEvaluations(updatedEvaluations)
-    console.log(`Updated lesson evaluation for student ${studentId} to ${value}`)
   }
 
   // Update the handleHandwritingChange function
@@ -399,7 +398,6 @@ export default function ClassReportForm({ id }: ClassReportProps) {
     }
 
     setStudentEvaluations(updatedEvaluations)
-    console.log(`Updated handwriting for student ${studentId} to ${value}`)
   }
 
   // Update the handleAttendanceChange function
@@ -426,7 +424,6 @@ export default function ClassReportForm({ id }: ClassReportProps) {
     }
 
     setStudentEvaluations(updatedEvaluations)
-    console.log(`Updated attendance for student ${studentId} to ${value}`)
   }
 
   const handleParentSignatureChange = (studentId: string, checked: boolean) => {
@@ -452,7 +449,7 @@ export default function ClassReportForm({ id }: ClassReportProps) {
     }
 
     setStudentEvaluations(updatedEvaluations)
-    console.log(`Updated parent signature for student ${studentId} to ${checked}`)
+
   }
 
   const handleCommentsChange = (studentId: string, value: string) => {
@@ -478,7 +475,7 @@ export default function ClassReportForm({ id }: ClassReportProps) {
     }
 
     setStudentEvaluations(updatedEvaluations)
-    console.log(`Updated comments for student ${studentId}`)
+
   }
 
   const sortedVehicleName = subjectName.sort((a, b) => {
@@ -599,7 +596,7 @@ export default function ClassReportForm({ id }: ClassReportProps) {
                               boxShadow: "0px 4px 10px rgba(99, 102, 241, 0.2)",
                             }}
                           >
-                            {todayLessonId ? "আজকের পাঠ যোগ করা হয়েছে" : "আজকের পাঠ"}
+                            {todayLessonId ? " আজকের পাঠে দেখুন" : "আজকের পাঠ"}
                           </Button>
                           <Button
                             variant="contained"
@@ -612,7 +609,7 @@ export default function ClassReportForm({ id }: ClassReportProps) {
                               boxShadow: "0px 4px 10px rgba(99, 102, 241, 0.2)",
                             }}
                           >
-                            {homeTaskId ? "বাড়ির কাজ যোগ করা হয়েছে" : "বাড়ির কাজ"}
+                            {homeTaskId ? "বাড়ির কাজ দেখুন" : "বাড়ির কাজ"}
                           </Button>
                           <Button
                             type="submit"
@@ -764,7 +761,7 @@ export default function ClassReportForm({ id }: ClassReportProps) {
                                             />
                                           </TableCell>
                                           <TableCell align="center">
-                                          
+
                                             <CraftSelect
                                               name={`attendance_${student._id}`}
                                               items={["উপস্থিত", "অনুপস্থিত", "ছুটি"]}
@@ -911,6 +908,7 @@ export default function ClassReportForm({ id }: ClassReportProps) {
 
           {/* Today's Lesson Dialog */}
           <TodayLesson
+
             open={todayLessonDialogOpen}
             onClose={handleCloseTodayLessonDialog}
             onSave={handleSaveTodayLesson}

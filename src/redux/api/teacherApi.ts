@@ -1,3 +1,4 @@
+// teacherApi.ts
 import { baseApi } from "./baseApi";
 
 export const teacherApi = baseApi.injectEndpoints({
@@ -14,7 +15,7 @@ export const teacherApi = baseApi.injectEndpoints({
     getAllTeachers: build.query({
       query: ({ limit, page, searchTerm }) => ({
         url: "/teacher",
-        method: "GET",
+        method: "GET", 
         params: { page, limit, searchTerm },
       }),
       providesTags: ["teacher"],
@@ -29,10 +30,10 @@ export const teacherApi = baseApi.injectEndpoints({
     }),
 
     updateTeacher: build.mutation({
-      query: ({ id, ...data }) => ({
+      query: ({ id, data }) => ({
         url: `/teacher/${id}`,
         method: "PATCH",
-        body: data,
+        data,
       }),
       invalidatesTags: ["teacher"],
     }),

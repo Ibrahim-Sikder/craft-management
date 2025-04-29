@@ -99,7 +99,7 @@ export default function ClassForm({ id }: ClassProps) {
 
     const handleSubmit = async (data: FieldValues) => {
 
-
+console.log('raw data', data)
 
         const studentsArray = Array.isArray(data.students)
             ? data.students
@@ -184,6 +184,10 @@ export default function ClassForm({ id }: ClassProps) {
         teachers: singleClass?.data.teachers || [],
         subjects: singleClass?.data.subjects || [],
         sections: singleClass?.data.sections || [],
+        // sections:   singleClass?.data?.classes?.map((classItem: any) => ({
+        //   label: classItem.className,
+        //   value: classItem._id,
+        // })) || [],
 
     }
     if (isLoading) {
