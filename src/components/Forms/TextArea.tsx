@@ -16,6 +16,8 @@ type TTextareaProps = {
   value?: string;
   onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
   fullWidth?: boolean;
+  startAdornment?: React.ReactNode;
+  InputProps?: object;
 };
 
 const CraftTextArea = ({
@@ -31,6 +33,7 @@ const CraftTextArea = ({
   disabled,
   value,
   onChange,
+  InputProps,
   fullWidth = true,
 }: TTextareaProps) => {
   const { control } = useFormContext();
@@ -56,6 +59,7 @@ const CraftTextArea = ({
             margin={margin}
             disabled={disabled}
             fullWidth={fullWidth}
+            InputProps={InputProps}
             onChange={(
               e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
             ) => {

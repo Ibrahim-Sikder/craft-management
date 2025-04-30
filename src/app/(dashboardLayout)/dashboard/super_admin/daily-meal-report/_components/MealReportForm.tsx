@@ -125,7 +125,7 @@ interface MealCountStats {
     threeMeals: number
 }
 
-export default function MealReportForm({ id }: { id?: string }) {
+export default function MealReportForm() {
     
     const [date, setDate] = useState<Date | null>(new Date())
     const [selectedMealTypes, setSelectedMealTypes] = useState<string[]>(mealTypes)
@@ -160,9 +160,7 @@ export default function MealReportForm({ id }: { id?: string }) {
         page: page + 1,
         searchTerm: searchTerm,
     })
-    const { data: singleMealReport, isLoading } = useGetSingleMealReportQuery(id || '')
-    console.log('single meal report ', singleMealReport)
-
+ 
 
     const { data: teacherData, isLoading: isLoadingTeachers } = useGetAllTeachersQuery({
         limit: rowsPerPage,

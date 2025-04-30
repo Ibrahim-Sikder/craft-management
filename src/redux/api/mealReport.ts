@@ -42,7 +42,7 @@ export const mealReportApi = baseApi.injectEndpoints({
       providesTags: ["meal-report"],
     }),
 
-    // একক Meal Report দেখানো
+
     getSingleMealReport: build.query({
       query: (id) => ({
         url: `/meal-report/${id}`,

@@ -56,8 +56,8 @@ import type { FieldValues } from "react-hook-form"
 import { useGetAllStudentsQuery } from "@/redux/api/studentApi"
 import toast from "react-hot-toast"
 import { useRouter } from "next/navigation"
-import { useCreateClassReportMutation, useGetSingleClassReportQuery } from "@/redux/api/classReportApi"
-import { useGetAllClassesQuery } from "@/redux/api/classApi"
+import { useCreateClassReportMutation, useGetSingleClassReportQuery, useUpdateClassReportMutation } from "@/redux/api/classReportApi"
+import { useGetAllClassesQuery, useUpdateClassMutation } from "@/redux/api/classApi"
 import { useGetAllSubjectsQuery } from "@/redux/api/subjectApi"
 import CraftInputWithIcon from "@/components/Forms/inputWithIcon"
 import TodayLesson from "./TodayLesson"
@@ -104,8 +104,9 @@ export default function ClassReportForm({ id }: ClassReportProps) {
   const [studentEvaluations, setStudentEvaluations] = useState<StudentEvaluation[]>([])
   const [todayLessonId, setTodayLessonId] = useState<string | null>(null)
   const [homeTaskId, setHomeTaskId] = useState<string | null>(null)
+
   const { data: singleClassReport, isLoading: singleClassReportLoading } = useGetSingleClassReportQuery({ id })
-  console.log(singleClassReport)
+
   const { data: classData } = useGetAllClassesQuery({
     limit: rowsPerPage,
     page: page + 1,
@@ -151,6 +152,7 @@ export default function ClassReportForm({ id }: ClassReportProps) {
     searchTerm: searchTerm,
   })
   const [createClassReport, { isLoading: isSubmitting }] = useCreateClassReportMutation()
+  const [updateClassReport, { isLoading: isUpdating }] = useUpdateClassReportMutation()
 
   // Get students from API response
   const students = studentData?.data || []
@@ -227,32 +229,31 @@ export default function ClassReportForm({ id }: ClassReportProps) {
 
   const handleSubmit = async (data: FieldValues) => {
 
-    // Extract class value - handle both object format and direct value
     let classValue = null
     if (data.classes) {
       if (typeof data.classes === "object" && data.classes !== null) {
-        // If it's an object with value property
+
         classValue = data.classes.value || null
       } else {
-        // If it's a direct value
+
         classValue = data.classes
       }
     }
 
-    // Extract subject value - handle both object format and direct value
+
     let subjectValue = null
     if (data.subjects) {
       if (typeof data.subjects === "object" && data.subjects !== null) {
-        // If it's an object with value property
+
         subjectValue = data.subjects.value || null
       } else {
-        // If it's a direct value
+
         subjectValue = data.subjects
       }
     }
 
     try {
-      // Check if today's lesson and home task are added
+
       if (!todayLessonId) {
         toast.error("আজকের পাঠ যোগ করুন")
         return
@@ -263,7 +264,7 @@ export default function ClassReportForm({ id }: ClassReportProps) {
         return
       }
 
-      // Check if class and subject are selected
+
       if (!classValue) {
         toast.error("শ্রেণী নির্বাচন করুন")
         return
@@ -274,15 +275,15 @@ export default function ClassReportForm({ id }: ClassReportProps) {
         return
       }
 
-      // Ensure all students have evaluations
+
       const allStudentEvaluations = students.map((student: any) => {
-        // Find existing evaluation or create a new one
+
         const existingEval = studentEvaluations.find((evaluation) => evaluation.studentId === student._id)
 
         if (existingEval) {
           return existingEval
         } else {
-          // Create default evaluation if none exists
+
           return {
             studentId: student._id,
             lessonEvaluation: "পড়া শিখেছে",
@@ -294,7 +295,7 @@ export default function ClassReportForm({ id }: ClassReportProps) {
         }
       })
 
-      // Format data according to the Mongoose model
+
       const formattedData = {
         teachers: storedUser.userId,
         subjects: [subjectValue],
@@ -307,16 +308,28 @@ export default function ClassReportForm({ id }: ClassReportProps) {
       }
 
 
-      const response = await createClassReport(formattedData).unwrap()
+      if (!id) {
+        const response = await createClassReport(formattedData).unwrap()
 
-      if (response.success) {
-        setSnackbarMessage("Class report saved successfully!")
-        setSnackbarSeverity("success")
-        setSnackbarOpen(true)
-        toast.success("Class report saved successfully!")
-        // Redirect to the list page after successful save
-        // router.push("/dashboard/super_admin/classes/report/list")
+        if (response.success) {
+          setSnackbarMessage("Class report saved successfully!")
+          setSnackbarSeverity("success")
+          setSnackbarOpen(true)
+          toast.success("Class report saved successfully!")
+          router.push("/dashboard/super_admin/classes/report/list")
+        }
+      } else {
+        const response = await updateClassReport({ id, data: formattedData }).unwrap()
+ 
+        if (response.success) {
+          setSnackbarMessage("Class report update successfully!")
+          setSnackbarSeverity("success")
+          setSnackbarOpen(true)
+          toast.success("Class report update successfully!")
+          router.push("/dashboard/super_admin/classes/report/list")
+        }
       }
+
     } catch (error: any) {
       console.error("Error saving class report:", error)
       setSnackbarMessage(error?.data?.message || "Failed to save class report")
@@ -548,15 +561,6 @@ export default function ClassReportForm({ id }: ClassReportProps) {
     toast.success("বাড়ির কাজ যোগ করা হয়েছে!")
   }
 
-  // const defaultValues = {
-  //   description: singleClassReport?.data?.description || '',
-  //   hour: singleClassReport?.data?.hour || '',
-  //   className: singleClassReport?.data?.className || '',
-  //   date: singleClassReport?.data?.date || '',
-  //   subjects: singleClassReport?.data?.subjects || '',
-  //   classes: singleClassReport?.data?.classes || '',
-
-  // }
 
   return (
     <>
@@ -908,14 +912,14 @@ export default function ClassReportForm({ id }: ClassReportProps) {
 
           {/* Today's Lesson Dialog */}
           <TodayLesson
-
+            id={todayLessonId}
             open={todayLessonDialogOpen}
             onClose={handleCloseTodayLessonDialog}
             onSave={handleSaveTodayLesson}
           />
 
           {/* Home Task Dialog */}
-          <TodayTask open={todayTaskDialogOpen} onClose={handleCloseTodayTaskDialog} onSave={handleSaveTodayTask} />
+          <TodayTask id={homeTaskId} open={todayTaskDialogOpen} onClose={handleCloseTodayTaskDialog} onSave={handleSaveTodayTask} />
         </>
       )}
     </>
