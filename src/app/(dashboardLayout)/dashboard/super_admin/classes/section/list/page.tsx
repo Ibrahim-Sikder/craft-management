@@ -4,7 +4,7 @@
 
 import type React from "react"
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useMemo } from "react"
 import {
   Box,
   Container,
@@ -37,11 +37,7 @@ import {
   Skeleton,
   Fade,
   alpha,
-  createTheme,
   ThemeProvider,
-  Card,
-  CardContent,
-  CardActions,
   Tabs,
   Tab,
   LinearProgress,
@@ -58,20 +54,15 @@ import {
   ListItemText,
   ListItemButton,
   Checkbox,
+  CircularProgress,
 } from "@mui/material"
 import {
   Add as AddIcon,
   Search as SearchIcon,
   FilterList as FilterListIcon,
-  MoreVert as MoreVertIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
   Visibility as VisibilityIcon,
-  // School as SchoolIcon,
-  // Dashboard as DashboardIcon,
-  // AccountTree as BranchIcon,
-  // Home as HomeIcon,
-  // Notifications as NotificationsIcon,
   ArrowUpward as ArrowUpwardIcon,
   ArrowDownward as ArrowDownwardIcon,
   CheckCircle as CheckCircleIcon,
@@ -83,245 +74,47 @@ import {
   Groups as GroupsIcon,
   Close as CloseIcon,
   Schedule as ScheduleIcon,
-  Star as StarIcon,
   Assignment as AssignmentIcon,
   BarChart as BarChartIcon,
-  ViewModule as ViewModuleIcon,
-  ViewList as ViewListIcon,
   Tune as TuneIcon,
-  ExpandLess as ExpandLessIcon,
 } from "@mui/icons-material"
 import { Roboto } from "next/font/google"
 import Link from "next/link"
+import { customTheme } from "@/ThemeStyle"
+import { useDeleteSectionMutation, useGetAllSectionsQuery } from "@/redux/api/sectionApi"
+import { toast } from "react-hot-toast"
 
 const roboto = Roboto({
   weight: ["300", "400", "500", "700"],
   subsets: ["latin"],
 })
 
-// Create a custom theme with vibrant colors
-const customTheme = createTheme({
-  palette: {
-    primary: {
-      main: "#6366f1", // Indigo color for primary
-      light: "#818cf8",
-      dark: "#4f46e5",
-    },
-    secondary: {
-      main: "#ec4899", // Pink color for secondary
-      light: "#f472b6",
-      dark: "#db2777",
-    },
-    background: {
-      default: "#f9fafb",
-      paper: "#ffffff",
-    },
-    success: {
-      main: "#10b981",
-      light: "#34d399",
-      dark: "#059669",
-    },
-    warning: {
-      main: "#f59e0b",
-      light: "#fbbf24",
-      dark: "#d97706",
-    },
-    error: {
-      main: "#ef4444",
-      light: "#f87171",
-      dark: "#dc2626",
-    },
-    info: {
-      main: "#3b82f6",
-      light: "#60a5fa",
-      dark: "#2563eb",
-    },
-  },
-  typography: {
-    fontFamily: roboto.style.fontFamily,
-    h4: {
-      fontWeight: 600,
-    },
-    h6: {
-      fontWeight: 500,
-    },
-  },
-  shape: {
-    borderRadius: 12,
-  },
-  components: {
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          textTransform: "none",
-          borderRadius: 8,
-          padding: "10px 20px",
-          boxShadow: "none",
-          "&:hover": {
-            boxShadow: "0px 4px 8px rgba(99, 102, 241, 0.2)",
-          },
-        },
-      },
-    },
-    MuiPaper: {
-      styleOverrides: {
-        root: {
-          borderRadius: 12,
-          boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.05)",
-        },
-      },
-    },
-    MuiCard: {
-      styleOverrides: {
-        root: {
-          borderRadius: 12,
-          boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.05)",
-          overflow: "visible",
-        },
-      },
-    },
-    MuiTableCell: {
-      styleOverrides: {
-        root: {
-          borderBottom: "1px solid rgba(0, 0, 0, 0.06)",
-          padding: "16px",
-        },
-        head: {
-          fontWeight: 600,
-          backgroundColor: "rgba(99, 102, 241, 0.04)",
-          color: "#6366f1",
-        },
-      },
-    },
-    MuiTableRow: {
-      styleOverrides: {
-        root: {
-          "&:hover": {
-            backgroundColor: "rgba(99, 102, 241, 0.04)",
-          },
-          "&:last-child td": {
-            borderBottom: 0,
-          },
-        },
-      },
-    },
-    MuiChip: {
-      styleOverrides: {
-        root: {
-          fontWeight: 500,
-        },
-      },
-    },
-  },
-})
-
-// Sample data for sections
-const generateSectionsData = () => {
-  const statuses = ["Active", "Inactive", "Pending"]
-  const classes = [
-    "Class 1",
-    "Class 2",
-    "Class 3",
-    "Class 4",
-    "Class 5",
-    "Class 6",
-    "Class 7",
-    "Class 8",
-    "Class 9",
-    "Class 10",
-  ]
-  const sectionNames = ["A", "B", "C", "D", "E", "Morning", "Afternoon", "Evening", "Special", "Advanced"]
-  const teachers = [
-    { name: "Dr. Smith", avatar: "S" },
-    { name: "Prof. Johnson", avatar: "J" },
-    { name: "Mrs. Williams", avatar: "W" },
-    { name: "Mr. Brown", avatar: "B" },
-    { name: "Ms. Davis", avatar: "D" },
-  ]
-  const rooms = ["Room 101", "Room 102", "Room 201", "Room 202", "Lab 101"]
-  const colors = [
-    "#3b82f6", // Blue
-    "#8b5cf6", // Purple
-    "#ec4899", // Pink
-    "#f59e0b", // Amber
-    "#10b981", // Emerald
-    "#ef4444", // Red
-    "#6366f1", // Indigo
-    "#84cc16", // Lime
-    "#14b8a6", // Teal
-    "#f97316", // Orange
-  ]
-  const types = ["Regular", "Honors", "Advanced", "Special"]
-
-  return Array.from({ length: 50 }, (_, i) => {
-    const classIndex = Math.floor(Math.random() * classes.length)
-    const sectionIndex = Math.floor(Math.random() * sectionNames.length)
-    const colorIndex = Math.floor(Math.random() * colors.length)
-    const typeIndex = Math.floor(Math.random() * types.length)
-
-    return {
-      id: i + 1,
-      name: sectionNames[sectionIndex],
-      className: classes[classIndex],
-      fullName: `${classes[classIndex]} - Section ${sectionNames[sectionIndex]}`,
-      capacity: Math.floor(Math.random() * 20) + 20,
-      enrolled: Math.floor(Math.random() * 20) + 10,
-      teacher: teachers[Math.floor(Math.random() * teachers.length)],
-      room: rooms[Math.floor(Math.random() * rooms.length)],
-      status: statuses[Math.floor(Math.random() * statuses.length)],
-      createdAt: new Date(Date.now() - Math.floor(Math.random() * 10000000000)),
-      lastUpdated: new Date(Date.now() - Math.floor(Math.random() * 1000000000)),
-      color: colors[colorIndex],
-      type: types[typeIndex],
-      schedule: Math.random() > 0.5 ? "MWF 9:00 AM - 10:30 AM" : "TTh 1:00 PM - 2:30 PM",
-      fillRate: Math.floor(((Math.floor(Math.random() * 20) + 10) / (Math.floor(Math.random() * 20) + 20)) * 100),
-    }
-  })
-}
-
-// Analytics data
-const analyticsData = {
-  totalSections: 50,
-  activeSections: 35,
-  inactiveSections: 10,
-  pendingSections: 5,
-  averageFillRate: 78,
-  mostPopularClass: "Class 8",
-  leastPopularClass: "Class 3",
-  sectionsByClass: [
-    { class: "Class 1", count: 5 },
-    { class: "Class 2", count: 4 },
-    { class: "Class 3", count: 3 },
-    { class: "Class 4", count: 6 },
-    { class: "Class 5", count: 5 },
-    { class: "Class 6", count: 4 },
-    { class: "Class 7", count: 7 },
-    { class: "Class 8", count: 8 },
-    { class: "Class 9", count: 4 },
-    { class: "Class 10", count: 4 },
-  ],
-  sectionsByType: [
-    { type: "Regular", count: 25 },
-    { type: "Honors", count: 10 },
-    { type: "Advanced", count: 8 },
-    { type: "Special", count: 7 },
-  ],
-}
+// Color palette for section customization
+const colorPalette = [
+  "#3b82f6", // Blue
+  "#8b5cf6", // Purple
+  "#ec4899", // Pink
+  "#f59e0b", // Amber
+  "#10b981", // Emerald
+  "#ef4444", // Red
+  "#6366f1", // Indigo
+  "#84cc16", // Lime
+  "#14b8a6", // Teal
+  "#f97316", // Orange
+]
 
 export default function SectionsListPage() {
   const theme = customTheme
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"))
 
   // State
-  const [sections, setSections] = useState<any[]>([])
-  const [loading, setLoading] = useState(true)
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(10)
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState<string | null>(null)
   const [classFilter, setClassFilter] = useState<string | null>(null)
   const [typeFilter, setTypeFilter] = useState<string | null>(null)
-  const [orderBy, setOrderBy] = useState<string>("fullName")
+  const [orderBy, setOrderBy] = useState<string>("name")
   const [order, setOrder] = useState<"asc" | "desc">("asc")
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [filterAnchorEl, setFilterAnchorEl] = useState<null | HTMLElement>(null)
@@ -331,32 +124,175 @@ export default function SectionsListPage() {
   const [viewMode, setViewMode] = useState<"list" | "grid">("list")
   const [tabValue, setTabValue] = useState(0)
   const [showAnalytics, setShowAnalytics] = useState(false)
-  const [selectedSections, setSelectedSections] = useState<number[]>([])
+  const [selectedSections, setSelectedSections] = useState<string[]>([])
   const [batchActionAnchorEl, setBatchActionAnchorEl] = useState<null | HTMLElement>(null)
   const [filterDrawerOpen, setFilterDrawerOpen] = useState(false)
   const [alertOpen, setAlertOpen] = useState(true)
+  const [isDeleting, setIsDeleting] = useState(false)
 
-  // Get unique classes and types for filters
+  // API hooks
+  const [deleteSection, { isLoading: isDeleteLoading }] = useDeleteSectionMutation()
+
+  const {
+    data: sectionData,
+    isLoading,
+    refetch,
+  } = useGetAllSectionsQuery({
+    limit: rowsPerPage,
+    page: page + 1,
+    searchTerm: searchTerm,
+  })
+
+  // Transform API data to the format expected by the UI
+  const sections = useMemo(() => {
+    if (!sectionData?.data?.sections) return []
+
+    return sectionData.data.sections.map((section: any) => {
+      // Get a consistent color based on section name or index
+      const colorIndex = section.name.charCodeAt(0) % colorPalette.length
+      const color = colorPalette[colorIndex]
+
+      // Extract teacher info
+      const teacher = section.teachers
+        ? {
+            name: section.teachers.name || "Unknown Teacher",
+            avatar: section.teachers.name ? section.teachers.name.charAt(0) : "U",
+          }
+        : { name: "Not Assigned", avatar: "N" }
+
+      // Extract room info
+      const room = section.rooms ? section.rooms.name || "Not Assigned" : "Not Assigned"
+
+      // Extract class info
+      const className = section.classes ? section.classes.className || "No Class" : "No Class"
+
+      // Calculate enrollment (placeholder since actual enrolled count isn't in the data)
+      const enrolled = Math.floor(Math.random() * section.capacity) || 0
+      const fillRate = Math.floor((enrolled / section.capacity) * 100)
+
+      // Format schedule from timeSlots
+      let schedule = "No schedule"
+      if (section.timeSlots && section.timeSlots.length > 0) {
+        const firstSlot = section.timeSlots[0]
+        schedule = `${firstSlot.day} ${firstSlot.startTime} - ${firstSlot.endTime}`
+        if (section.timeSlots.length > 1) {
+          schedule += ` (+${section.timeSlots.length - 1} more)`
+        }
+      }
+
+      // Determine status based on isActive
+      const status = section.isActive ? "Active" : "Inactive"
+
+      return {
+        id: section._id,
+        name: section.name,
+        className: className,
+        fullName: `${className} - ${section.name}`,
+        capacity: section.capacity,
+        enrolled: enrolled,
+        teacher: teacher,
+        room: room,
+        status: status,
+        createdAt: new Date(section.createdAt),
+        lastUpdated: new Date(section.updatedAt),
+        color: color,
+        type: section.sectionType || "Regular",
+        schedule: schedule,
+        fillRate: fillRate,
+        description: section.description,
+        originalData: section, // Keep the original data for reference
+      }
+    })
+  }, [sectionData])
+
+  // Extract unique class names and section types
   const uniqueClasses = useMemo(() => {
-    return Array.from(new Set(sections.map((section) => section.className)))
+    return [...new Set(sections.map((section) => section.className))]
   }, [sections])
 
   const uniqueTypes = useMemo(() => {
-    return Array.from(new Set(sections.map((section) => section.type)))
+    return [...new Set(sections.map((section) => section.type))]
   }, [sections])
 
-  // Simulate loading data from an API
-  useEffect(() => {
-    setLoading(true)
-    // Simulate API call
-    setTimeout(() => {
-      setSections(generateSectionsData())
-      setLoading(false)
-    }, 1000)
-  }, [refreshKey])
+  // Calculate analytics data
+  const analyticsData = useMemo(() => {
+    if (!sections.length) {
+      return {
+        totalSections: 0,
+        activeSections: 0,
+        inactiveSections: 0,
+        pendingSections: 0,
+        averageFillRate: 0,
+        mostPopularClass: "None",
+        leastPopularClass: "None",
+        sectionsByClass: [],
+        sectionsByType: [],
+      }
+    }
+
+    const activeSections = sections.filter((s) => s.status === "Active").length
+    const inactiveSections = sections.filter((s) => s.status === "Inactive").length
+    const pendingSections = sections.filter((s) => s.status === "Pending").length
+
+    // Calculate average fill rate
+    const totalFillRate = sections.reduce((sum, section) => sum + section.fillRate, 0)
+    const averageFillRate = Math.round(totalFillRate / sections.length)
+
+    // Count sections by class
+    const classCounts = sections.reduce((acc: any, section) => {
+      const className = section.className
+      if (!acc[className]) acc[className] = 0
+      acc[className]++
+      return acc
+    }, {})
+
+    // Count sections by type
+    const typeCounts = sections.reduce((acc: any, section) => {
+      const type = section.type
+      if (!acc[type]) acc[type] = 0
+      acc[type]++
+      return acc
+    }, {})
+
+    // Find most and least popular classes
+    let mostPopularClass = "None"
+    let leastPopularClass = "None"
+    let maxCount = 0
+    let minCount = Number.POSITIVE_INFINITY
+
+    Object.entries(classCounts).forEach(([className, count]: [string, any]) => {
+      if (count > maxCount) {
+        maxCount = count
+        mostPopularClass = className
+      }
+      if (count < minCount) {
+        minCount = count
+        leastPopularClass = className
+      }
+    })
+
+    return {
+      totalSections: sections.length,
+      activeSections,
+      inactiveSections,
+      pendingSections,
+      averageFillRate,
+      mostPopularClass,
+      leastPopularClass,
+      sectionsByClass: Object.entries(classCounts).map(([className, count]) => ({
+        class: className,
+        count,
+      })),
+      sectionsByType: Object.entries(typeCounts).map(([type, count]) => ({
+        type,
+        count,
+      })),
+    }
+  }, [sections])
 
   // Handle refresh
   const handleRefresh = () => {
+    refetch()
     setRefreshKey((prev) => prev + 1)
   }
 
@@ -377,14 +313,6 @@ export default function SectionsListPage() {
   }
 
   // Handle filters
-  // const handleFilterClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-  //   setFilterAnchorEl(event.currentTarget)
-  // }
-
-  // const handleFilterClose = () => {
-  //   setFilterAnchorEl(null)
-  // }
-
   const handleStatusFilterSelect = (status: string | null) => {
     setStatusFilter(status)
     setFilterAnchorEl(null)
@@ -418,16 +346,33 @@ export default function SectionsListPage() {
     setAnchorEl(null)
   }
 
+  // Handle direct delete click
+  const handleDirectDeleteClick = (section: any) => {
+    setSelectedSection(section)
+    setDeleteDialogOpen(true)
+  }
+
   const handleDeleteClick = () => {
     setDeleteDialogOpen(true)
     setAnchorEl(null)
   }
 
-  const handleDeleteConfirm = () => {
-    // In a real app, you would call an API to delete the section
-    setSections(sections.filter((s) => s.id !== selectedSection?.id))
-    setDeleteDialogOpen(false)
-    setSelectedSection(null)
+  const handleDeleteConfirm = async () => {
+    if (!selectedSection) return
+
+    setIsDeleting(true)
+    try {
+      await deleteSection(selectedSection.id).unwrap()
+      toast.success("Section deleted successfully")
+      refetch()
+    } catch (error) {
+      toast.error("Failed to delete section")
+      console.error("Delete error:", error)
+    } finally {
+      setIsDeleting(false)
+      setDeleteDialogOpen(false)
+      setSelectedSection(null)
+    }
   }
 
   const handleDeleteCancel = () => {
@@ -454,9 +399,9 @@ export default function SectionsListPage() {
     setSelectedSections([])
   }
 
-  const handleSelectOne = (id: number) => {
+  const handleSelectOne = (id: string) => {
     const selectedIndex = selectedSections.indexOf(id)
-    let newSelected: number[] = []
+    let newSelected: string[] = []
 
     if (selectedIndex === -1) {
       newSelected = [...selectedSections, id]
@@ -476,29 +421,37 @@ export default function SectionsListPage() {
     setBatchActionAnchorEl(null)
   }
 
-  const handleBatchDelete = () => {
-    // In a real app, you would call an API to delete the sections
-    setSections(sections.filter((section) => !selectedSections.includes(section.id)))
-    setSelectedSections([])
+  const handleBatchDelete = async () => {
     setBatchActionAnchorEl(null)
+
+    // Delete multiple sections
+    try {
+      for (const id of selectedSections) {
+        await deleteSection(id).unwrap()
+      }
+      toast.success(`${selectedSections.length} sections deleted successfully`)
+      setSelectedSections([])
+      refetch()
+    } catch (error) {
+      toast.error("Failed to delete some sections")
+      console.error("Batch delete error:", error)
+    }
   }
 
   const handleBatchActivate = () => {
     // In a real app, you would call an API to activate the sections
-    setSections(
-      sections.map((section) => (selectedSections.includes(section.id) ? { ...section, status: "Active" } : section)),
-    )
+    toast.success(`${selectedSections.length} sections activated`)
     setSelectedSections([])
     setBatchActionAnchorEl(null)
+    handleRefresh()
   }
 
   const handleBatchDeactivate = () => {
     // In a real app, you would call an API to deactivate the sections
-    setSections(
-      sections.map((section) => (selectedSections.includes(section.id) ? { ...section, status: "Inactive" } : section)),
-    )
+    toast.success(`${selectedSections.length} sections deactivated`)
     setSelectedSections([])
     setBatchActionAnchorEl(null)
+    handleRefresh()
   }
 
   // Filter and sort the data
@@ -566,12 +519,12 @@ export default function SectionsListPage() {
           icon: <AccessTimeIcon fontSize="small" />,
           sx: { bgcolor: alpha(theme.palette.warning.main, 0.1) },
         }
-        default:
-          return {
-            color: "default" as const,
-            icon: <div />, 
-            sx: {},
-          }
+      default:
+        return {
+          color: "default" as const,
+          icon: <div />,
+          sx: {},
+        }
     }
   }
 
@@ -596,7 +549,7 @@ export default function SectionsListPage() {
                   mb: 3,
                   flexWrap: "wrap",
                   gap: 2,
-                  paddingTop: 2
+                  paddingTop: 2,
                 }}
               >
                 <Typography variant="h4" component="h1" sx={{ fontWeight: 700, color: "text.primary" }}>
@@ -643,117 +596,6 @@ export default function SectionsListPage() {
                   management.
                 </Alert>
               </Collapse>
-
-              {/* Analytics Overview */}
-              <Paper
-                elevation={0}
-                sx={{
-                  mb: 4,
-                  overflow: "hidden",
-                  display: showAnalytics ? "block" : "none",
-                }}
-              >
-                <Box sx={{ p: 3, borderBottom: "1px solid rgba(0, 0, 0, 0.06)" }}>
-                  <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
-                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                      Sections Analytics
-                    </Typography>
-                    <Button size="small" endIcon={<ExpandLessIcon />} onClick={() => setShowAnalytics(false)}>
-                      Hide Analytics
-                    </Button>
-                  </Box>
-
-                  <Grid container spacing={3}>
-                    <Grid item xs={12} sm={6} md={3}>
-                      <Card sx={{ height: "100%" }}>
-                        <CardContent>
-                          <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                            <Avatar sx={{ bgcolor: alpha(theme.palette.primary.main, 0.1), mr: 2 }}>
-                              <AssignmentIcon sx={{ color: theme.palette.primary.main }} />
-                            </Avatar>
-                            <Typography variant="subtitle1" color="text.secondary">
-                              Total Sections
-                            </Typography>
-                          </Box>
-                          <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                            {analyticsData.totalSections}
-                          </Typography>
-                        </CardContent>
-                      </Card>
-                    </Grid>
-
-                    <Grid item xs={12} sm={6} md={3}>
-                      <Card sx={{ height: "100%" }}>
-                        <CardContent>
-                          <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                            <Avatar sx={{ bgcolor: alpha(theme.palette.success.main, 0.1), mr: 2 }}>
-                              <CheckCircleIcon sx={{ color: theme.palette.success.main }} />
-                            </Avatar>
-                            <Typography variant="subtitle1" color="text.secondary">
-                              Active Sections
-                            </Typography>
-                          </Box>
-                          <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                            {analyticsData.activeSections}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                            {Math.round((analyticsData.activeSections / analyticsData.totalSections) * 100)}% of total
-                          </Typography>
-                        </CardContent>
-                      </Card>
-                    </Grid>
-
-                    <Grid item xs={12} sm={6} md={3}>
-                      <Card sx={{ height: "100%" }}>
-                        <CardContent>
-                          <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                            <Avatar sx={{ bgcolor: alpha(theme.palette.warning.main, 0.1), mr: 2 }}>
-                              <GroupsIcon sx={{ color: theme.palette.warning.main }} />
-                            </Avatar>
-                            <Typography variant="subtitle1" color="text.secondary">
-                              Average Fill Rate
-                            </Typography>
-                          </Box>
-                          <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                            {analyticsData.averageFillRate}%
-                          </Typography>
-                          <LinearProgress
-                            variant="determinate"
-                            value={analyticsData.averageFillRate}
-                            color={analyticsData.averageFillRate > 75 ? "success" : "warning"}
-                            sx={{ mt: 1, height: 6, borderRadius: 3 }}
-                          />
-                        </CardContent>
-                      </Card>
-                    </Grid>
-
-                    <Grid item xs={12} sm={6} md={3}>
-                      <Card sx={{ height: "100%" }}>
-                        <CardContent>
-                          <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                            <Avatar sx={{ bgcolor: alpha(theme.palette.info.main, 0.1), mr: 2 }}>
-                              <StarIcon sx={{ color: theme.palette.info.main }} />
-                            </Avatar>
-                            <Typography variant="subtitle1" color="text.secondary">
-                              Popular Class
-                            </Typography>
-                          </Box>
-                          <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                            {analyticsData.mostPopularClass}
-                          </Typography>
-                          <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-                            {
-                              analyticsData.sectionsByClass.find((c) => c.class === analyticsData.mostPopularClass)
-                                ?.count
-                            }{" "}
-                            sections
-                          </Typography>
-                        </CardContent>
-                      </Card>
-                    </Grid>
-                  </Grid>
-                </Box>
-              </Paper>
 
               {/* Main Content */}
               <Paper elevation={0} sx={{ mb: 4, overflow: "hidden" }}>
@@ -842,31 +684,6 @@ export default function SectionsListPage() {
                         <BarChartIcon />
                       </IconButton>
                     </Tooltip>
-
-                    <Tooltip title="List View">
-                      <IconButton
-                        color={viewMode === "list" ? "primary" : "default"}
-                        onClick={() => handleViewModeChange("list")}
-                        sx={{
-                          ml: 1,
-                          bgcolor: viewMode === "list" ? alpha(theme.palette.primary.main, 0.1) : "transparent",
-                        }}
-                      >
-                        <ViewListIcon />
-                      </IconButton>
-                    </Tooltip>
-
-                    <Tooltip title="Grid View">
-                      <IconButton
-                        color={viewMode === "grid" ? "primary" : "default"}
-                        onClick={() => handleViewModeChange("grid")}
-                        sx={{
-                          bgcolor: viewMode === "grid" ? alpha(theme.palette.primary.main, 0.1) : "transparent",
-                        }}
-                      >
-                        <ViewModuleIcon />
-                      </IconButton>
-                    </Tooltip>
                   </Box>
                 </Tabs>
 
@@ -912,10 +729,10 @@ export default function SectionsListPage() {
                             },
                             ...(statusFilter || classFilter || typeFilter
                               ? {
-                                borderColor: "primary.main",
-                                color: "primary.main",
-                                bgcolor: "rgba(99, 102, 241, 0.04)",
-                              }
+                                  borderColor: "primary.main",
+                                  color: "primary.main",
+                                  bgcolor: "rgba(99, 102, 241, 0.04)",
+                                }
                               : {}),
                           }}
                         >
@@ -973,7 +790,7 @@ export default function SectionsListPage() {
                 </Box>
 
                 {/* Loading State */}
-                {loading ? (
+                {isLoading ? (
                   <Box sx={{ p: 2 }}>
                     {Array.from(new Array(5)).map((_, index) => (
                       <Box key={index} sx={{ display: "flex", py: 2, px: 2, alignItems: "center" }}>
@@ -992,569 +809,329 @@ export default function SectionsListPage() {
                 ) : (
                   <>
                     {/* List View */}
-                    {viewMode === "list" && (
-                      <>
-                        <TableContainer>
-                          <Table sx={{ minWidth: 650 }}>
-                            <TableHead>
-                              <TableRow>
-                                <TableCell padding="checkbox">
-                                  <Checkbox
-                                    indeterminate={
-                                      selectedSections.length > 0 && selectedSections.length < filteredSections.length
-                                    }
-                                    checked={
-                                      filteredSections.length > 0 && selectedSections.length === filteredSections.length
-                                    }
-                                    onChange={handleSelectAll}
-                                  />
-                                </TableCell>
-                                <TableCell>
-                                  <Box
-                                    sx={{
-                                      display: "flex",
-                                      alignItems: "center",
-                                      cursor: "pointer",
-                                      userSelect: "none",
-                                      color: orderBy === "fullName" ? "primary.main" : "inherit",
-                                    }}
-                                    onClick={() => handleSort("fullName")}
-                                  >
-                                    Section Name
-                                    {orderBy === "fullName" && (
-                                      <Box component="span" sx={{ display: "inline-flex", ml: 0.5 }}>
-                                        {order === "asc" ? (
-                                          <ArrowUpwardIcon fontSize="small" />
-                                        ) : (
-                                          <ArrowDownwardIcon fontSize="small" />
-                                        )}
-                                      </Box>
+                    <TableContainer>
+                      <Table sx={{ minWidth: 650 }}>
+                        <TableHead>
+                          <TableRow>
+                            <TableCell padding="checkbox">
+                              <Checkbox
+                                indeterminate={
+                                  selectedSections.length > 0 && selectedSections.length < filteredSections.length
+                                }
+                                checked={
+                                  filteredSections.length > 0 && selectedSections.length === filteredSections.length
+                                }
+                                onChange={handleSelectAll}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  cursor: "pointer",
+                                  userSelect: "none",
+                                  color: orderBy === "fullName" ? "primary.main" : "inherit",
+                                }}
+                                onClick={() => handleSort("fullName")}
+                              >
+                                Section Name
+                                {orderBy === "fullName" && (
+                                  <Box component="span" sx={{ display: "inline-flex", ml: 0.5 }}>
+                                    {order === "asc" ? (
+                                      <ArrowUpwardIcon fontSize="small" />
+                                    ) : (
+                                      <ArrowDownwardIcon fontSize="small" />
                                     )}
                                   </Box>
-                                </TableCell>
-                                <TableCell>
-                                  <Box
-                                    sx={{
-                                      display: "flex",
-                                      alignItems: "center",
-                                      cursor: "pointer",
-                                      userSelect: "none",
-                                      color: orderBy === "teacher" ? "primary.main" : "inherit",
-                                    }}
-                                    onClick={() => handleSort("teacher")}
-                                  >
-                                    Teacher
-                                    {orderBy === "teacher" && (
-                                      <Box component="span" sx={{ display: "inline-flex", ml: 0.5 }}>
-                                        {order === "asc" ? (
-                                          <ArrowUpwardIcon fontSize="small" />
-                                        ) : (
-                                          <ArrowDownwardIcon fontSize="small" />
-                                        )}
-                                      </Box>
+                                )}
+                              </Box>
+                            </TableCell>
+                            <TableCell>
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  cursor: "pointer",
+                                  userSelect: "none",
+                                  color: orderBy === "teacher" ? "primary.main" : "inherit",
+                                }}
+                                onClick={() => handleSort("teacher")}
+                              >
+                                Teacher
+                                {orderBy === "teacher" && (
+                                  <Box component="span" sx={{ display: "inline-flex", ml: 0.5 }}>
+                                    {order === "asc" ? (
+                                      <ArrowUpwardIcon fontSize="small" />
+                                    ) : (
+                                      <ArrowDownwardIcon fontSize="small" />
                                     )}
                                   </Box>
-                                </TableCell>
-                                <TableCell>
-                                  <Box
-                                    sx={{
-                                      display: "flex",
-                                      alignItems: "center",
-                                      cursor: "pointer",
-                                      userSelect: "none",
-                                      color: orderBy === "capacity" ? "primary.main" : "inherit",
-                                    }}
-                                    onClick={() => handleSort("capacity")}
-                                  >
-                                    Capacity
-                                    {orderBy === "capacity" && (
-                                      <Box component="span" sx={{ display: "inline-flex", ml: 0.5 }}>
-                                        {order === "asc" ? (
-                                          <ArrowUpwardIcon fontSize="small" />
-                                        ) : (
-                                          <ArrowDownwardIcon fontSize="small" />
-                                        )}
-                                      </Box>
+                                )}
+                              </Box>
+                            </TableCell>
+                            <TableCell>
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  cursor: "pointer",
+                                  userSelect: "none",
+                                  color: orderBy === "capacity" ? "primary.main" : "inherit",
+                                }}
+                                onClick={() => handleSort("capacity")}
+                              >
+                                Capacity
+                                {orderBy === "capacity" && (
+                                  <Box component="span" sx={{ display: "inline-flex", ml: 0.5 }}>
+                                    {order === "asc" ? (
+                                      <ArrowUpwardIcon fontSize="small" />
+                                    ) : (
+                                      <ArrowDownwardIcon fontSize="small" />
                                     )}
                                   </Box>
-                                </TableCell>
-                                <TableCell>
-                                  <Box
-                                    sx={{
-                                      display: "flex",
-                                      alignItems: "center",
-                                      cursor: "pointer",
-                                      userSelect: "none",
-                                      color: orderBy === "type" ? "primary.main" : "inherit",
-                                    }}
-                                    onClick={() => handleSort("type")}
-                                  >
-                                    Type
-                                    {orderBy === "type" && (
-                                      <Box component="span" sx={{ display: "inline-flex", ml: 0.5 }}>
-                                        {order === "asc" ? (
-                                          <ArrowUpwardIcon fontSize="small" />
-                                        ) : (
-                                          <ArrowDownwardIcon fontSize="small" />
-                                        )}
-                                      </Box>
+                                )}
+                              </Box>
+                            </TableCell>
+                            <TableCell>
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  cursor: "pointer",
+                                  userSelect: "none",
+                                  color: orderBy === "type" ? "primary.main" : "inherit",
+                                }}
+                                onClick={() => handleSort("type")}
+                              >
+                                Type
+                                {orderBy === "type" && (
+                                  <Box component="span" sx={{ display: "inline-flex", ml: 0.5 }}>
+                                    {order === "asc" ? (
+                                      <ArrowUpwardIcon fontSize="small" />
+                                    ) : (
+                                      <ArrowDownwardIcon fontSize="small" />
                                     )}
                                   </Box>
-                                </TableCell>
-                                <TableCell>
-                                  <Box
-                                    sx={{
-                                      display: "flex",
-                                      alignItems: "center",
-                                      cursor: "pointer",
-                                      userSelect: "none",
-                                      color: orderBy === "status" ? "primary.main" : "inherit",
-                                    }}
-                                    onClick={() => handleSort("status")}
-                                  >
-                                    Status
-                                    {orderBy === "status" && (
-                                      <Box component="span" sx={{ display: "inline-flex", ml: 0.5 }}>
-                                        {order === "asc" ? (
-                                          <ArrowUpwardIcon fontSize="small" />
-                                        ) : (
-                                          <ArrowDownwardIcon fontSize="small" />
-                                        )}
-                                      </Box>
+                                )}
+                              </Box>
+                            </TableCell>
+                            <TableCell>
+                              <Box
+                                sx={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  cursor: "pointer",
+                                  userSelect: "none",
+                                  color: orderBy === "status" ? "primary.main" : "inherit",
+                                }}
+                                onClick={() => handleSort("status")}
+                              >
+                                Status
+                                {orderBy === "status" && (
+                                  <Box component="span" sx={{ display: "inline-flex", ml: 0.5 }}>
+                                    {order === "asc" ? (
+                                      <ArrowUpwardIcon fontSize="small" />
+                                    ) : (
+                                      <ArrowDownwardIcon fontSize="small" />
                                     )}
                                   </Box>
-                                </TableCell>
-                                <TableCell>Schedule</TableCell>
-                                <TableCell align="right">Actions</TableCell>
-                              </TableRow>
-                            </TableHead>
-                            <TableBody>
-                              {paginatedSections.length > 0 ? (
-                                paginatedSections.map((section) => {
-                                  const statusChipProps = getStatusChipProps(section.status)
-                                  const isSelected = selectedSections.indexOf(section.id) !== -1
-
-                                  return (
-                                    <TableRow
-                                      key={section.id}
-                                      sx={{
-                                        transition: "all 0.2s",
-                                        ...(isSelected ? { bgcolor: alpha(theme.palette.primary.main, 0.05) } : {}),
-                                      }}
-                                      hover
-                                      selected={isSelected}
-                                    >
-                                      <TableCell padding="checkbox">
-                                        <Checkbox checked={isSelected} onChange={() => handleSelectOne(section.id)} />
-                                      </TableCell>
-                                      <TableCell component="th" scope="row">
-                                        <Box sx={{ display: "flex", alignItems: "center" }}>
-                                          <Avatar
-                                            sx={{
-                                              width: 32,
-                                              height: 32,
-                                              mr: 1.5,
-                                              bgcolor: section.color,
-                                              fontSize: "0.875rem",
-                                            }}
-                                          >
-                                            {section.name.charAt(0)}
-                                          </Avatar>
-                                          <Box>
-                                            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                                              {section.fullName}
-                                            </Typography>
-                                            <Typography variant="caption" color="text.secondary">
-                                              Room: {section.room}
-                                            </Typography>
-                                          </Box>
-                                        </Box>
-                                      </TableCell>
-                                      <TableCell>
-                                        <Box sx={{ display: "flex", alignItems: "center" }}>
-                                          <Avatar
-                                            sx={{
-                                              width: 28,
-                                              height: 28,
-                                              mr: 1,
-                                              bgcolor: "primary.main",
-                                              fontSize: "0.75rem",
-                                            }}
-                                          >
-                                            {section.teacher.avatar}
-                                          </Avatar>
-                                          <Typography variant="body2">{section.teacher.name}</Typography>
-                                        </Box>
-                                      </TableCell>
-                                      <TableCell>
-                                        <Box>
-                                          <Typography variant="body2">
-                                            {section.enrolled}/{section.capacity}
-                                          </Typography>
-                                          <LinearProgress
-                                            variant="determinate"
-                                            value={(section.enrolled / section.capacity) * 100}
-                                            sx={{
-                                              mt: 0.5,
-                                              height: 4,
-                                              borderRadius: 2,
-                                              bgcolor: alpha(getFillRateColor(section.fillRate), 0.2),
-                                              "& .MuiLinearProgress-bar": {
-                                                bgcolor: getFillRateColor(section.fillRate),
-                                              },
-                                            }}
-                                          />
-                                        </Box>
-                                      </TableCell>
-                                      <TableCell>
-                                        <Chip
-                                          label={section.type}
-                                          size="small"
-                                          sx={{
-                                            bgcolor: alpha(section.color, 0.1),
-                                            color: section.color,
-                                            fontWeight: 500,
-                                          }}
-                                        />
-                                      </TableCell>
-                                      <TableCell>
-                                                                                                                 
-                                                                            
-                                        <Chip
-                                          icon={statusChipProps.icon}
-                                          label={section.status}
-                                          color={statusChipProps.color}
-                                          size="small"
-                                          sx={{
-                                            ...statusChipProps.sx,
-                                            fontWeight: 500,
-                                          }}
-                                        />
-                                      </TableCell>
-                                      <TableCell>
-                                        <Box sx={{ display: "flex", alignItems: "center" }}>
-                                          <ScheduleIcon fontSize="small" sx={{ mr: 1, color: "action.active" }} />
-                                          <Typography variant="body2">{section.schedule}</Typography>
-                                        </Box>
-                                      </TableCell>
-                                      <TableCell align="right">
-                                        <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-                                          {!isMobile && (
-                                            <>
-                                              <Tooltip title="View Details">
-                                                <IconButton
-                                                  size="small"
-                                                  sx={{
-                                                    color: "info.main",
-                                                    bgcolor: alpha(theme.palette.info.main, 0.1),
-                                                    mr: 1,
-                                                    "&:hover": {
-                                                      bgcolor: alpha(theme.palette.info.main, 0.2),
-                                                    },
-                                                  }}
-                                                >
-                                                  <VisibilityIcon fontSize="small" />
-                                                </IconButton>
-                                              </Tooltip>
-                                              <Tooltip title="Edit Section">
-                                                <IconButton
-                                                  size="small"
-                                                  sx={{
-                                                    color: "warning.main",
-                                                    bgcolor: alpha(theme.palette.warning.main, 0.1),
-                                                    mr: 1,
-                                                    "&:hover": {
-                                                      bgcolor: alpha(theme.palette.warning.main, 0.2),
-                                                    },
-                                                  }}
-                                                >
-                                                  <EditIcon fontSize="small" />
-                                                </IconButton>
-                                              </Tooltip>
-                                            </>
-                                          )}
-                                          <Tooltip title="More Actions">
-                                            <IconButton
-                                              size="small"
-                                              onClick={(e) => handleMenuClick(e, section)}
-                                              sx={{
-                                                color: "text.secondary",
-                                                bgcolor: "rgba(0, 0, 0, 0.04)",
-                                                "&:hover": {
-                                                  bgcolor: "rgba(0, 0, 0, 0.08)",
-                                                },
-                                              }}
-                                            >
-                                              <MoreVertIcon fontSize="small" />
-                                            </IconButton>
-                                          </Tooltip>
-                                        </Box>
-                                      </TableCell>
-                                    </TableRow>
-                                  )
-                                })
-                              ) : (
-                                <TableRow>
-                                  <TableCell colSpan={8} align="center" sx={{ py: 8 }}>
-                                    <Box sx={{ textAlign: "center" }}>
-                                      <SearchIcon sx={{ fontSize: 48, color: "text.disabled", mb: 2 }} />
-                                      <Typography variant="h6" gutterBottom>
-                                        No sections found
-                                      </Typography>
-                                      <Typography variant="body2" color="text.secondary">
-                                        Try adjusting your search or filter to find what you&apos;re looking for.
-                                      </Typography>
-                                    </Box>
-                                  </TableCell>
-                                </TableRow>
-                              )}
-                            </TableBody>
-                          </Table>
-                        </TableContainer>
-                      </>
-                    )}
-
-                    {/* Grid View */}
-                    {viewMode === "grid" && (
-                      <Box sx={{ p: 3 }}>
-                        <Grid container spacing={3}>
+                                )}
+                              </Box>
+                            </TableCell>
+                            <TableCell>Schedule</TableCell>
+                            <TableCell align="right">Actions</TableCell>
+                          </TableRow>
+                        </TableHead>
+                        <TableBody>
                           {paginatedSections.length > 0 ? (
                             paginatedSections.map((section) => {
                               const statusChipProps = getStatusChipProps(section.status)
                               const isSelected = selectedSections.indexOf(section.id) !== -1
 
                               return (
-                                <Grid item xs={12} sm={6} md={4} lg={3} key={section.id}>
-                                  <Card
-                                    sx={{
-                                      height: "100%",
-                                      transition: "all 0.2s",
-                                      ...(isSelected
-                                        ? {
-                                          bgcolor: alpha(theme.palette.primary.main, 0.05),
-                                          borderColor: theme.palette.primary.main,
-                                          borderWidth: 1,
-                                          borderStyle: "solid",
-                                        }
-                                        : {}),
-                                      position: "relative",
-                                      overflow: "visible",
-                                      "&:hover": {
-                                        boxShadow: "0px 8px 24px rgba(0, 0, 0, 0.12)",
-                                        transform: "translateY(-4px)",
-                                      },
-                                    }}
-                                  >
-                                    <Box
-                                      sx={{
-                                        position: "absolute",
-                                        top: 12,
-                                        left: 12,
-                                        zIndex: 1,
-                                      }}
-                                    >
-                                      <Checkbox
-                                        checked={isSelected}
-                                        onChange={() => handleSelectOne(section.id)}
+                                <TableRow
+                                  key={section.id}
+                                  sx={{
+                                    transition: "all 0.2s",
+                                    ...(isSelected ? { bgcolor: alpha(theme.palette.primary.main, 0.05) } : {}),
+                                  }}
+                                  hover
+                                  selected={isSelected}
+                                >
+                                  <TableCell padding="checkbox">
+                                    <Checkbox checked={isSelected} onChange={() => handleSelectOne(section.id)} />
+                                  </TableCell>
+                                  <TableCell component="th" scope="row">
+                                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                                      <Avatar
                                         sx={{
-                                          bgcolor: "white",
-                                          borderRadius: "50%",
-                                          boxShadow: "0px 2px 8px rgba(0, 0, 0, 0.1)",
-                                          "&:hover": {
-                                            bgcolor: "white",
-                                          },
+                                          width: 32,
+                                          height: 32,
+                                          mr: 1.5,
+                                          bgcolor: section.color,
+                                          fontSize: "0.875rem",
                                         }}
-                                      />
+                                      >
+                                        {section.name.charAt(0)}
+                                      </Avatar>
+                                      <Box>
+                                        <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                                          {section.fullName}
+                                        </Typography>
+                                        <Typography variant="caption" color="text.secondary">
+                                          Room: {section.room}
+                                        </Typography>
+                                      </Box>
                                     </Box>
-
-                                    <Box
-                                      sx={{
-                                        height: 8,
-                                        bgcolor: section.color,
-                                        borderTopLeftRadius: 12,
-                                        borderTopRightRadius: 12,
-                                      }}
-                                    />
-
-                                    <CardContent sx={{ pt: 3 }}>
-                                      <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                                        <Avatar
-                                          sx={{
-                                            width: 40,
-                                            height: 40,
-                                            mr: 1.5,
-                                            bgcolor: section.color,
-                                            fontSize: "1rem",
-                                          }}
-                                        >
-                                          {section.name.charAt(0)}
-                                        </Avatar>
-                                        <Box>
-                                          <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
-                                            {section.fullName}
-                                          </Typography>
-                                          <Typography variant="caption" color="text.secondary">
-                                            Room: {section.room}
-                                          </Typography>
-                                        </Box>
-                                      </Box>
-
-                                      <Divider sx={{ my: 2 }} />
-
-                                      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
-                                        <Typography variant="body2" color="text.secondary">
-                                          Teacher:
-                                        </Typography>
-                                        <Box sx={{ display: "flex", alignItems: "center" }}>
-                                          <Avatar
-                                            sx={{
-                                              width: 24,
-                                              height: 24,
-                                              mr: 0.5,
-                                              bgcolor: "primary.main",
-                                              fontSize: "0.75rem",
-                                            }}
-                                          >
-                                            {section.teacher.avatar}
-                                          </Avatar>
-                                          <Typography variant="body2">{section.teacher.name}</Typography>
-                                        </Box>
-                                      </Box>
-
-                                      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
-                                        <Typography variant="body2" color="text.secondary">
-                                          Capacity:
-                                        </Typography>
-                                        <Typography variant="body2">
-                                          {section.enrolled}/{section.capacity}
-                                        </Typography>
-                                      </Box>
-
+                                  </TableCell>
+                                  <TableCell>
+                                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                                      <Avatar
+                                        sx={{
+                                          width: 28,
+                                          height: 28,
+                                          mr: 1,
+                                          bgcolor: "primary.main",
+                                          fontSize: "0.75rem",
+                                        }}
+                                      >
+                                        {section.teacher.avatar}
+                                      </Avatar>
+                                      <Typography variant="body2">{section.teacher.name}</Typography>
+                                    </Box>
+                                  </TableCell>
+                                  <TableCell>
+                                    <Box>
+                                      <Typography variant="body2">
+                                        {section.enrolled}/{section.capacity}
+                                      </Typography>
                                       <LinearProgress
                                         variant="determinate"
                                         value={(section.enrolled / section.capacity) * 100}
                                         sx={{
-                                          mb: 2,
-                                          height: 6,
-                                          borderRadius: 3,
+                                          mt: 0.5,
+                                          height: 4,
+                                          borderRadius: 2,
                                           bgcolor: alpha(getFillRateColor(section.fillRate), 0.2),
                                           "& .MuiLinearProgress-bar": {
                                             bgcolor: getFillRateColor(section.fillRate),
                                           },
                                         }}
                                       />
-
-                                      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
-                                        <Typography variant="body2" color="text.secondary">
-                                          Type:
-                                        </Typography>
-                                        <Chip
-                                          label={section.type}
-                                          size="small"
-                                          sx={{
-                                            bgcolor: alpha(section.color, 0.1),
-                                            color: section.color,
-                                            fontWeight: 500,
-                                            height: 24,
-                                          }}
-                                        />
-                                      </Box>
-
-                                      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
-                                        <Typography variant="body2" color="text.secondary">
-                                          Status:
-                                        </Typography>
-                                        <Chip
-                                          icon={statusChipProps.icon}
-                                          label={section.status}
-                                          color={statusChipProps.color}
-                                          size="small"
-                                          sx={{
-                                            ...statusChipProps.sx,
-                                            fontWeight: 500,
-                                            height: 24,
-                                          }}
-                                        />
-                                      </Box>
-
-                                      <Box sx={{ display: "flex", alignItems: "center", mt: 2 }}>
-                                        <ScheduleIcon fontSize="small" sx={{ mr: 1, color: "action.active" }} />
-                                        <Typography variant="body2">{section.schedule}</Typography>
-                                      </Box>
-                                    </CardContent>
-
-                                    <CardActions sx={{ p: 2, pt: 0, justifyContent: "flex-end" }}>
-                                      <Tooltip title="View Details">
+                                    </Box>
+                                  </TableCell>
+                                  <TableCell>
+                                    <Chip
+                                      label={section.type}
+                                      size="small"
+                                      sx={{
+                                        bgcolor: alpha(section.color, 0.1),
+                                        color: section.color,
+                                        fontWeight: 500,
+                                      }}
+                                    />
+                                  </TableCell>
+                                  <TableCell>
+                                    <Chip
+                                      icon={statusChipProps.icon}
+                                      label={section.status}
+                                      color={statusChipProps.color}
+                                      size="small"
+                                      sx={{
+                                        ...statusChipProps.sx,
+                                        fontWeight: 500,
+                                      }}
+                                    />
+                                  </TableCell>
+                                  <TableCell>
+                                    <Box sx={{ display: "flex", alignItems: "center" }}>
+                                      <ScheduleIcon fontSize="small" sx={{ mr: 1, color: "action.active" }} />
+                                      <Typography variant="body2">{section.schedule}</Typography>
+                                    </Box>
+                                  </TableCell>
+                                  <TableCell align="right">
+                                    <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+                                      {!isMobile && (
+                                        <>
+                                          <Tooltip title="View Details">
+                                            <IconButton
+                                              size="small"
+                                              sx={{
+                                                color: "info.main",
+                                                bgcolor: alpha(theme.palette.info.main, 0.1),
+                                                mr: 1,
+                                                "&:hover": {
+                                                  bgcolor: alpha(theme.palette.info.main, 0.2),
+                                                },
+                                              }}
+                                            >
+                                              <VisibilityIcon fontSize="small" />
+                                            </IconButton>
+                                          </Tooltip>
+                                          <Tooltip title="Edit Section">
+                                            <IconButton
+                                              component={Link}
+                                              href={`/dashboard/super_admin/classes/section/edit/${section.id}`}
+                                              size="small"
+                                              sx={{
+                                                color: "warning.main",
+                                                bgcolor: alpha(theme.palette.warning.main, 0.1),
+                                                mr: 1,
+                                                "&:hover": {
+                                                  bgcolor: alpha(theme.palette.warning.main, 0.2),
+                                                },
+                                              }}
+                                            >
+                                              <EditIcon fontSize="small" />
+                                            </IconButton>
+                                          </Tooltip>
+                                        </>
+                                      )}
+                                      {/* Replace three-dot menu with direct delete button */}
+                                      <Tooltip title="Delete Section">
                                         <IconButton
                                           size="small"
+                                          onClick={() => handleDirectDeleteClick(section)}
                                           sx={{
-                                            color: "info.main",
-                                            bgcolor: alpha(theme.palette.info.main, 0.1),
+                                            color: "error.main",
+                                            bgcolor: alpha(theme.palette.error.main, 0.1),
                                             "&:hover": {
-                                              bgcolor: alpha(theme.palette.info.main, 0.2),
+                                              bgcolor: alpha(theme.palette.error.main, 0.2),
                                             },
                                           }}
                                         >
-                                          <VisibilityIcon fontSize="small" />
+                                          <DeleteIcon fontSize="small" />
                                         </IconButton>
                                       </Tooltip>
-                                      <Tooltip title="Edit Section">
-                                        <IconButton
-                                          size="small"
-                                          sx={{
-                                            color: "warning.main",
-                                            bgcolor: alpha(theme.palette.warning.main, 0.1),
-                                            ml: 1,
-                                            "&:hover": {
-                                              bgcolor: alpha(theme.palette.warning.main, 0.2),
-                                            },
-                                          }}
-                                        >
-                                          <EditIcon fontSize="small" />
-                                        </IconButton>
-                                      </Tooltip>
-                                      <Tooltip title="More Actions">
-                                        <IconButton
-                                          size="small"
-                                          onClick={(e) => handleMenuClick(e, section)}
-                                          sx={{
-                                            color: "text.secondary",
-                                            bgcolor: "rgba(0, 0, 0, 0.04)",
-                                            ml: 1,
-                                            "&:hover": {
-                                              bgcolor: "rgba(0, 0, 0, 0.08)",
-                                            },
-                                          }}
-                                        >
-                                          <MoreVertIcon fontSize="small" />
-                                        </IconButton>
-                                      </Tooltip>
-                                    </CardActions>
-                                  </Card>
-                                </Grid>
+                                    </Box>
+                                  </TableCell>
+                                </TableRow>
                               )
                             })
                           ) : (
-                            <Grid item xs={12}>
-                              <Box sx={{ textAlign: "center", py: 8 }}>
-                                <SearchIcon sx={{ fontSize: 48, color: "text.disabled", mb: 2 }} />
-                                <Typography variant="h6" gutterBottom>
-                                  No sections found
-                                </Typography>
-                                <Typography variant="body2" color="text.secondary">
-                                  Try adjusting your search or filter to find what you&apos;re looking for.
-                                </Typography>
-                              </Box>
-                            </Grid>
+                            <TableRow>
+                              <TableCell colSpan={8} align="center" sx={{ py: 8 }}>
+                                <Box sx={{ textAlign: "center" }}>
+                                  <SearchIcon sx={{ fontSize: 48, color: "text.disabled", mb: 2 }} />
+                                  <Typography variant="h6" gutterBottom>
+                                    No sections found
+                                  </Typography>
+                                  <Typography variant="body2" color="text.secondary">
+                                    Try adjusting your search or filter to find what you&apos;re looking for.
+                                  </Typography>
+                                </Box>
+                              </TableCell>
+                            </TableRow>
                           )}
-                        </Grid>
-                      </Box>
-                    )}
+                        </TableBody>
+                      </Table>
+                    </TableContainer>
 
                     <TablePagination
                       rowsPerPageOptions={[5, 10, 25, 50]}
                       component="div"
-                      count={filteredSections.length}
+                      count={sectionData?.data?.meta?.total || filteredSections.length}
                       rowsPerPage={rowsPerPage}
                       page={page}
                       onPageChange={handleChangePage}
@@ -1590,7 +1167,12 @@ export default function SectionsListPage() {
           <VisibilityIcon fontSize="small" sx={{ mr: 2, color: "info.main" }} />
           View Details
         </MenuItem>
-        <MenuItem onClick={handleMenuClose} sx={{ py: 1.5 }}>
+        <MenuItem
+          component={Link}
+          href={`/dashboard/super_admin/classes/section/edit/${selectedSection?.id}`}
+          onClick={handleMenuClose}
+          sx={{ py: 1.5 }}
+        >
           <EditIcon fontSize="small" sx={{ mr: 2, color: "warning.main" }} />
           Edit Section
         </MenuItem>
@@ -1659,7 +1241,8 @@ export default function SectionsListPage() {
         </DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete the section &#34;{selectedSection?.fullName}&#34;? This action cannot be undone.
+            Are you sure you want to delete the section &#34;{selectedSection?.fullName}&#34;? This action cannot be
+            undone.
           </DialogContentText>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3 }}>
@@ -1668,11 +1251,12 @@ export default function SectionsListPage() {
             variant="outlined"
             color="inherit"
             sx={{ borderColor: "rgba(0, 0, 0, 0.12)" }}
+            disabled={isDeleting}
           >
             Cancel
           </Button>
-          <Button onClick={handleDeleteConfirm} variant="contained" color="error" sx={{ ml: 2 }}>
-            Delete
+          <Button onClick={handleDeleteConfirm} variant="contained" color="error" sx={{ ml: 2 }} disabled={isDeleting}>
+            {isDeleting ? <CircularProgress size={24} color="inherit" /> : "Delete"}
           </Button>
         </DialogActions>
       </Dialog>
@@ -1735,21 +1319,6 @@ export default function SectionsListPage() {
                   <Box sx={{ display: "flex", alignItems: "center" }}>
                     <CancelIcon fontSize="small" sx={{ mr: 1, color: "error.main" }} />
                     Inactive
-                  </Box>
-                }
-              />
-            </ListItemButton>
-          </ListItem>
-          <ListItem disablePadding>
-            <ListItemButton onClick={() => handleStatusFilterSelect("Pending")} dense>
-              <ListItemIcon sx={{ minWidth: 36 }}>
-                <Checkbox edge="start" checked={statusFilter === "Pending"} tabIndex={-1} disableRipple />
-              </ListItemIcon>
-              <ListItemText
-                primary={
-                  <Box sx={{ display: "flex", alignItems: "center" }}>
-                    <AccessTimeIcon fontSize="small" sx={{ mr: 1, color: "warning.main" }} />
-                    Pending
                   </Box>
                 }
               />
@@ -1820,4 +1389,3 @@ export default function SectionsListPage() {
     </ThemeProvider>
   )
 }
-

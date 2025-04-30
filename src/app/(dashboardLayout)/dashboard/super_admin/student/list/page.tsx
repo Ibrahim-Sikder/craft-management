@@ -31,6 +31,7 @@ import {
   Typography,
   useTheme,
   alpha,
+  Avatar,
 } from "@mui/material"
 import {
   Add,
@@ -83,7 +84,7 @@ const StudentList = () => {
     studentType: "",
   })
 
-  
+
   // Fetch real data from backend
   const {
     data: studentData,
@@ -168,12 +169,12 @@ const StudentList = () => {
   // Handle student deletion
   const handleDelete = async (id: string) => {
     const res = await deleteStudent(id).unwrap()
-    if(res.success){
+    if (res.success) {
       toast.success(res.message || 'Studetn delete successfully!')
-    }else{
+    } else {
       toast.error('Failed to delete student.')
     }
-    
+
   }
 
   // Apply filters to students
@@ -435,22 +436,10 @@ const StudentList = () => {
                       </TableCell>
                       <TableCell>
                         <Box sx={{ display: "flex", alignItems: "center" }}>
-                          <Box
-                            sx={{
-                              width: 40,
-                              height: 40,
-                              borderRadius: "50%",
-                              background: `linear-gradient(135deg, ${customColors.primary} 0%, ${customColors.accent3} 100%)`,
-                              display: "flex",
-                              alignItems: "center",
-                              justifyContent: "center",
-                              color: "white",
-                              mr: 1.5,
-                              boxShadow: `0 2px 10px 0 ${alpha(customColors.primary, 0.3)}`,
-                            }}
-                          >
-                            <Person />
-                          </Box>
+                          <Avatar
+                            src={student.studentPhoto}
+                            sx={{ width: 80, height: 80, border: "4px solid white" }}
+                          />
                           <Box>
                             <Typography variant="body1" sx={{ fontWeight: "medium", color: customColors.primary }}>
                               {student.name}
@@ -528,8 +517,8 @@ const StudentList = () => {
                         <Box sx={{ display: "flex" }}>
                           <Tooltip title="View Details">
                             <IconButton
-                            component={Link}
-                            href={`/dashboard/super_admin/student/profile?id=${student._id}`}
+                              component={Link}
+                              href={`/dashboard/super_admin/student/profile?id=${student._id}`}
                               size="small"
                               sx={{
                                 color: customColors.info,
@@ -541,8 +530,8 @@ const StudentList = () => {
                           </Tooltip>
                           <Tooltip title="Edit Student">
                             <IconButton
-                            component={Link}
-                            href={`/dashboard/super_admin/student/update/${student._id}`}
+                              component={Link}
+                              href={`/dashboard/super_admin/student/update/${student._id}`}
                               size="small"
                               sx={{
                                 color: customColors.primary,

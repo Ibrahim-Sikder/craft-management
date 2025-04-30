@@ -108,7 +108,7 @@ export default function TeachersDashboard() {
   const [viewDialogOpen, setViewDialogOpen] = useState(false)
   const [editDialogOpen, setEditDialogOpen] = useState(false)
   const [page, setPage] = useState(0)
-  const [rowsPerPage, setRowsPerPage] = useState(10)
+  const [rowsPerPage, setRowsPerPage] = useState(30)
   const [searchTerm, setSearchTerm] = useState("")
   const router = useRouter()
   const {
@@ -182,7 +182,7 @@ export default function TeachersDashboard() {
         id: index + 1,
         _id: teacher._id, // Add this line to preserve the MongoDB _id
         name: teacher.englishName || teacher.name,
-        avatar: `/placeholder.svg?height=200&width=200&text=${teacher.teacherId}`,
+        teacherPhoto: teacher.teacherPhoto,
         department: teacher.professionalInfo?.department || "Not Specified",
         status: teacher.additionalInfo?.status?.toLowerCase() === "active" ? "active" : ("inactive" as TeacherStatus),
         email: teacher.email || "Not Available",
@@ -560,13 +560,13 @@ export default function TeachersDashboard() {
                                   variant="dot"
                                 >
                                   <Avatar
-                                    src={teacher.avatar}
+                                    src={teacher.teacherPhoto}
                                     sx={{ width: 80, height: 80, border: "4px solid white" }}
                                   />
                                 </StyledBadge>
                               ) : (
                                 <Avatar
-                                  src={teacher.avatar}
+                                  src={teacher.teacherPhoto}
                                   sx={{ width: 80, height: 80, border: "4px solid white" }}
                                 />
                               )}
@@ -756,10 +756,10 @@ export default function TeachersDashboard() {
                                 anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
                                 variant="dot"
                               >
-                                <Avatar src={teacher.avatar} sx={{ width: 40, height: 40 }} />
+                                <Avatar src={teacher.teacherPhoto} sx={{ width: 40, height: 40 }} />
                               </StyledBadge>
                             ) : (
-                              <Avatar src={teacher.avatar} sx={{ width: 40, height: 40 }} />
+                              <Avatar src={teacher.teacherPhoto} sx={{ width: 40, height: 40 }} />
                             )}
                             <Box>
                               <Typography variant="body1" fontWeight={500}>
@@ -916,10 +916,10 @@ export default function TeachersDashboard() {
                                       anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
                                       variant="dot"
                                     >
-                                      <Avatar src={teacher.avatar} sx={{ width: 40, height: 40 }} />
+                                      <Avatar src={teacher.teacherPhoto} sx={{ width: 40, height: 40 }} />
                                     </StyledBadge>
                                   ) : (
-                                    <Avatar src={teacher.avatar} sx={{ width: 40, height: 40 }} />
+                                    <Avatar src={teacher.teacherPhoto} sx={{ width: 40, height: 40 }} />
                                   )}
                                   <Box>
                                     <Typography variant="body1" fontWeight={500}>

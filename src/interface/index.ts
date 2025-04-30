@@ -4,7 +4,7 @@ export interface Teacher {
     id:number,
   _id: number
   name: string
-  avatar: string
+  teacherPhoto: string
   department: string
   status: TeacherStatus
   email: string
@@ -32,4 +32,17 @@ export interface TimeSlotModalProps {
   onClose: () => void
   onSave: (timeSlot: ITimeSlot) => void
   initialData?: ITimeSlot
+}
+
+
+export interface FormData {
+  name: string
+  classes: string
+  capacity: number
+  teachers: string
+  rooms: string
+  timeSlots: number[]
+  description: string
+  sectionType: number
+  isActive: boolean
 }

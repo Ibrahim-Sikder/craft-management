@@ -165,7 +165,7 @@ export const studentSchema = z.object({
     guardianMobile: z.string().optional(),
     relation: z.string().optional(),
     nidFatherMotherGuardian: z.string().optional(),
-
+    email: z.string().email("Invalid email address").optional(),
     // Address Information
     permanentAddress: z.string({ required_error: 'Permanent address is required' }).optional(),
     permanentDistrict: z.string({ required_error: 'Permanent district is required' }).optional(),

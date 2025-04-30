@@ -176,6 +176,7 @@ export const teacherName = [
 
   export const maritalStatuses = ["Single", "Married", "Divorced", "Widowed", "Other"]
   
+  export const sectionTypeNames = ['morning', 'evening',];
 
   export const statusOptions = ["Active", "On Leave", "Suspended", "Terminated"]
   export const mockStudents = [
