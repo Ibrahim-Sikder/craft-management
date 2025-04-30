@@ -26,10 +26,10 @@ export const todayLessonApi = baseApi.injectEndpoints({
       providesTags: ["todayLesson"],
     }),
     updateTodayLesson: build.mutation({
-      query: ({ id, ...data }) => ({
+      query: ({ id, data }) => ({
         url: `/today-lesson/${id}`,
         method: "PATCH",
-        body: data,
+         data,
       }),
       invalidatesTags: ["todayLesson"],
     }),

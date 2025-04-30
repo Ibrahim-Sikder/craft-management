@@ -8,30 +8,43 @@ import { Close as CloseIcon } from "@mui/icons-material"
 import CraftTextArea from "@/components/Forms/TextArea"
 import CraftForm from "@/components/Forms/Form"
 import toast from "react-hot-toast"
-import { useCreateTodayLessonMutation, useGetSingleTodayLessonQuery } from "@/redux/api/todayLessonApi"
+import { useCreateTodayLessonMutation, useGetSingleTodayLessonQuery, useUpdateTodayLessonMutation } from "@/redux/api/todayLessonApi"
 import { FieldValues } from "react-hook-form"
 
 interface TodayLessonProps {
   open: boolean
   onClose: () => void
   onSave: (lessonId: string) => void
+  id: string | null
 }
 
-export default function TodayLesson({ open, onClose, onSave, }: TodayLessonProps) {
+export default function TodayLesson({ open, onClose, onSave, id }: TodayLessonProps) {
   const [createTodayLesson] = useCreateTodayLessonMutation()
-  // const {data:singleTodayLesson } = useGetSingleTodayLessonQuery(id)
+  const [updateTodayLesson] = useUpdateTodayLessonMutation()
+  const { data: singleTodayLesson } = useGetSingleTodayLessonQuery(id || "")
   const [loading, setLoading] = useState(false)
 
   const handleSubmit = async (data: FieldValues) => {
     try {
-      setLoading(true)
-      const res = await createTodayLesson(data).unwrap()
-      if (res.success) {
-        toast.success("আজকের পাঠ সফলভাবে সংরক্ষণ করা হয়েছে!")
-        onClose()
-        onSave(res.data._id)
-      }
+      if (!id) {
 
+        const res = await createTodayLesson(data).unwrap()
+        if (res.success) {
+          toast.success("আজকের পাঠ সফলভাবে সংরক্ষণ করা হয়েছে!")
+          onClose()
+          onSave(res.data._id)
+        }
+
+      } else {
+       
+        const res = await updateTodayLesson({ id, data }).unwrap()
+        if (res.success) {
+          toast.success("আজকের পাঠ সফলভাবে  আফডেট করা হয়েছে!")
+          onClose()
+          onSave(res.data._id)
+        }
+
+      }
     } catch (error: any) {
       toast.error(error?.data?.message || "আজকের পাঠ সংরক্ষণ করতে ব্যর্থ হয়েছে")
     } finally {
@@ -39,9 +52,9 @@ export default function TodayLesson({ open, onClose, onSave, }: TodayLessonProps
     }
   }
 
-  // const defaultValues = {
-  //   lessonContent : singleTodayLesson?.data.lessonContent || ''
-  // }
+  const defaultValues = {
+    lessonContent: singleTodayLesson?.data.lessonContent || ''
+  }
 
   return (
     <Dialog
@@ -73,7 +86,7 @@ export default function TodayLesson({ open, onClose, onSave, }: TodayLessonProps
           <CloseIcon />
         </IconButton>
       </DialogTitle>
-      <CraftForm onSubmit={handleSubmit} >
+      <CraftForm onSubmit={handleSubmit} defaultValues={defaultValues}>
         <DialogContent dividers>
           <Box sx={{ p: 1 }}>
             <CraftTextArea
@@ -100,7 +113,7 @@ export default function TodayLesson({ open, onClose, onSave, }: TodayLessonProps
               boxShadow: "0px 4px 10px rgba(79, 1, 135, 0.2)",
             }}
           >
-            {loading ? "সংরক্ষণ হচ্ছে..." : "সংরক্ষণ করুন"}
+            {id ? 'আফডেট করুন' : 'সংরক্ষণ করুন'}
           </Button>
         </DialogActions>
       </CraftForm>

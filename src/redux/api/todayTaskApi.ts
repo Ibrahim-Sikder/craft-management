@@ -26,10 +26,10 @@ export const todayTaskApi = baseApi.injectEndpoints({
       providesTags: ["todayTask"],
     }),
     updateTodayTask: build.mutation({
-      query: ({ id, ...data }) => ({
+      query: ({ id, data }) => ({
         url: `/today-task/${id}`,
         method: "PATCH",
-        body: data,
+        data,
       }),
       invalidatesTags: ["todayTask"],
     }),

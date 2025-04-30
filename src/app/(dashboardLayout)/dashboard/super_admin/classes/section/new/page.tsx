@@ -1,9 +1,10 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 "use client"
 
 import type React from "react"
-import { useState } from "react"
+import { useMemo, useState } from "react"
 import {
   Box,
   Container,
@@ -16,7 +17,6 @@ import {
   Chip,
   MenuItem,
   InputAdornment,
-  useMediaQuery,
   Fade,
   createTheme,
   ThemeProvider,
@@ -31,7 +31,9 @@ import {
   CircularProgress,
   Snackbar,
   Alert,
-  SelectChangeEvent,
+  type SelectChangeEvent,
+  IconButton,
+  Tooltip,
 } from "@mui/material"
 import {
   ArrowBack as ArrowBackIcon,
@@ -43,131 +45,26 @@ import {
   Bookmark as BookmarkIcon,
   ColorLens as ColorLensIcon,
   Save,
+  Add as AddIcon,
+  MeetingRoom as MeetingRoomIcon,
+  AccessTime as AccessTimeIcon,
+  Person,
 } from "@mui/icons-material"
-import { Roboto } from "next/font/google"
+import { Class as ClassIcon, } from "@mui/icons-material"
+
 import Link from "next/link"
 import { motion } from "framer-motion"
-
-const roboto = Roboto({
-  weight: ["300", "400", "500", "700"],
-  subsets: ["latin"],
-})
-
-// Create a custom theme with vibrant colors
-const customTheme = createTheme({
-  palette: {
-    primary: {
-      main: "#6366f1", 
-      light: "#818cf8",
-      dark: "#4f46e5",
-    },
-    secondary: {
-      main: "#ec4899", 
-      light: "#f472b6",
-      dark: "#db2777",
-    },
-    background: {
-      default: "#f9fafb",
-      paper: "#ffffff",
-    },
-    success: {
-      main: "#10b981",
-      light: "#34d399",
-      dark: "#059669",
-    },
-    warning: {
-      main: "#f59e0b",
-      light: "#fbbf24",
-      dark: "#d97706",
-    },
-    error: {
-      main: "#ef4444",
-      light: "#f87171",
-      dark: "#dc2626",
-    },
-    info: {
-      main: "#3b82f6",
-      light: "#60a5fa",
-      dark: "#2563eb",
-    },
-  },
-  typography: {
-    fontFamily: roboto.style.fontFamily,
-    h4: {
-      fontWeight: 600,
-    },
-    h6: {
-      fontWeight: 500,
-    },
-  },
-  shape: {
-    borderRadius: 12,
-  },
-  components: {
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          textTransform: "none",
-          borderRadius: 8,
-          padding: "10px 20px",
-          boxShadow: "none",
-          "&:hover": {
-            boxShadow: "0px 4px 8px rgba(99, 102, 241, 0.2)",
-          },
-        },
-      },
-    },
-    MuiPaper: {
-      styleOverrides: {
-        root: {
-          borderRadius: 12,
-          boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.05)",
-        },
-      },
-    },
-    MuiCard: {
-      styleOverrides: {
-        root: {
-          borderRadius: 12,
-          boxShadow: "0px 4px 20px rgba(0, 0, 0, 0.05)",
-          overflow: "visible",
-        },
-      },
-    },
-    MuiChip: {
-      styleOverrides: {
-        root: {
-          fontWeight: 500,
-        },
-      },
-    },
-    MuiTextField: {
-      styleOverrides: {
-        root: {
-          "& .MuiOutlinedInput-root": {
-            borderRadius: 8,
-          },
-        },
-      },
-    },
-    MuiOutlinedInput: {
-      styleOverrides: {
-        root: {
-          borderRadius: 8,
-        },
-      },
-    },
-    MuiInputLabel: {
-      styleOverrides: {
-        root: {
-          "&.Mui-focused": {
-            color: "#6366f1",
-          },
-        },
-      },
-    },
-  },
-})
+import RoomModal from "../_components/RoomModal"
+import TimeSlotModal from "../_components/TimeSlotModal"
+import { customTheme } from "@/ThemeStyle"
+import { useCreateSectionMutation } from "@/redux/api/sectionApi"
+import CraftForm from "@/components/Forms/Form"
+import { useGetAllClassesQuery } from "@/redux/api/classApi"
+import { useGetAllTeachersQuery } from "@/redux/api/teacherApi"
+import CraftIntAutoCompleteWithIcon from "@/components/Forms/AutocompleteWithIcon"
+import CraftInputWithIcon from "@/components/Forms/inputWithIcon"
+import { useGetAllRoomsQuery } from "@/redux/api/roomApi"
+import { FieldValues } from "react-hook-form"
 
 // Sample data for classes
 const sampleClasses = [
@@ -238,16 +135,16 @@ const colorPalette = [
 ]
 
 interface FormData {
-  name: string;
-  classId: string;
-  capacity: number;
-  teacherId: string;
-  roomId: string;
-  timeSlots: number[];
-  description: string;
-  sectionType: number;
-  color: string;
-  isActive: boolean;
+  name: string
+  classId: string
+  capacity: number
+  teacherId: string
+  roomId: string
+  timeSlots: number[]
+  description: string
+  sectionType: number
+  color: string
+  isActive: boolean
 }
 
 export default function SectionAddPage() {
@@ -277,6 +174,59 @@ export default function SectionAddPage() {
   const [snackbarOpen, setSnackbarOpen] = useState(false)
   const [snackbarMessage, setSnackbarMessage] = useState("")
   const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error" | "info" | "warning">("success")
+  const [page, setPage] = useState(0)
+  const [rowsPerPage, setRowsPerPage] = useState(10)
+  const [searchTerm, setSearchTerm] = useState("")
+
+  // Modal states
+  const [roomModalOpen, setRoomModalOpen] = useState(false)
+  const [timeSlotModalOpen, setTimeSlotModalOpen] = useState(false)
+  const [createSection] = useCreateSectionMutation()
+  const { data: classData } = useGetAllClassesQuery({
+    limit: rowsPerPage,
+    page: page + 1,
+    searchTerm: searchTerm,
+  })
+  const { data: teacherData } = useGetAllTeachersQuery({
+    limit: rowsPerPage,
+    page: page + 1,
+    searchTerm: searchTerm,
+  })
+  const { data: roomData } = useGetAllRoomsQuery({
+    limit: rowsPerPage,
+    page: page + 1,
+    searchTerm: searchTerm,
+  })
+  console.log(roomData)
+
+
+  const roomOption = useMemo(() => {
+    if (!roomData?.data?.rooms) return []
+    return roomData?.data?.rooms.map((room: any) => ({
+      label: room.name,
+      capacity: room.capacity,
+      value: room._id,
+    }))
+
+
+  }, [roomData])
+  console.log(roomOption)
+  const classOption = useMemo(() => {
+    if (!classData?.data?.classes) return []
+    return classData?.data?.classes.map((clg: any) => ({
+      label: clg.className,
+
+      value: clg._id,
+    }))
+  }, [classData])
+
+  const teacherOption = useMemo(() => {
+    if (!teacherData?.data) return []
+    return teacherData?.data.map((clg: any) => ({
+      label: clg.name,
+      value: clg._id,
+    }))
+  }, [teacherData])
 
   // Handle form input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | SelectChangeEvent<string>) => {
@@ -323,8 +273,8 @@ export default function SectionAddPage() {
   }
 
   // Handle form submission
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+  const handleSubmit = async (data: FieldValues) => {
+
 
     // Validate form
     if (!formData.name.trim()) {
@@ -342,7 +292,6 @@ export default function SectionAddPage() {
       setSnackbarOpen(true)
       return
     }
-
 
     setLoading(true)
     setError(null)
@@ -398,37 +347,65 @@ export default function SectionAddPage() {
     setSnackbarOpen(false)
   }
 
+  // Handle room creation success
+  const handleRoomCreated = (room: any) => {
+    setSnackbarMessage("Room created successfully!")
+    setSnackbarSeverity("success")
+    setSnackbarOpen(true)
+    setRoomModalOpen(false)
+    // Here you would typically update your rooms list or refetch data
+  }
+
+  // Handle time slot creation success
+  const handleTimeSlotCreated = (timeSlot: any) => {
+    setSnackbarMessage("Time slot created successfully!")
+    setSnackbarSeverity("success")
+    setSnackbarOpen(true)
+    setTimeSlotModalOpen(false)
+    // Here you would typically update your time slots list or refetch data
+  }
+
   return (
-     <ThemeProvider theme={theme}>
-          <Box sx={{ flexGrow: 1, bgcolor: "background.default", minHeight: "100vh", borderRadius: 2 }}>
-            <Container maxWidth="xl" sx={{ mt: 0, mb: 8, borderRadius: 2 }}>
-              <Fade in={true} timeout={800}>
-                <Box>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      justifyContent: "space-between",
-                      alignItems: "center",
-                      mb: 3,
-                      flexWrap: "wrap",
-                      gap: 2,
-                      paddingTop: 2
-                    }}
-                  >
-
-
-                
+    <ThemeProvider theme={theme}>
+      <Box sx={{ flexGrow: 1, bgcolor: "background.default", minHeight: "100vh", borderRadius: 2 }}>
+        <Container maxWidth="xl" sx={{ mt: 0, mb: 8, borderRadius: 2 }}>
+          <Fade in={true} timeout={800}>
+            <Box>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  mb: 3,
+                  flexWrap: "wrap",
+                  gap: 2,
+                  paddingTop: 2,
+                }}
+              >
                 <Typography variant="h4" component="h1" sx={{ fontWeight: 700, color: "text.primary" }}>
                   + New Section
                 </Typography>
-                <Button
-                  component={Link}
-                  href="/dashboard/super_admin/section"
-                  startIcon={<ArrowBackIcon />}
-                  sx={{ mr: 2 }}
-                >
-                  Back to Sections
-                </Button>
+                <Box sx={{ display: "flex", gap: 2 }}>
+                  <Button
+                    variant="outlined"
+                    color="secondary"
+                    startIcon={<MeetingRoomIcon />}
+                    onClick={() => setRoomModalOpen(true)}
+                  >
+                    Add Room
+                  </Button>
+                  <Button
+                    variant="outlined"
+                    color="info"
+                    startIcon={<AccessTimeIcon />}
+                    onClick={() => setTimeSlotModalOpen(true)}
+                  >
+                    Add Time Slot
+                  </Button>
+                  <Button component={Link} href="/dashboard/super_admin/section" startIcon={<ArrowBackIcon />}>
+                    Back to Sections
+                  </Button>
+                </Box>
               </Box>
 
               <Paper
@@ -448,7 +425,7 @@ export default function SectionAddPage() {
                     ))}
                   </Stepper>
 
-                  <form onSubmit={handleSubmit}>
+                  <CraftForm onSubmit={handleSubmit}>
                     {activeStep === 0 && (
                       <motion.div
                         initial={{ opacity: 0, y: 20 }}
@@ -457,103 +434,56 @@ export default function SectionAddPage() {
                       >
                         <Grid container spacing={3}>
                           <Grid item xs={12} md={6}>
-                            <FormControl fullWidth required>
-                              <InputLabel id="class-select-label">Class</InputLabel>
-                              <Select
-                                labelId="class-select-label"
-                                id="class-select"
-                                name="classId"
-                                value={formData.classId}
-                                onChange={handleChange}
-                                label="Class"
-                              >
-                                {sampleClasses.map((cls) => (
-                                  <MenuItem key={cls.id} value={cls.value}>
-                                    {cls.name}
-                                  </MenuItem>
-                                ))}
-                              </Select>
-                            </FormControl>
+                            <CraftIntAutoCompleteWithIcon
+                              name="classes"
+                              label="Select Classes"
+                              options={classOption}
+                              fullWidth
+                              multiple
+                              icon={<ClassIcon color="primary" />}
+                            />
+
                           </Grid>
 
                           <Grid item xs={12} md={6}>
-                            <TextField
-                              fullWidth
-                              required
+                            <CraftInputWithIcon
                               label="Section Name"
                               name="name"
-                              value={formData.name}
-                              onChange={handleChange}
-                              placeholder="e.g., Section A, Morning Batch"
                               InputProps={{
-                                startAdornment: (
-                                  <InputAdornment position="start">
-                                    <BookmarkIcon fontSize="small" color="action" />
-                                  </InputAdornment>
-                                ),
+                                startAdornment: <BookmarkIcon sx={{ color: "primary.main", mr: 1 }} />,
                               }}
+                              fullWidth
+                              placeholder="e.g., Section A, Morning Batch"
+
                             />
+
+
                           </Grid>
 
                           <Grid item xs={12} md={6}>
-                            <TextField
-                              fullWidth
+                            <CraftInputWithIcon
                               label="Capacity"
                               name="capacity"
                               type="number"
-                              value={formData.capacity}
-                              onChange={handleNumberChange}
+                              required
+                              fullWidth
                               InputProps={{
-                                startAdornment: (
-                                  <InputAdornment position="start">
-                                    <GroupsIcon fontSize="small" color="action" />
-                                  </InputAdornment>
-                                ),
+                                startAdornment: <GroupsIcon sx={{ color: "primary.main", mr: 1 }} />,
                               }}
                             />
+
                           </Grid>
 
                           <Grid item xs={12} md={6}>
-                            <FormControl fullWidth>
-                              <InputLabel id="teacher-select-label">Teacher</InputLabel>
-                              <Select
-                                labelId="teacher-select-label"
-                                id="teacher-select"
-                                name="teacherId"
-                                value={formData.teacherId}
-                                onChange={handleChange}
-                                label="Teacher"
-                              >
-                                {sampleTeachers.map((teacher) => (
-                                  <MenuItem key={teacher.id} value={teacher.id.toString()}>
-                                    <Box sx={{ display: "flex", alignItems: "center" }}>
-                                      <Avatar
-                                        sx={{
-                                          width: 24,
-                                          height: 24,
-                                          mr: 1,
-                                          bgcolor: "primary.main",
-                                          fontSize: "0.75rem",
-                                        }}
-                                      >
-                                        {teacher.avatar}
-                                      </Avatar>
-                                      <Typography variant="body2">{teacher.name}</Typography>
-                                      <Chip
-                                        label={teacher.subject}
-                                        size="small"
-                                        sx={{
-                                          ml: 1,
-                                          bgcolor: "rgba(99, 102, 241, 0.08)",
-                                          color: "primary.main",
-                                          fontWeight: 500,
-                                        }}
-                                      />
-                                    </Box>
-                                  </MenuItem>
-                                ))}
-                              </Select>
-                            </FormControl>
+                            <CraftIntAutoCompleteWithIcon
+                              name="teachers"
+                              label="Select Teacher"
+                              options={teacherOption}
+                              fullWidth
+                              multiple
+                              icon={<Person color="primary" />}
+                            />
+
                           </Grid>
                         </Grid>
                       </motion.div>
@@ -576,6 +506,22 @@ export default function SectionAddPage() {
                                 value={formData.roomId}
                                 onChange={handleChange}
                                 label="Room"
+                                endAdornment={
+                                  <InputAdornment position="end">
+                                    <Tooltip title="Add New Room">
+                                      <IconButton
+                                        edge="end"
+                                        onClick={(e) => {
+                                          e.stopPropagation()
+                                          setRoomModalOpen(true)
+                                        }}
+                                        sx={{ mr: 1 }}
+                                      >
+                                        <AddIcon fontSize="small" />
+                                      </IconButton>
+                                    </Tooltip>
+                                  </InputAdornment>
+                                }
                               >
                                 {sampleRooms.map((room) => (
                                   <MenuItem key={room.id} value={room.id.toString()}>
@@ -593,9 +539,20 @@ export default function SectionAddPage() {
                           </Grid>
 
                           <Grid item xs={12}>
-                            <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 600, mt: 2 }}>
-                              Time Slots
-                            </Typography>
+                            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+                              <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                                Time Slots
+                              </Typography>
+                              <Button
+                                size="small"
+                                startIcon={<AddIcon />}
+                                onClick={() => setTimeSlotModalOpen(true)}
+                                variant="outlined"
+                                color="info"
+                              >
+                                Add New Time Slot
+                              </Button>
+                            </Box>
                             <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                               Select the time slots for this section
                             </Typography>
@@ -798,7 +755,7 @@ export default function SectionAddPage() {
                         )}
                       </Box>
                     </Box>
-                  </form>
+                  </CraftForm>
                 </Box>
               </Paper>
 
@@ -844,6 +801,16 @@ export default function SectionAddPage() {
           </Fade>
         </Container>
       </Box>
+
+      {/* Room Modal */}
+      <RoomModal open={roomModalOpen} onClose={() => setRoomModalOpen(false)} onSave={handleRoomCreated} />
+
+      {/* Time Slot Modal */}
+      <TimeSlotModal
+        open={timeSlotModalOpen}
+        onClose={() => setTimeSlotModalOpen(false)}
+        onSave={handleTimeSlotCreated}
+      />
 
       {/* Snackbar for notifications */}
       <Snackbar

@@ -41,7 +41,7 @@ const CraftInputWithIcon = ({
   autoFocus = false,
   onChange,
   value,
-  defaultValue, // Accept the defaultValue prop
+  defaultValue,
   InputProps,
 }: TInputProps) => {
   const { control } = useFormContext();
@@ -50,7 +50,7 @@ const CraftInputWithIcon = ({
     <Controller
       control={control}
       name={name}
-      defaultValue={defaultValue} // Set defaultValue in Controller
+      defaultValue={defaultValue}
       render={({
         field: { onChange: fieldOnChange, value: fieldValue },
         fieldState: { error },

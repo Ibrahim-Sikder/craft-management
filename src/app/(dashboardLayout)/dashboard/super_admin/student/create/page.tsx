@@ -4,7 +4,7 @@ import StudentForm from '../_components/StudentForm';
 
 
 const page = () => {
-  return <StudentForm id={''}  />
+  return <StudentForm/>
 };
 
 export default page;

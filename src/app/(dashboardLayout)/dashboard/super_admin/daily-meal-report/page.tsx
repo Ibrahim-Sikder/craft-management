@@ -555,7 +555,7 @@ export default function MealReport() {
   // Navigate to update page - memoized to prevent unnecessary re-renders
   const navigateToUpdate = useCallback(
     (reportId: string) => {
-      router.push(`/dashboard/super_admin/daily-meal-report/edit/${reportId}`)
+      router.push(`/dashboard/super_admin/daily-meal-report/update/${reportId}`)
     },
     [router],
   )
@@ -741,7 +741,6 @@ export default function MealReport() {
                   </Box>
                 </Box>
               </Grid>
-
               <Grid item xs={12} md={6}>
                 <Stack
                   direction="row"
@@ -1057,6 +1056,126 @@ export default function MealReport() {
           </Box>
         </Paper>
 
+        {/* Meal Report List */}
+        {!isLoading && mealReportResponse?.data?.mealReports && (
+          <Card
+            elevation={3}
+            sx={{
+              mb: 4,
+              borderRadius: 4,
+              overflow: "hidden",
+              boxShadow: "0 6px 18px rgba(0,0,0,0.06)",
+            }}
+          >
+            <CardContent sx={{ p: 3 }}>
+              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+                <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                  Meal Reports
+                </Typography>
+                <Chip
+                  label={`Total: ${mealReportResponse.data.meta.total}`}
+                  color="primary"
+                  sx={{ fontWeight: "bold" }}
+                />
+              </Box>
+
+              <TableContainer>
+                <Table>
+                  <TableHead>
+                    <TableRow>
+                      <TableCell sx={{ fontWeight: "bold" }}>SL</TableCell>
+                      <TableCell sx={{ fontWeight: "bold" }}>Date</TableCell>
+                      <TableCell sx={{ fontWeight: "bold" }}>Students</TableCell>
+                      <TableCell sx={{ fontWeight: "bold" }}>Teachers</TableCell>
+                      <TableCell sx={{ fontWeight: "bold" }}>Total Meals</TableCell>
+                      <TableCell sx={{ fontWeight: "bold" }}>Created At</TableCell>
+                      <TableCell sx={{ fontWeight: "bold" }} align="center">Actions</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {mealReportResponse.data.mealReports.map((report: any, index: number) => {
+                      const reportDate = new Date(report.date);
+                      const formattedDate = reportDate.toLocaleDateString();
+                      const totalStudents = report.students.length;
+                      const totalTeachers = report.teachers.length;
+                      const totalMeals = report.students.reduce((sum: any, student: any) => sum + student.mealCount, 0) +
+                        report.teachers.reduce((sum: any, teacher: any) => sum + teacher.mealCount, 0);
+
+                      return (
+                        <TableRow
+                          key={report._id}
+                          sx={{
+                            "&:nth-of-type(odd)": { bgcolor: "rgba(63, 81, 181, 0.05)" },
+                            "&:hover": { bgcolor: "rgba(63, 81, 181, 0.1)" },
+                          }}
+                        >
+                          <TableCell>{index + 1}</TableCell>
+                          <TableCell>{formattedDate}</TableCell>
+                          <TableCell>
+                            <Chip
+                              icon={<School fontSize="small" />}
+                              label={totalStudents}
+                              size="small"
+                              sx={{ bgcolor: "#e3f2fd", color: "#1976d2" }}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              icon={<Person fontSize="small" />}
+                              label={totalTeachers}
+                              size="small"
+                              sx={{ bgcolor: "#e8f5e9", color: "#2e7d32" }}
+                            />
+                          </TableCell>
+                          <TableCell>
+                            <Chip
+                              icon={<Restaurant fontSize="small" />}
+                              label={totalMeals}
+                              size="small"
+                              color="primary"
+                            />
+                          </TableCell>
+                          <TableCell>{new Date(report.createdAt).toLocaleString()}</TableCell>
+                          <TableCell align="center">
+                            <Stack direction="row" spacing={1} justifyContent="center">
+                              <Tooltip title="Edit Meal Report">
+                                <IconButton
+                                  onClick={() => navigateToUpdate(report._id)}
+                                  size="small"
+                                  color="primary"
+                                  sx={{
+                                    bgcolor: "rgba(33, 150, 243, 0.1)",
+                                    "&:hover": { bgcolor: "rgba(33, 150, 243, 0.2)" },
+                                  }}
+                                >
+                                  <Edit fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+                              <Tooltip title="Delete Meal Report">
+                                <IconButton
+                                  size="small"
+                                  color="error"
+                                  onClick={() => openDeleteDialog(report._id)}
+                                  sx={{
+                                    bgcolor: "rgba(244, 67, 54, 0.1)",
+                                    "&:hover": { bgcolor: "rgba(244, 67, 54, 0.2)" },
+                                  }}
+                                >
+                                  <Delete fontSize="small" />
+                                </IconButton>
+                              </Tooltip>
+                            </Stack>
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </CardContent>
+          </Card>
+        )}
+
         {/* Loading State */}
         {(isLoading || loading) && (
           <Box sx={{ display: "flex", justifyContent: "center", my: 4 }}>
@@ -1177,6 +1296,7 @@ export default function MealReport() {
                       <TableRow
                         key={person.id}
                         sx={{
+
                           "&:nth-of-type(odd)": { bgcolor: "rgba(63, 81, 181, 0.05)" },
                           "&:hover": { bgcolor: "rgba(63, 81, 181, 0.1)" },
                           transition: "background-color 0.2s",

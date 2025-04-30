@@ -7,7 +7,10 @@ export const tagTypesList = [
   'user',
   'class-report',
   'todayLesson',
-  'todayTask'
+  'todayTask',
+  'room',
+  'time-slot',
+  'section'
   
   
 ] as const;

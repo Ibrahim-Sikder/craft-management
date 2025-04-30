@@ -60,6 +60,7 @@ import { useCreateStudentsMutation, useGetSingleStudentQuery, useUpdateStudentMu
 import { zodResolver } from "@hookform/resolvers/zod"
 import FileUploadWithIcon from "@/components/Forms/Upload"
 import { studentSchema } from "@/schema"
+import { FieldValues } from "react-hook-form"
 
 interface StudentFormProps {
   id?: string
@@ -90,19 +91,14 @@ const StudentForm = ({ id }: StudentFormProps) => {
     sendAdmissionSMS?: boolean
     sendAttendanceSMS?: boolean
     studentPhoto?: string | File
-    // Add other fields as needed
+ 
   }
 
   const [formData, setFormData] = useState<FormData>({})
   const [defaultValues, setDefaultValues] = useState<any>({})
-
-
-  // Set default values when data is loaded
   useEffect(() => {
     if (data?.data) {
       const studentData = data.data
-
-      // Set form data for switches and address fields
       setFormData({
         studentPhoto: studentData.studentPhoto,
         sameAsPermanent: studentData.sameAsPermanent || false,
@@ -115,8 +111,6 @@ const StudentForm = ({ id }: StudentFormProps) => {
         sendAdmissionSMS: studentData.sendAdmissionSMS || false,
         sendAttendanceSMS: studentData.sendAttendanceSMS || false,
       })
-
-      // Create comprehensive default values object
       const formDefaultValues = {
         // Basic Information
         name: studentData.name || "",
@@ -188,15 +182,12 @@ const StudentForm = ({ id }: StudentFormProps) => {
 
   const handleSwitchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, checked } = e.target
-
-    // Update the form data with the new switch value
     setFormData((prev) => {
       const newData = {
         ...prev,
         [name]: checked,
       }
 
-      // If sameAsPermanent is checked, copy permanent address to present address
       if (name === "sameAsPermanent" && checked) {
         newData.presentAddress = prev.permanentAddress || ""
         newData.presentDistrict = prev.permanentDistrict || ""
@@ -215,89 +206,55 @@ const StudentForm = ({ id }: StudentFormProps) => {
     setActiveStep((prevActiveStep) => prevActiveStep - 1)
   }
 
-  const handleSubmit = async (formValues: any) => {
-    console.log("Raw form values:", formValues)
+  const handleSubmit = async (data: FieldValues) => {
 
-    // Create a structured submission object
     const submissionData = {
-      // Basic Information
-      name: formValues.name,
-      smartIdCard: formValues.smartIdCard,
-      email: formValues.email,
-      mobile: formValues.mobile,
-      birthDate: formValues.birthDate,
-      birthRegistrationNo: formValues.birthRegistrationNo,
-      bloodGroup: formValues.bloodGroup,
-      gender: formValues.gender,
-
-      // Family Information
-      fatherName: formValues.fatherName,
-      motherName: formValues.motherName,
-      guardianName: formValues.guardianName,
-      guardianMobile: formValues.guardianMobile,
-      relation: formValues.relation,
-      nidFatherMotherGuardian: formValues.nidFatherMotherGuardian,
-
-      // Address Information
-      permanentAddress: formValues.permanentAddress,
-      permanentDistrict: formValues.permanentDistrict,
-      permanentThana: formValues.permanentThana,
+      ...data,
       sameAsPermanent: formData.sameAsPermanent || false,
-      presentAddress: formData.sameAsPermanent ? formValues.permanentAddress : formValues.presentAddress,
-      presentDistrict: formData.sameAsPermanent ? formValues.permanentDistrict : formValues.presentDistrict,
-      presentThana: formData.sameAsPermanent ? formValues.permanentThana : formValues.presentThana,
-
-      // Academic Information
-      className: formValues.className,
-      studentClassRoll: formValues.studentClassRoll,
-      batch: formValues.batch,
-      section: formValues.section,
-      activeSession: formValues.activeSession,
-      status: formValues.status,
-      studentType: formValues.studentType,
-      additionalNote: formValues.additionalNote,
-
+      presentAddress: formData.sameAsPermanent ? data.permanentAddress : data.presentAddress,
+      presentDistrict: formData.sameAsPermanent ? data.permanentDistrict : data.presentDistrict,
+      presentThana: formData.sameAsPermanent ? data.permanentThana : data.presentThana,
       // Fee Information
-      admissionFee: Number(formValues.admissionFee || 0),
-      monthlyFee: Number(formValues.monthlyFee || 0),
-      previousDues: Number(formValues.previousDues || 0),
-      sessionFee: Number(formValues.sessionFee || 0),
-      residenceFee: Number(formValues.residenceFee || 0),
-      otherFee: Number(formValues.otherFee || 0),
-      transportFee: Number(formValues.transportFee || 0),
-      boardingFee: Number(formValues.boardingFee || 0),
-
-      // Other Settings
-      studentSerial: formValues.studentSerial,
-      sendAdmissionSMS: formData.sendAdmissionSMS || false,
-      sendAttendanceSMS: formData.sendAttendanceSMS || false,
-
-      // Photo - ensure it's included
-      studentPhoto: formValues.studentPhoto || "",
+      admissionFee: Number(data.admissionFee || 0),
+      monthlyFee: Number(data.monthlyFee || 0),
+      previousDues: Number(data.previousDues || 0),
+      sessionFee: Number(data.sessionFee || 0),
+      residenceFee: Number(data.residenceFee || 0),
+      otherFee: Number(data.otherFee || 0),
+      transportFee: Number(data.transportFee || 0),
+      boardingFee: Number(data.boardingFee || 0),
+      studentPhoto: data.studentPhoto,
     }
-
-    console.log("Final submission data:", submissionData)
-    console.log("studentPhoto:", submissionData.studentPhoto)
-    console.log("permanentAddress:", submissionData.permanentAddress)
-    console.log("permanentDistrict:", submissionData.permanentDistrict)
-    console.log("permanentThana:", submissionData.permanentThana)
-    console.log("presentAddress:", submissionData.presentAddress)
-    console.log("presentDistrict:", submissionData.presentDistrict)
-    console.log("presentThana:", submissionData.presentThana)
-
+    console.log('submission data', submissionData)
     try {
-      const res = await updateStudent({ id, data: submissionData }).unwrap()
+      if (id) {
+        const res = await updateStudent({ id, data: submissionData }).unwrap()
+        console.log(res)
+        if (res.success) {
+          setSuccess(true)
+          setSnackbar({
+            open: true,
+            message: "Student updated successfully!",
+            severity: "success",
+          })
+          setTimeout(() => {
+            router.push("/dashboard/super_admin/student/list")
+          }, 2000)
+        }
+      } else {
+        const res = await createStudents(submissionData).unwrap()
+        if (res.success) {
+          setSuccess(true)
+          setSnackbar({
+            open: true,
+            message: "Student registered successfully!",
+            severity: "success",
+          })
+          setTimeout(() => {
+            router.push("/dashboard/super_admin/student/list")
+          }, 2000)
+        }
 
-      if (res.success) {
-        setSuccess(true)
-        setSnackbar({
-          open: true,
-          message: "Student updated successfully!",
-          severity: "success",
-        })
-        setTimeout(() => {
-          router.push("/dashboard/super_admin/student/list")
-        }, 2000)
       }
     } catch (error: any) {
       console.error("❌ Submission error:", error)
@@ -309,98 +266,7 @@ const StudentForm = ({ id }: StudentFormProps) => {
     }
   }
 
-  const onSubmit = async (formValues: any) => {
-    console.log("Raw form values:", formValues)
 
-    // Create a structured submission object
-    const submissionData = {
-      // Basic Information
-      name: formValues.name,
-      smartIdCard: formValues.smartIdCard,
-      email: formValues.email,
-      mobile: formValues.mobile,
-      birthDate: formValues.birthDate,
-      birthRegistrationNo: formValues.birthRegistrationNo,
-      bloodGroup: formValues.bloodGroup,
-      gender: formValues.gender,
-
-      // Family Information
-      fatherName: formValues.fatherName,
-      motherName: formValues.motherName,
-      guardianName: formValues.guardianName,
-      guardianMobile: formValues.guardianMobile,
-      relation: formValues.relation,
-      nidFatherMotherGuardian: formValues.nidFatherMotherGuardian,
-
-      // Address Information
-      permanentAddress: formValues.permanentAddress,
-      permanentDistrict: formValues.permanentDistrict,
-      permanentThana: formValues.permanentThana,
-      sameAsPermanent: formData.sameAsPermanent || false,
-      presentAddress: formData.sameAsPermanent ? formValues.permanentAddress : formValues.presentAddress,
-      presentDistrict: formData.sameAsPermanent ? formValues.permanentDistrict : formValues.presentDistrict,
-      presentThana: formData.sameAsPermanent ? formValues.permanentThana : formValues.presentThana,
-
-      // Academic Information
-      className: formValues.className,
-      studentClassRoll: formValues.studentClassRoll,
-      batch: formValues.batch,
-      section: formValues.section,
-      activeSession: formValues.activeSession,
-      status: formValues.status,
-      studentType: formValues.studentType,
-      additionalNote: formValues.additionalNote,
-
-      // Fee Information
-      admissionFee: Number(formValues.admissionFee || 0),
-      monthlyFee: Number(formValues.monthlyFee || 0),
-      previousDues: Number(formValues.previousDues || 0),
-      sessionFee: Number(formValues.sessionFee || 0),
-      residenceFee: Number(formValues.residenceFee || 0),
-      otherFee: Number(formValues.otherFee || 0),
-      transportFee: Number(formValues.transportFee || 0),
-      boardingFee: Number(formValues.boardingFee || 0),
-
-      // Other Settings
-      studentSerial: formValues.studentSerial,
-      sendAdmissionSMS: formData.sendAdmissionSMS || false,
-      sendAttendanceSMS: formData.sendAttendanceSMS || false,
-
-      // Photo - ensure it's included
-      studentPhoto: formValues.studentPhoto || "",
-    }
-
-    console.log("Final submission data:", submissionData)
-    console.log("studentPhoto:", submissionData.studentPhoto)
-    console.log("permanentAddress:", submissionData.permanentAddress)
-    console.log("permanentDistrict:", submissionData.permanentDistrict)
-    console.log("permanentThana:", submissionData.permanentThana)
-    console.log("presentAddress:", submissionData.presentAddress)
-    console.log("presentDistrict:", submissionData.presentDistrict)
-    console.log("presentThana:", submissionData.presentThana)
-
-    try {
-      const res = await createStudents(submissionData).unwrap()
-      if (res.success) {
-        setSuccess(true)
-        setSnackbar({
-          open: true,
-          message: "Student registered successfully!",
-          severity: "success",
-        })
-        setTimeout(() => {
-          router.push("/dashboard/super_admin/student/list")
-        }, 2000)
-      }
-    } catch (error: any) {
-      console.error("❌ Submission error:", error)
-      setSnackbar({
-        open: true,
-        message: error?.data?.message || "Error registering student.",
-        severity: "error",
-      })
-    }
-  }
 
   const handleCloseSnackbar = () => {
     setSnackbar({
@@ -526,8 +392,9 @@ const StudentForm = ({ id }: StudentFormProps) => {
             <FileUploadWithIcon
               name="studentPhoto"
               label="Student Photo"
-             
+
             />
+
           </Grid>
         </Grid>
       ),
@@ -1154,8 +1021,8 @@ const StudentForm = ({ id }: StudentFormProps) => {
         </Box>
 
         <CraftForm
-        
-          onSubmit={id ? handleSubmit : onSubmit}
+
+          onSubmit={handleSubmit}
           resolver={zodResolver(studentSchema)}
           defaultValues={defaultValues}
           key={Object.keys(defaultValues).length > 0 ? "form-with-data" : "empty-form"}

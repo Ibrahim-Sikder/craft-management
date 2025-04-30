@@ -4,7 +4,7 @@
 
 // import type React from "react"
 
-// import { useState, useEffect } from "react"
+// import { useState, useEffect, useRef } from "react"
 // import {
 //   Box,
 //   Button,
@@ -54,332 +54,294 @@
 // import CraftForm from "@/components/Forms/Form"
 // import CraftInputWithIcon from "@/components/Forms/inputWithIcon"
 // import CraftSelectWithIcon from "@/components/Forms/selectWithIcon"
-// import { batches, bloodGroup, classes, districts, sections, thanas } from "@/options"
+// import { batches, bloodGroup, classes, sections } from "@/options"
 // import CraftSwitch from "@/components/Forms/switch"
-// import { useCreateStudentsMutation } from "@/redux/api/studentApi"
-// import FileUploadWithIcon from "@/components/Forms/upload"
+// import { useCreateStudentsMutation, useGetSingleStudentQuery, useUpdateStudentMutation } from "@/redux/api/studentApi"
 // import { zodResolver } from "@hookform/resolvers/zod"
-// import { z } from "zod"
-// import { useForm } from "react-hook-form"
+// import FileUploadWithIcon from "@/components/Forms/Upload"
+// import { studentSchema } from "@/schema"
 
-// // Define step-specific schemas
-// const personalInfoSchema = z.object({
-//   name: z.string({
-//     required_error: 'Name is required',
-//   }),
-//   birthDate: z.string({
-//     required_error: 'Birth date is required',
-//   }),
-//   gender: z.enum(["Male", "Female", "Other"], {
-//     required_error: "Please select a gender",
-//   }),
-//   mobile: z.string({
-//     required_error: 'Mobile number is required',
-//   }),
-//   smartIdCard: z.string().optional(),
-//   bloodGroup: z.string().optional(),
-//   birthRegistrationNo: z.string().optional(),
-//   email: z.string().email("Please enter a valid email").optional(),
-// });
+// interface StudentFormProps {
+//   id?: string
+// }
 
-// const familyInfoSchema = z.object({
-//   fatherName: z.string().optional(),
-//   motherName: z.string().optional(),
-//   guardianName: z.string().optional(),
-//   guardianMobile: z.string().optional(),
-//   relation: z.string().optional(),
-//   nidFatherMotherGuardian: z.string().optional(),
-// });
+// const StudentForm = ({ id }: StudentFormProps) => {
+//   const [createStudents] = useCreateStudentsMutation()
+//   const [updateStudent] = useUpdateStudentMutation()
+//   const { data, isLoading } = useGetSingleStudentQuery(
+//     { id },
+//     {
+//       skip: !id,
+//       refetchOnMountOrArgChange: true,
+//     },
+//   )
+//   const formRef = useRef<any>(null)
 
-// const addressInfoSchema = z.object({
-//   permanentAddress: z.string({
-//     required_error: 'Permanent address is required',
-//   }),
-//   permanentDistrict: z.string({
-//     required_error: 'Permanent district is required',
-//   }),
-//   permanentThana: z.string({
-//     required_error: 'Permanent thana is required',
-//   }),
-//   sameAsPermanent: z.boolean().default(false),
-//   presentAddress: z.string().optional(),
-//   presentDistrict: z.string().optional(),
-//   presentThana: z.string().optional(),
-// });
+//   const router = useRouter()
+//   const [activeStep, setActiveStep] = useState(0)
+//   interface FormData {
+//     permanentAddress?: string
+//     permanentDistrict?: string
+//     permanentThana?: string
+//     sameAsPermanent?: boolean
+//     presentAddress?: string
+//     presentDistrict?: string
+//     presentThana?: string
+//     sendAdmissionSMS?: boolean
+//     sendAttendanceSMS?: boolean
+//     studentPhoto?: string | File
+//     // Add other fields as needed
+//   }
 
-// const academicInfoSchema = z.object({
-//   className: z.string({
-//     required_error: 'Class name is required',
-//   }),
-//   studentClassRoll: z.string({
-//     required_error: 'Student class roll is required',
-//   }),
-//   activeSession: z.string({
-//     required_error: 'Active session is required',
-//   }),
-//   status: z.string().min(1, "Status is required"),
-//   studentType: z.string().min(1, "Student type is required"),
-//   batch: z.string().optional(),
-//   section: z.string().optional(),
-//   additionalNote: z.string().optional(),
-// });
+//   const [formData, setFormData] = useState<FormData>({})
+//   const [defaultValues, setDefaultValues] = useState<any>({})
 
-// const feeInfoSchema = z.object({
-//   admissionFee: z.coerce.number().default(0),
-//   monthlyFee: z.coerce.number().default(0),
-//   previousDues: z.coerce.number().default(0),
-//   sessionFee: z.coerce.number().default(0),
-//   residenceFee: z.coerce.number().default(0),
-//   otherFee: z.coerce.number().default(0),
-//   transportFee: z.coerce.number().default(0),
-//   boardingFee: z.coerce.number().default(0),
-// });
 
-// const settingsSchema = z.object({
-//   sendAdmissionSMS: z.boolean().default(false),
-//   studentSerial: z.string().optional(),
-//   sendAttendanceSMS: z.boolean().default(false),
-// });
+//   // Set default values when data is loaded
+//   useEffect(() => {
+//     if (data?.data) {
+//       const studentData = data.data
 
-// // Main schema for final submission
-// const studentSchema = z.object({
-//   // Personal Information
-//   name: z.string({
-//     required_error: 'Name is required',
-//   }),
-//   birthDate: z.string({
-//     required_error: 'Birth date is required',
-//   }),
-//   gender: z.enum(["Male", "Female", "Other"], {
-//     required_error: "Please select a gender",
-//   }),
-//   mobile: z.string({
-//     required_error: 'Mobile number is required',
-//   }),
-//   smartIdCard: z.string().optional(),
-//   bloodGroup: z.string().optional(),
-//   birthRegistrationNo: z.string().optional(),
-//   email: z.string().email("Please enter a valid email").optional(),
-  
-//   // Family Information
-//   fatherName: z.string().optional(),
-//   motherName: z.string().optional(),
-//   guardianName: z.string().optional(),
-//   guardianMobile: z.string().optional(),
-//   relation: z.string().optional(),
-//   nidFatherMotherGuardian: z.string().optional(),
-  
-//   // Address Information
-//   permanentAddress: z.string({
-//     required_error: 'Permanent address is required',
-//   }),
-//   permanentDistrict: z.string({
-//     required_error: 'Permanent district is required',
-//   }),
-//   permanentThana: z.string({
-//     required_error: 'Permanent thana is required',
-//   }),
-//   sameAsPermanent: z.boolean().default(false),
-//   presentAddress: z.string().optional(),
-//   presentDistrict: z.string().optional(),
-//   presentThana: z.string().optional(),
-  
-//   // Academic Information
-//   className: z.string({
-//     required_error: 'Class name is required',
-//   }),
-//   studentClassRoll: z.string({
-//     required_error: 'Student class roll is required',
-//   }),
-//   activeSession: z.string({
-//     required_error: 'Active session is required',
-//   }),
-//   status: z.string().min(1, "Status is required"),
-//   studentType: z.string().min(1, "Student type is required"),
-//   batch: z.string().optional(),
-//   section: z.string().optional(),
-//   additionalNote: z.string().optional(),
-  
-//   // Fee Information
-//   admissionFee: z.number().default(0),
-//   monthlyFee: z.number().default(0),
-//   previousDues: z.number().default(0),
-//   sessionFee: z.number().default(0),
-//   residenceFee: z.number().default(0),
-//   otherFee: z.number().default(0),
-//   transportFee: z.number().default(0),
-//   boardingFee: z.number().default(0),
-  
-//   // Settings
-//   sendAdmissionSMS: z.boolean().default(false),
-//   studentSerial: z.string().optional(),
-//   sendAttendanceSMS: z.boolean().default(false),
-// });
+//       // Set form data for switches and address fields
+//       setFormData({
+//         studentPhoto: studentData.studentPhoto,
+//         sameAsPermanent: studentData.sameAsPermanent || false,
+//         permanentAddress: studentData.permanentAddress,
+//         permanentDistrict: studentData.permanentDistrict,
+//         permanentThana: studentData.permanentThana,
+//         presentAddress: studentData.presentAddress,
+//         presentDistrict: studentData.presentDistrict,
+//         presentThana: studentData.presentThana,
+//         sendAdmissionSMS: studentData.sendAdmissionSMS || false,
+//         sendAttendanceSMS: studentData.sendAttendanceSMS || false,
+//       })
 
-// const StudentRegistration = () => {
-//   const [createStudents] = useCreateStudentsMutation();
-//   const router = useRouter();
-//   const [activeStep, setActiveStep] = useState(0);
-//   const [formData, setFormData] = useState({});
+//       // Create comprehensive default values object
+//       const formDefaultValues = {
+//         // Basic Information
+//         name: studentData.name || "",
+//         smartIdCard: studentData.smartIdCard || "",
+//         email: studentData.email || "",
+//         mobile: studentData.mobile || "",
+//         birthDate: studentData.birthDate || "",
+//         birthRegistrationNo: studentData.birthRegistrationNo || "",
+//         bloodGroup: studentData.bloodGroup || "",
+//         gender: studentData.gender || "",
+
+//         // Family Information
+//         fatherName: studentData.fatherName || "",
+//         motherName: studentData.motherName || "",
+//         guardianName: studentData.guardianName || "",
+//         guardianMobile: studentData.guardianMobile || "",
+//         relation: studentData.relation || "",
+//         nidFatherMotherGuardian: studentData.nidFatherMotherGuardian || "",
+
+//         // Address Information
+//         permanentAddress: studentData.permanentAddress || "",
+//         permanentDistrict: studentData.permanentDistrict || "",
+//         permanentThana: studentData.permanentThana || "",
+//         sameAsPermanent: studentData.sameAsPermanent || false,
+//         presentAddress: studentData.presentAddress || "",
+//         presentDistrict: studentData.presentDistrict || "",
+//         presentThana: studentData.presentThana || "",
+
+//         // Academic Information
+//         className: studentData.className || "",
+//         studentClassRoll: studentData.studentClassRoll || "",
+//         batch: studentData.batch || "",
+//         section: studentData.section || "",
+//         activeSession: studentData.activeSession || "",
+//         status: studentData.status || "",
+//         studentType: studentData.studentType || "",
+//         additionalNote: studentData.additionalNote || "",
+
+//         // Fee Information
+//         admissionFee: studentData.admissionFee || 0,
+//         monthlyFee: studentData.monthlyFee || 0,
+//         previousDues: studentData.previousDues || 0,
+//         sessionFee: studentData.sessionFee || 0,
+//         residenceFee: studentData.residenceFee || 0,
+//         otherFee: studentData.otherFee || 0,
+//         transportFee: studentData.transportFee || 0,
+//         boardingFee: studentData.boardingFee || 0,
+
+//         // Other Settings
+//         studentSerial: studentData.studentSerial || "",
+//         sendAdmissionSMS: studentData.sendAdmissionSMS || false,
+//         sendAttendanceSMS: studentData.sendAttendanceSMS || false,
+
+//         // Photo
+//         studentPhoto: studentData.studentPhoto || "",
+//       }
+
+//       setDefaultValues(formDefaultValues)
+//     }
+//   }, [data])
+
 //   const [snackbar, setSnackbar] = useState({
 //     open: false,
 //     message: "",
 //     severity: "success" as "success" | "error",
-//   });
-//   const [success, setSuccess] = useState(false);
-  
-//   // Create a form instance
-//   const formMethods = useForm({
-//     resolver: zodResolver(studentSchema),
-//     mode: "onChange"
-//   });
-  
-//   // Define which fields to validate for each step
-//   const stepFields = {
-//     0: ['name', 'birthDate', 'gender', 'mobile'], // Personal Info required fields
-//     1: [], // Family Info (all optional)
-//     2: ['permanentAddress', 'permanentDistrict', 'permanentThana'], // Address Info
-//     3: ['className', 'studentClassRoll', 'activeSession', 'status', 'studentType'], // Academic Info
-//     4: [], // Fee Info (all optional)
-//     5: []  // Settings (all optional)
-//   };
+//   })
+
+//   const [success, setSuccess] = useState(false)
 
 //   const handleSwitchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-//     const { name, checked } = e.target;
+//     const { name, checked } = e.target
 
 //     // Update the form data with the new switch value
-//     setFormData((prev) => ({
-//       ...prev,
-//       [name]: checked,
-//     }));
-
-//     // If sameAsPermanent is checked, copy permanent address to present address
-//     if (name === "sameAsPermanent" && checked) {
-//       setFormData((prev) => ({
+//     setFormData((prev) => {
+//       const newData = {
 //         ...prev,
-//         presentAddress: prev.permanentAddress || "",
-//         presentDistrict: prev.permanentDistrict || "",
-//         presentThana: prev.permanentThana || "",
 //         [name]: checked,
-//       }));
-//     }
-//   };
-
-//   // Modified handleNext to validate current step before proceeding
-//   const handleNext = async () => {
-//     // Get current form values
-//     const currentValues = formMethods.getValues();
-    
-//     // Determine which schema to use based on current step
-//     let stepSchema;
-//     switch (activeStep) {
-//       case 0:
-//         stepSchema = personalInfoSchema;
-//         break;
-//       case 1:
-//         stepSchema = familyInfoSchema;
-//         break;
-//       case 2:
-//         stepSchema = addressInfoSchema;
-//         break;
-//       case 3:
-//         stepSchema = academicInfoSchema;
-//         break;
-//       case 4:
-//         stepSchema = feeInfoSchema;
-//         break;
-//       case 5:
-//         stepSchema = settingsSchema;
-//         break;
-//       default:
-//         stepSchema = personalInfoSchema;
-//     }
-    
-//     try {
-//       // Validate only the fields in the current step
-//       await stepSchema.parseAsync(currentValues);
-      
-//       // If validation passes, proceed to next step
-//       setActiveStep((prevActiveStep) => prevActiveStep + 1);
-//     } catch (error) {
-//       if (error instanceof z.ZodError) {
-//         // Extract and format error messages
-//         const errorMessages = error.errors.map(err => `${err.path.join('.')}: ${err.message}`).join(', ');
-        
-//         // Show error message
-//         setSnackbar({
-//           open: true,
-//           message: `Please complete all required fields: ${errorMessages}`,
-//           severity: "error",
-//         });
-        
-//         // Set errors in the form
-//         error.errors.forEach(err => {
-//           formMethods.setError(err.path[0] as any, {
-//             type: 'manual',
-//             message: err.message
-//           });
-//         });
 //       }
-//     }
-//   };
+
+//       // If sameAsPermanent is checked, copy permanent address to present address
+//       if (name === "sameAsPermanent" && checked) {
+//         newData.presentAddress = prev.permanentAddress || ""
+//         newData.presentDistrict = prev.permanentDistrict || ""
+//         newData.presentThana = prev.permanentThana || ""
+//       }
+
+//       return newData
+//     })
+//   }
+
+//   const handleNext = () => {
+//     setActiveStep((prevActiveStep) => prevActiveStep + 1)
+//   }
 
 //   const handleBack = () => {
-//     setActiveStep((prevActiveStep) => prevActiveStep - 1);
-//   };
+//     setActiveStep((prevActiveStep) => prevActiveStep - 1)
+//   }
 
-//   const handleSubmit = async (data: any) => {
+//   const handleSubmit = async (formValues: any) => {
+//     console.log("Raw form values:", formValues)
+
+
+//     // Create a structured submission object
 //     const submissionData = {
-//       ...data,
-//       ...formData,
-//       admissionFee: Number(data.admissionFee || 0),
-//       monthlyFee: Number(data.monthlyFee || 0),
-//       previousDues: Number(data.previousDues || 0),
-//       sessionFee: Number(data.sessionFee || 0),
-//       residenceFee: Number(data.residenceFee || 0),
-//       otherFee: Number(data.otherFee || 0),
-//       transportFee: Number(data.transportFee || 0),
-//       boardingFee: Number(data.boardingFee || 0),
-//     };
+//    ...formValues,
+//       name: formValues.name,
+//       smartIdCard: formValues.smartIdCard,
+//       email: formValues.email,
+//       mobile: formValues.mobile,
+//       birthDate: formValues.birthDate,
+//       birthRegistrationNo: formValues.birthRegistrationNo,
+//       bloodGroup: formValues.bloodGroup,
+//       gender: formValues.gender,
+
+//       // Family Information
+//       fatherName: formValues.fatherName,
+//       motherName: formValues.motherName,
+//       guardianName: formValues.guardianName,
+//       guardianMobile: formValues.guardianMobile,
+//       relation: formValues.relation,
+//       nidFatherMotherGuardian: formValues.nidFatherMotherGuardian,
+
+//       // Address Information
+//       permanentAddress: formValues.permanentAddress,
+//       permanentDistrict: formValues.permanentDistrict,
+//       permanentThana: formValues.permanentThana,
+//       sameAsPermanent: formData.sameAsPermanent || false,
+//       presentAddress: formData.sameAsPermanent ? formValues.permanentAddress : formValues.presentAddress,
+//       presentDistrict: formData.sameAsPermanent ? formValues.permanentDistrict : formValues.presentDistrict,
+//       presentThana: formData.sameAsPermanent ? formValues.permanentThana : formValues.presentThana,
+
+//       // Academic Information
+//       className: formValues.className,
+//       studentClassRoll: formValues.studentClassRoll,
+//       batch: formValues.batch,
+//       section: formValues.section,
+//       activeSession: formValues.activeSession,
+//       status: formValues.status,
+//       studentType: formValues.studentType,
+//       additionalNote: formValues.additionalNote,
+
+//       // Fee Information
+//       admissionFee: Number(formValues.admissionFee || 0),
+//       monthlyFee: Number(formValues.monthlyFee || 0),
+//       previousDues: Number(formValues.previousDues || 0),
+//       sessionFee: Number(formValues.sessionFee || 0),
+//       residenceFee: Number(formValues.residenceFee || 0),
+//       otherFee: Number(formValues.otherFee || 0),
+//       transportFee: Number(formValues.transportFee || 0),
+//       boardingFee: Number(formValues.boardingFee || 0),
+
+//       // Other Settings
+//       studentSerial: formValues.studentSerial,
+//       sendAdmissionSMS: formData.sendAdmissionSMS || false,
+//       sendAttendanceSMS: formData.sendAttendanceSMS || false,
+
+//       // Photo - ensure it's included
+//       studentPhoto: formValues.studentPhoto || "",
+//     }
+
+//     console.log("Final submission data:", submissionData)
+//     console.log("studentPhoto:", submissionData.studentPhoto)
+//     console.log("permanentAddress:", submissionData.permanentAddress)
+//     console.log("permanentDistrict:", submissionData.permanentDistrict)
+//     console.log("permanentThana:", submissionData.permanentThana)
+//     console.log("presentAddress:", submissionData.presentAddress)
+//     console.log("presentDistrict:", submissionData.presentDistrict)
+//     console.log("presentThana:", submissionData.presentThana)
 
 //     try {
-//       const res = await createStudents(submissionData).unwrap();
+//     if(id){
+//       const res = await updateStudent({ id, data: submissionData }).unwrap()
 
 //       if (res.success) {
-//         setSuccess(true);
+//         setSuccess(true)
+//         setSnackbar({
+//           open: true,
+//           message: "Student updated successfully!",
+//           severity: "success",
+//         })
+//         setTimeout(() => {
+//           router.push("/dashboard/super_admin/student/list")
+//         }, 2000)
+//       }
+//     }else{
+//       const res = await createStudents(submissionData).unwrap()
+//       if (res.success) {
+//         setSuccess(true)
 //         setSnackbar({
 //           open: true,
 //           message: "Student registered successfully!",
 //           severity: "success",
-//         });
-//         router.push('/dashboard/super_admin/student/list');
+//         })
+//         setTimeout(() => {
+//           router.push("/dashboard/super_admin/student/list")
+//         }, 2000)
 //       }
-
-//       setTimeout(() => {
-//         // Any cleanup or additional actions
-//       }, 2000);
+      
+//     }
 //     } catch (error: any) {
-//       console.error("❌ Submission error:", error);
+//       console.error("❌ Submission error:", error)
 //       setSnackbar({
 //         open: true,
-//         message: error?.data?.message || "Error registering student.",
+//         message: error?.data?.message || "Error updating student.",
 //         severity: "error",
-//       });
+//       })
 //     }
-//   };
+//   }
+
+
 
 //   const handleCloseSnackbar = () => {
 //     setSnackbar({
 //       ...snackbar,
 //       open: false,
-//     });
-//   };
+//     })
+//   }
 
 //   const handleReset = () => {
-//     setFormData({});
-//     setActiveStep(0);
-//     formMethods.reset();
-//   };
+//     setFormData({})
+//     setActiveStep(0)
+//     if (formRef.current) {
+//       formRef.current.reset()
+//     }
+//   }
 
 //   const steps = [
 //     {
@@ -487,12 +449,15 @@
 //             />
 //           </Grid>
 //           <Grid item xs={12}>
-//             <FileUploadWithIcon name="studentPhoto" label="Student Photo" />
+//             <FileUploadWithIcon
+//               name="studentPhoto"
+//               label="Student Photo"
+             
+//             />
 //           </Grid>
 //         </Grid>
 //       ),
 //     },
-//     // ... other steps remain the same
 //     {
 //       label: "Family Information",
 //       description: "Enter family and guardian details",
@@ -633,23 +598,27 @@
 //                   />
 //                 </Grid>
 //                 <Grid item xs={12}>
-//                   <CraftSelectWithIcon
+//                   <CraftInputWithIcon
+//                     fullWidth
 //                     name="permanentDistrict"
-//                     size="medium"
 //                     label="District"
-//                     placeholder="Select District"
-//                     items={districts}
-//                     adornment={<LocationOn color="action" />}
+//                     placeholder="District"
+//                     size="medium"
+//                     InputProps={{
+//                       startAdornment: <LocationOn sx={{ color: "text.secondary", mr: 1 }} />,
+//                     }}
 //                   />
 //                 </Grid>
 //                 <Grid item xs={12}>
-//                   <CraftSelectWithIcon
+//                   <CraftInputWithIcon
+//                     fullWidth
 //                     name="permanentThana"
 //                     size="medium"
 //                     label="Thana"
 //                     placeholder="Select Thana"
-//                     items={thanas}
-//                     adornment={<LocationOn color="action" />}
+//                     InputProps={{
+//                       startAdornment: <LocationOn sx={{ color: "text.secondary", mr: 1 }} />,
+//                     }}
 //                   />
 //                 </Grid>
 //               </Grid>
@@ -700,25 +669,29 @@
 //                   />
 //                 </Grid>
 //                 <Grid item xs={12}>
-//                   <CraftSelectWithIcon
+//                   <CraftInputWithIcon
+//                     fullWidth
 //                     name="presentDistrict"
-//                     size="medium"
 //                     label="District"
-//                     placeholder="Select District"
-//                     items={districts}
-//                     adornment={<LocationOn color="action" />}
+//                     placeholder="District"
+//                     size="medium"
 //                     disabled={formData.sameAsPermanent}
+//                     InputProps={{
+//                       startAdornment: <LocationOn sx={{ color: "text.secondary", mr: 1 }} />,
+//                     }}
 //                   />
 //                 </Grid>
 //                 <Grid item xs={12}>
-//                   <CraftSelectWithIcon
+//                   <CraftInputWithIcon
+//                     fullWidth
 //                     name="presentThana"
-//                     size="medium"
 //                     label="Thana"
-//                     placeholder="Select Thana"
-//                     items={thanas}
-//                     adornment={<LocationOn color="action" />}
+//                     placeholder="Thana"
+//                     size="medium"
 //                     disabled={formData.sameAsPermanent}
+//                     InputProps={{
+//                       startAdornment: <LocationOn sx={{ color: "text.secondary", mr: 1 }} />,
+//                     }}
 //                   />
 //                 </Grid>
 //               </Grid>
@@ -978,7 +951,6 @@
 //               </Typography>
 
 //               <Grid container spacing={3} alignItems="center">
-            
 //                 <Grid item xs={12} md={4}>
 //                   <CraftSwitch
 //                     name="sendAdmissionSMS"
@@ -986,6 +958,7 @@
 //                     onChange={handleSwitchChange}
 //                     checked={formData.sendAdmissionSMS || false}
 //                   />
+
 //                   <Typography variant="caption" color="text.secondary" sx={{ display: "block", ml: 4 }}>
 //                     Send SMS notification upon admission
 //                   </Typography>
@@ -1011,6 +984,7 @@
 //                     onChange={handleSwitchChange}
 //                     checked={formData.sendAttendanceSMS || false}
 //                   />
+
 //                   <Typography variant="caption" color="text.secondary" sx={{ display: "block", ml: 4 }}>
 //                     Send SMS for attendance updates
 //                   </Typography>
@@ -1046,7 +1020,11 @@
 //         </Grid>
 //       ),
 //     },
-//   ];
+//   ]
+
+//   if (isLoading) {
+//     return <h4>Loading.......</h4>
+//   }
 
 //   return (
 //     <Box
@@ -1072,19 +1050,20 @@
 //           <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
 //             <Person sx={{ fontSize: 40, mr: 2 }} />
 //             <Typography variant="h4" component="h1" sx={{ fontWeight: 700 }}>
-//               New Student Registration
+//               {id ? "Edit Student" : "New Student Registration"}
 //             </Typography>
 //           </Box>
 //           <Typography variant="body1" sx={{ opacity: 0.9, maxWidth: 700 }}>
-//             Register a new student by filling in the required information. Follow the steps to complete the registration
-//             process.
+//             {id
+//               ? "Update student information by modifying the required fields."
+//               : "Register a new student by filling in the required information. Follow the steps to complete the registration process."}
 //           </Typography>
 //         </Container>
 //       </Box>
 
 //       <Container maxWidth="xl">
 //         <Box sx={{ mb: 3 }}>
-//           <Link href="/students" passHref>
+//           <Link href="/dashboard/super_admin/student/list" passHref>
 //             <Button
 //               startIcon={<ArrowBack />}
 //               variant="outlined"
@@ -1100,10 +1079,12 @@
 //           </Link>
 //         </Box>
 
-//         <CraftForm 
-//           onSubmit={handleSubmit} 
+//         <CraftForm
+        
+//           onSubmit={handleSubmit}
 //           resolver={zodResolver(studentSchema)}
-//           formMethods={formMethods}
+//           defaultValues={defaultValues}
+//           key={Object.keys(defaultValues).length > 0 ? "form-with-data" : "empty-form"}
 //         >
 //           <Paper
 //             elevation={3}
@@ -1155,7 +1136,7 @@
 //                               px: 3,
 //                             }}
 //                           >
-//                             Register Student
+//                             {id ? "Update Student" : "Register Student"}
 //                           </Button>
 //                         ) : (
 //                           <Button
@@ -1265,7 +1246,7 @@
 //         </Alert>
 //       </Snackbar>
 //     </Box>
-//   );
-// };
+//   )
+// }
 
-// export default StudentRegistration;
+// export default StudentForm
