@@ -73,6 +73,7 @@ import {
 import { useCreateTeacherMutation, useGetSingleTeacherQuery, useUpdateTeacherMutation } from "@/redux/api/teacherApi"
 import FileUploadWithIcon from "@/components/Forms/Upload"
 import CraftDatePicker from "@/components/Forms/DatePicker"
+import toast from "react-hot-toast"
 
 interface TeacherFormProps {
   id?: string
@@ -286,7 +287,6 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
         joiningDate: data.joiningDate,
         monthlySalary: monthlySalaryNum,
         staffType: data.staffType,
-
         educationalQualifications: [
           data.degree
             ? {
@@ -296,11 +296,11 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
               specialization: data.specialization,
             }
             : null,
-        ].filter(Boolean), 
+        ].filter(Boolean),
         certifications: [
-          data.name
+          data.certificateName
             ? {
-              name: data.name,
+              certificateName: data.certificateName,
               issuedBy: data.issuedBy,
               year: data.year,
               description: data.description,
@@ -308,7 +308,7 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
             : null,
         ].filter(Boolean),
 
-      
+
         workExperience: [
           data.organization
             ? {
@@ -319,7 +319,7 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
               description: data.description,
             }
             : null,
-        ].filter(Boolean), 
+        ].filter(Boolean),
 
 
         status: data.status || "Active",
@@ -358,13 +358,22 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
         }
       }
     } catch (error: any) {
-      console.error("❌ Submission error:", error)
-      setSnackbar({
-        open: true,
-        message: error?.data?.message || "Error processing teacher data.",
-        severity: "error",
-      })
-    } finally {
+      console.error("❌ Submission error:", error);
+
+      const errorSources = error?.data?.errorSources;
+
+      if (Array.isArray(errorSources) && errorSources.length > 0) {
+        const firstError = errorSources[0];
+        const field = firstError?.path || 'Field';
+        const message = firstError?.message || 'is invalid';
+        toast.error(`${field}: ${message}`);
+      } else {
+        toast.error(error?.data?.message || 'Please fill all required field!');
+      }
+    }
+
+
+    finally {
       setIsSubmitting(false)
     }
   }
@@ -860,7 +869,7 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
                   <CraftInputWithIcon
                     fullWidth
                     label="Certificate Name"
-                    name="name"
+                    name="certificateName"
                     size="medium"
                     InputProps={{
                       startAdornment: <CardMembership sx={{ color: "text.secondary", mr: 1 }} />,

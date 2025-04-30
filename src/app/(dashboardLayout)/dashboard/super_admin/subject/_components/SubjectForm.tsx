@@ -191,8 +191,7 @@ export default function SubjectForm({ id }: any) {
         lessonNo: lesson?.lessonNo || 0,
         lessonName: lesson?.lessonName || "",
       })) || [],
-    classes:
-      singleSubject?.data?.classes?.map((classItem: any) => ({
+    classes:  singleSubject?.data?.classes?.map((classItem: any) => ({
         label: classItem.className,
         value: classItem._id,
       })) || [],
@@ -202,7 +201,7 @@ export default function SubjectForm({ id }: any) {
     updatedAt: singleSubject?.data?.updatedAt || "",
     __v: singleSubject?.data?.__v ?? 0,
   }
-  console.log(singleSubject)
+
 
   return (
     <>

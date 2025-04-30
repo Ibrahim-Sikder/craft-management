@@ -3,12 +3,22 @@
 
 import React from "react"
 import { Controller, useFormContext } from "react-hook-form"
-import { TextField, Autocomplete, Chip, InputAdornment, alpha } from "@mui/material"
+import {
+  TextField,
+  Autocomplete,
+  Chip,
+  InputAdornment,
+  alpha,
+  AutocompleteRenderOptionState,
+} from "@mui/material"
 import { SxProps } from "@mui/material/styles"
 
 type Option = {
-  id: string
-  name: string
+  id?: string
+  value?: string
+  name?: string
+  label?: string
+  capacity?: number
 }
 
 type TStateProps = {
@@ -27,6 +37,15 @@ type TStateProps = {
   onInputChange?: (event: React.SyntheticEvent, value: string) => void
   onChange?: (event: React.SyntheticEvent, value: any) => void
   icon?: React.ReactNode
+  renderOption?: (
+    props: React.HTMLAttributes<HTMLLIElement>,
+    option: Option,
+    state: AutocompleteRenderOptionState
+  ) => React.ReactNode
+  renderTags?: (
+    value: readonly Option[],
+    getTagProps: (params: { index: number }) => Record<string, any>
+  ) => React.ReactNode
 }
 
 const CraftIntAutoCompleteWithIcon = ({
@@ -44,13 +63,14 @@ const CraftIntAutoCompleteWithIcon = ({
   onInputChange,
   onChange,
   icon,
+  renderOption,
+  renderTags,
 }: TStateProps) => {
   const { control } = useFormContext()
 
-  // Ensure that the correct label is displayed for each option
   const getOptionLabel = (option: any): string => {
     if (typeof option === "string") return option
-    return option.name || option.label || "" // Adjust this to match your option structure
+    return option.name || option.label || "" // Default display label
   }
 
   return (
@@ -65,31 +85,33 @@ const CraftIntAutoCompleteWithIcon = ({
           freeSolo={freeSolo}
           options={options}
           getOptionLabel={getOptionLabel}
-          value={field.value || defaultValue} // Ensure value is correct format
-          renderTags={(value: readonly any[], getTagProps) =>
-            (Array.isArray(value) ? value : []).map((option: any, index: number) => {
-              const tagProps = getTagProps({ index })
-              const { key, ...restTagProps } = tagProps
-              return (
-                <Chip
-                  key={key || index}
-                  variant="outlined"
-                  label={getOptionLabel(option)}
-                  {...restTagProps}
-                  sx={{
-                    bgcolor: alpha("#1976d2", 0.1), // Adjust to your theme color
-                    color: "#1976d2", // Adjust to your theme color
-                    fontWeight: 500,
-                  }}
-                />
-              )
-            })
+          value={field.value || defaultValue}
+          renderOption={renderOption}
+          renderTags={
+            renderTags ||
+            ((value: readonly any[], getTagProps) =>
+              value.map((option: any, index: number) => {
+                const tagProps = getTagProps({ index })
+                const { key, ...restTagProps } = tagProps
+                return (
+                  <Chip
+                    key={key || index}
+                    variant="outlined"
+                    label={getOptionLabel(option)}
+                    {...restTagProps}
+                    sx={{
+                      bgcolor: alpha("#1976d2", 0.1),
+                      color: "#1976d2",
+                      fontWeight: 500,
+                    }}
+                  />
+                )
+              }))
           }
           onChange={(event, newValue) => {
-            // Ensure newValue is an array of selected option objects
             const processedValue = Array.isArray(newValue)
-              ? newValue.map((item) => item.name || item) // Ensure proper processing
-              : newValue
+              ? newValue
+              : [newValue]
 
             field.onChange(processedValue)
 
@@ -116,7 +138,7 @@ const CraftIntAutoCompleteWithIcon = ({
                   <>
                     {icon && (
                       <InputAdornment position="start">
-                        {icon} {/* Dynamic icon */}
+                        {icon}
                       </InputAdornment>
                     )}
                     {params.InputProps.startAdornment}
