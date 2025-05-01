@@ -207,11 +207,11 @@ export default function SectionsListPage() {
 
   // Extract unique class names and section types
   const uniqueClasses = useMemo(() => {
-    return [...new Set(sections.map((section) => section.className))]
+    return [...new Set(sections.map((section: { className: string }) => section.className))]
   }, [sections])
 
   const uniqueTypes = useMemo(() => {
-    return [...new Set(sections.map((section) => section.type))]
+    return [...new Set(sections.map((section: { type: string }) => section.type))]
   }, [sections])
 
   // Calculate analytics data
@@ -230,16 +230,16 @@ export default function SectionsListPage() {
       }
     }
 
-    const activeSections = sections.filter((s) => s.status === "Active").length
-    const inactiveSections = sections.filter((s) => s.status === "Inactive").length
-    const pendingSections = sections.filter((s) => s.status === "Pending").length
+    const activeSections = sections.filter((s: { status: string }) => s.status === "Active").length
+    const inactiveSections = sections.filter((s: { status: string }) => s.status === "Inactive").length
+    const pendingSections = sections.filter((s: { status: string }) => s.status === "Pending").length
 
     // Calculate average fill rate
-    const totalFillRate = sections.reduce((sum, section) => sum + section.fillRate, 0)
+    const totalFillRate = sections.reduce((sum: number, section:any) => sum + section.fillRate, 0)
     const averageFillRate = Math.round(totalFillRate / sections.length)
 
     // Count sections by class
-    const classCounts = sections.reduce((acc: any, section) => {
+    const classCounts = sections.reduce((acc: any, section:any) => {
       const className = section.className
       if (!acc[className]) acc[className] = 0
       acc[className]++
@@ -247,7 +247,7 @@ export default function SectionsListPage() {
     }, {})
 
     // Count sections by type
-    const typeCounts = sections.reduce((acc: any, section) => {
+    const typeCounts = sections.reduce((acc: any, section:any) => {
       const type = section.type
       if (!acc[type]) acc[type] = 0
       acc[type]++
@@ -392,7 +392,7 @@ export default function SectionsListPage() {
   // Handle selection
   const handleSelectAll = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.checked) {
-      const newSelected = filteredSections.map((section) => section.id)
+      const newSelected = filteredSections.map((section:any) => section.id)
       setSelectedSections(newSelected)
       return
     }
@@ -456,7 +456,7 @@ export default function SectionsListPage() {
 
   // Filter and sort the data
   const filteredSections = sections
-    .filter((section) => {
+    .filter((section:any) => {
       const matchesSearch =
         searchTerm === "" ||
         section.fullName.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -474,7 +474,7 @@ export default function SectionsListPage() {
 
       return matchesSearch && matchesStatus && matchesClass && matchesType
     })
-    .sort((a, b) => {
+    .sort((a:any, b:any) => {
       const aValue = a[orderBy]
       const bValue = b[orderBy]
 
@@ -632,7 +632,7 @@ export default function SectionsListPage() {
                         <CheckCircleIcon sx={{ mr: 1, fontSize: 20, color: theme.palette.success.main }} />
                         Active
                         <Chip
-                          label={sections.filter((s) => s.status === "Active").length}
+                          label={sections.filter((s: { status: string }) => s.status === "Active").length}
                           size="small"
                           color="success"
                           sx={{ ml: 1, height: 20, fontSize: "0.75rem" }}
@@ -646,7 +646,7 @@ export default function SectionsListPage() {
                         <CancelIcon sx={{ mr: 1, fontSize: 20, color: theme.palette.error.main }} />
                         Inactive
                         <Chip
-                          label={sections.filter((s) => s.status === "Inactive").length}
+                          label={sections.filter((s:any) => s.status === "Inactive").length}
                           size="small"
                           color="error"
                           sx={{ ml: 1, height: 20, fontSize: "0.75rem" }}
@@ -660,7 +660,7 @@ export default function SectionsListPage() {
                         <AccessTimeIcon sx={{ mr: 1, fontSize: 20, color: theme.palette.warning.main }} />
                         Pending
                         <Chip
-                          label={sections.filter((s) => s.status === "Pending").length}
+                          label={sections.filter((s: { status: string }) => s.status === "Pending").length}
                           size="small"
                           color="warning"
                           sx={{ ml: 1, height: 20, fontSize: "0.75rem" }}
@@ -945,7 +945,7 @@ export default function SectionsListPage() {
                         </TableHead>
                         <TableBody>
                           {paginatedSections.length > 0 ? (
-                            paginatedSections.map((section) => {
+                            paginatedSections.map((section:any) => {
                               const statusChipProps = getStatusChipProps(section.status)
                               const isSelected = selectedSections.indexOf(section.id) !== -1
 
@@ -1339,8 +1339,8 @@ export default function SectionsListPage() {
             label="Select Class"
           >
             <MenuItem value="">All Classes</MenuItem>
-            {uniqueClasses.map((className) => (
-              <MenuItem key={className} value={className}>
+            {uniqueClasses.map((className:any, i:number) => (
+              <MenuItem key={i} value={className}>
                 {className}
               </MenuItem>
             ))}
@@ -1360,8 +1360,8 @@ export default function SectionsListPage() {
             label="Select Type"
           >
             <MenuItem value="">All Types</MenuItem>
-            {uniqueTypes.map((type) => (
-              <MenuItem key={type} value={type}>
+            {uniqueTypes.map((type:any, i:number) => (
+              <MenuItem key={i} value={type}>
                 {type}
               </MenuItem>
             ))}

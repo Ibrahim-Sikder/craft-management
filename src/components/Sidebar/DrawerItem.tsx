@@ -133,8 +133,18 @@ export const navigationItems: NavigationItem[] = [
     roles: ["admin", "super_admin", 'teacher'],
     children: [
       {
+        path: "/dashboard/super_admin/teacher/new",
+        title: "Add Teachers",
+        icon: (
+          <ColorfulIcon color="#DB4437">
+            <People />
+          </ColorfulIcon>
+        ),
+        roles: ["super_admin", "admin", 'teacher', 'student'],
+      },
+      {
         path: "/dashboard/super_admin/teacher/list",
-        title: "Teachers",
+        title: "Teachers List",
         icon: (
           <ColorfulIcon color="#DB4437">
             <People />
@@ -174,8 +184,8 @@ export const navigationItems: NavigationItem[] = [
     roles: ["admin", "super_admin", 'teacher'],
     children: [
       {
-        path: "/dashboard/super_admin/staff/list",
-        title: "Staff",
+        path: "/dashboard/super_admin/staff/add",
+        title: "Add Staff",
         icon: (
           <ColorfulIcon color="#DB4437">
             <People />
@@ -184,8 +194,8 @@ export const navigationItems: NavigationItem[] = [
         roles: ["super_admin", "admin", 'teacher', 'student'],
       },
       {
-        path: "/dashboard/super_admin/stock/allimg",
-        title: "Salary Report",
+        path: "/dashboard/super_admin/staff/list",
+        title: "Staff List",
         icon: (
           <ColorfulIcon color="#DB4437">
             <ReceiptLong />
