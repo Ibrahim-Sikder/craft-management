@@ -143,14 +143,24 @@ export const navigationItems: NavigationItem[] = [
         roles: ["super_admin", "admin", 'teacher', 'student'],
       },
       {
-        path: "/dashboard/super_admin/stock/allimg",
-        title: "Salary Report",
+        path: "/dashboard/super_admin/teacher/daily-report/list",
+        title: "Daily Class Report",
         icon: (
           <ColorfulIcon color="#DB4437">
             <ReceiptLong />
           </ColorfulIcon>
         ),
-        roles: ["super_admin", "admin"],
+        roles: ["super_admin", "admin",'teacher'],
+      },
+      {
+        path: "/dashboard/super_admin/teacher/daily-report/add",
+        title: "Add Daily Class Report",
+        icon: (
+          <ColorfulIcon color="#DB4437">
+            <ReceiptLong />
+          </ColorfulIcon>
+        ),
+        roles: ["super_admin", "admin",'teacher'],
       },
     ],
   },

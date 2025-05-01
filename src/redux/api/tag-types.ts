@@ -10,7 +10,8 @@ export const tagTypesList = [
   'todayTask',
   'room',
   'time-slot',
-  'section'
+  'section',
+  'daily-class-report'
   
   
 ] as const;
