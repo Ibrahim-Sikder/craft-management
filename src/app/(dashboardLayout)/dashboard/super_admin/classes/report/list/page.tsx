@@ -112,26 +112,22 @@ export default function ClassReportList() {
     subjectId: filters.subject || undefined,
     teacherId: filters.teacher || undefined,
   })
-  console.log('class report ', classReport)
+  console.log(classReport)
 
   const { data: classData } = useGetAllClassesQuery({
-    limit: rowsPerPage,
-    page: page + 1,
-    searchTerm: searchTerm,
+    limit: 100,
+    page: 1,
   })
 
   const { data: subjectData } = useGetAllSubjectsQuery({
-    limit: rowsPerPage,
-    page: page + 1,
-    searchTerm: searchTerm,
+    limit: 100,
+    page: 1,
   })
 
   const { data: teacherData } = useGetAllTeachersQuery({
-    limit: rowsPerPage,
-    page: page + 1,
-    searchTerm: searchTerm,
+    limit: 100,
+    page: 1,
   })
-
 
   const theme = customTheme
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"))
@@ -162,8 +158,8 @@ export default function ClassReportList() {
   }, [subjectData])
 
   const teacherOptions = useMemo(() => {
-    if (!teacherData?.data) return []
-    return teacherData?.data?.map((teacher: any) => ({
+    if (!teacherData?.data?.teachers) return []
+    return teacherData.data.teachers.map((teacher: any) => ({
       label: teacher.name,
       value: teacher._id,
     }))
@@ -479,7 +475,6 @@ export default function ClassReportList() {
                                 {option.label}
                               </MenuItem>
                             ))}
-
                           </Select>
                         </FormControl>
                       </CardContent>
@@ -708,7 +703,7 @@ export default function ClassReportList() {
                                 <React.Fragment key={report._id}>
                                   {report.studentEvaluations?.map((evaluation: any, index: number) => {
                                     const student = evaluation.studentId;
-
+                                    console.log('evaluation ', evaluation)
                                     return (
                                       <TableRow
                                         key={`${report._id}-${index}`}
