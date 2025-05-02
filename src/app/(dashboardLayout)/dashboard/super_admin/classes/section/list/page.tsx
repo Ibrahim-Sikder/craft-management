@@ -131,7 +131,7 @@ export default function SectionsListPage() {
   const [isDeleting, setIsDeleting] = useState(false)
 
   // API hooks
-  const [deleteSection, { isLoading: isDeleteLoading }] = useDeleteSectionMutation()
+  const [deleteSection] = useDeleteSectionMutation()
 
   const {
     data: sectionData,
@@ -200,7 +200,7 @@ export default function SectionsListPage() {
         schedule: schedule,
         fillRate: fillRate,
         description: section.description,
-        originalData: section, // Keep the original data for reference
+        originalData: section, 
       }
     })
   }, [sectionData])
@@ -214,81 +214,7 @@ export default function SectionsListPage() {
     return [...new Set(sections.map((section: { type: string }) => section.type))]
   }, [sections])
 
-  // Calculate analytics data
-  const analyticsData = useMemo(() => {
-    if (!sections.length) {
-      return {
-        totalSections: 0,
-        activeSections: 0,
-        inactiveSections: 0,
-        pendingSections: 0,
-        averageFillRate: 0,
-        mostPopularClass: "None",
-        leastPopularClass: "None",
-        sectionsByClass: [],
-        sectionsByType: [],
-      }
-    }
 
-    const activeSections = sections.filter((s: { status: string }) => s.status === "Active").length
-    const inactiveSections = sections.filter((s: { status: string }) => s.status === "Inactive").length
-    const pendingSections = sections.filter((s: { status: string }) => s.status === "Pending").length
-
-    // Calculate average fill rate
-    const totalFillRate = sections.reduce((sum: number, section:any) => sum + section.fillRate, 0)
-    const averageFillRate = Math.round(totalFillRate / sections.length)
-
-    // Count sections by class
-    const classCounts = sections.reduce((acc: any, section:any) => {
-      const className = section.className
-      if (!acc[className]) acc[className] = 0
-      acc[className]++
-      return acc
-    }, {})
-
-    // Count sections by type
-    const typeCounts = sections.reduce((acc: any, section:any) => {
-      const type = section.type
-      if (!acc[type]) acc[type] = 0
-      acc[type]++
-      return acc
-    }, {})
-
-    // Find most and least popular classes
-    let mostPopularClass = "None"
-    let leastPopularClass = "None"
-    let maxCount = 0
-    let minCount = Number.POSITIVE_INFINITY
-
-    Object.entries(classCounts).forEach(([className, count]: [string, any]) => {
-      if (count > maxCount) {
-        maxCount = count
-        mostPopularClass = className
-      }
-      if (count < minCount) {
-        minCount = count
-        leastPopularClass = className
-      }
-    })
-
-    return {
-      totalSections: sections.length,
-      activeSections,
-      inactiveSections,
-      pendingSections,
-      averageFillRate,
-      mostPopularClass,
-      leastPopularClass,
-      sectionsByClass: Object.entries(classCounts).map(([className, count]) => ({
-        class: className,
-        count,
-      })),
-      sectionsByType: Object.entries(typeCounts).map(([type, count]) => ({
-        type,
-        count,
-      })),
-    }
-  }, [sections])
 
   // Handle refresh
   const handleRefresh = () => {

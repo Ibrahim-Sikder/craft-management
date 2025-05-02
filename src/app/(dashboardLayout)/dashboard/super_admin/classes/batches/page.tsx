@@ -467,7 +467,7 @@ export default function BatchListPage() {
             >
               Print
             </Button>
-            <Link href="/new-batch" passHref>
+            <Link href="/dashboard/super_admin/classes/batches/new" passHref>
               <Button
                 variant="contained"
                 startIcon={<AddIcon />}

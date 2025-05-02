@@ -13,6 +13,8 @@ export const tagTypesList = [
   "section",
   "daily-class-report",
   "staff",
+  'session',
+  
 ] as const;
 
 export type TagType = (typeof tagTypesList)[number];
