@@ -161,8 +161,8 @@ export default function ClassReportForm({ id }: ClassReportProps) {
   useEffect(() => {
     if (singleClassReport?.data?.studentEvaluations?.length > 0) {
       // Use evaluations from the report when editing
-      const evaluations = singleClassReport.data.studentEvaluations.map((studentEval: any) => ({
-        studentId: studentEval.studentId._id,
+      const evaluations = singleClassReport?.data?.studentEvaluations?.map((studentEval: any) => ({
+        studentId: studentEval?.studentId?._id,
         lessonEvaluation: studentEval.lessonEvaluation,
         handwriting: studentEval.handwriting,
         attendance: studentEval.attendance,
