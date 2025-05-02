@@ -37,6 +37,7 @@ import {
   alpha,
   Fade,
   ThemeProvider,
+  Pagination,
 } from "@mui/material"
 import {
   School,
@@ -61,71 +62,21 @@ import {
 } from "@mui/icons-material"
 import Link from "next/link"
 import { motion } from "framer-motion"
-
+import { useDeleteSessionMutation, useGetAllSessionsQuery } from "@/redux/api/sessionApi"
 
 interface Session {
-  id: number;
-  name: string;
+  _id: string;
+  sessionName: string;
   isCurrent: boolean;
+  startDate: string;
+  endDate: string;
+  workingDays: number;
+  holidays: number;
+  createdAt: string;
+  updatedAt: string;
 }
 
-
-// Sample data for sessions
-const SAMPLE_SESSIONS = [
-  {
-    id: 1,
-    name: "Academic Year 2025-2026",
-    startDate: "2025-08-01",
-    endDate: "2026-05-31",
-    workingDays: 180,
-    holidays: 25,
-    isCurrent: true,
-    createdAt: "2025-03-15",
-  },
-  {
-    id: 2,
-    name: "Academic Year 2024-2025",
-    startDate: "2024-08-01",
-    endDate: "2025-05-31",
-    workingDays: 182,
-    holidays: 23,
-    isCurrent: false,
-    createdAt: "2024-03-10",
-  },
-  {
-    id: 3,
-    name: "Summer Session 2024",
-    startDate: "2024-06-01",
-    endDate: "2024-07-31",
-    workingDays: 45,
-    holidays: 5,
-    isCurrent: false,
-    createdAt: "2024-02-20",
-  },
-  {
-    id: 4,
-    name: "Academic Year 2023-2024",
-    startDate: "2023-08-01",
-    endDate: "2024-05-31",
-    workingDays: 181,
-    holidays: 24,
-    isCurrent: false,
-    createdAt: "2023-03-12",
-  },
-  {
-    id: 5,
-    name: "Winter Session 2023",
-    startDate: "2023-12-01",
-    endDate: "2024-01-15",
-    workingDays: 30,
-    holidays: 10,
-    isCurrent: false,
-    createdAt: "2023-10-05",
-  },
-]
-
 // Format date for display
-
 const formatDate = (dateString: any) => {
   const options: Intl.DateTimeFormatOptions = {
     year: "numeric",
@@ -136,14 +87,12 @@ const formatDate = (dateString: any) => {
   return new Date(dateString).toLocaleDateString(undefined, options);
 };
 
-
 export default function SessionList() {
   const theme = useTheme()
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"))
   const isMedium = useMediaQuery(theme.breakpoints.down("md"))
 
   // State management
-  const [sessions, setSessions] = useState(SAMPLE_SESSIONS)
   const [searchQuery, setSearchQuery] = useState("")
   const [viewMode, setViewMode] = useState("grid")
   const [tabValue, setTabValue] = useState(0)
@@ -156,18 +105,40 @@ export default function SessionList() {
   const [filterAnchorEl, setFilterAnchorEl] = useState(null)
   const [selectedSession, setSelectedSession] = useState<Session | null>(null);
   const [refreshKey, setRefreshKey] = useState(0)
+  const [page, setPage] = useState(0)
+  const [rowsPerPage, setRowsPerPage] = useState(10)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [deleteSession] = useDeleteSessionMutation()
+  // Fetch data from backend
+  const {data: sessionData, isLoading, refetch} = useGetAllSessionsQuery({
+    limit: rowsPerPage,
+    page: page + 1,
+    searchTerm: searchTerm,
+  })
 
+  // Extract sessions from session data
+  const sessions = sessionData?.data?.sessions || []
+  const totalSessions = sessionData?.data?.meta?.total || 0
+  const totalPages = Math.ceil(totalSessions / rowsPerPage)
 
-  // Simulate loading data
+  // Update search term when search query changes
   useEffect(() => {
     const timer = setTimeout(() => {
-      setLoading(false)
-    }, 1000)
+      setSearchTerm(searchQuery)
+    }, 500)
     return () => clearTimeout(timer)
-  }, [])
+  }, [searchQuery])
+
+  // Update loading state based on isLoading
+  useEffect(() => {
+    setLoading(isLoading)
+  }, [isLoading])
 
   const handleRefresh = () => {
-    setRefreshKey((prev) => prev + 1)
+    setLoading(true)
+    refetch().then(() => {
+      setLoading(false)
+    })
   }
 
   // Handle menu opening
@@ -202,17 +173,15 @@ export default function SessionList() {
     setSelectedSession(null)
   }
 
-  const handleDeleteSession = () => {
-    // Check if selectedSession is not null before accessing its id
-    if (selectedSession) {
-      setSessions(sessions.filter((s) => s.id !== selectedSession.id));
-    }
-    handleDeleteDialogClose();
-  };
-
+  // const handleDeleteSession = () => {
+  //   // Here you would call your delete API
+  //   // For now, just close the dialog
+  //   handleDeleteDialogClose()
+  //   handleRefresh()
+  // }
 
   // Handle tab change
-  const handleTabChange = (newValue: any) => {
+  const handleTabChange = (event: any, newValue: any) => {
     setTabValue(newValue)
   }
 
@@ -226,29 +195,30 @@ export default function SessionList() {
     }
   }
 
-  // Filter sessions based on search query and tab
+  // Handle page change
+  const handlePageChange = (event: any, value: number) => {
+    setPage(value - 1)
+  }
+
+  // Filter sessions based on tab
   const filteredSessions = sessions
-    .filter((session) => {
-      const matchesSearch = session.name.toLowerCase().includes(searchQuery.toLowerCase())
+    .filter((session: Session) => {
       const matchesTab =
         tabValue === 0 || (tabValue === 1 && session.isCurrent) || (tabValue === 2 && !session.isCurrent)
-      return matchesSearch && matchesTab
+      return matchesTab
     })
-    .sort((a, b) => {
+    .sort((a: Session, b: Session) => {
       const factor = sortDirection === "asc" ? 1 : -1
-      if (sortField === "name") {
-        return factor * a.name.localeCompare(b.name)
+      if (sortField === "sessionName") {
+        return factor * a.sessionName.localeCompare(b.sessionName)
       } else if (sortField === "startDate") {
-        return factor * (new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
-
+        return factor * (new Date(a.startDate).getTime() - new Date(b.startDate).getTime())
       } else if (sortField === "endDate") {
-        return factor * (new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
-
+        return factor * (new Date(a.endDate).getTime() - new Date(b.endDate).getTime())
       } else if (sortField === "workingDays") {
         return factor * (a.workingDays - b.workingDays)
       } else {
-        return factor * (new Date(a.startDate).getTime() - new Date(b.startDate).getTime());
-
+        return factor * (new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime())
       }
     })
 
@@ -276,6 +246,23 @@ export default function SessionList() {
     },
   }
 
+  const handleDeleteSession = async () => {
+    if (selectedSession) {
+      try {
+        // Call the delete session mutation with the session ID
+        await deleteSession(selectedSession._id).unwrap();
+        
+        // Close the dialog
+        handleDeleteDialogClose();
+        
+        // Refresh the data to update the UI
+        handleRefresh();
+      } catch (error) {
+        // You could add error handling here, like showing a snackbar
+        console.error("Failed to delete session:", error);
+      }
+    }
+  }
   return (
     <ThemeProvider theme={theme}>
       <Box sx={{ flexGrow: 1, background: "linear-gradient(to right, #f5f7fa, #ffffff)", minHeight: "100vh", borderRadius: 6 }}>
@@ -295,7 +282,7 @@ export default function SessionList() {
               >
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                   <School sx={{ color: "black", mr: 0, fontWeight: 700, fontSize: 30 }} />
-                  <Typography variant="h5" component="h1" sx={{ fontWeight: 700, color: "text.primary",fontSize: 30 }}>
+                  <Typography variant="h5" component="h1" sx={{ fontWeight: 700, color: "text.primary", fontSize: 30 }}>
                     Academic Sessions
                   </Typography>
                 </Box>
@@ -303,11 +290,7 @@ export default function SessionList() {
                   <Button
                     variant="outlined"
                     startIcon={<Refresh />}
-                    
-                    onClick={() => {
-                      setLoading(true)
-                      setTimeout(() => setLoading(false), 1000)
-                    }}
+                    onClick={handleRefresh}
                     sx={{ borderRadius: 6 }}
                   >
                     Refresh
@@ -337,7 +320,7 @@ export default function SessionList() {
                 <Box sx={{ p: 3 }}>
                   {/* Search and Actions Bar */}
                   <Grid container spacing={2} alignItems="center" justifyContent="space-between" sx={{ mb: 3 }}>
-                   
+
                     <Grid item xs={12} md={5}>
                       <TextField
                         fullWidth
@@ -351,8 +334,6 @@ export default function SessionList() {
                             </InputAdornment>
                           ),
                         }}
-                        
-                        
                         sx={{
                           "& .MuiOutlinedInput-root": {
                             borderRadius: 6,
@@ -376,16 +357,15 @@ export default function SessionList() {
                       <Button
                         variant="outlined"
                         startIcon={<FilterList />}
-                        
                         onClick={handleFilterMenuOpen}
                         sx={{ borderRadius: 2 }}
                       >
                         Filter
                       </Button>
                       <Menu anchorEl={filterAnchorEl} open={Boolean(filterAnchorEl)} onClose={handleFilterMenuClose}>
-                        <MenuItem onClick={() => handleSortChange("name")}>
+                        <MenuItem onClick={() => handleSortChange("sessionName")}>
                           <ListItemIcon>
-                            {sortField === "name" ? (
+                            {sortField === "sessionName" ? (
                               sortDirection === "asc" ? (
                                 <ArrowUpward fontSize="small" />
                               ) : (
@@ -449,8 +429,6 @@ export default function SessionList() {
                       >
                         {viewMode === "grid" ? "List" : "Grid"}
                       </Button>
-
-
                     </Grid>
                   </Grid>
 
@@ -532,7 +510,7 @@ export default function SessionList() {
                         color="primary"
                         startIcon={<Add />}
                         component={Link}
-                        href="/session/new"
+                        href="/dashboard/super_admin/classes/session/new"
                         sx={{ borderRadius: 2 }}
                       >
                         Create New Session
@@ -544,8 +522,8 @@ export default function SessionList() {
                       {viewMode === "grid" ? (
                         <motion.div variants={containerVariants} initial="hidden" animate="visible">
                           <Grid container spacing={3}>
-                            {filteredSessions.map((session) => (
-                              <Grid item xs={12} sm={6} md={4} key={session.id}>
+                            {filteredSessions.map((session: Session) => (
+                              <Grid item xs={12} sm={6} md={4} key={session._id}>
                                 <motion.div variants={itemVariants}>
                                   <Card
                                     variant="outlined"
@@ -588,13 +566,11 @@ export default function SessionList() {
                                           display: "flex",
                                           alignItems: "center",
                                           justifyContent: "space-between",
-
                                         }}
                                       >
                                         <Box sx={{
                                           display: "flex",
                                           alignItems: "center",
-
                                         }}>
                                           <Avatar
                                             sx={{
@@ -614,7 +590,7 @@ export default function SessionList() {
                                                 fontSize: "1rem",
                                               }}
                                             >
-                                              {session.name}
+                                              {session.sessionName}
                                             </Typography>
                                           </Box>
                                         </Box>
@@ -630,7 +606,7 @@ export default function SessionList() {
                                             <IconButton
                                               size="small"
                                               component={Link}
-                                              href={`/sessions/edit/${session.id}`}
+                                              href={`/dashboard/super_admin/classes/session/edit/${session._id}`}
                                               sx={{ mr: 1 }}
                                             >
                                               <Edit fontSize="small" />
@@ -672,8 +648,6 @@ export default function SessionList() {
                                           <Typography variant="body2">{session.holidays} days</Typography>
                                         </Grid>
                                       </Grid>
-
-
                                     </CardContent>
                                   </Card>
                                 </motion.div>
@@ -684,8 +658,8 @@ export default function SessionList() {
                       ) : (
                         <motion.div variants={containerVariants} initial="hidden" animate="visible">
                           <Paper variant="outlined" sx={{ borderRadius: 2, overflow: "hidden" }}>
-                            {filteredSessions.map((session, index) => (
-                              <motion.div key={session.id} variants={itemVariants}>
+                            {filteredSessions.map((session: Session, index: number) => (
+                              <motion.div key={session._id} variants={itemVariants}>
                                 <Box
                                   sx={{
                                     p: 2,
@@ -715,7 +689,7 @@ export default function SessionList() {
                                     </Avatar>
                                     <Box sx={{ ml: 2 }}>
                                       <Typography variant="subtitle1" sx={{ fontWeight: "medium" }}>
-                                        {session.name}
+                                        {session.sessionName}
                                       </Typography>
                                       <Box
                                         sx={{
@@ -743,7 +717,7 @@ export default function SessionList() {
                                       <IconButton
                                         size="small"
                                         component={Link}
-                                        href={`/sessions/edit/${session.id}`}
+                                        href={`/dashboard/super_admin/classes/session/edit/${session._id}`}
                                         sx={{ mr: 1 }}
                                       >
                                         <Edit fontSize="small" />
@@ -777,9 +751,16 @@ export default function SessionList() {
                         }}
                       >
                         <Typography variant="body2" color="text.secondary">
-                          Showing {filteredSessions.length} of {sessions.length} sessions
+                          Showing {filteredSessions.length} of {totalSessions} sessions
                         </Typography>
-
+                        <Pagination 
+                          count={totalPages} 
+                          page={page + 1} 
+                          onChange={handlePageChange}
+                          color="primary"
+                          variant="outlined"
+                          shape="rounded"
+                        />
                       </Box>
                     </>
                   )}
@@ -790,7 +771,7 @@ export default function SessionList() {
               <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
                 <MenuItem
                   component={Link}
-                  href={selectedSession ? `/sessions/edit/${selectedSession.id}` : "#"}
+                  href={selectedSession ? `/dashboard/super_admin/classes/session/edit/${selectedSession._id}` : "#"}
                   onClick={handleMenuClose}
                 >
                   <ListItemIcon>
@@ -807,19 +788,10 @@ export default function SessionList() {
                 {selectedSession && !selectedSession.isCurrent && (
                   <MenuItem
                     onClick={() => {
-                      // Set as current session
-                      setSessions(
-                        sessions.map((s) => ({
-                          ...s,
-                          isCurrent: s.id === Number(selectedSession?.id),
-                        }))
-                      );
+                      // Here you would call your API to set as current
                       handleMenuClose();
                     }}
                   >
-
-
-
                     <ListItemIcon>
                       <CheckCircle fontSize="small" />
                     </ListItemIcon>
@@ -850,7 +822,7 @@ export default function SessionList() {
                 <DialogTitle id="alert-dialog-title">{"Delete Academic Session?"}</DialogTitle>
                 <DialogContent>
                   <DialogContentText id="alert-dialog-description">
-                    Are you sure you want to delete the session &#34;{selectedSession?.name}&#34;? This action cannot be undone.
+                    Are you sure you want to delete the session &#34;{selectedSession?.sessionName}&#34;? This action cannot be undone.
                     {selectedSession?.isCurrent && (
                       <Box sx={{ mt: 2, color: "error.main" }}>
                         <Typography variant="body2" sx={{ fontWeight: "bold" }}>
@@ -876,4 +848,3 @@ export default function SessionList() {
     </ThemeProvider>
   )
 }
-

@@ -34,6 +34,7 @@ import {
   FormControl,
   InputLabel,
   Select,
+  TextField,
 } from "@mui/material"
 import {
   Search as SearchIcon,
@@ -47,7 +48,6 @@ import {
 import CraftForm from "@/components/Forms/Form"
 import CraftDatePicker from "@/components/Forms/DatePicker"
 import CraftSelect from "@/components/Forms/Select"
-import CraftTextArea from "@/components/Forms/TextArea"
 import { classHour, subjectName } from "@/options"
 import CraftIntAutoComplete from "@/components/Forms/CruftAutocomplete"
 import { customTheme } from "@/data"
@@ -56,15 +56,17 @@ import type { FieldValues } from "react-hook-form"
 import { useGetAllStudentsQuery } from "@/redux/api/studentApi"
 import toast from "react-hot-toast"
 import { useRouter } from "next/navigation"
-import { useCreateClassReportMutation, useGetSingleClassReportQuery, useUpdateClassReportMutation } from "@/redux/api/classReportApi"
-import { useGetAllClassesQuery, useUpdateClassMutation } from "@/redux/api/classApi"
+import {
+  useCreateClassReportMutation,
+  useGetSingleClassReportQuery,
+  useUpdateClassReportMutation,
+} from "@/redux/api/classReportApi"
+import { useGetAllClassesQuery } from "@/redux/api/classApi"
 import { useGetAllSubjectsQuery } from "@/redux/api/subjectApi"
 import CraftInputWithIcon from "@/components/Forms/inputWithIcon"
 import TodayLesson from "./TodayLesson"
 import TodayTask from "./TodayTask"
 import { format } from "date-fns"
-
-
 
 // Define a type for student evaluation
 type StudentEvaluation = {
@@ -76,11 +78,9 @@ type StudentEvaluation = {
   comments: string
 }
 
-interface ClassReportProps {
-  id: string;
-}
 
-export default function ClassReportForm({ id }: ClassReportProps) {
+export default function ClassReportForm({ id }: any) {
+  console.log(id)
   const router = useRouter()
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(10)
@@ -161,8 +161,8 @@ export default function ClassReportForm({ id }: ClassReportProps) {
   useEffect(() => {
     if (singleClassReport?.data?.studentEvaluations?.length > 0) {
       // Use evaluations from the report when editing
-      const evaluations = singleClassReport.data.studentEvaluations.map((studentEval: any) => ({
-        studentId: studentEval.studentId._id,
+      const evaluations = singleClassReport?.data?.studentEvaluations?.map((studentEval: any) => ({
+        studentId: studentEval?.studentId?._id,
         lessonEvaluation: studentEval.lessonEvaluation,
         handwriting: studentEval.handwriting,
         attendance: studentEval.attendance,
@@ -170,7 +170,6 @@ export default function ClassReportForm({ id }: ClassReportProps) {
         comments: studentEval.comments || "",
       }))
       setStudentEvaluations(evaluations)
-
     } else if (students.length > 0 && studentEvaluations.length === 0) {
       // Initialize new evaluations for new report
       const initialEvaluations = students.map((student: any) => ({
@@ -182,7 +181,6 @@ export default function ClassReportForm({ id }: ClassReportProps) {
         comments: "",
       }))
       setStudentEvaluations(initialEvaluations)
-
     }
   }, [students, singleClassReport, studentEvaluations.length])
 
@@ -228,32 +226,25 @@ export default function ClassReportForm({ id }: ClassReportProps) {
   }, [singleClassReport])
 
   const handleSubmit = async (data: FieldValues) => {
-
     let classValue = null
     if (data.classes) {
       if (typeof data.classes === "object" && data.classes !== null) {
-
         classValue = data.classes.value || null
       } else {
-
         classValue = data.classes
       }
     }
 
-
     let subjectValue = null
     if (data.subjects) {
       if (typeof data.subjects === "object" && data.subjects !== null) {
-
         subjectValue = data.subjects.value || null
       } else {
-
         subjectValue = data.subjects
       }
     }
 
     try {
-
       if (!todayLessonId) {
         toast.error("আজকের পাঠ যোগ করুন")
         return
@@ -263,7 +254,6 @@ export default function ClassReportForm({ id }: ClassReportProps) {
         toast.error("বাড়ির কাজ যোগ করুন")
         return
       }
-
 
       if (!classValue) {
         toast.error("শ্রেণী নির্বাচন করুন")
@@ -275,15 +265,12 @@ export default function ClassReportForm({ id }: ClassReportProps) {
         return
       }
 
-
       const allStudentEvaluations = students.map((student: any) => {
-
         const existingEval = studentEvaluations.find((evaluation) => evaluation.studentId === student._id)
 
         if (existingEval) {
           return existingEval
         } else {
-
           return {
             studentId: student._id,
             lessonEvaluation: "পড়া শিখেছে",
@@ -295,22 +282,28 @@ export default function ClassReportForm({ id }: ClassReportProps) {
         }
       })
 
-
       const formattedData = {
         teachers: storedUser.userId,
         subjects: [subjectValue],
         classes: [classValue],
         hour: data.hour,
         date: data.date,
-        studentEvaluations: allStudentEvaluations,
+        studentEvaluations: studentEvaluations.map((studentEval) => ({
+          studentId: studentEval.studentId,
+          lessonEvaluation: studentEval.lessonEvaluation,
+          handwriting: studentEval.handwriting,
+          attendance: studentEval.attendance,
+          parentSignature: studentEval.parentSignature,
+          comments: studentEval.comments || "",
+        })),
         todayLesson: todayLessonId,
         homeTask: homeTaskId,
       }
-
-
+      const response = await createClassReport(formattedData).unwrap()
+      console.log('formated data ',formattedData)
       if (!id) {
         const response = await createClassReport(formattedData).unwrap()
-
+        console.log(response)
         if (response.success) {
           setSnackbarMessage("Class report saved successfully!")
           setSnackbarSeverity("success")
@@ -320,7 +313,7 @@ export default function ClassReportForm({ id }: ClassReportProps) {
         }
       } else {
         const response = await updateClassReport({ id, data: formattedData }).unwrap()
- 
+
         if (response.success) {
           setSnackbarMessage("Class report update successfully!")
           setSnackbarSeverity("success")
@@ -329,7 +322,6 @@ export default function ClassReportForm({ id }: ClassReportProps) {
           router.push("/dashboard/super_admin/classes/report/list")
         }
       }
-
     } catch (error: any) {
       console.error("Error saving class report:", error)
       setSnackbarMessage(error?.data?.message || "Failed to save class report")
@@ -376,7 +368,7 @@ export default function ClassReportForm({ id }: ClassReportProps) {
       // Create new evaluation if it doesn't exist
       updatedEvaluations.push({
         studentId,
-        lessonEvaluation: value,
+        lessonEvaluation: "পড়া শিখেছে",
         handwriting: "লিখেছে",
         attendance: "উপস্থিত",
         parentSignature: false,
@@ -429,7 +421,7 @@ export default function ClassReportForm({ id }: ClassReportProps) {
       updatedEvaluations.push({
         studentId,
         lessonEvaluation: "পড়া শিখেছে",
-        handwriting: value,
+        handwriting: "লিখেছে",
         attendance: value,
         parentSignature: false,
         comments: "",
@@ -462,7 +454,6 @@ export default function ClassReportForm({ id }: ClassReportProps) {
     }
 
     setStudentEvaluations(updatedEvaluations)
-
   }
 
   const handleCommentsChange = (studentId: string, value: string) => {
@@ -488,7 +479,6 @@ export default function ClassReportForm({ id }: ClassReportProps) {
     }
 
     setStudentEvaluations(updatedEvaluations)
-
   }
 
   const sortedVehicleName = subjectName.sort((a, b) => {
@@ -560,7 +550,6 @@ export default function ClassReportForm({ id }: ClassReportProps) {
     setHomeTaskId(taskId)
     toast.success("বাড়ির কাজ যোগ করা হয়েছে!")
   }
-
 
   return (
     <>
@@ -744,36 +733,62 @@ export default function ClassReportForm({ id }: ClassReportProps) {
                                           </TableCell>
 
                                           <TableCell align="center">
-                                            <CraftSelect
-                                              name={`lessonEvaluation_${student._id}`}
-                                              items={["পড়া শিখেছে", "আংশিক শিখেছে", "পড়া শিখেনি"]}
-                                              onChange={(e) =>
-                                                handleLessonEvaluationChange(student._id, e.target.value)
-                                              }
-                                              defaultValue={evaluation.lessonEvaluation}
-                                              sx={{ minWidth: 160 }}
-                                            />
+                                            <FormControl fullWidth sx={{ minWidth: 160 }}>
+                                              <InputLabel id={`lesson-label-${student._id}`}>
+                                                Lesson Evaluation
+                                              </InputLabel>
+                                              <Select
+                                                labelId={`lesson-label-${student._id}`}
+                                                value={evaluation.lessonEvaluation || "পড়া শিখেছে"}
+                                                label="Lesson Evaluation"
+                                                onChange={(e) =>
+                                                  handleLessonEvaluationChange(student._id, e.target.value)
+                                                }
+                                              >
+                                                {["পড়া শিখেছে", "আংশিক শিখেছে", "পড়া শিখেনি"].map((item) => (
+                                                  <MenuItem key={item} value={item}>
+                                                    {item}
+                                                  </MenuItem>
+                                                ))}
+                                              </Select>
+                                            </FormControl>
                                           </TableCell>
 
                                           <TableCell align="center">
-                                            <CraftSelect
-                                              name={`handwriting_${student._id}`}
-                                              items={["লিখেছে", "আংশিক লিখেছে", "লিখেনি"]}
-                                              onChange={(e) => handleHandwritingChange(student._id, e.target.value)}
-                                              defaultValue={evaluation.handwriting}
-                                              sx={{ minWidth: 160 }}
-                                            />
+                                            <FormControl fullWidth sx={{ minWidth: 160 }}>
+                                              <InputLabel id={`handwriting-label-${student._id}`}>
+                                                Handwriting
+                                              </InputLabel>
+                                              <Select
+                                                labelId={`handwriting-label-${student._id}`}
+                                                value={evaluation.handwriting || "লিখেছে"}
+                                                label="Handwriting"
+                                                onChange={(e) => handleHandwritingChange(student._id, e.target.value)}
+                                              >
+                                                {["লিখেছে", "আংশিক লিখেছে", "লিখেনি"].map((item) => (
+                                                  <MenuItem key={item} value={item}>
+                                                    {item}
+                                                  </MenuItem>
+                                                ))}
+                                              </Select>
+                                            </FormControl>
                                           </TableCell>
                                           <TableCell align="center">
-
-                                            <CraftSelect
-                                              name={`attendance_${student._id}`}
-                                              items={["উপস্থিত", "অনুপস্থিত", "ছুটি"]}
-                                              onChange={(e) => handleAttendanceChange(student._id, e.target.value)}
-                                              defaultValue={evaluation.attendance}
-                                              value={evaluation.attendance}
-                                              sx={{ minWidth: 160 }}
-                                            />
+                                            <FormControl fullWidth sx={{ minWidth: 160 }}>
+                                              <InputLabel id={`attendance-label-${student._id}`}>Attendance</InputLabel>
+                                              <Select
+                                                labelId={`attendance-label-${student._id}`}
+                                                value={evaluation.attendance || "উপস্থিত"}
+                                                label="Attendance"
+                                                onChange={(e) => handleAttendanceChange(student._id, e.target.value)}
+                                              >
+                                                {["উপস্থিত", "অনুপস্থিত", "ছুটি"].map((item) => (
+                                                  <MenuItem key={item} value={item}>
+                                                    {item}
+                                                  </MenuItem>
+                                                ))}
+                                              </Select>
+                                            </FormControl>
                                           </TableCell>
                                           <TableCell align="center">
                                             <Checkbox
@@ -785,12 +800,13 @@ export default function ClassReportForm({ id }: ClassReportProps) {
                                             />
                                           </TableCell>
                                           <TableCell>
-                                            <CraftTextArea
-                                              name={`comments_${student._id}`}
+                                            <TextField
+                                              fullWidth
+                                              multiline
+                                              minRows={1}
                                               label="মন্তব্য"
                                               placeholder="মন্তব্য"
-                                              minRows={1}
-                                              value={evaluation.comments}
+                                              value={evaluation.comments || ""}
                                               onChange={(e) => handleCommentsChange(student._id, e.target.value)}
                                             />
                                           </TableCell>
@@ -919,7 +935,12 @@ export default function ClassReportForm({ id }: ClassReportProps) {
           />
 
           {/* Home Task Dialog */}
-          <TodayTask id={homeTaskId} open={todayTaskDialogOpen} onClose={handleCloseTodayTaskDialog} onSave={handleSaveTodayTask} />
+          <TodayTask
+            id={homeTaskId}
+            open={todayTaskDialogOpen}
+            onClose={handleCloseTodayTaskDialog}
+            onSave={handleSaveTodayTask}
+          />
         </>
       )}
     </>

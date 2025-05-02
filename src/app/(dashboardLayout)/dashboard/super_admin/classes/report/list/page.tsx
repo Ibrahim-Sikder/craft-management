@@ -64,7 +64,10 @@ import {
   Download as DownloadIcon,
   Print as PrintIcon,
   Refresh as RefreshIcon,
+
 } from "@mui/icons-material"
+import DrawIcon from "@mui/icons-material/Draw";
+import BlockIcon from "@mui/icons-material/Block";
 import Link from "next/link"
 import { format } from "date-fns"
 import { customTheme } from "@/ThemeStyle"
@@ -72,6 +75,7 @@ import { useGetAllClassReportsQuery } from "@/redux/api/classReportApi"
 import { useGetAllClassesQuery } from "@/redux/api/classApi"
 import { useGetAllSubjectsQuery } from "@/redux/api/subjectApi"
 import { useGetAllTeachersQuery } from "@/redux/api/teacherApi"
+import { ErrorIcon } from "react-hot-toast"
 
 export default function ClassReportList() {
   // State
@@ -92,6 +96,8 @@ export default function ClassReportList() {
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
   const [expandedReport, setExpandedReport] = useState<string | null>(null)
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false)
+  const [selectedReportDetails, setSelectedReportDetails] = useState<any | null>(null)
 
   // API queries
   const {
@@ -106,6 +112,7 @@ export default function ClassReportList() {
     subjectId: filters.subject || undefined,
     teacherId: filters.teacher || undefined,
   })
+  console.log(classReport)
 
   const { data: classData } = useGetAllClassesQuery({
     limit: 100,
@@ -247,6 +254,17 @@ export default function ClassReportList() {
     }
   }
 
+  const handleOpenDetailsModal = (e: React.MouseEvent, report: any) => {
+    e.stopPropagation()
+    setSelectedReportDetails(report)
+    setDetailsModalOpen(true)
+  }
+
+  const handleCloseDetailsModal = () => {
+    setDetailsModalOpen(false)
+    setSelectedReportDetails(null)
+  }
+
   // Format date for display
   const formatDate = (dateString: string) => {
     try {
@@ -259,7 +277,7 @@ export default function ClassReportList() {
   // Filter reports by hour (client-side filtering for hour)
   const filteredReportsByHour = useMemo(() => {
     if (!filters.hour) return reports
-    return reports.filter((report:any) => report.hour === filters.hour)
+    return reports.filter((report: any) => report.hour === filters.hour)
   }, [reports, filters.hour])
 
   // Filter reports by date (client-side filtering for date)
@@ -267,7 +285,7 @@ export default function ClassReportList() {
     if (!filters.date) return filteredReportsByHour
 
     const filterDate = new Date(filters.date)
-    return filteredReportsByHour.filter((report:any) => {
+    return filteredReportsByHour.filter((report: any) => {
       const reportDate = new Date(report.date)
       return (
         reportDate.getDate() === filterDate.getDate() &&
@@ -628,6 +646,12 @@ export default function ClassReportList() {
                               </Box>
                             </TableCell>
                             <TableCell>
+                              Roll
+                            </TableCell>
+                            <TableCell>
+                              Student Name
+                            </TableCell>
+                            <TableCell>
                               <Box
                                 sx={{
                                   display: "flex",
@@ -650,252 +674,204 @@ export default function ClassReportList() {
                                 )}
                               </Box>
                             </TableCell>
+
                             <TableCell>
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  cursor: "pointer",
-                                  userSelect: "none",
-                                  color: orderBy === "subjects" ? "primary.main" : "inherit",
-                                }}
-                                onClick={() => handleSort("subjects")}
-                              >
-                                Subject
-                                {orderBy === "subjects" && (
-                                  <Box component="span" sx={{ display: "inline-flex", ml: 0.5 }}>
-                                    {order === "asc" ? (
-                                      <ArrowUpwardIcon fontSize="small" />
-                                    ) : (
-                                      <ArrowDownwardIcon fontSize="small" />
-                                    )}
-                                  </Box>
-                                )}
-                              </Box>
+
+                              Subject
+
+
+
                             </TableCell>
                             <TableCell>Hour</TableCell>
+                            <TableCell>Attendance</TableCell>
                             <TableCell>Lesson</TableCell>
                             <TableCell>Homework</TableCell>
-                            <TableCell>Students</TableCell>
+
                             <TableCell>Actions</TableCell>
                           </TableRow>
                         </TableHead>
                         <TableBody>
                           {sortedReports.length > 0 ? (
                             sortedReports.map((report: any) => {
-                              const className = report.classes?.className || "N/A"
-                              const subjectName = report.subjects?.name || "N/A"
-                              const studentCount = report.studentEvaluations?.length || 0
-                              const hasLesson = !!report.todayLesson
-                              const hasHomework = !!report.homeTask
-                              const isExpanded = expandedReport === report._id
-                              const studentRows = getStudentRows(report)
+                              const className = report.classes?.className || "N/A";
+                              const subjectName = report.subjects?.name || "N/A";
+                              const hasLesson = !!report.todayLesson;
+                              const hasHomework = !!report.homeTask;
+                              const isExpanded = expandedReport === report._id;
 
                               return (
                                 <React.Fragment key={report._id}>
-                                  <TableRow
-                                    sx={{
-                                      transition: "all 0.2s",
-                                      cursor: "pointer",
-                                      bgcolor: isExpanded ? alpha(theme.palette.primary.main, 0.05) : "inherit",
-                                      "&:hover": {
-                                        bgcolor: alpha(theme.palette.primary.main, 0.05),
-                                      },
-                                    }}
-                                    onClick={() => handleToggleExpand(report._id)}
-                                  >
-                                    <TableCell>
-                                      <Typography variant="body2">
-                                        {report.date ? formatDate(report.date) : "N/A"}
-                                      </Typography>
-                                    </TableCell>
-                                    <TableCell>
-                                      <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                                        {className}
-                                      </Typography>
-                                    </TableCell>
-                                    <TableCell>
-                                      <Chip
-                                        label={subjectName}
-                                        size="small"
+                                  {report.studentEvaluations?.map((evaluation: any, index: number) => {
+                                    const student = evaluation.studentId;
+                                    console.log('evaluation ', evaluation)
+                                    return (
+                                      <TableRow
+                                        key={`${report._id}-${index}`}
                                         sx={{
-                                          bgcolor: "rgba(99, 102, 241, 0.08)",
-                                          color: "primary.main",
-                                          fontWeight: 500,
+                                          transition: "all 0.2s",
+                                          bgcolor: isExpanded ? alpha(theme.palette.primary.main, 0.05) : "inherit",
+                                          "&:hover": {
+                                            bgcolor: alpha(theme.palette.primary.main, 0.05),
+                                          },
                                         }}
-                                      />
-                                    </TableCell>
-                                    <TableCell>
-                                      <Typography variant="body2">{report.hour || "N/A"}</Typography>
-                                    </TableCell>
-                                    <TableCell>
-                                      <Chip
-                                        icon={
-                                          hasLesson ? (
-                                            <CheckCircleIcon fontSize="small" />
-                                          ) : (
-                                            <CancelIcon fontSize="small" />
-                                          )
-                                        }
-                                        label={hasLesson ? "Added" : "Missing"}
-                                        color={hasLesson ? "success" : "error"}
-                                        size="small"
-                                        sx={{
-                                          fontWeight: 500,
-                                          bgcolor: hasLesson
-                                            ? alpha(theme.palette.success.main, 0.1)
-                                            : alpha(theme.palette.error.main, 0.1),
-                                        }}
-                                      />
-                                    </TableCell>
-                                    <TableCell>
-                                      <Chip
-                                        icon={
-                                          hasHomework ? (
-                                            <CheckCircleIcon fontSize="small" />
-                                          ) : (
-                                            <CancelIcon fontSize="small" />
-                                          )
-                                        }
-                                        label={hasHomework ? "Added" : "Missing"}
-                                        color={hasHomework ? "success" : "error"}
-                                        size="small"
-                                        sx={{
-                                          fontWeight: 500,
-                                          bgcolor: hasHomework
-                                            ? alpha(theme.palette.success.main, 0.1)
-                                            : alpha(theme.palette.error.main, 0.1),
-                                        }}
-                                      />
-                                    </TableCell>
-                                    <TableCell>
-                                      <Typography variant="body2">{studentCount}</Typography>
-                                    </TableCell>
-                                    <TableCell>
-                                      <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-                                        {!isMobile && (
-                                          <>
-                                            <Tooltip title="View Details">
-                                              <IconButton
-                                                size="small"
-                                                sx={{
-                                                  color: "info.main",
-                                                  bgcolor: alpha(theme.palette.info.main, 0.1),
-                                                  mr: 1,
-                                                  "&:hover": {
-                                                    bgcolor: alpha(theme.palette.info.main, 0.2),
-                                                  },
-                                                }}
-                                                onClick={(e) => {
-                                                  e.stopPropagation()
-                                                  handleToggleExpand(report._id)
-                                                }}
-                                              >
-                                                <VisibilityIcon fontSize="small" />
-                                              </IconButton>
-                                            </Tooltip>
-                                            <Tooltip title="Edit Report">
-                                              <IconButton
-                                                size="small"
-                                                component={Link}
-                                                href={`/dashboard/super_admin/classes/report/list/${report._id}`}
-                                                sx={{
-                                                  color: "warning.main",
-                                                  bgcolor: alpha(theme.palette.warning.main, 0.1),
-                                                  mr: 1,
-                                                  "&:hover": {
-                                                    bgcolor: alpha(theme.palette.warning.main, 0.2),
-                                                  },
-                                                }}
-                                                onClick={(e) => e.stopPropagation()}
-                                              >
-                                                <EditIcon fontSize="small" />
-                                              </IconButton>
-                                            </Tooltip>
-                                          </>
-                                        )}
-                                        <Tooltip title="More Actions">
-                                          <IconButton
-                                            size="small"
-                                            onClick={(e) => {
-                                              e.stopPropagation()
-                                              handleMenuClick(e, report)
-                                            }}
-                                            sx={{
-                                              color: "text.secondary",
-                                              bgcolor: "rgba(0, 0, 0, 0.04)",
-                                              "&:hover": {
-                                                bgcolor: "rgba(0, 0, 0, 0.08)",
-                                              },
-                                            }}
-                                          >
-                                            <MoreVertIcon fontSize="small" />
-                                          </IconButton>
-                                        </Tooltip>
-                                      </Box>
-                                    </TableCell>
-                                  </TableRow>
-                                  {isExpanded && (
-                                    <TableRow>
-                                      <TableCell colSpan={8} sx={{ p: 0, borderBottom: 0 }}>
-                                        <Box sx={{ p: 2, bgcolor: alpha(theme.palette.primary.main, 0.02) }}>
-                                          <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                                            Student Details
+                                        onClick={() => handleToggleExpand(report._id)}
+                                      >
+                                        <TableCell>{report.date ? formatDate(report.date) : "N/A"}</TableCell>
+                                        <TableCell>{student?.studentClassRoll || "Not"}</TableCell>
+                                        <TableCell>{student?.name || "Note"}</TableCell>
+                                        <TableCell>
+                                          <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                                            {className}
                                           </Typography>
-                                          <TableContainer component={Paper} variant="outlined">
-                                            <Table size="small">
-                                              <TableHead>
-                                                <TableRow>
-                                                  <TableCell>Roll</TableCell>
-                                                  <TableCell>Student Name</TableCell>
-                                                  <TableCell>Lesson Evaluation</TableCell>
-                                                  <TableCell>Handwriting</TableCell>
-                                                  <TableCell>Attendance</TableCell>
-                                                  <TableCell>Parent Signature</TableCell>
-                                                  <TableCell>Comments</TableCell>
-                                                </TableRow>
-                                              </TableHead>
-                                              <TableBody>
-                                                {studentRows.map((student:any) => (
-                                                  <TableRow key={student.id}>
-                                                    <TableCell>{student.roll}</TableCell>
-                                                    <TableCell>{student.name}</TableCell>
-                                                    <TableCell>{student.lessonEvaluation}</TableCell>
-                                                    <TableCell>{student.handwriting}</TableCell>
-                                                    <TableCell>{student.attendance}</TableCell>
-                                                    <TableCell>{student.parentSignature}</TableCell>
-                                                    <TableCell>{student.comments}</TableCell>
-                                                  </TableRow>
-                                                ))}
-                                              </TableBody>
-                                            </Table>
-                                          </TableContainer>
-                                          {hasLesson && (
-                                            <Box sx={{ mt: 2 }}>
-                                              <Typography variant="subtitle1" fontWeight={600}>
-                                                Today's Lesson
-                                              </Typography>
-                                              <Typography variant="body2">
-                                                {report.todayLesson?.lessonContent || "No content available"}
-                                              </Typography>
-                                            </Box>
-                                          )}
-                                          {hasHomework && (
-                                            <Box sx={{ mt: 2 }}>
-                                              <Typography variant="subtitle1" fontWeight={600}>
-                                                Homework
-                                              </Typography>
-                                              <Typography variant="body2">
-                                                {report.homeTask?.content || "No content available"}
-                                              </Typography>
-                                            </Box>
-                                          )}
-                                        </Box>
-                                      </TableCell>
-                                    </TableRow>
-                                  )}
+                                        </TableCell>
+                                        <TableCell>
+                                          <Chip
+                                            label={subjectName}
+                                            size="small"
+                                            sx={{
+                                              bgcolor: "rgba(99, 102, 241, 0.08)",
+                                              color: "primary.main",
+                                              fontWeight: 500,
+                                            }}
+                                          />
+                                        </TableCell>
+                                        <TableCell>
+                                          <Typography variant="body2">{report.hour || "N/A"}</Typography>
+                                        </TableCell>
+                                        <TableCell>
+                                          <Chip
+                                            icon={
+                                              evaluation?.attendance?.toLowerCase() === "উপস্থিত" ? (
+                                                <CheckCircleIcon sx={{ color: "success.main" }} />
+                                              ) : (
+                                                <CancelIcon sx={{ color: "error.main" }} />
+                                              )
+                                            }
+                                            label={evaluation?.attendance || "Not Marked"}
+                                            color={evaluation?.attendance?.toLowerCase() === "উপস্থিত" ? "success" : "error"}
+                                            size="small"
+                                            sx={{
+                                              fontWeight: 500,
+                                              bgcolor:
+                                                evaluation?.attendance?.toLowerCase() === "উপস্থিত"
+                                                  ? alpha(theme.palette.success.main, 0.1)
+                                                  : alpha(theme.palette.error.main, 0.1),
+                                            }}
+
+                                          />
+
+
+                                        </TableCell>
+                                        <TableCell>
+                                          <Chip
+                                            icon={
+                                              evaluation?.handwriting ? (
+                                                <DrawIcon sx={{ color: "#00BFA6" }} />
+                                              ) : (
+                                                <BlockIcon sx={{ color: "#FF1744" }} />
+                                              )
+                                            }
+                                            label={evaluation?.handwriting || "Not Submitted"}
+                                            size="small"
+                                            sx={{
+                                              fontWeight: 500,
+                                              color: evaluation?.handwriting ? "#00BFA6" : "#FF1744",
+                                              bgcolor: evaluation?.handwriting ? "#E0F7FA" : "#FFEBEE",
+                                              border: `1px solid ${evaluation?.handwriting ? "#00BFA6" : "#FF1744"}`,
+                                            }}
+                                          />
+
+
+                                        </TableCell>
+
+                                        <TableCell>
+
+                                          <Chip
+                                            icon={
+                                              evaluation?.lessonEvaluation ? (
+                                                <CheckCircleIcon sx={{ color: "#651FFF" }} />
+                                              ) : (
+                                                <CancelIcon sx={{ color: "#FF1744" }} />
+                                              )
+                                            }
+                                            label={evaluation?.lessonEvaluation || "Not Done"}
+                                            size="small"
+                                            sx={{
+                                              fontWeight: 500,
+                                              color: evaluation?.lessonEvaluation ? "#651FFF" : "#FF1744",
+                                              bgcolor: evaluation?.lessonEvaluation ? "#EDE7F6" : "#FFEBEE",
+                                              border: `1px solid ${evaluation?.lessonEvaluation ? "#651FFF" : "#FF1744"}`,
+                                            }}
+                                          />
+
+                                        </TableCell>
+
+                                        <TableCell>
+
+                                          <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+                                            {!isMobile && (
+                                              <>
+                                                <Tooltip title="View Details">
+                                                  <IconButton
+                                                    size="small"
+                                                    sx={{
+                                                      color: "info.main",
+                                                      bgcolor: alpha(theme.palette.info.main, 0.1),
+                                                      mr: 1,
+                                                      "&:hover": {
+                                                        bgcolor: alpha(theme.palette.info.main, 0.2),
+                                                      },
+                                                    }}
+                                                    onClick={(e) => handleOpenDetailsModal(e, report)}
+                                                  >
+                                                    <VisibilityIcon fontSize="small" />
+                                                  </IconButton>
+                                                </Tooltip>
+                                                <Tooltip title="Edit Report">
+                                                  <IconButton
+                                                    size="small"
+                                                    component={Link}
+                                                    href={`/dashboard/super_admin/classes/report/list/${report._id}`}
+                                                    sx={{
+                                                      color: "warning.main",
+                                                      bgcolor: alpha(theme.palette.warning.main, 0.1),
+                                                      mr: 1,
+                                                      "&:hover": {
+                                                        bgcolor: alpha(theme.palette.warning.main, 0.2),
+                                                      },
+                                                    }}
+                                                    onClick={(e) => e.stopPropagation()}
+                                                  >
+                                                    <EditIcon fontSize="small" />
+                                                  </IconButton>
+                                                </Tooltip>
+                                              </>
+                                            )}
+                                            <Tooltip title="More Actions">
+                                              <IconButton
+                                                size="small"
+                                                onClick={(e) => {
+                                                  e.stopPropagation();
+                                                  handleMenuClick(e, report);
+                                                }}
+                                                sx={{
+                                                  color: "text.secondary",
+                                                  bgcolor: "rgba(0, 0, 0, 0.04)",
+                                                  "&:hover": {
+                                                    bgcolor: "rgba(0, 0, 0, 0.08)",
+                                                  },
+                                                }}
+                                              >
+                                                <MoreVertIcon fontSize="small" />
+                                              </IconButton>
+                                            </Tooltip>
+                                          </Box>
+                                        </TableCell>
+                                      </TableRow>
+                                    );
+                                  })}
                                 </React.Fragment>
-                              )
+                              );
                             })
                           ) : (
                             <TableRow>
@@ -913,6 +889,7 @@ export default function ClassReportList() {
                             </TableRow>
                           )}
                         </TableBody>
+
                       </Table>
                     </TableContainer>
                     <TablePagination
@@ -1008,6 +985,129 @@ export default function ClassReportList() {
           </Button>
           <Button onClick={handleDeleteConfirm} variant="contained" color="error" sx={{ ml: 2 }}>
             Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Details Modal */}
+      <Dialog
+        open={detailsModalOpen}
+        onClose={handleCloseDetailsModal}
+        maxWidth="lg"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            width: "100%",
+          },
+        }}
+      >
+        <DialogTitle sx={{ pb: 1 }}>
+          <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
+            Class Report Details
+          </Typography>
+        </DialogTitle>
+        <DialogContent>
+          {selectedReportDetails && (
+            <>
+              <Box sx={{ mb: 3, mt: 1 }}>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Typography variant="subtitle2" color="text.secondary">
+                      Class
+                    </Typography>
+                    <Typography variant="body1" fontWeight={500}>
+                      {selectedReportDetails.classes?.className || "N/A"}
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Typography variant="subtitle2" color="text.secondary">
+                      Subject
+                    </Typography>
+                    <Typography variant="body1" fontWeight={500}>
+                      {selectedReportDetails.subjects?.name || "N/A"}
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Typography variant="subtitle2" color="text.secondary">
+                      Date
+                    </Typography>
+                    <Typography variant="body1" fontWeight={500}>
+                      {selectedReportDetails.date ? formatDate(selectedReportDetails.date) : "N/A"}
+                    </Typography>
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Typography variant="subtitle2" color="text.secondary">
+                      Hour
+                    </Typography>
+                    <Typography variant="body1" fontWeight={500}>
+                      {selectedReportDetails.hour || "N/A"}
+                    </Typography>
+                  </Grid>
+                </Grid>
+              </Box>
+
+              <Divider sx={{ my: 2 }} />
+
+              <Typography variant="subtitle1" fontWeight={600} gutterBottom>
+                Student Details
+              </Typography>
+              <TableContainer component={Paper} variant="outlined">
+                <Table size="small">
+                  <TableHead>
+                    <TableRow>
+                      <TableCell>Roll</TableCell>
+                      <TableCell>Student Name</TableCell>
+                      <TableCell>Lesson Evaluation</TableCell>
+                      <TableCell>Handwriting</TableCell>
+                      <TableCell>Attendance</TableCell>
+                      <TableCell>Parent Signature</TableCell>
+                      <TableCell>Comments</TableCell>
+                    </TableRow>
+                  </TableHead>
+                  <TableBody>
+                    {getStudentRows(selectedReportDetails).map((student: any) => (
+                      <TableRow key={student.id}>
+                        <TableCell>{student.roll}</TableCell>
+                        <TableCell>{student.name}</TableCell>
+                        <TableCell>{student.lessonEvaluation}</TableCell>
+                        <TableCell>{student.handwriting}</TableCell>
+                        <TableCell>{student.attendance}</TableCell>
+                        <TableCell>{student.parentSignature}</TableCell>
+                        <TableCell>{student.comments}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+
+              {selectedReportDetails.todayLesson && (
+                <Box sx={{ mt: 3 }}>
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    Today's Lesson
+                  </Typography>
+                  <Typography variant="body2">
+                    {selectedReportDetails.todayLesson?.lessonContent || "No content available"}
+                  </Typography>
+                </Box>
+              )}
+
+              {selectedReportDetails.homeTask && (
+                <Box sx={{ mt: 3 }}>
+                  <Typography variant="subtitle1" fontWeight={600}>
+                    Homework
+                  </Typography>
+                  <Typography variant="body2">
+                    {selectedReportDetails.homeTask?.content || "No content available"}
+                  </Typography>
+                </Box>
+              )}
+            </>
+          )}
+        </DialogContent>
+        <DialogActions sx={{ px: 3, pb: 3 }}>
+          <Button onClick={handleCloseDetailsModal} variant="contained">
+            Close
           </Button>
         </DialogActions>
       </Dialog>

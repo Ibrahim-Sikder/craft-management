@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
 import type React from "react"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import {
     Box,
     Paper,
@@ -56,6 +57,9 @@ import {
     useGetSingleDailyClassReportQuery,
     useUpdateDailyClassReportMutation,
 } from "@/redux/api/dailyClassReportApi"
+import { useGetAllSubjectsQuery } from "@/redux/api/subjectApi"
+import { useGetAllClassesQuery } from "@/redux/api/classApi"
+import { getFromLocalStorage } from "@/utils/local.storage"
 
 type ReportRow = {
     id: number
@@ -81,7 +85,9 @@ export default function DailyClassReportForm({ id }: { id?: string }) {
         severity: "success" as "success" | "error" | "info" | "warning",
     })
     const [dataLoaded, setDataLoaded] = useState(false)
-
+    const [page, setPage] = useState(0)
+    const [rowsPerPage, setRowsPerPage] = useState(10)
+    const [searchTerm, setSearchTerm] = useState("")
     // Initial rows with empty data
     const [rows, setRows] = useState<ReportRow[]>([
         {
@@ -97,6 +103,8 @@ export default function DailyClassReportForm({ id }: { id?: string }) {
         },
     ])
 
+    const storedUser = JSON.parse(getFromLocalStorage("user-info") || "{}")
+
     // API hooks
     const [createDailyClassReport] = useCreateDailyClassReportMutation()
     const [updateDailyClassReport] = useUpdateDailyClassReportMutation()
@@ -105,7 +113,18 @@ export default function DailyClassReportForm({ id }: { id?: string }) {
         { skip: !id },
     )
 
-    // Load data when editing an existing report
+    const { data: subjectData } = useGetAllSubjectsQuery({
+        limit: rowsPerPage,
+        page: page + 1,
+        searchTerm: searchTerm,
+    })
+    const { data: classData } = useGetAllClassesQuery({
+        limit: rowsPerPage,
+        page: page + 1,
+        searchTerm: searchTerm,
+    })
+
+    console.log(storedUser)
     useEffect(() => {
         if (id && singleDailyReport && singleDailyReport.success && !dataLoaded) {
             const reportData = singleDailyReport.data
@@ -526,7 +545,7 @@ export default function DailyClassReportForm({ id }: { id?: string }) {
                                                 </Typography>
                                                 <TextField
                                                     name="teacherName"
-                                                    value={teacherName}
+                                                    value={storedUser?.role === 'teacher' ? storedUser?.name : ''}
                                                     onChange={handleInputChange}
                                                     variant="outlined"
                                                     size="small"
@@ -749,14 +768,12 @@ export default function DailyClassReportForm({ id }: { id?: string }) {
                                                                     <MenuItem value="">
                                                                         <em>বিষয় নির্বাচন করুন</em>
                                                                     </MenuItem>
-                                                                    <MenuItem value="গণিত">গণিত</MenuItem>
-                                                                    <MenuItem value="বাংলা">বাংলা</MenuItem>
-                                                                    <MenuItem value="ইংরেজি">ইংরেজি</MenuItem>
-                                                                    <MenuItem value="বিজ্ঞান">বিজ্ঞান</MenuItem>
-                                                                    <MenuItem value="সমাজ বিজ্ঞান">সমাজ বিজ্ঞান</MenuItem>
-                                                                    <MenuItem value="ইসলাম শিক্ষা">ইসলাম শিক্ষা</MenuItem>
-                                                                    <MenuItem value="হিন্দু ধর্ম">হিন্দু ধর্ম</MenuItem>
-                                                                    <MenuItem value="তথ্য ও যোগাযোগ প্রযুক্তি">তথ্য ও যোগাযোগ প্রযুক্তি</MenuItem>
+                                                                    {
+                                                                        subjectData?.data?.subjects.map((sub: any, i: number) => (
+                                                                            <MenuItem key={i} value={sub.name}>{sub.name}</MenuItem>
+                                                                        ))
+                                                                    }
+
                                                                 </Select>
                                                             </FormControl>
                                                         </TableCell>
@@ -783,16 +800,11 @@ export default function DailyClassReportForm({ id }: { id?: string }) {
                                                                     <MenuItem value="">
                                                                         <em>শ্রেণি নির্বাচন করুন</em>
                                                                     </MenuItem>
-                                                                    <MenuItem value="১">১</MenuItem>
-                                                                    <MenuItem value="২">২</MenuItem>
-                                                                    <MenuItem value="৩">৩</MenuItem>
-                                                                    <MenuItem value="৪">৪</MenuItem>
-                                                                    <MenuItem value="৫">৫</MenuItem>
-                                                                    <MenuItem value="৬">৬</MenuItem>
-                                                                    <MenuItem value="৭">৭</MenuItem>
-                                                                    <MenuItem value="৮">৮</MenuItem>
-                                                                    <MenuItem value="��">৯</MenuItem>
-                                                                    <MenuItem value="১০">১০</MenuItem>
+                                                                    {
+                                                                        classData?.data?.classes?.map((sub: any, i: number) => (
+                                                                            <MenuItem key={i} value={sub.className}>{sub.className}</MenuItem>
+                                                                        ))
+                                                                    }
                                                                 </Select>
                                                             </FormControl>
                                                         </TableCell>

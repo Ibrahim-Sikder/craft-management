@@ -70,6 +70,7 @@ import {
 import { useGetAllStudentsQuery } from "@/redux/api/studentApi"
 import { useGetAllTeachersQuery } from "@/redux/api/teacherApi"
 import { useCreateMealReportMutation, useGetSingleMealReportQuery } from "@/redux/api/mealReport"
+import { useRouter } from "next/navigation"
 
 // Define enum to match the validation schema
 enum MealType {
@@ -128,7 +129,7 @@ interface MealCountStats {
 
 
 export default function MealReportForm() {
-  
+
     const [date, setDate] = useState<Date | null>(new Date())
     const [selectedMealTypes, setSelectedMealTypes] = useState<string[]>(mealTypes)
     const [selectedPersons, setSelectedPersons] = useState<Record<string, boolean>>({})
@@ -145,7 +146,7 @@ export default function MealReportForm() {
     const [debugInfo, setDebugInfo] = useState<string | null>(null)
     const [mealCountStats, setMealCountStats] = useState<MealCountStats>({ oneMeal: 0, twoMeals: 0, threeMeals: 0 })
     const [showMealCountTable, setShowMealCountTable] = useState(false)
-
+    const router = useRouter()
     // Dialog state
     const [dialogOpen, setDialogOpen] = useState(false)
     const [currentPerson, setCurrentPerson] = useState<string | null>(null)
@@ -478,6 +479,7 @@ export default function MealReportForm() {
             // Reset form after successful save
             setTimeout(() => {
                 setSuccess(false)
+                router.push("/dashboard/super_admin/daily-meal-report/")
             }, 3000)
         } catch (err: any) {
             console.error("Error creating meal report:", err)
