@@ -13,16 +13,9 @@ import {
   Sms,
   SupervisorAccount,
   FileCopy,
-  // Business,
-  // MenuBook,
   HowToReg,
-  // Groups,
   PhotoLibrary,
   Settings,
-  // Help,
-  // CalendarViewDay,
-  // Favorite,
-  // Add these new imports
   AccessTime,
   Class,
   Group,
@@ -54,15 +47,10 @@ import {
   RequestPage,
   Paid,
   FactCheck,
-  // AccountBox,
   HomeWork,
-  // MeetingRoom,
-  // Timer,
-  // EventSeat,
   Download,
   Grade,
   Category as ExamCategory,
-  // Layers,
   Event,
   TableRows,
   Message,
@@ -70,37 +58,17 @@ import {
   Email,
   Report,
   People,
-  // FolderSpecial,
   Info,
-  // ContactPhone,
-  // EmojiTransportation,
-  // Group as GoverningBody,
-  // Work,
-  // Announcement,
-  // Celebration,
-  // PhotoAlbum,
-  // Person as Author,
-  // Category as BlogCategory,
-  // Article,
-  // Menu,
-  // Pages,
-  // School as Faculty,
-  // Domain,
-  // VideoLibrary,
+
   AdminPanelSettings,
   Tune,
-  // LiveHelp,
-  // VideoSettings,
   Addchart,
   RestaurantMenu,
   ListAlt,
   AddCircle,
   AssessmentOutlined,
   ClassOutlined,
-  // NoteAdd,
   PostAdd,
-  // StickyNote2,
-  // Summarize,
   Storage,
   Folder,
   Image as Photos,
@@ -160,7 +128,7 @@ export const navigationItems: NavigationItem[] = [
             <ReceiptLong />
           </ColorfulIcon>
         ),
-        roles: ["super_admin", "admin",'teacher'],
+        roles: ["super_admin", "admin", 'teacher'],
       },
       {
         path: "/dashboard/super_admin/teacher/daily-report/add",
@@ -170,7 +138,7 @@ export const navigationItems: NavigationItem[] = [
             <ReceiptLong />
           </ColorfulIcon>
         ),
-        roles: ["super_admin", "admin",'teacher'],
+        roles: ["super_admin", "admin", 'teacher'],
       },
     ],
   },
@@ -191,7 +159,7 @@ export const navigationItems: NavigationItem[] = [
             <People />
           </ColorfulIcon>
         ),
-        roles: ["super_admin", "admin", 'teacher', 'student'],
+        roles: ["super_admin", "admin",],
       },
       {
         path: "/dashboard/super_admin/staff/list",
@@ -324,7 +292,7 @@ export const navigationItems: NavigationItem[] = [
         <Book />
       </ColorfulIcon>
     ),
-    roles: ["super_admin", "admin"],
+    roles: ["super_admin", "admin", 'teacher'],
   },
   {
     title: "Student",
@@ -775,11 +743,11 @@ export const navigationItems: NavigationItem[] = [
             <HomeWork />
           </ColorfulIcon>
         ),
-        roles: ["super_admin", "admin", "teacher"],
+        roles: ["super_admin", "admin", "teacher",'student'],
       },
     ],
   },
-  
+
   {
     title: "Attendance",
     icon: (
@@ -839,7 +807,7 @@ export const navigationItems: NavigationItem[] = [
             <Grade />
           </ColorfulIcon>
         ),
-        roles: ["super_admin", "admin"],
+        roles: ["super_admin", "admin",'teacher'],
       },
       {
         path: "/dashboard/super_admin/exam/exam-categories",
@@ -851,7 +819,7 @@ export const navigationItems: NavigationItem[] = [
         ),
         roles: ["super_admin", "admin"],
       },
-    
+
       {
         path: "/dashboard/super_admin/stock/allimg",
         title: "Exams",
@@ -976,7 +944,7 @@ export const navigationItems: NavigationItem[] = [
       },
       {
         path: "/dashboard/super_admin/stock/allimg",
-        title: "SMS Balance ",
+        title: "SMS Balance",
         icon: (
           <ColorfulIcon color="#4285F4">
             <Balance />
@@ -1058,7 +1026,7 @@ export const navigationItems: NavigationItem[] = [
       },
     ],
   },
- 
+
   {
     title: "Admission",
     icon: (
@@ -1086,112 +1054,11 @@ export const navigationItems: NavigationItem[] = [
             <Description />
           </ColorfulIcon>
         ),
-        roles: ["super_admin", "admin"],
+        roles: ["super_admin", "admin",'teacher'],
       },
     ],
   },
-  // {
-  //   title: "Faculty",
-  //   icon: (
-  //     <ColorfulIcon color="#0F9D58">
-  //       <Groups />
-  //     </ColorfulIcon>
-  //   ),
-  //   roles: ["admin", "super_admin"],
-  //   children: [
-  //     {
-  //       path: "/dashboard/super_admin/stock/allimg",
-  //       title: "New Faculty",
-  //       icon: (
-  //         <ColorfulIcon color="#0F9D58">
-  //           <Faculty />
-  //         </ColorfulIcon>
-  //       ),
-  //       roles: ["super_admin", "admin"],
-  //     },
-  //     {
-  //       path: "/dashboard/super_admin/stock/allimg",
-  //       title: "Faculty List",
-  //       icon: (
-  //         <ColorfulIcon color="#0F9D58">
-  //           <FormatListNumbered />
-  //         </ColorfulIcon>
-  //       ),
-  //       roles: ["super_admin", "admin"],
-  //     },
-  //     {
-  //       path: "/dashboard/super_admin/stock/allimg",
-  //       title: "New Department",
-  //       icon: (
-  //         <ColorfulIcon color="#0F9D58">
-  //           <Domain />
-  //         </ColorfulIcon>
-  //       ),
-  //       roles: ["super_admin", "admin"],
-  //     },
-  //     {
-  //       path: "/dashboard/super_admin/stock/allimg",
-  //       title: "Department List",
-  //       icon: (
-  //         <ColorfulIcon color="#0F9D58">
-  //           <FormatListNumbered />
-  //         </ColorfulIcon>
-  //       ),
-  //       roles: ["super_admin", "admin"],
-  //     },
-  //   ],
-  // },
-  // {
-  //   title: "Institute Media ",
-  //   icon: (
-  //     <ColorfulIcon color="#F4B400">
-  //       <PhotoLibrary />
-  //     </ColorfulIcon>
-  //   ),
-  //   roles: ["admin", "super_admin"],
-  //   children: [
-  //     {
-  //       path: "/dashboard/super_admin/stock/allimg",
-  //       title: "New Media ",
-  //       icon: (
-  //         <ColorfulIcon color="#F4B400">
-  //           <PhotoLibrary />
-  //         </ColorfulIcon>
-  //       ),
-  //       roles: ["super_admin", "admin"],
-  //     },
-  //     {
-  //       path: "/dashboard/super_admin/stock/allimg",
-  //       title: "Media List",
-  //       icon: (
-  //         <ColorfulIcon color="#F4B400">
-  //           <FormatListNumbered />
-  //         </ColorfulIcon>
-  //       ),
-  //       roles: ["super_admin", "admin"],
-  //     },
-  //     {
-  //       path: "/dashboard/super_admin/stock/allimg",
-  //       title: "New Video",
-  //       icon: (
-  //         <ColorfulIcon color="#F4B400">
-  //           <VideoLibrary />
-  //         </ColorfulIcon>
-  //       ),
-  //       roles: ["super_admin", "admin"],
-  //     },
-  //     {
-  //       path: "/dashboard/super_admin/stock/allimg",
-  //       title: "Video List",
-  //       icon: (
-  //         <ColorfulIcon color="#F4B400">
-  //           <FormatListNumbered />
-  //         </ColorfulIcon>
-  //       ),
-  //       roles: ["super_admin", "admin"],
-  //     },
-  //   ],
-  // },
+  
   {
     title: "Administration",
     icon: (
@@ -1254,7 +1121,7 @@ export const navigationItems: NavigationItem[] = [
       },
     ],
   },
- 
+
   {
     title: "Gallery",
     icon: (
@@ -1286,7 +1153,7 @@ export const navigationItems: NavigationItem[] = [
       },
     ],
   },
- 
+
   {
     title: "User Management",
     path: "/dashboard/super_admin/user-management",
