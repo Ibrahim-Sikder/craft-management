@@ -78,11 +78,9 @@ type StudentEvaluation = {
   comments: string
 }
 
-interface ClassReportProps {
-  id: string
-}
 
-export default function ClassReportForm({ id }: ClassReportProps) {
+export default function ClassReportForm({ id }: any) {
+  console.log(id)
   const router = useRouter()
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(10)
