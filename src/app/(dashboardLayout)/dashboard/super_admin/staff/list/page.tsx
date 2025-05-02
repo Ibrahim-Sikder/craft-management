@@ -1,5 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client"
+
+import type React from "react"
 
 import { useState, useEffect } from "react"
 import {
@@ -29,6 +32,7 @@ import {
   useTheme,
   alpha,
   CircularProgress,
+  Pagination,
 } from "@mui/material"
 import {
   Search as SearchIcon,
@@ -56,15 +60,18 @@ import {
   CalendarToday as CalendarIcon,
   Person as PersonIcon,
   SupervisorAccount as SupervisorIcon,
+  Edit as EditIcon,
+  Delete as DeleteIcon,
 } from "@mui/icons-material"
 import { styled } from "@mui/material/styles"
 import { motion } from "framer-motion"
+import { useDeleteStaffMutation, useGetAllStaffQuery } from "@/redux/api/staffApi"
 
 // Define types
 type StaffStatus = "active" | "on leave" | "inactive"
 
 interface StaffMember {
-  id: number
+  id: number | string
   name: string
   avatar: string
   department: string
@@ -84,6 +91,7 @@ interface StaffMember {
   contractType: string
   nextReview: string
   birthdate: string
+  staffId?: string
 }
 
 interface DepartmentStats {
@@ -239,7 +247,11 @@ const StatsCard = styled(Paper)(({ theme }) => ({
   height: "100%",
 }))
 
-const CircularProgressWithLabel = ({ value, size = 60, thickness = 5 }: { value: number; size?: number; thickness?: number }) => {
+const CircularProgressWithLabel = ({
+  value,
+  size = 60,
+  thickness = 5,
+}: { value: number; size?: number; thickness?: number }) => {
   const theme = useTheme()
   const color =
     value > 80 ? theme.palette.success.main : value > 50 ? theme.palette.warning.main : theme.palette.error.main
@@ -288,72 +300,9 @@ const departmentColors: Record<string, string> = {
   Security: "#c471ed",
   "Food Services": "#12c2e9",
   "Health Services": "#ff758c",
-}
-
-const generateStaff = (count: number): StaffMember[] => {
-  const departments = Object.keys(departmentColors)
-  const statuses: StaffStatus[] = ["active", "on leave", "inactive"]
-  const roles = [
-    "Administrative Assistant",
-    "Finance Officer",
-    "HR Specialist",
-    "IT Technician",
-    "Maintenance Worker",
-    "Security Officer",
-    "Cafeteria Staff",
-    "School Nurse",
-    "Librarian",
-    "Counselor",
-    "Office Manager",
-    "Accountant",
-    "Receptionist",
-    "Custodian",
-    "Bus Driver",
-  ]
-
-  return Array.from({ length: count }, (_, i) => ({
-    id: i + 1,
-    name: `${["John Smith", "Emma Wilson", "Michael Brown", "Sarah Davis", "Robert Johnson", "Jennifer Lee", "David Miller", "Lisa Anderson", "James Taylor", "Patricia Moore", "William Garcia", "Elizabeth Martinez", "Thomas Robinson", "Mary Clark", "Joseph Rodriguez"][i % 15]}`,
-    avatar: `/placeholder.svg?height=200&width=200&text=${i + 1}`,
-    department: departments[i % departments.length],
-    role: roles[i % roles.length],
-    status: statuses[Math.floor(Math.random() * 3)],
-    email: `staff${i + 1}@school.edu`,
-    phone: `(${Math.floor(Math.random() * 900) + 100}) ${Math.floor(Math.random() * 900) + 100}-${Math.floor(Math.random() * 9000) + 1000}`,
-    location: ["Main Building", "East Wing", "West Wing", "Administration Block", "Cafeteria", "Library", "Gymnasium"][
-      Math.floor(Math.random() * 7)
-    ],
-    experience: Math.floor(Math.random() * 15) + 1,
-    rating: (Math.random() * 2 + 3).toFixed(1),
-    performance: Math.floor(Math.random() * 100),
-    attendance: Math.floor(Math.random() * 20) + 80,
-    joinDate: new Date(Date.now() - Math.floor(Math.random() * 5 * 365 * 24 * 60 * 60 * 1000)).toLocaleDateString(),
-    skills: Array.from(
-      { length: Math.floor(Math.random() * 3) + 1 },
-      (_, j) =>
-        [
-          "Communication",
-          "Organization",
-          "Problem Solving",
-          "Technical Support",
-          "Customer Service",
-          "First Aid",
-          "Accounting",
-          "Maintenance",
-          "Security",
-          "Food Preparation",
-          "Administration",
-        ][Math.floor(Math.random() * 11)],
-    ),
-    certifications:
-      Math.random() > 0.5 ? ["First Aid", "CPR", "Food Safety", "Security"][Math.floor(Math.random() * 4)] : null,
-    supervisor: ["Principal", "Vice Principal", "Head of Department", "Office Manager"][Math.floor(Math.random() * 4)],
-    contractType: ["Full-time", "Part-time", "Contract", "Temporary"][Math.floor(Math.random() * 4)],
-    nextReview: new Date(Date.now() + Math.floor(Math.random() * 180 * 24 * 60 * 60 * 1000)).toLocaleDateString(),
-    birthdate: new Date(
-      Date.now() - Math.floor((Math.random() * 30 + 25) * 365 * 24 * 60 * 60 * 1000),
-    ).toLocaleDateString(),
-  }))
+  Science: "#00b09b", // Added Science department
+  Arts: "#6a11cb", // Added Arts department
+  Commerce: "#fc4a1a", // Added Commerce department
 }
 
 export default function StaffDashboard() {
@@ -367,14 +316,54 @@ export default function StaffDashboard() {
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc")
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [filterDepartment, setFilterDepartment] = useState("all")
+  // Update the state variables to handle pagination and search
+  const [page, setPage] = useState(0)
+  const [rowsPerPage, setRowsPerPage] = useState(10)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [deleteStaff] = useDeleteStaffMutation()
+  const {
+    data: staffData,
+    isLoading,
+    refetch,
+  } = useGetAllStaffQuery({
+    limit: rowsPerPage,
+    page: page + 1,
+    searchTerm: searchTerm,
+  })
 
+
+  // Replace the useEffect that sets mock data with this
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setStaff(generateStaff(24))
+    if (staffData?.data?.staffs) {
+      console.log("Setting staff from API data:", staffData.data.staffs)
+      setStaff(
+        staffData.data.staffs.map((staff: any) => ({
+          id: staff._id,
+          name: staff.name || "Unknown",
+          avatar: staff.staffPhoto || `/placeholder.svg?height=200&width=200&text=${staff.name?.charAt(0) || "U"}`,
+          department: staff.department || "Not Assigned",
+          role: staff.designation || "Staff",
+          status: staff.status === "Active" ? "active" : staff.status === "On Leave" ? "on leave" : "inactive",
+          email: staff.email || "",
+          phone: staff.phone || "",
+          location: staff.currentAddress?.district || "Not Available",
+          experience: staff.workExperience?.length || 0,
+          rating: "4.5",
+          performance: 85,
+          attendance: 90,
+          joinDate: staff.joiningDate ? new Date(staff.joiningDate).toLocaleDateString() : "Not Available",
+          skills: staff.certifications?.map((cert: any) => cert.certificateName) || [],
+          certifications: staff.certifications?.length > 0 ? staff.certifications[0].certificateName : null,
+          supervisor: "Principal",
+          contractType: staff.staffType || "Full-time",
+          nextReview: new Date().toLocaleDateString(),
+          birthdate: staff.dateOfBirth ? new Date(staff.dateOfBirth).toLocaleDateString() : "Not Available",
+          staffId: staff.staffId,
+        })),
+      )
       setLoading(false)
-    }, 1000)
-  }, [])
+    }
+  }, [staffData])
 
   const handleSortClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget)
@@ -427,7 +416,7 @@ export default function StaffDashboard() {
       } else if (sortBy === "experience") {
         comparison = a.experience - b.experience
       } else if (sortBy === "rating") {
-        comparison = parseFloat(a.rating) - parseFloat(b.rating)
+        comparison = Number.parseFloat(a.rating) - Number.parseFloat(b.rating)
       } else if (sortBy === "performance") {
         comparison = a.performance - b.performance
       }
@@ -435,12 +424,18 @@ export default function StaffDashboard() {
       return sortDirection === "asc" ? comparison : -comparison
     })
 
+
+
   const handleRefresh = () => {
     setLoading(true)
-    setTimeout(() => {
-      setStaff(generateStaff(24))
-      setLoading(false)
-    }, 1000)
+    refetch()
+      .then(() => {
+        setLoading(false)
+      })
+      .catch((error) => {
+        console.error("Error refreshing data:", error)
+        setLoading(false)
+      })
   }
 
   // Calculate department statistics
@@ -694,11 +689,15 @@ export default function StaffDashboard() {
             >
               <Grid container spacing={2} alignItems="center">
                 <Grid item xs={12} md={6}>
+                  {/* Replace the existing search field onChange handler */}
                   <SearchField
                     fullWidth
                     placeholder="Search staff by name, role, email, or department..."
                     value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value)
+                      setSearchTerm(e.target.value)
+                    }}
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
@@ -862,7 +861,7 @@ export default function StaffDashboard() {
             </Box>
           </Grid>
 
-          {loading ? (
+          {isLoading || loading ? (
             <Grid item xs={12}>
               <Box sx={{ p: 4, textAlign: "center" }}>
                 <LinearProgress sx={{ mb: 2, height: 6, borderRadius: 3 }} />
@@ -898,7 +897,7 @@ export default function StaffDashboard() {
                             component="div"
                             sx={{
                               height: 100,
-                              backgroundColor: departmentColors[person.department],
+                              backgroundColor: departmentColors[person.department] || "#00b09b",
                               position: "relative",
                             }}
                           />
@@ -933,17 +932,12 @@ export default function StaffDashboard() {
                               {person.role}
                             </Typography>
 
-                            {/* <DepartmentChip
-                              label={person.department}
-                              size="small"
-                              color={departmentColors[person.department]}
-                            /> */}
                             <DepartmentChip
                               label={person.department}
                               size="small"
                               sx={{
-                                backgroundColor: alpha(departmentColors[person.department], 0.1),
-                                color: departmentColors[person.department],
+                                backgroundColor: alpha(departmentColors[person.department] || "#00b09b", 0.1),
+                                color: departmentColors[person.department] || "#00b09b",
                               }}
                             />
                           </Box>
@@ -1053,10 +1047,11 @@ export default function StaffDashboard() {
               >
                 <Box sx={{ width: "100%", overflow: "auto" }}>
                   <Box sx={{ minWidth: 1000 }}>
+                    {/* In the list view section, replace the last column (Status) with an Actions column */}
                     <Box
                       sx={{
                         display: "grid",
-                        gridTemplateColumns: "50px 250px 150px 150px 150px 100px 100px 100px",
+                        gridTemplateColumns: "50px 250px 150px 150px 150px 100px 100px 150px",
                         bgcolor: alpha(theme.palette.primary.main, 0.05),
                         p: 2,
                       }}
@@ -1083,7 +1078,7 @@ export default function StaffDashboard() {
                         Performance
                       </Typography>
                       <Typography variant="subtitle2" fontWeight={600}>
-                        Status
+                        Actions
                       </Typography>
                     </Box>
                     <Divider />
@@ -1094,17 +1089,19 @@ export default function StaffDashboard() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3, delay: index * 0.03 }}
                       >
+                        {/* Then update the row to include action buttons */}
                         <Box
                           sx={{
                             display: "grid",
-                            gridTemplateColumns: "50px 250px 150px 150px 150px 100px 100px 100px",
+                            gridTemplateColumns: "50px 250px 150px 150px 150px 100px 100px 150px",
                             p: 2,
                             alignItems: "center",
                             "&:hover": { bgcolor: alpha(theme.palette.primary.main, 0.02) },
                             borderBottom: `1px solid ${theme.palette.divider}`,
                           }}
                         >
-                          <Typography variant="body2">{person.id}</Typography>
+                          {/* Keep all the existing columns */}
+                          <Typography variant="body2">{person.staffId || index + 1}</Typography>
                           <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
                             {person.status === "active" ? (
                               <StyledBadge
@@ -1130,16 +1127,10 @@ export default function StaffDashboard() {
                             label={person.department}
                             size="small"
                             sx={{
-                              backgroundColor: alpha(departmentColors[person.department], 0.1),
-                              color: departmentColors[person.department],
+                              backgroundColor: alpha(departmentColors[person.department] || "#00b09b", 0.1),
+                              color: departmentColors[person.department] || "#00b09b",
                             }}
                           />
-
-                          {/* <DepartmentChip
-                            label={person.department}
-                            size="small"
-                            color={departmentColors[person.department]}
-                          /> */}
                           <Typography variant="body2">{person.role}</Typography>
                           <Box>
                             <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
@@ -1166,13 +1157,73 @@ export default function StaffDashboard() {
                               {person.performance}%
                             </Typography>
                           </Box>
-                          <StatusChip label={person.status} size="small" status={person.status} />
+
+                          {/* Replace the StatusChip with this Actions column */}
+                          <Box sx={{ display: "flex", gap: 1 }}>
+                            <Tooltip title="View Profile">
+                              <IconButton
+                                size="small"
+                                color="primary"
+                                onClick={() => {
+                                  window.location.href = `/dashboard/super_admin/staff/profile?id=${person.id}`
+                                }}
+                              >
+                                <PersonIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Edit">
+                              <IconButton
+                                size="small"
+                                color="info"
+                                onClick={() => {
+                                  window.location.href = `/dashboard/super_admin/staff/update/${person.id}`
+                                }}
+                              >
+                                <EditIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                            <Tooltip title="Delete">
+                              <IconButton
+                                size="small"
+                                color="error"
+                                onClick={async () => {
+                                  if (window.confirm("Are you sure you want to delete this staff member?")) {
+                                    try {
+                                      setLoading(true)
+                                      await deleteStaff(person.id).unwrap()
+                                      await refetch()
+                                      setLoading(false)
+                                    } catch (error) {
+                                      console.error("Failed to delete staff", error)
+                                      setLoading(false)
+                                    }
+                                  }
+                                }}
+                              >
+                                <DeleteIcon fontSize="small" />
+                              </IconButton>
+                            </Tooltip>
+                            <StatusChip label={person.status} size="small" status={person.status} />
+                          </Box>
                         </Box>
                       </motion.div>
                     ))}
                   </Box>
                 </Box>
               </Paper>
+              {/* Add this after the list view Paper component */}
+              <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
+                <Pagination
+                  count={staffData?.data?.meta?.totalPage || 1}
+                  page={page + 1}
+                  onChange={(event, newPage) => {
+                    setPage(newPage - 1)
+                    setLoading(true)
+                  }}
+                  color="primary"
+                  shape="rounded"
+                />
+              </Box>
             </Grid>
           ) : (
             <Grid item xs={12}>
@@ -1260,11 +1311,10 @@ export default function StaffDashboard() {
                                     label={person.department}
                                     size="small"
                                     sx={{
-                                      backgroundColor: alpha(departmentColors[person.department], 0.1),
-                                      color: departmentColors[person.department],
+                                      backgroundColor: alpha(departmentColors[person.department] || "#00b09b", 0.1),
+                                      color: departmentColors[person.department] || "#00b09b",
                                     }}
                                   />
-
                                 </Box>
                                 <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mb: 1.5 }}>
                                   {person.skills.map((skill) => (
