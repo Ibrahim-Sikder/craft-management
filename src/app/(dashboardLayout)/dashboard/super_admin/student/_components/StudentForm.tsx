@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react/no-unescaped-entities */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
 import type React from "react"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import {
   Box,
   Button,
@@ -61,6 +62,10 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import FileUploadWithIcon from "@/components/Forms/Upload"
 import { studentSchema } from "@/schema"
 import { FieldValues } from "react-hook-form"
+import { useGetAllClassesQuery } from "@/redux/api/classApi"
+import { useGetAllSectionsQuery } from "@/redux/api/sectionApi"
+import { useGetAllSessionsQuery } from "@/redux/api/sessionApi"
+import CraftIntAutoCompleteWithIcon from "@/components/Forms/AutocompleteWithIcon"
 
 interface StudentFormProps {
   id?: string
@@ -77,7 +82,7 @@ const StudentForm = ({ id }: StudentFormProps) => {
     },
   )
   const formRef = useRef<any>(null)
-
+  console.log('single student', data)
   const router = useRouter()
   const [activeStep, setActiveStep] = useState(0)
   interface FormData {
@@ -91,7 +96,7 @@ const StudentForm = ({ id }: StudentFormProps) => {
     sendAdmissionSMS?: boolean
     sendAttendanceSMS?: boolean
     studentPhoto?: string | File
- 
+
   }
 
   const [formData, setFormData] = useState<FormData>({})
@@ -140,11 +145,11 @@ const StudentForm = ({ id }: StudentFormProps) => {
         presentThana: studentData.presentThana || "",
 
         // Academic Information
-        className: studentData.className || "",
+        className: studentData.className || [],
         studentClassRoll: studentData.studentClassRoll || "",
         batch: studentData.batch || "",
-        section: studentData.section || "",
-        activeSession: studentData.activeSession || "",
+        section: studentData.section || [],
+        activeSession: studentData.activeSession || [],
         status: studentData.status || "",
         studentType: studentData.studentType || "",
         additionalNote: studentData.additionalNote || "",
@@ -177,6 +182,49 @@ const StudentForm = ({ id }: StudentFormProps) => {
     message: "",
     severity: "success" as "success" | "error",
   })
+  const [page, setPage] = useState(0)
+  const [rowsPerPage, setRowsPerPage] = useState(10)
+  const [searchTerm, setSearchTerm] = useState("")
+
+  const { data: classData } = useGetAllClassesQuery({
+    limit: rowsPerPage,
+    page: page + 1,
+    searchTerm: searchTerm,
+  })
+  const { data: sectionData } = useGetAllSectionsQuery({
+    limit: rowsPerPage,
+    page: page + 1,
+    searchTerm: searchTerm,
+  })
+  const { data: sessionData } = useGetAllSessionsQuery({
+    limit: rowsPerPage,
+    page: page + 1,
+    searchTerm: searchTerm,
+  })
+  const classOption = useMemo(() => {
+    if (!classData?.data?.classes) return []
+    return classData?.data?.classes.map((clg: any) => ({
+      label: clg.className,
+      value: clg._id,
+    }))
+  }, [classData])
+  const secionOption = useMemo(() => {
+    if (!sectionData?.data?.sections) return []
+    return sectionData?.data?.sections.map((sec: any) => ({
+      label: sec.name,
+      value: sec._id,
+    }))
+  }, [sectionData])
+
+  const sessionOption = useMemo(() => {
+    if (!sessionData?.data?.sessions) return []
+    return sessionData?.data?.sessions.map((sec: any) => ({
+      label: sec.sessionName,
+      value: sec._id,
+    }))
+  }, [sessionData])
+
+
 
   const [success, setSuccess] = useState(false)
 
@@ -207,6 +255,41 @@ const StudentForm = ({ id }: StudentFormProps) => {
   }
 
   const handleSubmit = async (data: FieldValues) => {
+    console.log('reaw data', data)
+
+    // const classArray = Array.isArray(data.classes)
+    //   ? data.classes
+    //     .map((item: any) => {
+    //       if (item && typeof item === "object" && "value" in item) {
+    //         return item.value
+    //       }
+    //       return null
+    //     })
+    //     .filter(Boolean)
+    //   : []
+    // const sessionArray = Array.isArray(data.activeSession)
+    //   ? data.activeSession
+    //     .map((item: any) => {
+    //       if (item && typeof item === "object" && "value" in item) {
+    //         return item.value
+    //       }
+    //       return null
+    //     })
+    //     .filter(Boolean)
+    //   : []
+    // const sectionArray = Array.isArray(data.section)
+    //   ? data.section
+    //     .map((item: any) => {
+    //       if (item && typeof item === "object" && "value" in item) {
+    //         return item.value
+    //       }
+    //       return null
+    //     })
+    //     .filter(Boolean)
+    //   : []
+    const classArray = data.className?.map((item: any) => item.label) || [];
+    const sectionArray = data.section?.map((item: any) => item.label) || [];
+    const sessionArray = data.activeSession?.map((item: any) => item.label) || [];
 
     const submissionData = {
       ...data,
@@ -224,6 +307,9 @@ const StudentForm = ({ id }: StudentFormProps) => {
       transportFee: Number(data.transportFee || 0),
       boardingFee: Number(data.boardingFee || 0),
       studentPhoto: data.studentPhoto,
+      className: classArray,
+      section: sectionArray,
+      activeSession: sessionArray,
     }
     console.log('submission data', submissionData)
     try {
@@ -648,13 +734,14 @@ const StudentForm = ({ id }: StudentFormProps) => {
       content: (
         <Grid container spacing={3}>
           <Grid item xs={12} md={6}>
-            <CraftSelectWithIcon
+            <CraftIntAutoCompleteWithIcon
               name="className"
-              size="medium"
               label="Class"
               placeholder="Select Class"
-              items={classes}
-              adornment={<Class color="action" />}
+              options={classOption}
+              fullWidth
+              multiple
+              icon={<Class color="primary" />}
             />
           </Grid>
 
@@ -683,25 +770,32 @@ const StudentForm = ({ id }: StudentFormProps) => {
           </Grid>
 
           <Grid item xs={12} md={6}>
-            <CraftSelectWithIcon
+            <CraftIntAutoCompleteWithIcon
               name="section"
               size="medium"
               label="Section"
               placeholder="Select Section"
-              items={sections}
-              adornment={<Class color="action" />}
+              options={secionOption}
+              fullWidth
+              multiple
+              icon={<Class color="primary" />}
             />
+
           </Grid>
 
           <Grid item xs={12} md={6}>
-            <CraftSelectWithIcon
+            <CraftIntAutoCompleteWithIcon
               name="activeSession"
               size="medium"
               label="Active Session"
               placeholder="Select Active Session"
-              items={["2023", "2024", "2025"]}
-              adornment={<CalendarMonth color="action" />}
+              options={sessionOption}
+              fullWidth
+              multiple
+              icon={<CalendarMonth color="primary" />}
             />
+
+
           </Grid>
 
           <Grid item xs={12} md={6}>
@@ -1023,7 +1117,7 @@ const StudentForm = ({ id }: StudentFormProps) => {
         <CraftForm
 
           onSubmit={handleSubmit}
-          resolver={zodResolver(studentSchema)}
+          // resolver={zodResolver(studentSchema)}
           defaultValues={defaultValues}
           key={Object.keys(defaultValues).length > 0 ? "form-with-data" : "empty-form"}
         >

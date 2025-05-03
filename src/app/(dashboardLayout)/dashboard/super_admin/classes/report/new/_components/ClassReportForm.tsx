@@ -80,7 +80,7 @@ type StudentEvaluation = {
 
 
 export default function ClassReportForm({ id }: any) {
-  console.log(id)
+
   const router = useRouter()
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(10)
@@ -226,6 +226,7 @@ export default function ClassReportForm({ id }: any) {
   }, [singleClassReport])
 
   const handleSubmit = async (data: FieldValues) => {
+    console.log('raw data', data)
     let classValue = null
     if (data.classes) {
       if (typeof data.classes === "object" && data.classes !== null) {
@@ -283,11 +284,12 @@ export default function ClassReportForm({ id }: any) {
       })
 
       const formattedData = {
-        teachers: storedUser.userId,
-        subjects: [subjectValue],
-        classes: [classValue],
+        teachers: storedUser.name,
+        subjects: data.classes.label,
+        classes: data.subjects.label,
         hour: data.hour,
         date: data.date,
+
         studentEvaluations: studentEvaluations.map((studentEval) => ({
           studentId: studentEval.studentId,
           lessonEvaluation: studentEval.lessonEvaluation,
@@ -299,8 +301,7 @@ export default function ClassReportForm({ id }: any) {
         todayLesson: todayLessonId,
         homeTask: homeTaskId,
       }
-      const response = await createClassReport(formattedData).unwrap()
-      console.log('formated data ',formattedData)
+      console.log('formated data ', formattedData)
       if (!id) {
         const response = await createClassReport(formattedData).unwrap()
         console.log(response)
@@ -322,6 +323,7 @@ export default function ClassReportForm({ id }: any) {
           router.push("/dashboard/super_admin/classes/report/list")
         }
       }
+
     } catch (error: any) {
       console.error("Error saving class report:", error)
       setSnackbarMessage(error?.data?.message || "Failed to save class report")

@@ -145,7 +145,7 @@
 //         presentThana: studentData.presentThana || "",
 
 //         // Academic Information
-//         className: studentData.className || "",
+//         className: studentData.className || [],
 //         studentClassRoll: studentData.studentClassRoll || "",
 //         batch: studentData.batch || "",
 //         section: studentData.section || [],
@@ -303,9 +303,9 @@
 //       transportFee: Number(data.transportFee || 0),
 //       boardingFee: Number(data.boardingFee || 0),
 //       studentPhoto: data.studentPhoto,
-//       className: classArray,
-//       activeSession: sessionArray,
-//       section: sessionArray,
+//     //   className: classArray,
+//     //   activeSession: sessionArray,
+//     //   section: sectionArray,
 //     }
 //     console.log('submission data', submissionData)
 //     try {
@@ -1113,9 +1113,9 @@
 //         <CraftForm
 
 //           onSubmit={handleSubmit}
-//           resolver={zodResolver(studentSchema)}
-//           defaultValues={defaultValues}
-//           key={Object.keys(defaultValues).length > 0 ? "form-with-data" : "empty-form"}
+//         //   resolver={zodResolver(studentSchema)}
+//         //   defaultValues={defaultValues}
+//         //   key={Object.keys(defaultValues).length > 0 ? "form-with-data" : "empty-form"}
 //         >
 //           <Paper
 //             elevation={3}
