@@ -514,22 +514,7 @@ export default function SubjectManagementPage() {
                           >
                             All Papers
                           </MenuItem>
-                          {/* {availablePapers.map((paper: string) => (
-                            <MenuItem
-                              key={paper}
-                              onClick={() => handlePaperFilterSelect(paper)}
-                              sx={{
-                                py: 1.5,
-                                ...(paperFilter === paper && {
-                                  bgcolor: "rgba(99, 102, 241, 0.08)",
-                                  color: "primary.main",
-                                }),
-                              }}
-                            >
-                              <AssignmentIcon fontSize="small" sx={{ mr: 1 }} />
-                              {paper}
-                            </MenuItem>
-                          ))} */}
+                          
                         </Menu>
 
                         <Button
@@ -579,22 +564,7 @@ export default function SubjectManagementPage() {
                           >
                             All Classes
                           </MenuItem>
-                          {/* {availableClasses.map((className: string) => (
-                            <MenuItem
-                              key={className}
-                              onClick={() => handleClassFilterSelect(className)}
-                              sx={{
-                                py: 1.5,
-                                ...(classFilter === className && {
-                                  bgcolor: "rgba(99, 102, 241, 0.08)",
-                                  color: "primary.main",
-                                }),
-                              }}
-                            >
-                              <ClassIcon fontSize="small" sx={{ mr: 1 }} />
-                              {className}
-                            </MenuItem>
-                          ))} */}
+                          
                         </Menu>
 
                         <Button

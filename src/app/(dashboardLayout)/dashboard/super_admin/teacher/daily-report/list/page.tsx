@@ -259,11 +259,11 @@ export default function DailyClassReportPage() {
   const uniqueTeachers: string[] = [...new Set((reports as ReportData[]).map((report) => report.teacherName))].sort()
 
   // Get unique subjects and classes from all report classes
-  const allClasses = reports.flatMap((report:any) => report.classes)
-  const uniqueSubjects = [...new Set(allClasses.map((cls:any) => cls.subject))].sort()
+  const allClasses = reports.flatMap((report: any) => report.classes)
+  const uniqueSubjects = [...new Set(allClasses.map((cls: any) => cls.subject))].sort()
   const uniqueClasses: string[] = [...new Set(allClasses.map((cls: any) => (typeof cls.class === "string" ? cls.class : "")).filter(Boolean) as string[])].sort((a, b) => {
-      return Number.parseInt(a) - Number.parseInt(b)
-    })
+    return Number.parseInt(a) - Number.parseInt(b)
+  })
 
   // Apply filters when filter state changes
   useEffect(() => {
@@ -517,7 +517,7 @@ export default function DailyClassReportPage() {
               <Box sx={{ flexGrow: 1 }} />
               <Button
                 component={Link}
-                href="/dashboard/super_admin/teacher/daily-report/create"
+                href="/dashboard/super_admin/teacher/daily-report/add"
                 variant="contained"
                 startIcon={<AddIcon />}
                 sx={{
@@ -685,8 +685,8 @@ export default function DailyClassReportPage() {
                               onChange={(e: SelectChangeEvent) => handleFilterChange("subject", e.target.value)}
                             >
                               <MenuItem value="">সকল বিষয়</MenuItem>
-                              {uniqueSubjects.map((subject:any, i:number) => (
-                                <MenuItem  key={i} value={subject}>
+                              {uniqueSubjects.map((subject: any, i: number) => (
+                                <MenuItem key={i} value={subject}>
                                   {subject}
                                 </MenuItem>
                               ))}
@@ -774,8 +774,8 @@ export default function DailyClassReportPage() {
                               </TableRow>
                             </TableHead>
                             <TableBody>
-                              {reports.map((report:any) =>
-                                report.classes.map((classData:any, idx:number) => (
+                              {reports.map((report: any) =>
+                                report.classes.map((classData: any, idx: number) => (
                                   <Fade key={`${report._id}-${idx}`} in={true}>
                                     <TableRow
                                       hover

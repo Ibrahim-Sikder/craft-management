@@ -237,8 +237,8 @@ export default function StaffForm({ id }: TeacherFormProps = {}) {
     }
 
     const handleSubmit = async (data: any) => {
-        setIsSubmitting(true)
-        console.log(data)
+
+      
 
         try {
             const monthlySalaryNum = data.monthlySalary ? Number(data.monthlySalary) : undefined
@@ -338,7 +338,7 @@ export default function StaffForm({ id }: TeacherFormProps = {}) {
                     })
 
                     setTimeout(() => {
-                        router.push("/dashboard/super_admin/Staff/list")
+                        router.push("/dashboard/super_admin/staff/list")
                     }, 2000)
                 }
             } else {
@@ -353,7 +353,7 @@ export default function StaffForm({ id }: TeacherFormProps = {}) {
                     })
 
                     setTimeout(() => {
-                        router.push("/dashboard/super_admin/Staff/list")
+                        router.push("/dashboard/super_admin/staff/list")
                     }, 2000)
                 }
             }

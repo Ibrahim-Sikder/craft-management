@@ -5,7 +5,7 @@
 
 import React from "react"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import {
   Box,
   Container,
@@ -64,18 +64,17 @@ import {
   Download as DownloadIcon,
   Print as PrintIcon,
   Refresh as RefreshIcon,
-
 } from "@mui/icons-material"
 import DrawIcon from "@mui/icons-material/Draw";
 import BlockIcon from "@mui/icons-material/Block";
 import Link from "next/link"
 import { format } from "date-fns"
 import { customTheme } from "@/ThemeStyle"
-import { useGetAllClassReportsQuery } from "@/redux/api/classReportApi"
+import { useDeleteClassReportMutation, useGetAllClassReportsQuery } from "@/redux/api/classReportApi"
 import { useGetAllClassesQuery } from "@/redux/api/classApi"
 import { useGetAllSubjectsQuery } from "@/redux/api/subjectApi"
 import { useGetAllTeachersQuery } from "@/redux/api/teacherApi"
-import { ErrorIcon } from "react-hot-toast"
+import { Filters } from "@/interface"
 
 export default function ClassReportList() {
   // State
@@ -89,6 +88,7 @@ export default function ClassReportList() {
     date: "",
     hour: "",
   })
+  console.log(filters)
   const [orderBy, setOrderBy] = useState<string>("createdAt")
   const [order, setOrder] = useState<"asc" | "desc">("desc")
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
@@ -98,7 +98,7 @@ export default function ClassReportList() {
   const [expandedReport, setExpandedReport] = useState<string | null>(null)
   const [detailsModalOpen, setDetailsModalOpen] = useState(false)
   const [selectedReportDetails, setSelectedReportDetails] = useState<any | null>(null)
-
+const [deleteClassReport] = useDeleteClassReportMutation()
   // API queries
   const {
     data: classReport,
@@ -108,26 +108,38 @@ export default function ClassReportList() {
     limit: rowsPerPage,
     page: page + 1,
     searchTerm: searchTerm,
-    classId: filters.class || undefined,
-    subjectId: filters.subject || undefined,
-    teacherId: filters.teacher || undefined,
+    class: filters.class,      
+    subject: filters.subject,   
+    teacher: filters.teacher,  
+    date: filters.date,
+    hour: filters.hour,
+  }, {
+    // Re-fetch when filters or search term changes
+    refetchOnMountOrArgChange: true
   })
-  console.log(classReport)
 
   const { data: classData } = useGetAllClassesQuery({
-    limit: 100,
+    limit: 100, // Increased to fetch more classes
     page: 1,
+    searchTerm: "",
   })
 
   const { data: subjectData } = useGetAllSubjectsQuery({
-    limit: 100,
+    limit: 100, // Increased to fetch more subjects
     page: 1,
+    searchTerm: "",
   })
 
   const { data: teacherData } = useGetAllTeachersQuery({
-    limit: 100,
+    limit: 100, // Increased to fetch more teachers
     page: 1,
+    searchTerm: "",
   })
+
+  // Effect to refetch data when filters change
+  useEffect(() => {
+    refetch();
+  }, [filters, searchTerm, page, rowsPerPage, refetch]);
 
   const theme = customTheme
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"))
@@ -140,14 +152,13 @@ export default function ClassReportList() {
   // Total count for pagination
   const totalCount = classReport?.data?.meta?.total || 0
 
-  // Prepare options for filters
+  // Update your filter options to use proper IDs
   const classOptions = useMemo(() => {
-    if (!classData?.data?.classes) return []
-    return classData.data.classes.map((cls: any) => ({
+    return classData?.data?.classes?.map((cls: any) => ({
       label: cls.className,
       value: cls._id,
-    }))
-  }, [classData])
+    })) || [];
+  }, [classData]);
 
   const subjectOptions = useMemo(() => {
     if (!subjectData?.data?.subjects) return []
@@ -158,8 +169,8 @@ export default function ClassReportList() {
   }, [subjectData])
 
   const teacherOptions = useMemo(() => {
-    if (!teacherData?.data?.teachers) return []
-    return teacherData.data.teachers.map((teacher: any) => ({
+    if (!teacherData?.data) return []
+    return teacherData.data.map((teacher: any) => ({
       label: teacher.name,
       value: teacher._id,
     }))
@@ -191,13 +202,13 @@ export default function ClassReportList() {
   }
 
   // Handle filter changes
-  const handleFilterChange = (filterName: string, value: string) => {
+  const handleFilterChange = (filterName: keyof Filters, value: string) => {
     setFilters((prev) => ({
       ...prev,
       [filterName]: value,
-    }))
-    setPage(0)
-  }
+    }));
+    setPage(0);
+  };
 
   // Handle sorting
   const handleSort = (property: string) => {
@@ -409,7 +420,7 @@ export default function ClassReportList() {
                           >
                             <MenuItem value="">All Classes</MenuItem>
                             {classOptions.map((option: any) => (
-                              <MenuItem key={option.value} value={option.value}>
+                              <MenuItem key={option.value} value={option.label}>
                                 {option.label}
                               </MenuItem>
                             ))}
@@ -440,7 +451,7 @@ export default function ClassReportList() {
                           >
                             <MenuItem value="">All Subjects</MenuItem>
                             {subjectOptions.map((option: any) => (
-                              <MenuItem key={option.value} value={option.value}>
+                              <MenuItem key={option.value} value={option.label}>
                                 {option.label}
                               </MenuItem>
                             ))}
@@ -471,7 +482,7 @@ export default function ClassReportList() {
                           >
                             <MenuItem value="">All Teachers</MenuItem>
                             {teacherOptions.map((option: any) => (
-                              <MenuItem key={option.value} value={option.value}>
+                              <MenuItem key={option.value} value={option.label}>
                                 {option.label}
                               </MenuItem>
                             ))}
@@ -506,6 +517,7 @@ export default function ClassReportList() {
                                 {hour}
                               </MenuItem>
                             ))}
+
                           </Select>
                         </FormControl>
                       </CardContent>
@@ -693,6 +705,7 @@ export default function ClassReportList() {
                         <TableBody>
                           {sortedReports.length > 0 ? (
                             sortedReports.map((report: any) => {
+                             
                               const className = report.classes?.className || "N/A";
                               const subjectName = report.subjects?.name || "N/A";
                               const hasLesson = !!report.todayLesson;
@@ -703,7 +716,7 @@ export default function ClassReportList() {
                                 <React.Fragment key={report._id}>
                                   {report.studentEvaluations?.map((evaluation: any, index: number) => {
                                     const student = evaluation.studentId;
-                                    console.log('evaluation ', evaluation)
+
                                     return (
                                       <TableRow
                                         key={`${report._id}-${index}`}
@@ -721,12 +734,12 @@ export default function ClassReportList() {
                                         <TableCell>{student?.name || "Note"}</TableCell>
                                         <TableCell>
                                           <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                                            {className}
+                                            {report.classes}
                                           </Typography>
                                         </TableCell>
                                         <TableCell>
                                           <Chip
-                                            label={subjectName}
+                                            label={report?.subjects}
                                             size="small"
                                             sx={{
                                               bgcolor: "rgba(99, 102, 241, 0.08)",
@@ -847,22 +860,20 @@ export default function ClassReportList() {
                                                 </Tooltip>
                                               </>
                                             )}
-                                            <Tooltip title="More Actions">
+
+                                            <Tooltip title="Delete Subject">
                                               <IconButton
                                                 size="small"
-                                                onClick={(e) => {
-                                                  e.stopPropagation();
-                                                  handleMenuClick(e, report);
-                                                }}
                                                 sx={{
-                                                  color: "text.secondary",
-                                                  bgcolor: "rgba(0, 0, 0, 0.04)",
+                                                  color: "error.main",
+                                                  bgcolor: alpha(theme.palette.error.main, 0.1),
                                                   "&:hover": {
-                                                    bgcolor: "rgba(0, 0, 0, 0.08)",
+                                                    bgcolor: alpha(theme.palette.error.main, 0.2),
                                                   },
                                                 }}
+                                                onClick={handleDeleteClick}
                                               >
-                                                <MoreVertIcon fontSize="small" />
+                                                <DeleteIcon fontSize="small" />
                                               </IconButton>
                                             </Tooltip>
                                           </Box>
@@ -912,45 +923,7 @@ export default function ClassReportList() {
         </Container>
       </Box>
 
-      {/* Context Menu */}
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleMenuClose}
-        PaperProps={{
-          elevation: 3,
-          sx: {
-            mt: 1,
-            minWidth: 180,
-            borderRadius: 2,
-            overflow: "hidden",
-          },
-        }}
-      >
-        <MenuItem
-          component={Link}
-          href={`/dashboard/admin/class-reports/${selectedReport?._id}`}
-          onClick={handleMenuClose}
-          sx={{ py: 1.5 }}
-        >
-          <VisibilityIcon fontSize="small" sx={{ mr: 2, color: "info.main" }} />
-          View Details
-        </MenuItem>
-        <MenuItem
-          component={Link}
-          href={`/dashboard/admin/class-reports/edit/${selectedReport?._id}`}
-          onClick={handleMenuClose}
-          sx={{ py: 1.5 }}
-        >
-          <EditIcon fontSize="small" sx={{ mr: 2, color: "warning.main" }} />
-          Edit Report
-        </MenuItem>
-        <Divider />
-        <MenuItem onClick={handleDeleteClick} sx={{ py: 1.5, color: "error.main" }}>
-          <DeleteIcon fontSize="small" sx={{ mr: 2 }} />
-          Delete Report
-        </MenuItem>
-      </Menu>
+
 
       {/* Delete Confirmation Dialog */}
       <Dialog

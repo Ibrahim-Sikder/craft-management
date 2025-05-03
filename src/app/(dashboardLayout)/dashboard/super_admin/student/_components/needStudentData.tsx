@@ -1,10 +1,11 @@
+// /* eslint-disable @typescript-eslint/no-unused-vars */
 // /* eslint-disable react/no-unescaped-entities */
 // /* eslint-disable @typescript-eslint/no-explicit-any */
 // "use client"
 
 // import type React from "react"
 
-// import { useState, useEffect, useRef } from "react"
+// import { useState, useEffect, useRef, useMemo } from "react"
 // import {
 //   Box,
 //   Button,
@@ -60,6 +61,11 @@
 // import { zodResolver } from "@hookform/resolvers/zod"
 // import FileUploadWithIcon from "@/components/Forms/Upload"
 // import { studentSchema } from "@/schema"
+// import { FieldValues } from "react-hook-form"
+// import { useGetAllClassesQuery } from "@/redux/api/classApi"
+// import { useGetAllSectionsQuery } from "@/redux/api/sectionApi"
+// import { useGetAllSessionsQuery } from "@/redux/api/sessionApi"
+// import CraftIntAutoCompleteWithIcon from "@/components/Forms/AutocompleteWithIcon"
 
 // interface StudentFormProps {
 //   id?: string
@@ -90,19 +96,14 @@
 //     sendAdmissionSMS?: boolean
 //     sendAttendanceSMS?: boolean
 //     studentPhoto?: string | File
-//     // Add other fields as needed
+
 //   }
 
 //   const [formData, setFormData] = useState<FormData>({})
 //   const [defaultValues, setDefaultValues] = useState<any>({})
-
-
-//   // Set default values when data is loaded
 //   useEffect(() => {
 //     if (data?.data) {
 //       const studentData = data.data
-
-//       // Set form data for switches and address fields
 //       setFormData({
 //         studentPhoto: studentData.studentPhoto,
 //         sameAsPermanent: studentData.sameAsPermanent || false,
@@ -115,8 +116,6 @@
 //         sendAdmissionSMS: studentData.sendAdmissionSMS || false,
 //         sendAttendanceSMS: studentData.sendAttendanceSMS || false,
 //       })
-
-//       // Create comprehensive default values object
 //       const formDefaultValues = {
 //         // Basic Information
 //         name: studentData.name || "",
@@ -146,11 +145,11 @@
 //         presentThana: studentData.presentThana || "",
 
 //         // Academic Information
-//         className: studentData.className || "",
+//         className: studentData.className || [],
 //         studentClassRoll: studentData.studentClassRoll || "",
 //         batch: studentData.batch || "",
-//         section: studentData.section || "",
-//         activeSession: studentData.activeSession || "",
+//         section: studentData.section || [],
+//         activeSession: studentData.activeSession || [],
 //         status: studentData.status || "",
 //         studentType: studentData.studentType || "",
 //         additionalNote: studentData.additionalNote || "",
@@ -183,20 +182,60 @@
 //     message: "",
 //     severity: "success" as "success" | "error",
 //   })
+//   const [page, setPage] = useState(0)
+//   const [rowsPerPage, setRowsPerPage] = useState(10)
+//   const [searchTerm, setSearchTerm] = useState("")
+
+//   const { data: classData } = useGetAllClassesQuery({
+//     limit: rowsPerPage,
+//     page: page + 1,
+//     searchTerm: searchTerm,
+//   })
+//   const { data: sectionData } = useGetAllSectionsQuery({
+//     limit: rowsPerPage,
+//     page: page + 1,
+//     searchTerm: searchTerm,
+//   })
+//   const { data: sessionData } = useGetAllSessionsQuery({
+//     limit: rowsPerPage,
+//     page: page + 1,
+//     searchTerm: searchTerm,
+//   })
+//   const classOption = useMemo(() => {
+//     if (!classData?.data?.classes) return []
+//     return classData?.data?.classes.map((clg: any) => ({
+//       label: clg.className,
+//       value: clg._id,
+//     }))
+//   }, [classData])
+//   const secionOption = useMemo(() => {
+//     if (!sectionData?.data?.sections) return []
+//     return sectionData?.data?.sections.map((sec: any) => ({
+//       label: sec.name,
+//       value: sec._id,
+//     }))
+//   }, [sectionData])
+
+//   const sessionOption = useMemo(() => {
+//     if (!sessionData?.data?.sessions) return []
+//     return sessionData?.data?.sessions.map((sec: any) => ({
+//       label: sec.sessionName,
+//       value: sec._id,
+//     }))
+//   }, [sessionData])
+
+
 
 //   const [success, setSuccess] = useState(false)
 
 //   const handleSwitchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 //     const { name, checked } = e.target
-
-//     // Update the form data with the new switch value
 //     setFormData((prev) => {
 //       const newData = {
 //         ...prev,
 //         [name]: checked,
 //       }
 
-//       // If sameAsPermanent is checked, copy permanent address to present address
 //       if (name === "sameAsPermanent" && checked) {
 //         newData.presentAddress = prev.permanentAddress || ""
 //         newData.presentDistrict = prev.permanentDistrict || ""
@@ -215,107 +254,90 @@
 //     setActiveStep((prevActiveStep) => prevActiveStep - 1)
 //   }
 
-//   const handleSubmit = async (formValues: any) => {
-//     console.log("Raw form values:", formValues)
+//   const handleSubmit = async (data: FieldValues) => {
+//     console.log('reaw data', data)
 
-
-//     // Create a structured submission object
+//     const classArray = Array.isArray(data.classes)
+//       ? data.classes
+//         .map((item: any) => {
+//           if (item && typeof item === "object" && "value" in item) {
+//             return item.value
+//           }
+//           return null
+//         })
+//         .filter(Boolean)
+//       : []
+//     const sessionArray = Array.isArray(data.activeSession)
+//       ? data.activeSession
+//         .map((item: any) => {
+//           if (item && typeof item === "object" && "value" in item) {
+//             return item.value
+//           }
+//           return null
+//         })
+//         .filter(Boolean)
+//       : []
+//     const sectionArray = Array.isArray(data.section)
+//       ? data.section
+//         .map((item: any) => {
+//           if (item && typeof item === "object" && "value" in item) {
+//             return item.value
+//           }
+//           return null
+//         })
+//         .filter(Boolean)
+//       : []
 //     const submissionData = {
-//    ...formValues,
-//       name: formValues.name,
-//       smartIdCard: formValues.smartIdCard,
-//       email: formValues.email,
-//       mobile: formValues.mobile,
-//       birthDate: formValues.birthDate,
-//       birthRegistrationNo: formValues.birthRegistrationNo,
-//       bloodGroup: formValues.bloodGroup,
-//       gender: formValues.gender,
-
-//       // Family Information
-//       fatherName: formValues.fatherName,
-//       motherName: formValues.motherName,
-//       guardianName: formValues.guardianName,
-//       guardianMobile: formValues.guardianMobile,
-//       relation: formValues.relation,
-//       nidFatherMotherGuardian: formValues.nidFatherMotherGuardian,
-
-//       // Address Information
-//       permanentAddress: formValues.permanentAddress,
-//       permanentDistrict: formValues.permanentDistrict,
-//       permanentThana: formValues.permanentThana,
+//       ...data,
 //       sameAsPermanent: formData.sameAsPermanent || false,
-//       presentAddress: formData.sameAsPermanent ? formValues.permanentAddress : formValues.presentAddress,
-//       presentDistrict: formData.sameAsPermanent ? formValues.permanentDistrict : formValues.presentDistrict,
-//       presentThana: formData.sameAsPermanent ? formValues.permanentThana : formValues.presentThana,
-
-//       // Academic Information
-//       className: formValues.className,
-//       studentClassRoll: formValues.studentClassRoll,
-//       batch: formValues.batch,
-//       section: formValues.section,
-//       activeSession: formValues.activeSession,
-//       status: formValues.status,
-//       studentType: formValues.studentType,
-//       additionalNote: formValues.additionalNote,
-
+//       presentAddress: formData.sameAsPermanent ? data.permanentAddress : data.presentAddress,
+//       presentDistrict: formData.sameAsPermanent ? data.permanentDistrict : data.presentDistrict,
+//       presentThana: formData.sameAsPermanent ? data.permanentThana : data.presentThana,
 //       // Fee Information
-//       admissionFee: Number(formValues.admissionFee || 0),
-//       monthlyFee: Number(formValues.monthlyFee || 0),
-//       previousDues: Number(formValues.previousDues || 0),
-//       sessionFee: Number(formValues.sessionFee || 0),
-//       residenceFee: Number(formValues.residenceFee || 0),
-//       otherFee: Number(formValues.otherFee || 0),
-//       transportFee: Number(formValues.transportFee || 0),
-//       boardingFee: Number(formValues.boardingFee || 0),
-
-//       // Other Settings
-//       studentSerial: formValues.studentSerial,
-//       sendAdmissionSMS: formData.sendAdmissionSMS || false,
-//       sendAttendanceSMS: formData.sendAttendanceSMS || false,
-
-//       // Photo - ensure it's included
-//       studentPhoto: formValues.studentPhoto || "",
+//       admissionFee: Number(data.admissionFee || 0),
+//       monthlyFee: Number(data.monthlyFee || 0),
+//       previousDues: Number(data.previousDues || 0),
+//       sessionFee: Number(data.sessionFee || 0),
+//       residenceFee: Number(data.residenceFee || 0),
+//       otherFee: Number(data.otherFee || 0),
+//       transportFee: Number(data.transportFee || 0),
+//       boardingFee: Number(data.boardingFee || 0),
+//       studentPhoto: data.studentPhoto,
+//     //   className: classArray,
+//     //   activeSession: sessionArray,
+//     //   section: sectionArray,
 //     }
-
-//     console.log("Final submission data:", submissionData)
-//     console.log("studentPhoto:", submissionData.studentPhoto)
-//     console.log("permanentAddress:", submissionData.permanentAddress)
-//     console.log("permanentDistrict:", submissionData.permanentDistrict)
-//     console.log("permanentThana:", submissionData.permanentThana)
-//     console.log("presentAddress:", submissionData.presentAddress)
-//     console.log("presentDistrict:", submissionData.presentDistrict)
-//     console.log("presentThana:", submissionData.presentThana)
-
+//     console.log('submission data', submissionData)
 //     try {
-//     if(id){
-//       const res = await updateStudent({ id, data: submissionData }).unwrap()
+//       if (id) {
+//         const res = await updateStudent({ id, data: submissionData }).unwrap()
+//         console.log(res)
+//         if (res.success) {
+//           setSuccess(true)
+//           setSnackbar({
+//             open: true,
+//             message: "Student updated successfully!",
+//             severity: "success",
+//           })
+//           setTimeout(() => {
+//             router.push("/dashboard/super_admin/student/list")
+//           }, 2000)
+//         }
+//       } else {
+//         const res = await createStudents(submissionData).unwrap()
+//         if (res.success) {
+//           setSuccess(true)
+//           setSnackbar({
+//             open: true,
+//             message: "Student registered successfully!",
+//             severity: "success",
+//           })
+//           setTimeout(() => {
+//             router.push("/dashboard/super_admin/student/list")
+//           }, 2000)
+//         }
 
-//       if (res.success) {
-//         setSuccess(true)
-//         setSnackbar({
-//           open: true,
-//           message: "Student updated successfully!",
-//           severity: "success",
-//         })
-//         setTimeout(() => {
-//           router.push("/dashboard/super_admin/student/list")
-//         }, 2000)
 //       }
-//     }else{
-//       const res = await createStudents(submissionData).unwrap()
-//       if (res.success) {
-//         setSuccess(true)
-//         setSnackbar({
-//           open: true,
-//           message: "Student registered successfully!",
-//           severity: "success",
-//         })
-//         setTimeout(() => {
-//           router.push("/dashboard/super_admin/student/list")
-//         }, 2000)
-//       }
-      
-//     }
 //     } catch (error: any) {
 //       console.error("❌ Submission error:", error)
 //       setSnackbar({
@@ -452,8 +474,9 @@
 //             <FileUploadWithIcon
 //               name="studentPhoto"
 //               label="Student Photo"
-             
+
 //             />
+
 //           </Grid>
 //         </Grid>
 //       ),
@@ -707,13 +730,14 @@
 //       content: (
 //         <Grid container spacing={3}>
 //           <Grid item xs={12} md={6}>
-//             <CraftSelectWithIcon
+//             <CraftIntAutoCompleteWithIcon
 //               name="className"
-//               size="medium"
 //               label="Class"
 //               placeholder="Select Class"
-//               items={classes}
-//               adornment={<Class color="action" />}
+//               options={classOption}
+//               fullWidth
+//               multiple
+//               icon={<Class color="primary" />}
 //             />
 //           </Grid>
 
@@ -742,25 +766,32 @@
 //           </Grid>
 
 //           <Grid item xs={12} md={6}>
-//             <CraftSelectWithIcon
+//             <CraftIntAutoCompleteWithIcon
 //               name="section"
 //               size="medium"
 //               label="Section"
 //               placeholder="Select Section"
-//               items={sections}
-//               adornment={<Class color="action" />}
+//               options={secionOption}
+//               fullWidth
+//               multiple
+//               icon={<Class color="primary" />}
 //             />
+
 //           </Grid>
 
 //           <Grid item xs={12} md={6}>
-//             <CraftSelectWithIcon
+//             <CraftIntAutoCompleteWithIcon
 //               name="activeSession"
 //               size="medium"
 //               label="Active Session"
 //               placeholder="Select Active Session"
-//               items={["2023", "2024", "2025"]}
-//               adornment={<CalendarMonth color="action" />}
+//               options={sessionOption}
+//               fullWidth
+//               multiple
+//               icon={<CalendarMonth color="primary" />}
 //             />
+
+
 //           </Grid>
 
 //           <Grid item xs={12} md={6}>
@@ -1080,11 +1111,11 @@
 //         </Box>
 
 //         <CraftForm
-        
+
 //           onSubmit={handleSubmit}
-//           resolver={zodResolver(studentSchema)}
-//           defaultValues={defaultValues}
-//           key={Object.keys(defaultValues).length > 0 ? "form-with-data" : "empty-form"}
+//         //   resolver={zodResolver(studentSchema)}
+//         //   defaultValues={defaultValues}
+//         //   key={Object.keys(defaultValues).length > 0 ? "form-with-data" : "empty-form"}
 //         >
 //           <Paper
 //             elevation={3}

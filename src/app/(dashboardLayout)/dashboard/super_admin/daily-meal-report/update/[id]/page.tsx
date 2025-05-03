@@ -70,6 +70,7 @@ import {
 import { useGetAllStudentsQuery } from "@/redux/api/studentApi"
 import { useGetAllTeachersQuery } from "@/redux/api/teacherApi"
 import { useCreateMealReportMutation, useGetSingleMealReportQuery } from "@/redux/api/mealReport"
+import { useRouter } from "next/navigation"
 
 // Define enum to match the validation schema
 enum MealType {
@@ -150,37 +151,31 @@ export default function MealReportForm({ params }: MealReportId) {
   const [mealCountStats, setMealCountStats] = useState<MealCountStats>({ oneMeal: 0, twoMeals: 0, threeMeals: 0 })
   const [showMealCountTable, setShowMealCountTable] = useState(false)
 
-  // Dialog state
   const [dialogOpen, setDialogOpen] = useState(false)
   const [currentPerson, setCurrentPerson] = useState<string | null>(null)
   const [tempSelectedMeals, setTempSelectedMeals] = useState<string[]>([])
 
-  // API query params
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(50)
   const [searchTerm, setSearchTerm] = useState("")
 
-  // Fetch data from APIs
+
   const { data: studentData, isLoading: isLoadingStudents } = useGetAllStudentsQuery({
     limit: rowsPerPage,
     page: page + 1,
     searchTerm: searchTerm,
   })
   const { data: singleMealReport, isLoading } = useGetSingleMealReportQuery(id)
-  console.log("single meal report ", singleMealReport)
-
+const router = useRouter()
   const { data: teacherData, isLoading: isLoadingTeachers } = useGetAllTeachersQuery({
     limit: rowsPerPage,
     page: page + 1,
     searchTerm: searchTerm,
   })
 
-  const [createMealReport, { isLoading: isSubmitting }] = useCreateMealReportMutation()
 
-  // Combined persons data (students and teachers)
   const [persons, setPersons] = useState<PersonData[]>([])
 
-  // Process API data and combine students and teachers
   useEffect(() => {
     const newPersons: PersonData[] = []
 
@@ -502,10 +497,11 @@ export default function MealReportForm({ params }: MealReportId) {
       setSuccess(true)
       setDebugInfo((prev) => `${prev}\n\nResponse: ${JSON.stringify(directResult, null, 2)}`)
 
-      // Reset form after successful save
+      // Navigate after successful save
       setTimeout(() => {
         setSuccess(false)
-      }, 3000)
+        router.push("/dashboard/super_admin/daily-meal-report/")
+      }, 2000)
     } catch (err: any) {
       console.error("Error creating meal report:", err)
 
