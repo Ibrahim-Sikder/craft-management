@@ -276,6 +276,9 @@ const StudentForm = ({ id }: StudentFormProps) => {
       toast.error("Section name is missing!");
     } else if (!data.activeSession) {
       toast.error("Active session is missing!");
+    }
+    else if (!data.studentType) {
+      toast.error("Student type is missing!");
     } else {
       const classArray = data.className?.map((item: any) => item.label) || [];
       const sectionArray = data.section?.map((item: any) => item.label) || [];
@@ -808,7 +811,7 @@ const StudentForm = ({ id }: StudentFormProps) => {
             <CraftIntAutoCompleteWithIcon
               name="section"
               size="medium"
-              
+
               placeholder="Select Section"
               label={
                 <span>
@@ -858,7 +861,12 @@ const StudentForm = ({ id }: StudentFormProps) => {
             <CraftSelectWithIcon
               name="studentType"
               size="medium"
-              label="Student Type"
+
+              label={
+                <span>
+                  Student Type <span style={{ color: 'red' }}>*</span>
+                </span>
+              }
               placeholder="Select Student Type"
               items={["Residential", "Day"]}
               adornment={<Person color="action" />}

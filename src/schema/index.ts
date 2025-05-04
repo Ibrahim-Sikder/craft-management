@@ -227,6 +227,9 @@ export const staffSchema = z.object({
   gender: z.string({
     required_error: "Name is required",
   }),
+  studentType: z.string({
+    required_error: "Name is required",
+  }),
 
   email: z
     .string({
