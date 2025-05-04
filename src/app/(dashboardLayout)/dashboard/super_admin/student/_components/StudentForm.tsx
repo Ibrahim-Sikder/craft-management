@@ -868,7 +868,7 @@ const StudentForm = ({ id }: StudentFormProps) => {
                 </span>
               }
               placeholder="Select Student Type"
-              items={["Residential", "Day"]}
+              items={["Residential", "Non-residential"]}
               adornment={<Person color="action" />}
             />
           </Grid>

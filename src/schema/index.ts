@@ -13,9 +13,11 @@ export enum StudentStatus {
 }
 
 export enum StudentType {
-  RESIDENTIAL = "Residential",
-  DAY = "Day",
+  RESIDENTIAL = 'Residential',
+  DAY = 'Non-residential',
+  EMPTY = ''
 }
+
 
 export const teacherSchema = z.object({
   teacherId: z.string({
@@ -227,8 +229,8 @@ export const staffSchema = z.object({
   gender: z.string({
     required_error: "Name is required",
   }),
-  studentType: z.string({
-    required_error: "Name is required",
+  studentType: z.nativeEnum(StudentType, {
+    required_error: 'Student type is required',
   }),
 
   email: z
