@@ -188,7 +188,7 @@ export default function TeachersDashboard() {
 
 
   const handleViewTeacher = (teacher: Teacher) => {
-    router.push(`/dashboard/super_admin/teacher/view/${teacher._id}`)
+    router.push(`/dashboard/super_admin/teacher/profile?id=${teacher._id}`)
     handleTeacherMenuClose()
   }
 
@@ -713,28 +713,7 @@ export default function TeachersDashboard() {
         </MenuItem>
       </Menu>
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteConfirmOpen} onClose={() => setDeleteConfirmOpen(false)}>
-        <DialogTitle>Confirm Deletion</DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Are you sure you want to delete {selectedTeacher?.name}? This action cannot be undone.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setDeleteConfirmOpen(false)} color="primary">
-            Cancel
-          </Button>
-          <Button
-            onClick={handleDeleteTeacher}
-            color="error"
-            variant="contained"
-            disabled={isDeleting}
-          >
-            {isDeleting ? 'Deleting...' : 'Delete'}
-          </Button>
-        </DialogActions>
-      </Dialog>
+     
 
       {/* Notification Snackbar */}
       <Snackbar

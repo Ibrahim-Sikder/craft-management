@@ -75,6 +75,7 @@ type StudentEvaluation = {
   handwriting: string
   attendance: string
   parentSignature: boolean
+  lessonAssessmentAttendance:string;
   comments: string
 }
 
@@ -207,18 +208,8 @@ export default function ClassReportForm({ id }: any) {
     }
 
     return {
-      classes: report.classes?._id
-        ? {
-          label: report.classes.className,
-          value: report.classes._id,
-        }
-        : null,
-      subjects: report.subjects?._id
-        ? {
-          label: report.subjects.name,
-          value: report.subjects._id,
-        }
-        : null,
+      classes: report.classes,
+      subjects: report.subjects,
       hour: report.hour || "",
       date: report.date ? format(new Date(report.date), "yyyy-MM-dd") : "",
       teachers: storedUser?.name || "",
@@ -226,7 +217,7 @@ export default function ClassReportForm({ id }: any) {
   }, [singleClassReport])
 
   const handleSubmit = async (data: FieldValues) => {
-    console.log('raw data', data)
+
     let classValue = null
     if (data.classes) {
       if (typeof data.classes === "object" && data.classes !== null) {
@@ -246,15 +237,15 @@ export default function ClassReportForm({ id }: any) {
     }
 
     try {
-      if (!todayLessonId) {
-        toast.error("আজকের পাঠ যোগ করুন")
-        return
-      }
+      // if (!todayLessonId) {
+      //   toast.error("আজকের পাঠ যোগ করুন")
+      //   return
+      // }
 
-      if (!homeTaskId) {
-        toast.error("বাড়ির কাজ যোগ করুন")
-        return
-      }
+      // if (!homeTaskId) {
+      //   toast.error("বাড়ির কাজ যোগ করুন")
+      //   return
+      // }
 
       if (!classValue) {
         toast.error("শ্রেণী নির্বাচন করুন")
@@ -277,6 +268,7 @@ export default function ClassReportForm({ id }: any) {
             lessonEvaluation: "পড়া শিখেছে",
             handwriting: "লিখেছে",
             attendance: "উপস্থিত",
+            lessonAssessmentAttendance: "উপস্থিত",
             parentSignature: false,
             comments: "",
           }
@@ -295,16 +287,17 @@ export default function ClassReportForm({ id }: any) {
           lessonEvaluation: studentEval.lessonEvaluation,
           handwriting: studentEval.handwriting,
           attendance: studentEval.attendance,
+          lessonAssessmentAttendance: studentEval.lessonAssessmentAttendance,
           parentSignature: studentEval.parentSignature,
           comments: studentEval.comments || "",
         })),
         todayLesson: todayLessonId,
         homeTask: homeTaskId,
       }
-      console.log('formated data ', formattedData)
+ 
       if (!id) {
         const response = await createClassReport(formattedData).unwrap()
-        console.log(response)
+
         if (response.success) {
           setSnackbarMessage("Class report saved successfully!")
           setSnackbarSeverity("success")
@@ -373,6 +366,7 @@ export default function ClassReportForm({ id }: any) {
         lessonEvaluation: "পড়া শিখেছে",
         handwriting: "লিখেছে",
         attendance: "উপস্থিত",
+        lessonAssessmentAttendance: "উপস্থিত",
         parentSignature: false,
         comments: "",
       })
@@ -399,6 +393,7 @@ export default function ClassReportForm({ id }: any) {
         lessonEvaluation: "পড়া শিখেছে",
         handwriting: value,
         attendance: "উপস্থিত",
+        lessonAssessmentAttendance: "উপস্থিত",
         parentSignature: false,
         comments: "",
       })
@@ -417,6 +412,7 @@ export default function ClassReportForm({ id }: any) {
       updatedEvaluations[index] = {
         ...updatedEvaluations[index],
         attendance: value,
+        lessonAssessmentAttendance: value,
       }
     } else {
       // Create new evaluation if it doesn't exist
@@ -425,6 +421,7 @@ export default function ClassReportForm({ id }: any) {
         lessonEvaluation: "পড়া শিখেছে",
         handwriting: "লিখেছে",
         attendance: value,
+        lessonAssessmentAttendance: value,
         parentSignature: false,
         comments: "",
       })
@@ -450,6 +447,7 @@ export default function ClassReportForm({ id }: any) {
         lessonEvaluation: "পড়া শিখেছে",
         handwriting: "লিখেছে",
         attendance: "উপস্থিত",
+        lessonAssessmentAttendance: "উপস্থিত",
         parentSignature: checked,
         comments: "",
       })
@@ -475,6 +473,7 @@ export default function ClassReportForm({ id }: any) {
         lessonEvaluation: "পড়া শিখেছে",
         handwriting: "লিখেছে",
         attendance: "উপস্থিত",
+        lessonAssessmentAttendance: "উপস্থিত",
         parentSignature: false,
         comments: value,
       })
@@ -511,6 +510,7 @@ export default function ClassReportForm({ id }: any) {
         lessonEvaluation: "পড়া শিখেছে",
         handwriting: "লিখেছে",
         attendance: "উপস্থিত",
+        lessonAssessmentAttendance: "উপস্থিত",
         parentSignature: false,
         comments: "",
       }
@@ -699,6 +699,7 @@ export default function ClassReportForm({ id }: any) {
                                     <TableCell>পাঠ মূল্যায়ন</TableCell>
                                     <TableCell>হাতের লিখা</TableCell>
                                     <TableCell>উপস্থিতি</TableCell>
+                                    <TableCell>পাঠ মূল্যায়ন উপস্থিতি </TableCell>
                                     <TableCell align="center">অভিভাবকের স্বাক্ষর</TableCell>
                                     <TableCell align="center">মন্তব্য</TableCell>
                                   </TableRow>
@@ -785,6 +786,23 @@ export default function ClassReportForm({ id }: any) {
                                                 onChange={(e) => handleAttendanceChange(student._id, e.target.value)}
                                               >
                                                 {["উপস্থিত", "অনুপস্থিত", "ছুটি"].map((item) => (
+                                                  <MenuItem key={item} value={item}>
+                                                    {item}
+                                                  </MenuItem>
+                                                ))}
+                                              </Select>
+                                            </FormControl>
+                                          </TableCell>
+                                          <TableCell align="center">
+                                            <FormControl fullWidth sx={{ minWidth: 160 }}>
+                                              <InputLabel id={`attendance-label-${student._id}`}>Attendance</InputLabel>
+                                              <Select
+                                                labelId={`attendance-label-${student._id}`}
+                                                value={evaluation.lessonAssessmentAttendance || "উপস্থিত"}
+                                                label="Attendance"
+                                                onChange={(e) => handleAttendanceChange(student._id, e.target.value)}
+                                              >
+                                                {["উপস্থিত", "অনুপস্থিত"].map((item) => (
                                                   <MenuItem key={item} value={item}>
                                                     {item}
                                                   </MenuItem>

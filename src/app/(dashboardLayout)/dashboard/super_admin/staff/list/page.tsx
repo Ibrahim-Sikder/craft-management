@@ -31,7 +31,6 @@ import {
   useTheme,
   alpha,
   CircularProgress,
-  Modal,
 } from "@mui/material"
 import {
   Search as SearchIcon,
@@ -329,7 +328,7 @@ export default function StaffDashboard() {
     searchTerm: searchTerm,
   })
 
-  const [modalOpen, setModalOpen] = useState(false)
+  const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null)
   const [selectedStaff, setSelectedStaff] = useState<StaffMember | null>(null)
 
   useEffect(() => {
@@ -466,6 +465,33 @@ export default function StaffDashboard() {
         console.error("Error refreshing data:", error)
         setLoading(false)
       })
+  }
+
+  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, staff: StaffMember) => {
+    event.stopPropagation()
+    setSelectedStaff(staff)
+    setMenuAnchorEl(event.currentTarget)
+  }
+
+  const handleMenuClose = () => {
+    setMenuAnchorEl(null)
+  }
+
+  const handleViewStaff = (staff: StaffMember) => {
+    window.location.href = `/dashboard/super_admin/staff/profile?id=${staff.id}`
+    handleMenuClose()
+  }
+
+  const handleEditStaff = (staff: StaffMember) => {
+    window.location.href = `/dashboard/super_admin/staff/update/${staff.id}`
+    handleMenuClose()
+  }
+
+  const handleDeleteStaffItem = () => {
+    if (selectedStaff) {
+      handleDelete(selectedStaff.id.toString())
+    }
+    handleMenuClose()
   }
 
   // Calculate department statistics
@@ -1033,11 +1059,7 @@ export default function StaffDashboard() {
                             bgcolor: "rgba(255, 255, 255, 0.9)",
                             "&:hover": { bgcolor: "rgba(255, 255, 255, 1)" },
                           }}
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            setSelectedStaff(person)
-                            setModalOpen(true)
-                          }}
+                          onClick={(e) => handleMenuOpen(e, person)}
                         >
                           <MoreVertIcon fontSize="small" />
                         </IconButton>
@@ -1050,75 +1072,22 @@ export default function StaffDashboard() {
           </Grid>
         </Grid>
       </Container>
-      {/* Staff Action Modal */}
-      <Modal
-        open={modalOpen}
-        onClose={() => setModalOpen(false)}
-        aria-labelledby="staff-action-modal"
-        aria-describedby="staff-action-options"
-      >
-        <Box
-          sx={{
-            position: "absolute",
-            top: "50%",
-            left: "50%",
-            transform: "translate(-50%, -50%)",
-            width: 300,
-            bgcolor: "background.paper",
-            borderRadius: 2,
-            boxShadow: 24,
-            p: 3,
-          }}
-        >
-          <Typography id="staff-action-modal" variant="h6" component="h2" sx={{ mb: 2, textAlign: "center" }}>
-            Staff Actions
-          </Typography>
-          <Box sx={{ display: "flex", justifyContent: "space-around", mb: 2 }}>
-            <Tooltip title="View Profile">
-              <IconButton
-                color="primary"
-                onClick={() => {
-                  if (selectedStaff) {
-                    window.location.href = `/dashboard/super_admin/staff/profile/${selectedStaff.id}`
-                  }
-                  setModalOpen(false)
-                }}
-              >
-                <PersonIcon fontSize="large" />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Edit Staff">
-              <IconButton
-                color="info"
-                onClick={() => {
-                  if (selectedStaff) {
-                    window.location.href = `/dashboard/super_admin/staff/update/${selectedStaff.id}`
-                  }
-                  setModalOpen(false)
-                }}
-              >
-                <EditIcon fontSize="large" />
-              </IconButton>
-            </Tooltip>
-            <Tooltip title="Delete Staff">
-              <IconButton
-                color="error"
-                onClick={() => {
-                  if (selectedStaff) {
-                    handleDelete(selectedStaff.id.toString())
-                  }
-                  setModalOpen(false)
-                }}
-              >
-                <DeleteIcon fontSize="large" />
-              </IconButton>
-            </Tooltip>
-          </Box>
-          <Button fullWidth variant="outlined" onClick={() => setModalOpen(false)} sx={{ mt: 1 }}>
-            Cancel
-          </Button>
-        </Box>
-      </Modal>
+      {/* Staff Action Menu */}
+      <Menu sx={{ zIndex: 1300 }} anchorEl={menuAnchorEl} open={Boolean(menuAnchorEl)} onClose={handleMenuClose}>
+        <MenuItem onClick={() => selectedStaff && handleViewStaff(selectedStaff)}>
+          <PersonIcon fontSize="small" sx={{ mr: 1 }} />
+          View Profile
+        </MenuItem>
+        <MenuItem onClick={() => selectedStaff && handleEditStaff(selectedStaff)}>
+          <EditIcon fontSize="small" sx={{ mr: 1 }} />
+          Edit
+        </MenuItem>
+        <Divider />
+        <MenuItem onClick={handleDeleteStaffItem} sx={{ color: theme.palette.error.main }}>
+          <DeleteIcon fontSize="small" sx={{ mr: 1 }} />
+          Delete
+        </MenuItem>
+      </Menu>
     </Box>
   )
 }
