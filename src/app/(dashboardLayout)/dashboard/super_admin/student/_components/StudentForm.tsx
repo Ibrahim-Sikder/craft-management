@@ -1170,7 +1170,7 @@ const StudentForm = ({ id }: StudentFormProps) => {
         <CraftForm
 
           onSubmit={handleSubmit}
-          resolver={zodResolver(studentSchema)}
+          // resolver={zodResolver(studentSchema)}
           defaultValues={defaultValues}
           key={Object.keys(defaultValues).length > 0 ? "form-with-data" : "empty-form"}
         >
