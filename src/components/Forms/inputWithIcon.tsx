@@ -4,7 +4,7 @@ import { Controller, useFormContext } from "react-hook-form";
 
 type TInputProps = {
   name: string;
-  label?: string;
+  label?: React.ReactNode;
   size?: "small" | "medium";
   type?: string;
   fullWidth?: boolean;

@@ -27,12 +27,11 @@ import {
   MenuItem,
   Divider,
   Badge,
-  LinearProgress,
   Tooltip,
   useTheme,
   alpha,
   CircularProgress,
-  Pagination,
+  Modal,
 } from "@mui/material"
 import {
   Search as SearchIcon,
@@ -43,8 +42,6 @@ import {
   MoreVert as MoreVertIcon,
   Download as DownloadIcon,
   Print as PrintIcon,
-  Mail as MailIcon,
-  Phone as PhoneIcon,
   Business as BusinessIcon,
   Work as WorkIcon,
   CheckCircle as CheckCircleIcon,
@@ -66,6 +63,7 @@ import {
 import { styled } from "@mui/material/styles"
 import { motion } from "framer-motion"
 import { useDeleteStaffMutation, useGetAllStaffQuery } from "@/redux/api/staffApi"
+import Swal from "sweetalert2"
 
 // Define types
 type StaffStatus = "active" | "on leave" | "inactive"
@@ -331,8 +329,9 @@ export default function StaffDashboard() {
     searchTerm: searchTerm,
   })
 
+  const [modalOpen, setModalOpen] = useState(false)
+  const [selectedStaff, setSelectedStaff] = useState<StaffMember | null>(null)
 
-  // Replace the useEffect that sets mock data with this
   useEffect(() => {
     if (staffData?.data?.staffs) {
       console.log("Setting staff from API data:", staffData.data.staffs)
@@ -424,8 +423,39 @@ export default function StaffDashboard() {
       return sortDirection === "asc" ? comparison : -comparison
     })
 
+  const handleDelete = async (id: string) => {
+    setTimeout(() => {
+      Swal.fire({
+        title: "Are you sure?",
+        text: "You want to delete this student?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, delete it!",
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          try {
+            await deleteStaff(id).unwrap()
 
+            Swal.fire({
+              title: "Deleted!",
+              text: `student has been deleted successfully.`,
+              icon: "success",
+            })
 
+            refetch()
+          } catch (err: any) {
+            Swal.fire({
+              title: "Error!",
+              text: err.data?.message || "Failed to delete student",
+              icon: "error",
+            })
+          }
+        }
+      })
+    }, 100)
+  }
   const handleRefresh = () => {
     setLoading(true)
     refetch()
@@ -860,269 +890,56 @@ export default function StaffDashboard() {
               </Tabs>
             </Box>
           </Grid>
-
-          {isLoading || loading ? (
-            <Grid item xs={12}>
-              <Box sx={{ p: 4, textAlign: "center" }}>
-                <LinearProgress sx={{ mb: 2, height: 6, borderRadius: 3 }} />
-                <Typography variant="h6" color="text.secondary">
-                  Loading staff members...
-                </Typography>
-              </Box>
-            </Grid>
-          ) : filteredStaff.length === 0 ? (
-            <Grid item xs={12}>
-              <Box sx={{ p: 8, textAlign: "center" }}>
-                <Typography variant="h5" color="text.secondary" gutterBottom>
-                  No staff members found
-                </Typography>
-                <Typography variant="body1" color="text.secondary">
-                  Try adjusting your search or filters
-                </Typography>
-              </Box>
-            </Grid>
-          ) : viewMode === "grid" ? (
-            <Grid item xs={12}>
-              <Grid container spacing={3}>
-                {filteredStaff.map((person, index) => (
-                  <Grid item xs={12} sm={6} md={4} lg={3} key={person.id}>
-                    <motion.div
-                      initial={{ opacity: 0, y: 20 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ duration: 0.4, delay: index * 0.05 }}
-                    >
-                      <StyledCard>
-                        <Box sx={{ position: "relative" }}>
-                          <CardMedia
-                            component="div"
-                            sx={{
-                              height: 100,
-                              backgroundColor: departmentColors[person.department] || "#00b09b",
-                              position: "relative",
-                            }}
-                          />
-                          <Box
-                            sx={{
-                              position: "absolute",
-                              top: 50,
-                              left: "50%",
-                              transform: "translateX(-50%)",
-                              zIndex: 1,
-                            }}
-                          >
-                            {person.status === "active" ? (
-                              <StyledBadge
-                                overlap="circular"
-                                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-                                variant="dot"
-                              >
-                                <Avatar src={person.avatar} sx={{ width: 80, height: 80, border: "4px solid white" }} />
-                              </StyledBadge>
-                            ) : (
-                              <Avatar src={person.avatar} sx={{ width: 80, height: 80, border: "4px solid white" }} />
-                            )}
-                          </Box>
-                        </Box>
-                        <CardContent sx={{ pt: 5, pb: 2 }}>
-                          <Box sx={{ textAlign: "center", mb: 2 }}>
-                            <Typography variant="h6" fontWeight={600} gutterBottom>
-                              {person.name}
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary" gutterBottom>
-                              {person.role}
-                            </Typography>
-
-                            <DepartmentChip
-                              label={person.department}
-                              size="small"
-                              sx={{
-                                backgroundColor: alpha(departmentColors[person.department] || "#00b09b", 0.1),
-                                color: departmentColors[person.department] || "#00b09b",
-                              }}
-                            />
-                          </Box>
-
-                          <Box sx={{ mb: 2 }}>
-                            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                              <LocationIcon fontSize="small" sx={{ color: "text.secondary", mr: 1 }} />
-                              <Typography variant="body2" color="text.secondary">
-                                {person.location}
-                              </Typography>
-                            </Box>
-                            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                              <WorkIcon fontSize="small" sx={{ color: "text.secondary", mr: 1 }} />
-                              <Typography variant="body2" color="text.secondary">
-                                {person.experience} years experience
-                              </Typography>
-                            </Box>
-                            <Box sx={{ display: "flex", alignItems: "center" }}>
-                              <CalendarIcon fontSize="small" sx={{ color: "text.secondary", mr: 1 }} />
-                              <Typography variant="body2" color="text.secondary">
-                                Joined: {person.joinDate}
-                              </Typography>
-                            </Box>
-                          </Box>
-
-                          <Box sx={{ mb: 2 }}>
-                            <Typography variant="body2" fontWeight={500} gutterBottom>
-                              Performance
-                            </Typography>
-                            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                              <PerformanceIndicator value={person.performance} />
-                              <Typography variant="body2" fontWeight={600}>
-                                {person.performance}%
-                              </Typography>
-                            </Box>
-                          </Box>
-
-                          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mb: 2 }}>
-                            {person.skills.map((skill) => (
-                              <Chip
-                                key={skill}
-                                label={skill}
-                                size="small"
-                                sx={{
-                                  bgcolor: alpha(theme.palette.primary.main, 0.1),
-                                  color: theme.palette.primary.main,
-                                  fontSize: "0.7rem",
-                                }}
-                              />
-                            ))}
-                          </Box>
-                        </CardContent>
-                        <Divider />
-                        <CardActions sx={{ justifyContent: "space-between", px: 2 }}>
-                          <Box sx={{ display: "flex", alignItems: "center" }}>
-                            <SupervisorIcon fontSize="small" sx={{ color: "text.secondary", mr: 0.5 }} />
-                            <Typography variant="body2" color="text.secondary">
-                              {person.supervisor}
-                            </Typography>
-                          </Box>
-                          <StatusChip
-                            label={person.status}
-                            size="small"
-                            status={person.status}
-                            icon={
-                              person.status === "active" ? (
-                                <CheckCircleIcon fontSize="small" />
-                              ) : (
-                                <CancelIcon fontSize="small" />
-                              )
-                            }
-                          />
-                        </CardActions>
+          <Grid item xs={12}>
+            <Grid container spacing={3}>
+              {filteredStaff.map((person, index) => (
+                <Grid item xs={12} sm={6} md={4} lg={3} key={person.id}>
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.4, delay: index * 0.05 }}
+                  >
+                    <StyledCard>
+                      <Box sx={{ position: "relative" }}>
+                        <CardMedia
+                          component="div"
+                          sx={{
+                            height: 100,
+                            backgroundColor: departmentColors[person.department] || "#00b09b",
+                            position: "relative",
+                          }}
+                        />
                         <Box
                           sx={{
                             position: "absolute",
-                            top: 8,
-                            right: 8,
+                            top: 50,
+                            left: "50%",
+                            transform: "translateX(-50%)",
                             zIndex: 1,
                           }}
                         >
-                          <IconButton
-                            size="small"
-                            sx={{
-                              bgcolor: "rgba(255, 255, 255, 0.9)",
-                              "&:hover": { bgcolor: "rgba(255, 255, 255, 1)" },
-                            }}
-                          >
-                            <MoreVertIcon fontSize="small" />
-                          </IconButton>
+                          {person.status === "active" ? (
+                            <StyledBadge
+                              overlap="circular"
+                              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                              variant="dot"
+                            >
+                              <Avatar src={person.avatar} sx={{ width: 80, height: 80, border: "4px solid white" }} />
+                            </StyledBadge>
+                          ) : (
+                            <Avatar src={person.avatar} sx={{ width: 80, height: 80, border: "4px solid white" }} />
+                          )}
                         </Box>
-                      </StyledCard>
-                    </motion.div>
-                  </Grid>
-                ))}
-              </Grid>
-            </Grid>
-          ) : viewMode === "list" ? (
-            <Grid item xs={12}>
-              <Paper
-                elevation={0}
-                sx={{
-                  borderRadius: 3,
-                  overflow: "hidden",
-                  boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
-                }}
-              >
-                <Box sx={{ width: "100%", overflow: "auto" }}>
-                  <Box sx={{ minWidth: 1000 }}>
-                    {/* In the list view section, replace the last column (Status) with an Actions column */}
-                    <Box
-                      sx={{
-                        display: "grid",
-                        gridTemplateColumns: "50px 250px 150px 150px 150px 100px 100px 150px",
-                        bgcolor: alpha(theme.palette.primary.main, 0.05),
-                        p: 2,
-                      }}
-                    >
-                      <Typography variant="subtitle2" fontWeight={600}>
-                        #
-                      </Typography>
-                      <Typography variant="subtitle2" fontWeight={600}>
-                        Staff Member
-                      </Typography>
-                      <Typography variant="subtitle2" fontWeight={600}>
-                        Department
-                      </Typography>
-                      <Typography variant="subtitle2" fontWeight={600}>
-                        Role
-                      </Typography>
-                      <Typography variant="subtitle2" fontWeight={600}>
-                        Contact
-                      </Typography>
-                      <Typography variant="subtitle2" fontWeight={600}>
-                        Experience
-                      </Typography>
-                      <Typography variant="subtitle2" fontWeight={600}>
-                        Performance
-                      </Typography>
-                      <Typography variant="subtitle2" fontWeight={600}>
-                        Actions
-                      </Typography>
-                    </Box>
-                    <Divider />
-                    {filteredStaff.map((person, index) => (
-                      <motion.div
-                        key={person.id}
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3, delay: index * 0.03 }}
-                      >
-                        {/* Then update the row to include action buttons */}
-                        <Box
-                          sx={{
-                            display: "grid",
-                            gridTemplateColumns: "50px 250px 150px 150px 150px 100px 100px 150px",
-                            p: 2,
-                            alignItems: "center",
-                            "&:hover": { bgcolor: alpha(theme.palette.primary.main, 0.02) },
-                            borderBottom: `1px solid ${theme.palette.divider}`,
-                          }}
-                        >
-                          {/* Keep all the existing columns */}
-                          <Typography variant="body2">{person.staffId || index + 1}</Typography>
-                          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                            {person.status === "active" ? (
-                              <StyledBadge
-                                overlap="circular"
-                                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-                                variant="dot"
-                              >
-                                <Avatar src={person.avatar} sx={{ width: 40, height: 40 }} />
-                              </StyledBadge>
-                            ) : (
-                              <Avatar src={person.avatar} sx={{ width: 40, height: 40 }} />
-                            )}
-                            <Box>
-                              <Typography variant="body1" fontWeight={500}>
-                                {person.name}
-                              </Typography>
-                              <Typography variant="body2" color="text.secondary">
-                                {person.email}
-                              </Typography>
-                            </Box>
-                          </Box>
+                      </Box>
+                      <CardContent sx={{ pt: 5, pb: 2 }}>
+                        <Box sx={{ textAlign: "center", mb: 2 }}>
+                          <Typography variant="h6" fontWeight={600} gutterBottom>
+                            {person.name}
+                          </Typography>
+                          <Typography variant="body2" color="text.secondary" gutterBottom>
+                            {person.role}
+                          </Typography>
+
                           <DepartmentChip
                             label={person.department}
                             size="small"
@@ -1131,228 +948,177 @@ export default function StaffDashboard() {
                               color: departmentColors[person.department] || "#00b09b",
                             }}
                           />
-                          <Typography variant="body2">{person.role}</Typography>
-                          <Box>
-                            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                              <MailIcon fontSize="small" sx={{ color: "text.secondary", fontSize: 16 }} />
-                              <Typography variant="body2" color="text.secondary">
-                                Email
-                              </Typography>
-                            </Box>
-                            <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                              <PhoneIcon fontSize="small" sx={{ color: "text.secondary", fontSize: 16 }} />
-                              <Typography variant="body2" color="text.secondary">
-                                Call
-                              </Typography>
-                            </Box>
-                          </Box>
-                          <Box sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
-                            <Typography variant="body2" fontWeight={500}>
-                              {person.experience} years
+                        </Box>
+
+                        <Box sx={{ mb: 2 }}>
+                          <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                            <LocationIcon fontSize="small" sx={{ color: "text.secondary", mr: 1 }} />
+                            <Typography variant="body2" color="text.secondary">
+                              {person.location}
                             </Typography>
                           </Box>
+                          <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                            <WorkIcon fontSize="small" sx={{ color: "text.secondary", mr: 1 }} />
+                            <Typography variant="body2" color="text.secondary">
+                              {person.experience} years experience
+                            </Typography>
+                          </Box>
+                          <Box sx={{ display: "flex", alignItems: "center" }}>
+                            <CalendarIcon fontSize="small" sx={{ color: "text.secondary", mr: 1 }} />
+                            <Typography variant="body2" color="text.secondary">
+                              Joined: {person.joinDate}
+                            </Typography>
+                          </Box>
+                        </Box>
+
+                        <Box sx={{ mb: 2 }}>
+                          <Typography variant="body2" fontWeight={500} gutterBottom>
+                            Performance
+                          </Typography>
                           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                             <PerformanceIndicator value={person.performance} />
                             <Typography variant="body2" fontWeight={600}>
                               {person.performance}%
                             </Typography>
                           </Box>
-
-                          {/* Replace the StatusChip with this Actions column */}
-                          <Box sx={{ display: "flex", gap: 1 }}>
-                            <Tooltip title="View Profile">
-                              <IconButton
-                                size="small"
-                                color="primary"
-                                onClick={() => {
-                                  window.location.href = `/dashboard/super_admin/staff/profile?id=${person.id}`
-                                }}
-                              >
-                                <PersonIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                            <Tooltip title="Edit">
-                              <IconButton
-                                size="small"
-                                color="info"
-                                onClick={() => {
-                                  window.location.href = `/dashboard/super_admin/staff/update/${person.id}`
-                                }}
-                              >
-                                <EditIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                            <Tooltip title="Delete">
-                              <IconButton
-                                size="small"
-                                color="error"
-                                onClick={async () => {
-                                  if (window.confirm("Are you sure you want to delete this staff member?")) {
-                                    try {
-                                      setLoading(true)
-                                      await deleteStaff(person.id).unwrap()
-                                      await refetch()
-                                      setLoading(false)
-                                    } catch (error) {
-                                      console.error("Failed to delete staff", error)
-                                      setLoading(false)
-                                    }
-                                  }
-                                }}
-                              >
-                                <DeleteIcon fontSize="small" />
-                              </IconButton>
-                            </Tooltip>
-                            <StatusChip label={person.status} size="small" status={person.status} />
-                          </Box>
                         </Box>
-                      </motion.div>
-                    ))}
-                  </Box>
-                </Box>
-              </Paper>
-              {/* Add this after the list view Paper component */}
-              <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 2 }}>
-                <Pagination
-                  count={staffData?.data?.meta?.totalPage || 1}
-                  page={page + 1}
-                  onChange={(event, newPage) => {
-                    setPage(newPage - 1)
-                    setLoading(true)
-                  }}
-                  color="primary"
-                  shape="rounded"
-                />
-              </Box>
-            </Grid>
-          ) : (
-            <Grid item xs={12}>
-              <Grid container spacing={3}>
-                {(["active", "on leave", "inactive"] as StaffStatus[]).map((status) => (
-                  <Grid item xs={12} md={4} key={status}>
-                    <Paper
-                      elevation={0}
-                      sx={{
-                        p: 2,
-                        borderRadius: 3,
-                        height: "100%",
-                        boxShadow: "0 4px 20px rgba(0, 0, 0, 0.08)",
-                      }}
-                    >
-                      <Box
-                        sx={{
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "space-between",
-                          mb: 2,
-                        }}
-                      >
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                          <StatusChip
-                            label={status.charAt(0).toUpperCase() + status.slice(1)}
-                            size="small"
-                            status={status}
-                          />
+
+                        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mb: 2 }}>
+                          {person.skills.map((skill) => (
+                            <Chip
+                              key={skill}
+                              label={skill}
+                              size="small"
+                              sx={{
+                                bgcolor: alpha(theme.palette.primary.main, 0.1),
+                                color: theme.palette.primary.main,
+                                fontSize: "0.7rem",
+                              }}
+                            />
+                          ))}
+                        </Box>
+                      </CardContent>
+                      <Divider />
+                      <CardActions sx={{ justifyContent: "space-between", px: 2 }}>
+                        <Box sx={{ display: "flex", alignItems: "center" }}>
+                          <SupervisorIcon fontSize="small" sx={{ color: "text.secondary", mr: 0.5 }} />
                           <Typography variant="body2" color="text.secondary">
-                            {filteredStaff.filter((t) => t.status === status).length} staff members
+                            {person.supervisor}
                           </Typography>
                         </Box>
-                        <IconButton size="small">
+                        <StatusChip
+                          label={person.status}
+                          size="small"
+                          status={person.status}
+                          icon={
+                            person.status === "active" ? (
+                              <CheckCircleIcon fontSize="small" />
+                            ) : (
+                              <CancelIcon fontSize="small" />
+                            )
+                          }
+                        />
+                      </CardActions>
+                      <Box
+                        sx={{
+                          position: "absolute",
+                          top: 8,
+                          right: 8,
+                          zIndex: 1,
+                        }}
+                      >
+                        <IconButton
+                          size="small"
+                          sx={{
+                            bgcolor: "rgba(255, 255, 255, 0.9)",
+                            "&:hover": { bgcolor: "rgba(255, 255, 255, 1)" },
+                          }}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setSelectedStaff(person)
+                            setModalOpen(true)
+                          }}
+                        >
                           <MoreVertIcon fontSize="small" />
                         </IconButton>
                       </Box>
-                      <Divider sx={{ mb: 2 }} />
-                      <Box sx={{ height: "calc(100vh - 350px)", overflow: "auto", pr: 1 }}>
-                        {filteredStaff
-                          .filter((person) => person.status === status)
-                          .map((person, index) => (
-                            <motion.div
-                              key={person.id}
-                              initial={{ opacity: 0, y: 10 }}
-                              animate={{ opacity: 1, y: 0 }}
-                              transition={{ duration: 0.3, delay: index * 0.05 }}
-                            >
-                              <Paper
-                                elevation={0}
-                                sx={{
-                                  p: 2,
-                                  mb: 2,
-                                  borderRadius: 2,
-                                  border: `1px solid ${theme.palette.divider}`,
-                                  "&:hover": {
-                                    boxShadow: "0 4px 12px rgba(0, 0, 0, 0.08)",
-                                    borderColor: "transparent",
-                                  },
-                                }}
-                              >
-                                <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 1.5 }}>
-                                  {person.status === "active" ? (
-                                    <StyledBadge
-                                      overlap="circular"
-                                      anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-                                      variant="dot"
-                                    >
-                                      <Avatar src={person.avatar} sx={{ width: 40, height: 40 }} />
-                                    </StyledBadge>
-                                  ) : (
-                                    <Avatar src={person.avatar} sx={{ width: 40, height: 40 }} />
-                                  )}
-                                  <Box>
-                                    <Typography variant="body1" fontWeight={500}>
-                                      {person.name}
-                                    </Typography>
-                                    <Typography variant="body2" color="text.secondary">
-                                      {person.role}
-                                    </Typography>
-                                  </Box>
-                                </Box>
-                                <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                                  <DepartmentChip
-                                    label={person.department}
-                                    size="small"
-                                    sx={{
-                                      backgroundColor: alpha(departmentColors[person.department] || "#00b09b", 0.1),
-                                      color: departmentColors[person.department] || "#00b09b",
-                                    }}
-                                  />
-                                </Box>
-                                <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mb: 1.5 }}>
-                                  {person.skills.map((skill) => (
-                                    <Chip
-                                      key={skill}
-                                      label={skill}
-                                      size="small"
-                                      sx={{
-                                        bgcolor: alpha(theme.palette.primary.main, 0.1),
-                                        color: theme.palette.primary.main,
-                                        fontSize: "0.7rem",
-                                      }}
-                                    />
-                                  ))}
-                                </Box>
-                                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                  <Typography variant="body2" color="text.secondary">
-                                    {person.experience} years
-                                  </Typography>
-                                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                                    <PerformanceIndicator value={person.performance} />
-                                    <Typography variant="body2" fontWeight={600}>
-                                      {person.performance}%
-                                    </Typography>
-                                  </Box>
-                                </Box>
-                              </Paper>
-                            </motion.div>
-                          ))}
-                      </Box>
-                    </Paper>
-                  </Grid>
-                ))}
-              </Grid>
+                    </StyledCard>
+                  </motion.div>
+                </Grid>
+              ))}
             </Grid>
-          )}
+          </Grid>
         </Grid>
       </Container>
+      {/* Staff Action Modal */}
+      <Modal
+        open={modalOpen}
+        onClose={() => setModalOpen(false)}
+        aria-labelledby="staff-action-modal"
+        aria-describedby="staff-action-options"
+      >
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 300,
+            bgcolor: "background.paper",
+            borderRadius: 2,
+            boxShadow: 24,
+            p: 3,
+          }}
+        >
+          <Typography id="staff-action-modal" variant="h6" component="h2" sx={{ mb: 2, textAlign: "center" }}>
+            Staff Actions
+          </Typography>
+          <Box sx={{ display: "flex", justifyContent: "space-around", mb: 2 }}>
+            <Tooltip title="View Profile">
+              <IconButton
+                color="primary"
+                onClick={() => {
+                  if (selectedStaff) {
+                    window.location.href = `/dashboard/super_admin/staff/profile/${selectedStaff.id}`
+                  }
+                  setModalOpen(false)
+                }}
+              >
+                <PersonIcon fontSize="large" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Edit Staff">
+              <IconButton
+                color="info"
+                onClick={() => {
+                  if (selectedStaff) {
+                    window.location.href = `/dashboard/super_admin/staff/update/${selectedStaff.id}`
+                  }
+                  setModalOpen(false)
+                }}
+              >
+                <EditIcon fontSize="large" />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Delete Staff">
+              <IconButton
+                color="error"
+                onClick={() => {
+                  if (selectedStaff) {
+                    handleDelete(selectedStaff.id.toString())
+                  }
+                  setModalOpen(false)
+                }}
+              >
+                <DeleteIcon fontSize="large" />
+              </IconButton>
+            </Tooltip>
+          </Box>
+          <Button fullWidth variant="outlined" onClick={() => setModalOpen(false)} sx={{ mt: 1 }}>
+            Cancel
+          </Button>
+        </Box>
+      </Modal>
     </Box>
   )
 }
