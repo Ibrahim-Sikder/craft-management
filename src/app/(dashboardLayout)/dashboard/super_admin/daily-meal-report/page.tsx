@@ -469,10 +469,11 @@ export default function MealReport() {
             ],
           },
         }
+        console.log(updateData)
 
         // Call the update API
         const result = await updateMealReport(updateData).unwrap()
-
+        console.log(result)
         // Validate the API response
         if (!result || !result.success) {
           throw new Error(result?.message || "Failed to update meal")

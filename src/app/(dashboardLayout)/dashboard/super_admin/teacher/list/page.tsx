@@ -137,7 +137,7 @@ export default function TeachersDashboard() {
 
   useEffect(() => {
     if (teacherData && !isLoading) {
-      const formattedTeachers = teacherData.data.map((teacher: any, index: any) => ({
+      const formattedTeachers = teacherData?.data.data.map((teacher: any, index: any) => ({
         id: index + 1,
         _id: teacher._id,
         name: teacher.englishName || teacher.name,
@@ -188,7 +188,7 @@ export default function TeachersDashboard() {
 
 
   const handleViewTeacher = (teacher: Teacher) => {
-    router.push(`/dashboard/super_admin/teacher/profile?id=${teacher._id}`)
+    router.push(`/dashboard/super_admin/teacher/profile/${teacher._id}`)
     handleTeacherMenuClose()
   }
 

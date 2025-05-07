@@ -5,9 +5,9 @@ export type userRole = keyof typeof USER_ROLE;
 
 import { ReactNode } from "react";
 
-export type UserRole = "admin" | "teacher" | "student" | "super_admin";
+export type UserRole = "admin" | "teacher" | "student" | "super_admin" | 'class_teacher' | 'super_visor';
 
-export const userRoles: UserRole[] = ["admin", "teacher", "student", "super_admin"];
+export const userRoles: UserRole[] = ['super_admin', 'admin', 'student', 'teacher', 'super_visor', 'class_teacher'];
 export interface NavigationItem {
     title: string
     path?: string

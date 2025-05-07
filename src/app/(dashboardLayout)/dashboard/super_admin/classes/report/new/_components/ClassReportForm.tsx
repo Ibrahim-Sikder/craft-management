@@ -48,7 +48,7 @@ import {
 import CraftForm from "@/components/Forms/Form"
 import CraftDatePicker from "@/components/Forms/DatePicker"
 import CraftSelect from "@/components/Forms/Select"
-import { classHour, subjectName } from "@/options"
+import { attendance, classHour, handWritting, lessonEvaluation, subjectName } from "@/options"
 import CraftIntAutoComplete from "@/components/Forms/CruftAutocomplete"
 import { customTheme } from "@/data"
 import { getFromLocalStorage } from "@/utils/local.storage"
@@ -75,13 +75,10 @@ type StudentEvaluation = {
   handwriting: string
   attendance: string
   parentSignature: boolean
-  lessonAssessmentAttendance:string;
   comments: string
 }
 
-
 export default function ClassReportForm({ id }: any) {
-
   const router = useRouter()
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(10)
@@ -105,6 +102,8 @@ export default function ClassReportForm({ id }: any) {
   const [studentEvaluations, setStudentEvaluations] = useState<StudentEvaluation[]>([])
   const [todayLessonId, setTodayLessonId] = useState<string | null>(null)
   const [homeTaskId, setHomeTaskId] = useState<string | null>(null)
+  const [reportStudents, setReportStudents] = useState<any[]>([])
+  const [isEditMode, setIsEditMode] = useState(false)
 
   const { data: singleClassReport, isLoading: singleClassReportLoading } = useGetSingleClassReportQuery({ id })
 
@@ -118,6 +117,7 @@ export default function ClassReportForm({ id }: any) {
     page: page + 1,
     searchTerm: searchTerm,
   })
+
   const classOption = useMemo(() => {
     if (!classData?.data?.classes) return []
     return classData?.data?.classes.map((clg: any) => ({
@@ -147,16 +147,50 @@ export default function ClassReportForm({ id }: any) {
     data: studentData,
     isLoading,
     refetch,
-  } = useGetAllStudentsQuery({
-    limit: rowsPerPage,
-    page: page + 1,
-    searchTerm: searchTerm,
-  })
+  } = useGetAllStudentsQuery(
+    {
+      limit: rowsPerPage,
+      page: page + 1,
+      searchTerm: searchTerm,
+      className: filters.class ? filters.class : undefined,
+    },
+    {
+      skip: id && isEditMode, // Skip this query when in edit mode with an ID
+    },
+  )
+
   const [createClassReport, { isLoading: isSubmitting }] = useCreateClassReportMutation()
   const [updateClassReport, { isLoading: isUpdating }] = useUpdateClassReportMutation()
 
-  // Get students from API response
-  const students = studentData?.data || []
+  // Get students from API response or use report students in edit mode
+  const students = useMemo(() => {
+    if (id && isEditMode) {
+      return reportStudents
+    }
+    return studentData?.data || []
+  }, [id, isEditMode, reportStudents, studentData?.data])
+
+  // Extract students from class report when editing
+  useEffect(() => {
+    if (id && singleClassReport?.data?.studentEvaluations) {
+      setIsEditMode(true)
+
+      // Extract student data from the report
+      const studentsFromReport = singleClassReport.data.studentEvaluations.map((studentEval: any) => {
+        const student = studentEval.studentId
+        return {
+          _id: student._id,
+          name: student.name,
+          studentId: student.studentId,
+          className: student.className,
+          section: student.section || "",
+          // Add other student fields as needed
+        }
+      })
+
+      setReportStudents(studentsFromReport)
+    }
+  }, [id, singleClassReport])
 
   // Initialize student evaluations when students data is loaded or when editing
   useEffect(() => {
@@ -217,7 +251,6 @@ export default function ClassReportForm({ id }: any) {
   }, [singleClassReport])
 
   const handleSubmit = async (data: FieldValues) => {
-
     let classValue = null
     if (data.classes) {
       if (typeof data.classes === "object" && data.classes !== null) {
@@ -237,16 +270,6 @@ export default function ClassReportForm({ id }: any) {
     }
 
     try {
-      // if (!todayLessonId) {
-      //   toast.error("আজকের পাঠ যোগ করুন")
-      //   return
-      // }
-
-      // if (!homeTaskId) {
-      //   toast.error("বাড়ির কাজ যোগ করুন")
-      //   return
-      // }
-
       if (!classValue) {
         toast.error("শ্রেণী নির্বাচন করুন")
         return
@@ -257,24 +280,6 @@ export default function ClassReportForm({ id }: any) {
         return
       }
 
-      const allStudentEvaluations = students.map((student: any) => {
-        const existingEval = studentEvaluations.find((evaluation) => evaluation.studentId === student._id)
-
-        if (existingEval) {
-          return existingEval
-        } else {
-          return {
-            studentId: student._id,
-            lessonEvaluation: "পড়া শিখেছে",
-            handwriting: "লিখেছে",
-            attendance: "উপস্থিত",
-            lessonAssessmentAttendance: "উপস্থিত",
-            parentSignature: false,
-            comments: "",
-          }
-        }
-      })
-
       const formattedData = {
         teachers: storedUser.name,
         subjects: data.classes.label,
@@ -282,19 +287,33 @@ export default function ClassReportForm({ id }: any) {
         hour: data.hour,
         date: data.date,
 
-        studentEvaluations: studentEvaluations.map((studentEval) => ({
-          studentId: studentEval.studentId,
-          lessonEvaluation: studentEval.lessonEvaluation,
-          handwriting: studentEval.handwriting,
-          attendance: studentEval.attendance,
-          lessonAssessmentAttendance: studentEval.lessonAssessmentAttendance,
-          parentSignature: studentEval.parentSignature,
-          comments: studentEval.comments || "",
-        })),
+        studentEvaluations: students.map((student: any) => {
+          const existingEval = studentEvaluations.find((evaluation) => evaluation.studentId === student._id)
+
+          if (existingEval) {
+            return {
+              studentId: existingEval.studentId,
+              lessonEvaluation: existingEval.lessonEvaluation,
+              handwriting: existingEval.handwriting,
+              attendance: existingEval.attendance,
+              parentSignature: existingEval.parentSignature,
+              comments: existingEval.comments || "",
+            }
+          } else {
+            return {
+              studentId: student._id,
+              lessonEvaluation: "পড়া শিখেছে",
+              handwriting: "লিখেছে",
+              attendance: "উপস্থিত",
+              parentSignature: false,
+              comments: "",
+            }
+          }
+        }),
         todayLesson: todayLessonId,
         homeTask: homeTaskId,
       }
- 
+
       if (!id) {
         const response = await createClassReport(formattedData).unwrap()
 
@@ -316,7 +335,6 @@ export default function ClassReportForm({ id }: any) {
           router.push("/dashboard/super_admin/classes/report/list")
         }
       }
-
     } catch (error: any) {
       console.error("Error saving class report:", error)
       setSnackbarMessage(error?.data?.message || "Failed to save class report")
@@ -366,7 +384,6 @@ export default function ClassReportForm({ id }: any) {
         lessonEvaluation: "পড়া শিখেছে",
         handwriting: "লিখেছে",
         attendance: "উপস্থিত",
-        lessonAssessmentAttendance: "উপস্থিত",
         parentSignature: false,
         comments: "",
       })
@@ -393,7 +410,6 @@ export default function ClassReportForm({ id }: any) {
         lessonEvaluation: "পড়া শিখেছে",
         handwriting: value,
         attendance: "উপস্থিত",
-        lessonAssessmentAttendance: "উপস্থিত",
         parentSignature: false,
         comments: "",
       })
@@ -412,16 +428,14 @@ export default function ClassReportForm({ id }: any) {
       updatedEvaluations[index] = {
         ...updatedEvaluations[index],
         attendance: value,
-        lessonAssessmentAttendance: value,
       }
     } else {
       // Create new evaluation if it doesn't exist
       updatedEvaluations.push({
         studentId,
         lessonEvaluation: "পড়া শিখেছে",
-        handwriting: "লিখেছে",
+        handwriting: value,
         attendance: value,
-        lessonAssessmentAttendance: value,
         parentSignature: false,
         comments: "",
       })
@@ -447,7 +461,6 @@ export default function ClassReportForm({ id }: any) {
         lessonEvaluation: "পড়া শিখেছে",
         handwriting: "লিখেছে",
         attendance: "উপস্থিত",
-        lessonAssessmentAttendance: "উপস্থিত",
         parentSignature: checked,
         comments: "",
       })
@@ -473,7 +486,6 @@ export default function ClassReportForm({ id }: any) {
         lessonEvaluation: "পড়া শিখেছে",
         handwriting: "লিখেছে",
         attendance: "উপস্থিত",
-        lessonAssessmentAttendance: "উপস্থিত",
         parentSignature: false,
         comments: value,
       })
@@ -499,6 +511,29 @@ export default function ClassReportForm({ id }: any) {
     setFilteredVehicles(filtered)
   }
 
+  const handleClassChange = (event: any, newValue: any) => {
+    // Only allow class changes in create mode, not edit mode
+    if (id && isEditMode) {
+      toast("Cannot change class in edit mode")
+      return
+    }
+
+    if (newValue) {
+      setFilters((prev) => ({
+        ...prev,
+        class: newValue.label,
+      }))
+
+      // Refetch students with the new class filter
+      refetch()
+    } else {
+      setFilters((prev) => ({
+        ...prev,
+        class: "",
+      }))
+    }
+  }
+
   // Get evaluation for a specific student
   const getStudentEvaluation = (studentId: string) => {
     const evaluation = studentEvaluations.find((evaluation) => evaluation.studentId === studentId)
@@ -510,7 +545,6 @@ export default function ClassReportForm({ id }: any) {
         lessonEvaluation: "পড়া শিখেছে",
         handwriting: "লিখেছে",
         attendance: "উপস্থিত",
-        lessonAssessmentAttendance: "উপস্থিত",
         parentSignature: false,
         comments: "",
       }
@@ -577,7 +611,12 @@ export default function ClassReportForm({ id }: any) {
                         }}
                       >
                         <Typography variant="h4" component="h1" sx={{ fontWeight: 700, color: "text.primary" }}>
-                          + Add New Report
+                          {id ? "Edit Report" : "+ Add New Report"}
+                          {isEditMode && (
+                            <Typography component="span" variant="subtitle1" sx={{ ml: 2, color: "text.secondary" }}>
+                              (Editing existing report)
+                            </Typography>
+                          )}
                         </Typography>
                         <Box sx={{ display: "flex", gap: 2 }}>
                           <Button
@@ -604,7 +643,7 @@ export default function ClassReportForm({ id }: any) {
                               boxShadow: "0px 4px 10px rgba(99, 102, 241, 0.2)",
                             }}
                           >
-                            {homeTaskId ? "বাড়ির কাজ দেখুন" : "বাড়ির কাজ"}
+                            {homeTaskId ? "বাড়ির কাজ দেখুন" : "বাড়ির কাজ"}
                           </Button>
                           <Button
                             type="submit"
@@ -633,7 +672,11 @@ export default function ClassReportForm({ id }: any) {
                                   name="teachers"
                                   label="শিক্ষকের নাম"
                                   placeholder="শিক্ষকের নাম লিখুন"
-                                  defaultValue={storedUser?.name}
+                                  defaultValue={
+                                    storedUser.role === "class_teacher" || storedUser.role === "teacher"
+                                      ? storedUser?.name
+                                      : ""
+                                  }
                                   required
                                   fullWidth
                                   InputProps={{
@@ -650,6 +693,8 @@ export default function ClassReportForm({ id }: any) {
                                   freeSolo
                                   multiple={false}
                                   options={classOption}
+                                  onChange={handleClassChange}
+                                  disabled={id ? true : false}
                                 />
                               </Grid>
                               <Grid item xs={12} md={3}>
@@ -698,9 +743,11 @@ export default function ClassReportForm({ id }: any) {
                                     <TableCell>ছাত্রের নাম</TableCell>
                                     <TableCell>পাঠ মূল্যায়ন</TableCell>
                                     <TableCell>হাতের লিখা</TableCell>
-                                    <TableCell>উপস্থিতি</TableCell>
-                                    <TableCell>পাঠ মূল্যায়ন উপস্থিতি </TableCell>
-                                    <TableCell align="center">অভিভাবকের স্বাক্ষর</TableCell>
+                                    {storedUser.role === "class_teacher" && <TableCell>উপস্থিতি</TableCell>}
+
+                                    {storedUser.role === "class_teacher" && (
+                                      <TableCell align="center">অভিভাবকের স্বাক্ষর</TableCell>
+                                    )}
                                     <TableCell align="center">মন্তব্য</TableCell>
                                   </TableRow>
                                 </TableHead>
@@ -742,13 +789,13 @@ export default function ClassReportForm({ id }: any) {
                                               </InputLabel>
                                               <Select
                                                 labelId={`lesson-label-${student._id}`}
-                                                value={evaluation.lessonEvaluation || "পড়া শিখেছে"}
+                                                value={evaluation.lessonEvaluation}
                                                 label="Lesson Evaluation"
                                                 onChange={(e) =>
                                                   handleLessonEvaluationChange(student._id, e.target.value)
                                                 }
                                               >
-                                                {["পড়া শিখেছে", "আংশিক শিখেছে", "পড়া শিখেনি"].map((item) => (
+                                                {lessonEvaluation.map((item) => (
                                                   <MenuItem key={item} value={item}>
                                                     {item}
                                                   </MenuItem>
@@ -768,7 +815,7 @@ export default function ClassReportForm({ id }: any) {
                                                 label="Handwriting"
                                                 onChange={(e) => handleHandwritingChange(student._id, e.target.value)}
                                               >
-                                                {["লিখেছে", "আংশিক লিখেছে", "লিখেনি"].map((item) => (
+                                                {handWritting.map((item) => (
                                                   <MenuItem key={item} value={item}>
                                                     {item}
                                                   </MenuItem>
@@ -776,49 +823,39 @@ export default function ClassReportForm({ id }: any) {
                                               </Select>
                                             </FormControl>
                                           </TableCell>
-                                          <TableCell align="center">
-                                            <FormControl fullWidth sx={{ minWidth: 160 }}>
-                                              <InputLabel id={`attendance-label-${student._id}`}>Attendance</InputLabel>
-                                              <Select
-                                                labelId={`attendance-label-${student._id}`}
-                                                value={evaluation.attendance || "উপস্থিত"}
-                                                label="Attendance"
-                                                onChange={(e) => handleAttendanceChange(student._id, e.target.value)}
-                                              >
-                                                {["উপস্থিত", "অনুপস্থিত", "ছুটি"].map((item) => (
-                                                  <MenuItem key={item} value={item}>
-                                                    {item}
-                                                  </MenuItem>
-                                                ))}
-                                              </Select>
-                                            </FormControl>
-                                          </TableCell>
-                                          <TableCell align="center">
-                                            <FormControl fullWidth sx={{ minWidth: 160 }}>
-                                              <InputLabel id={`attendance-label-${student._id}`}>Attendance</InputLabel>
-                                              <Select
-                                                labelId={`attendance-label-${student._id}`}
-                                                value={evaluation.lessonAssessmentAttendance || "উপস্থিত"}
-                                                label="Attendance"
-                                                onChange={(e) => handleAttendanceChange(student._id, e.target.value)}
-                                              >
-                                                {["উপস্থিত", "অনুপস্থিত"].map((item) => (
-                                                  <MenuItem key={item} value={item}>
-                                                    {item}
-                                                  </MenuItem>
-                                                ))}
-                                              </Select>
-                                            </FormControl>
-                                          </TableCell>
-                                          <TableCell align="center">
-                                            <Checkbox
-                                              color="primary"
-                                              checked={evaluation.parentSignature}
-                                              onChange={(e) =>
-                                                handleParentSignatureChange(student._id, e.target.checked)
-                                              }
-                                            />
-                                          </TableCell>
+                                          {storedUser.role === "class_teacher" && (
+                                            <TableCell align="center">
+                                              <FormControl fullWidth sx={{ minWidth: 160 }}>
+                                                <InputLabel id={`attendance-label-${student._id}`}>
+                                                  Attendance
+                                                </InputLabel>
+                                                <Select
+                                                  labelId={`attendance-label-${student._id}`}
+                                                  value={evaluation.attendance || "উপস্থিত"}
+                                                  label="Attendance"
+                                                  onChange={(e) => handleAttendanceChange(student._id, e.target.value)}
+                                                >
+                                                  {attendance.map((item) => (
+                                                    <MenuItem key={item} value={item}>
+                                                      {item}
+                                                    </MenuItem>
+                                                  ))}
+                                                </Select>
+                                              </FormControl>
+                                            </TableCell>
+                                          )}
+
+                                          {storedUser.role === "class_teacher" && (
+                                            <TableCell align="center">
+                                              <Checkbox
+                                                color="primary"
+                                                checked={evaluation.parentSignature}
+                                                onChange={(e) =>
+                                                  handleParentSignatureChange(student._id, e.target.checked)
+                                                }
+                                              />
+                                            </TableCell>
+                                          )}
                                           <TableCell>
                                             <TextField
                                               fullWidth
