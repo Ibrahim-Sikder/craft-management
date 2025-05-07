@@ -1,4 +1,3 @@
-// /* eslint-disable @typescript-eslint/no-explicit-any */
 // import {
 //   Dashboard,
 //   School,
@@ -14,16 +13,9 @@
 //   Sms,
 //   SupervisorAccount,
 //   FileCopy,
-//   Business,
-//   MenuBook,
 //   HowToReg,
-//   Groups,
 //   PhotoLibrary,
 //   Settings,
-//   Help,
-//   CalendarViewDay,
-//   Favorite,
-//   // Add these new imports
 //   AccessTime,
 //   Class,
 //   Group,
@@ -55,15 +47,10 @@
 //   RequestPage,
 //   Paid,
 //   FactCheck,
-//   AccountBox,
 //   HomeWork,
-//   MeetingRoom,
-//   Timer,
-//   EventSeat,
 //   Download,
 //   Grade,
 //   Category as ExamCategory,
-//   Layers,
 //   Event,
 //   TableRows,
 //   Message,
@@ -71,50 +58,29 @@
 //   Email,
 //   Report,
 //   People,
-//   FolderSpecial,
 //   Info,
-//   ContactPhone,
-//   EmojiTransportation,
-//   Group as GoverningBody,
-//   Work,
-//   Announcement,
-//   Celebration,
-//   PhotoAlbum,
-//   Person as Author,
-//   Category as BlogCategory,
-//   Article,
-//   Menu,
-//   Pages,
-//   School as Faculty,
-//   Domain,
-//   VideoLibrary,
+
 //   AdminPanelSettings,
 //   Tune,
-//   LiveHelp,
-//   VideoSettings,
 //   Addchart,
 //   RestaurantMenu,
 //   ListAlt,
 //   AddCircle,
 //   AssessmentOutlined,
 //   ClassOutlined,
-//   NoteAdd,
 //   PostAdd,
-//   StickyNote2,
-//   Summarize,
 //   Storage,
 //   Folder,
-//    Image as Photos,
-//    Logout,
+//   Image as Photos,
+//   Logout,
+//   Book,
 // } from "@mui/icons-material"
+// import { ColorfulIcon } from "./ColorfulIcon"
+// import { NavigationItem } from "@/types/common"
 
-// // Colorful icon wrapper component
-// const ColorfulIcon = ({ children, color }: any) => {
-//   return <div style={{ color: color, display: "flex", alignItems: "center", justifyContent: "center" }}>{children}</div>
-// }
 
-// // Update the navigationItems array with appropriate icons for submenus
-// export const navigationItems = [
+
+// export const navigationItems: NavigationItem[] = [
 //   {
 //     title: "Dashboard",
 //     icon: (
@@ -123,6 +89,89 @@
 //       </ColorfulIcon>
 //     ),
 //     path: "/dashboard",
+//     roles: ["admin", "teacher", "student", "super_admin"],
+//   },
+//   {
+//     title: "Teacher",
+//     icon: (
+//       <ColorfulIcon color="#DB4437">
+//         <SupervisorAccount />
+//       </ColorfulIcon>
+//     ),
+//     roles: ["admin", "super_admin", 'teacher'],
+//     children: [
+//       {
+//         path: "/dashboard/super_admin/teacher/new",
+//         title: "Add Teachers",
+//         icon: (
+//           <ColorfulIcon color="#DB4437">
+//             <People />
+//           </ColorfulIcon>
+//         ),
+//         roles: ["super_admin", "admin", 'teacher', 'student'],
+//       },
+//       {
+//         path: "/dashboard/super_admin/teacher/list",
+//         title: "Teachers List",
+//         icon: (
+//           <ColorfulIcon color="#DB4437">
+//             <People />
+//           </ColorfulIcon>
+//         ),
+//         roles: ["super_admin", "admin", 'teacher', 'student'],
+//       },
+//       {
+//         path: "/dashboard/super_admin/teacher/daily-report/list",
+//         title: "Daily Class Report",
+//         icon: (
+//           <ColorfulIcon color="#DB4437">
+//             <ReceiptLong />
+//           </ColorfulIcon>
+//         ),
+//         roles: ["super_admin", "admin", 'teacher'],
+//       },
+//       {
+//         path: "/dashboard/super_admin/teacher/daily-report/add",
+//         title: "Add Daily Class Report",
+//         icon: (
+//           <ColorfulIcon color="#DB4437">
+//             <ReceiptLong />
+//           </ColorfulIcon>
+//         ),
+//         roles: ["super_admin", "admin", 'teacher'],
+//       },
+//     ],
+//   },
+//   {
+//     title: "Staff",
+//     icon: (
+//       <ColorfulIcon color="#DB4437">
+//         <SupervisorAccount />
+//       </ColorfulIcon>
+//     ),
+//     roles: ["admin", "super_admin", 'teacher'],
+//     children: [
+//       {
+//         path: "/dashboard/super_admin/staff/add",
+//         title: "Add Staff",
+//         icon: (
+//           <ColorfulIcon color="#DB4437">
+//             <People />
+//           </ColorfulIcon>
+//         ),
+//         roles: ["super_admin", "admin",],
+//       },
+//       {
+//         path: "/dashboard/super_admin/staff/list",
+//         title: "Staff List",
+//         icon: (
+//           <ColorfulIcon color="#DB4437">
+//             <ReceiptLong />
+//           </ColorfulIcon>
+//         ),
+//         roles: ["super_admin", "admin"],
+//       },
+//     ],
 //   },
 //   {
 //     title: "Classes",
@@ -131,6 +180,7 @@
 //         <School />
 //       </ColorfulIcon>
 //     ),
+//     roles: ["admin", "super_admin", "teacher"],
 //     children: [
 //       {
 //         title: "Session ",
@@ -140,6 +190,7 @@
 //           </ColorfulIcon>
 //         ),
 //         path: "/dashboard/super_admin/classes/session",
+//         roles: ["super_admin", "admin"],
 //       },
 //       {
 //         title: "Sections",
@@ -149,6 +200,7 @@
 //           </ColorfulIcon>
 //         ),
 //         path: "/dashboard/super_admin/classes/section/list",
+//         roles: ["super_admin", "admin"],
 //       },
 //       {
 //         title: "Classes",
@@ -158,6 +210,7 @@
 //           </ColorfulIcon>
 //         ),
 //         path: "/dashboard/super_admin/classes/class",
+//         roles: ["super_admin", "admin", "teacher"],
 //       },
 //       {
 //         title: "Batches",
@@ -167,6 +220,7 @@
 //           </ColorfulIcon>
 //         ),
 //         path: "/dashboard/super_admin/classes/batches",
+//         roles: ["super_admin", "admin", "teacher"],
 //       },
 //       {
 //         title: "Curriculum",
@@ -176,6 +230,7 @@
 //           </ColorfulIcon>
 //         ),
 //         path: "/dashboard/super_admin/classes/curriculum",
+//         roles: ["super_admin", "admin"],
 //       },
 //       {
 //         title: "Assign Teachers ",
@@ -185,6 +240,7 @@
 //           </ColorfulIcon>
 //         ),
 //         path: "/dashboard/super_admin/classes/assign-teacher",
+//         roles: ["super_admin", "admin"],
 //       },
 //       {
 //         title: "Assign Subjects ",
@@ -193,7 +249,8 @@
 //             <Subject />
 //           </ColorfulIcon>
 //         ),
-//         path: "/dashboard/super_admin/classes/assign-subjects",
+//         path: "/dashboard/super_admin/classes/assign-subjects/list",
+//         roles: ["super_admin", "admin"],
 //       },
 //       {
 //         title: "Assign Routines ",
@@ -202,7 +259,8 @@
 //             <Schedule />
 //           </ColorfulIcon>
 //         ),
-//         path: "/dashboard/super_admin/classes/assign-routines",
+//         path: "/dashboard/super_admin/classes/assign-routines/list",
+//         roles: ["super_admin", "admin"],
 //       },
 //       {
 //         title: "Class Report List ",
@@ -211,7 +269,8 @@
 //             <BarChart />
 //           </ColorfulIcon>
 //         ),
-//         path: "/dashboard/super_admin/classes/report",
+//         path: "/dashboard/super_admin/classes/report/list",
+//         roles: ["super_admin", "admin", "teacher"],
 //       },
 //       {
 //         title: "New Report ",
@@ -221,9 +280,19 @@
 //           </ColorfulIcon>
 //         ),
 //         path: "/dashboard/super_admin/classes/report/new",
+//         roles: ["super_admin", "admin", "teacher"],
 //       },
-      
 //     ],
+//   },
+//   {
+//     title: "Subject",
+//     path: "/dashboard/super_admin/subject",
+//     icon: (
+//       <ColorfulIcon color="#0F9D58">
+//         <Book />
+//       </ColorfulIcon>
+//     ),
+//     roles: ["super_admin", "admin", 'teacher'],
 //   },
 //   {
 //     title: "Student",
@@ -232,6 +301,7 @@
 //         <Person />
 //       </ColorfulIcon>
 //     ),
+//     roles: ["admin", "super_admin", "teacher"],
 //     children: [
 //       {
 //         path: "/dashboard/super_admin/student/list",
@@ -241,17 +311,9 @@
 //             <Group />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin", "teacher"],
 //       },
-//       {
-//         path: "/dashboard/super_admin/shop/list",
-//         title: "Upload Student",
-//         icon: (
-//           <ColorfulIcon color="#DB4437">
-//             <CloudUpload />
-//           </ColorfulIcon>
-//         ),
-//       },
-      
+
 //       {
 //         path: "/dashboard/super_admin/student-migrate",
 //         title: "Migrate Student",
@@ -260,6 +322,7 @@
 //             <CompareArrows />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin"],
 //       },
 //       {
 //         path: "/dashboard/super_admin/student-status-migrate",
@@ -269,6 +332,7 @@
 //             <SwapHoriz />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin"],
 //       },
 //       {
 //         path: "/dashboard/super_admin/shop/list",
@@ -278,6 +342,7 @@
 //             <CompareArrows />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin"],
 //       },
 //     ],
 //   },
@@ -288,6 +353,7 @@
 //         <RestaurantMenu />
 //       </ColorfulIcon>
 //     ),
+//     roles: ["admin", "super_admin"],
 //     children: [
 //       {
 //         path: "/dashboard/super_admin/daily-meal-report",
@@ -297,6 +363,7 @@
 //             <ListAlt />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin"],
 //       },
 //       {
 //         path: "/dashboard/super_admin/daily-meal-report/add",
@@ -306,6 +373,7 @@
 //             <AddCircle />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin"],
 //       },
 //     ],
 //   },
@@ -316,6 +384,7 @@
 //         <AssessmentOutlined />
 //       </ColorfulIcon>
 //     ),
+//     roles: ["admin", "super_admin", "teacher"],
 //     children: [
 //       {
 //         path: "/dashboard/super_admin/daily-student-report/add",
@@ -325,6 +394,7 @@
 //             <PostAdd />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin", "teacher"],
 //       },
 //       {
 //         path: "/dashboard/super_admin/daily-student-report",
@@ -334,37 +404,11 @@
 //             <ListAlt />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin", "teacher"],
 //       },
 //     ],
 //   },
-//   {
-//     title: "Class Report",
-//     icon: (
-//       <ColorfulIcon color="#DB4437">
-//         <StickyNote2 />
-//       </ColorfulIcon>
-//     ),
-//     children: [
-//       {
-//         path: "/dashboard/super_admin/daily-class-report/add",
-//         title: "Add Class Report",
-//         icon: (
-//           <ColorfulIcon color="#DB4437">
-//             <NoteAdd />
-//           </ColorfulIcon>
-//         ),
-//       },
-//       {
-//         path: "/dashboard/super_admin/daily-class-report",
-//         title: "Class Report",
-//         icon: (
-//           <ColorfulIcon color="#DB4437">
-//             <Summarize />
-//           </ColorfulIcon>
-//         ),
-//       },
-//     ],
-//   },
+
 //   {
 //     segment: "super_admin/contact",
 //     title: "Fees",
@@ -373,6 +417,7 @@
 //         <Payments />
 //       </ColorfulIcon>
 //     ),
+//     roles: ["admin", "super_admin"],
 //     children: [
 //       {
 //         path: "/dashboard/super_admin/fine-type/list",
@@ -382,6 +427,7 @@
 //             <AttachMoney />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin"],
 //       },
 //       {
 //         path: "/dashboard/super_admin/fee-type/list",
@@ -391,6 +437,7 @@
 //             <Category />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin"],
 //       },
 //       {
 //         path: "/dashboard/super_admin/discount-type/list",
@@ -400,6 +447,7 @@
 //             <LocalOffer />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin"],
 //       },
 //       {
 //         path: "/dashboard/super_admin/fee-type/list",
@@ -409,6 +457,7 @@
 //             <Payments />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin"],
 //       },
 //       {
 //         path: "/dashboard/super_admin/assign-discount/list",
@@ -418,6 +467,7 @@
 //             <MoneyOff />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin"],
 //       },
 //       {
 //         path: "/dashboard/super_admin/assign-fine/list",
@@ -427,6 +477,7 @@
 //             <AttachMoney />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin"],
 //       },
 //       {
 //         path: "/dashboard/super_admin/collect-fee-setting",
@@ -436,6 +487,7 @@
 //             <Settings />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin"],
 //       },
 //       {
 //         path: "/dashboard/super_admin/collect-fee/list",
@@ -445,6 +497,7 @@
 //             <Receipt />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin"],
 //       },
 //       {
 //         path: "/dashboard/super_admin/collect-fee-statement",
@@ -454,6 +507,7 @@
 //             <ReceiptLong />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin"],
 //       },
 //       {
 //         path: "/dashboard/super_admin/all-sms-history",
@@ -463,15 +517,17 @@
 //             <NotificationsActive />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin"],
 //       },
 //       {
-//         path: "/dashboard/super_admin/contact/list",
+//         path: "/dashboard/super_admin/deleted-fee",
 //         title: "Deleted Fees ",
 //         icon: (
 //           <ColorfulIcon color="#F4B400">
 //             <Delete />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin"],
 //       },
 //     ],
 //   },
@@ -483,6 +539,7 @@
 //         <Print />
 //       </ColorfulIcon>
 //     ),
+//     roles: ["admin", "super_admin"],
 //     children: [
 //       {
 //         path: "/dashboard/super_admin/blog/add",
@@ -492,6 +549,7 @@
 //             <Badge />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin"],
 //       },
 //       {
 //         path: "/dashboard/super_admin/blog/list",
@@ -501,6 +559,7 @@
 //             <CardMembership />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin"],
 //       },
 //       {
 //         path: "/dashboard/super_admin/blog/list",
@@ -510,6 +569,7 @@
 //             <ConfirmationNumber />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin"],
 //       },
 //       {
 //         path: "/dashboard/super_admin/blog/list",
@@ -519,6 +579,7 @@
 //             <CardMembership />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin"],
 //       },
 //       {
 //         path: "/dashboard/super_admin/blog/list",
@@ -528,6 +589,7 @@
 //             <Score />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin"],
 //       },
 //       {
 //         path: "/dashboard/super_admin/blog/list",
@@ -537,6 +599,7 @@
 //             <TableChart />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin"],
 //       },
 //       {
 //         path: "/dashboard/super_admin/blog/list",
@@ -546,6 +609,7 @@
 //             <MonetizationOn />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin"],
 //       },
 //       {
 //         path: "/dashboard/super_admin/blog/list",
@@ -555,6 +619,7 @@
 //             <PieChart />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin"],
 //       },
 //       {
 //         path: "/dashboard/super_admin/student",
@@ -564,6 +629,7 @@
 //             <FormatListNumbered />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin"],
 //       },
 //       {
 //         path: "/dashboard/super_admin/blog/list",
@@ -573,6 +639,7 @@
 //             <RequestPage />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin"],
 //       },
 //       {
 //         path: "/dashboard/super_admin/blog/list",
@@ -582,6 +649,7 @@
 //             <Paid />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin"],
 //       },
 //       {
 //         path: "/dashboard/super_admin/blog/list",
@@ -591,6 +659,7 @@
 //             <FactCheck />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin"],
 //       },
 //       {
 //         path: "/dashboard/super_admin/blog/list",
@@ -600,6 +669,7 @@
 //             <Description />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin"],
 //       },
 //     ],
 //   },
@@ -610,6 +680,7 @@
 //         <Description />
 //       </ColorfulIcon>
 //     ),
+//     roles: ["admin", "super_admin"],
 //     children: [
 //       {
 //         path: "/dashboard/super_admin/topbar/list",
@@ -619,83 +690,11 @@
 //             <FormatListNumbered />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin"],
 //       },
 //     ],
 //   },
-//   {
-//     segment: "super_admin/review",
-//     title: "Donation",
-//     icon: (
-//       <ColorfulIcon color="#EA4335">
-//         <Favorite />
-//       </ColorfulIcon>
-//     ),
-//     children: [
-//       {
-//         path: "/dashboard/super_admin/review/add",
-//         title: "New Account ",
-//         icon: (
-//           <ColorfulIcon color="#EA4335">
-//             <AccountBox />
-//           </ColorfulIcon>
-//         ),
-//       },
-//       {
-//         path: "/dashboard/super_admin/review/list",
-//         title: "Account List ",
-//         icon: (
-//           <ColorfulIcon color="#EA4335">
-//             <FormatListNumbered />
-//           </ColorfulIcon>
-//         ),
-//       },
-//       {
-//         path: "/dashboard/super_admin/review/list",
-//         title: "Instant Donation ",
-//         icon: (
-//           <ColorfulIcon color="#EA4335">
-//             <Favorite />
-//           </ColorfulIcon>
-//         ),
-//       },
-//       {
-//         path: "/dashboard/super_admin/review/list",
-//         title: "Donar Category List ",
-//         icon: (
-//           <ColorfulIcon color="#EA4335">
-//             <Category />
-//           </ColorfulIcon>
-//         ),
-//       },
-//       {
-//         path: "/dashboard/super_admin/review/list",
-//         title: "Donar List ",
-//         icon: (
-//           <ColorfulIcon color="#EA4335">
-//             <People />
-//           </ColorfulIcon>
-//         ),
-//       },
-//       {
-//         path: "/dashboard/super_admin/review/list",
-//         title: "Receive Donations List ",
-//         icon: (
-//           <ColorfulIcon color="#EA4335">
-//             <Receipt />
-//           </ColorfulIcon>
-//         ),
-//       },
-//       {
-//         path: "/dashboard/super_admin/review/list",
-//         title: "Donation Project List ",
-//         icon: (
-//           <ColorfulIcon color="#EA4335">
-//             <FolderSpecial />
-//           </ColorfulIcon>
-//         ),
-//       },
-//     ],
-//   },
+
 //   {
 //     title: "Accounting",
 //     icon: (
@@ -703,6 +702,7 @@
 //         <AccountBalance />
 //       </ColorfulIcon>
 //     ),
+//     roles: ["admin", "super_admin"],
 //     children: [
 //       {
 //         path: "/dashboard/super_admin/stock/allimg",
@@ -712,6 +712,7 @@
 //             <Settings />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin"],
 //       },
 //       {
 //         path: "/dashboard/super_admin/stock/folder",
@@ -721,6 +722,7 @@
 //             <MonetizationOn />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin"],
 //       },
 //     ],
 //   },
@@ -731,6 +733,7 @@
 //         <Assignment />
 //       </ColorfulIcon>
 //     ),
+//     roles: ["admin", "super_admin", "teacher"],
 //     children: [
 //       {
 //         path: "/dashboard/super_admin/home-work",
@@ -740,9 +743,11 @@
 //             <HomeWork />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin", "teacher",'student'],
 //       },
 //     ],
 //   },
+
 //   {
 //     title: "Attendance",
 //     icon: (
@@ -750,6 +755,7 @@
 //         <EventNote />
 //       </ColorfulIcon>
 //     ),
+//     roles: ["admin", "super_admin", "teacher"],
 //     children: [
 //       {
 //         path: "/dashboard/super_admin/stock/allimg",
@@ -759,6 +765,7 @@
 //             <Settings />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin"],
 //       },
 //       {
 //         path: "/dashboard/super_admin/stock/folder",
@@ -768,6 +775,7 @@
 //             <Assessment />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin", "teacher"],
 //       },
 //       {
 //         path: "/dashboard/super_admin/stock/folder",
@@ -777,55 +785,11 @@
 //             <EventNote />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin", "teacher"],
 //       },
 //     ],
 //   },
-//   {
-//     title: "Seat Plan",
-//     icon: (
-//       <ColorfulIcon color="#DB4437">
-//         <CalendarViewDay />
-//       </ColorfulIcon>
-//     ),
-//     children: [
-//       {
-//         path: "/dashboard/super_admin/stock/allimg",
-//         title: "Exam Halls ",
-//         icon: (
-//           <ColorfulIcon color="#DB4437">
-//             <MeetingRoom />
-//           </ColorfulIcon>
-//         ),
-//       },
-//       {
-//         path: "/dashboard/super_admin/stock/allimg",
-//         title: "Exam Duration ",
-//         icon: (
-//           <ColorfulIcon color="#DB4437">
-//             <Timer />
-//           </ColorfulIcon>
-//         ),
-//       },
-//       {
-//         path: "/dashboard/super_admin/stock/allimg",
-//         title: "Seat Plans ",
-//         icon: (
-//           <ColorfulIcon color="#DB4437">
-//             <EventSeat />
-//           </ColorfulIcon>
-//         ),
-//       },
-//       {
-//         path: "/dashboard/super_admin/stock/allimg",
-//         title: "Download Seat Plans",
-//         icon: (
-//           <ColorfulIcon color="#DB4437">
-//             <Download />
-//           </ColorfulIcon>
-//         ),
-//       },
-//     ],
-//   },
+
 //   {
 //     title: "Exam",
 //     icon: (
@@ -833,6 +797,7 @@
 //         <AssignmentTurnedIn />
 //       </ColorfulIcon>
 //     ),
+//     roles: ["admin", "super_admin", "teacher"],
 //     children: [
 //       {
 //         path: "/dashboard/super_admin/grading/list",
@@ -842,6 +807,7 @@
 //             <Grade />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin",'teacher'],
 //       },
 //       {
 //         path: "/dashboard/super_admin/exam/exam-categories",
@@ -851,16 +817,9 @@
 //             <ExamCategory />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin"],
 //       },
-//       {
-//         path: "/dashboard/super_admin/stock/allimg",
-//         title: "Exam Group ",
-//         icon: (
-//           <ColorfulIcon color="#0F9D58">
-//             <Layers />
-//           </ColorfulIcon>
-//         ),
-//       },
+
 //       {
 //         path: "/dashboard/super_admin/stock/allimg",
 //         title: "Exams",
@@ -869,6 +828,7 @@
 //             <AssignmentTurnedIn />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin", "teacher"],
 //       },
 //       {
 //         path: "/dashboard/super_admin/stock/allimg",
@@ -878,6 +838,7 @@
 //             <Event />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin", "teacher"],
 //       },
 //     ],
 //   },
@@ -888,6 +849,7 @@
 //         <Grading />
 //       </ColorfulIcon>
 //     ),
+//     roles: ["admin", "super_admin", "teacher", "student"],
 //     children: [
 //       {
 //         path: "/dashboard/super_admin/stock/allimg",
@@ -897,6 +859,7 @@
 //             <Score />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin", "teacher", "student"],
 //       },
 //       {
 //         path: "/dashboard/super_admin/stock/allimg",
@@ -906,6 +869,7 @@
 //             <TableRows />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin", "teacher"],
 //       },
 //       {
 //         path: "/dashboard/super_admin/stock/allimg",
@@ -915,6 +879,7 @@
 //             <CloudUpload />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin", "teacher"],
 //       },
 //       {
 //         path: "/dashboard/super_admin/stock/allimg",
@@ -924,6 +889,7 @@
 //             <Subject />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin", "teacher"],
 //       },
 //       {
 //         path: "/dashboard/super_admin/stock/allimg",
@@ -933,6 +899,7 @@
 //             <TableChart />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin", "teacher"],
 //       },
 //       {
 //         path: "/dashboard/super_admin/stock/allimg",
@@ -942,6 +909,7 @@
 //             <Download />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin", "teacher", "student"],
 //       },
 //       {
 //         path: "/dashboard/super_admin/stock/allimg",
@@ -951,6 +919,7 @@
 //             <Message />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin"],
 //       },
 //     ],
 //   },
@@ -961,6 +930,7 @@
 //         <Sms />
 //       </ColorfulIcon>
 //     ),
+//     roles: ["admin", "super_admin"],
 //     children: [
 //       {
 //         path: "/dashboard/super_admin/stock/allimg",
@@ -970,15 +940,17 @@
 //             <Message />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin"],
 //       },
 //       {
 //         path: "/dashboard/super_admin/stock/allimg",
-//         title: "SMS Balance ",
+//         title: "SMS Balance",
 //         icon: (
 //           <ColorfulIcon color="#4285F4">
 //             <Balance />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin"],
 //       },
 //       {
 //         path: "/dashboard/super_admin/stock/allimg",
@@ -988,6 +960,7 @@
 //             <Email />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin"],
 //       },
 //       {
 //         path: "/dashboard/super_admin/stock/allimg",
@@ -997,6 +970,7 @@
 //             <Sms />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin"],
 //       },
 //       {
 //         path: "/dashboard/super_admin/stock/allimg",
@@ -1006,6 +980,7 @@
 //             <NotificationsActive />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin"],
 //       },
 //       {
 //         path: "/dashboard/super_admin/stock/allimg",
@@ -1015,37 +990,11 @@
 //             <Report />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin"],
 //       },
 //     ],
 //   },
-//   {
-//     title: "Teacher",
-//     icon: (
-//       <ColorfulIcon color="#DB4437">
-//         <SupervisorAccount />
-//       </ColorfulIcon>
-//     ),
-//     children: [
-//       {
-//         path: "//dashboard/super_admin/teacher/",
-//         title: "Teachers",
-//         icon: (
-//           <ColorfulIcon color="#DB4437">
-//             <People />
-//           </ColorfulIcon>
-//         ),
-//       },
-//       {
-//         path: "/dashboard/super_admin/stock/allimg",
-//         title: "Salary Report",
-//         icon: (
-//           <ColorfulIcon color="#DB4437">
-//             <ReceiptLong />
-//           </ColorfulIcon>
-//         ),
-//       },
-//     ],
-//   },
+
 //   {
 //     title: "Documents",
 //     icon: (
@@ -1053,6 +1002,7 @@
 //         <FileCopy />
 //       </ColorfulIcon>
 //     ),
+//     roles: ["admin", "super_admin"],
 //     children: [
 //       {
 //         path: "/dashboard/super_admin/stock/allimg",
@@ -1062,6 +1012,7 @@
 //             <Category />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin"],
 //       },
 //       {
 //         path: "/dashboard/super_admin/stock/allimg",
@@ -1071,146 +1022,11 @@
 //             <Description />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin"],
 //       },
 //     ],
 //   },
-//   {
-//     title: "Institute ",
-//     icon: (
-//       <ColorfulIcon color="#F4B400">
-//         <Business />
-//       </ColorfulIcon>
-//     ),
-//     children: [
-//       {
-//         path: "/dashboard/super_admin/stock/allimg",
-//         title: "Institute Messages ",
-//         icon: (
-//           <ColorfulIcon color="#F4B400">
-//             <Info />
-//           </ColorfulIcon>
-//         ),
-//       },
-//       {
-//         path: "/dashboard/super_admin/stock/allimg",
-//         title: "Contacts",
-//         icon: (
-//           <ColorfulIcon color="#F4B400">
-//             <ContactPhone />
-//           </ColorfulIcon>
-//         ),
-//       },
-//       {
-//         path: "/dashboard/super_admin/stock/allimg",
-//         title: "Facilities",
-//         icon: (
-//           <ColorfulIcon color="#F4B400">
-//             <EmojiTransportation />
-//           </ColorfulIcon>
-//         ),
-//       },
-//       {
-//         path: "/dashboard/super_admin/stock/allimg",
-//         title: "Governing Body ",
-//         icon: (
-//           <ColorfulIcon color="#F4B400">
-//             <GoverningBody />
-//           </ColorfulIcon>
-//         ),
-//       },
-//       {
-//         path: "/dashboard/super_admin/stock/allimg",
-//         title: "Jobs ",
-//         icon: (
-//           <ColorfulIcon color="#F4B400">
-//             <Work />
-//           </ColorfulIcon>
-//         ),
-//       },
-//     ],
-//   },
-//   {
-//     title: "Publication",
-//     icon: (
-//       <ColorfulIcon color="#4285F4">
-//         <MenuBook />
-//       </ColorfulIcon>
-//     ),
-//     children: [
-//       {
-//         path: "/dashboard/super_admin/stock/allimg",
-//         title: "Notices ",
-//         icon: (
-//           <ColorfulIcon color="#4285F4">
-//             <Announcement />
-//           </ColorfulIcon>
-//         ),
-//       },
-//       {
-//         path: "/dashboard/super_admin/stock/allimg",
-//         title: "Events ",
-//         icon: (
-//           <ColorfulIcon color="#4285F4">
-//             <Celebration />
-//           </ColorfulIcon>
-//         ),
-//       },
-//       {
-//         path: "/dashboard/super_admin/stock/allimg",
-//         title: "Gallery ",
-//         icon: (
-//           <ColorfulIcon color="#4285F4">
-//             <PhotoAlbum />
-//           </ColorfulIcon>
-//         ),
-//       },
-//       {
-//         path: "/dashboard/super_admin/stock/allimg",
-//         title: "Authors ",
-//         icon: (
-//           <ColorfulIcon color="#4285F4">
-//             <Author />
-//           </ColorfulIcon>
-//         ),
-//       },
-//       {
-//         path: "/dashboard/super_admin/stock/allimg",
-//         title: "Blog Category ",
-//         icon: (
-//           <ColorfulIcon color="#4285F4">
-//             <BlogCategory />
-//           </ColorfulIcon>
-//         ),
-//       },
-//       {
-//         path: "/dashboard/super_admin/stock/allimg",
-//         title: "Blogs ",
-//         icon: (
-//           <ColorfulIcon color="#4285F4">
-//             <Article />
-//           </ColorfulIcon>
-//         ),
-//       },
-//       {
-//         path: "/dashboard/super_admin/stock/allimg",
-//         title: "Menu ",
-//         icon: (
-//           <ColorfulIcon color="#4285F4">
-//             <Menu />
-//           </ColorfulIcon>
-//         ),
-//       },
-//       {
-//         path: "/dashboard/super_admin/stock/allimg",
-//         title: "Page ",
-//         icon: (
-//           <ColorfulIcon color="#4285F4">
-//             <Pages />
-//           </ColorfulIcon>
-//         ),
-//       },
-//     ],
-//   },
+
 //   {
 //     title: "Admission",
 //     icon: (
@@ -1218,6 +1034,7 @@
 //         <HowToReg />
 //       </ColorfulIcon>
 //     ),
+//     roles: ["admin", "super_admin"],
 //     children: [
 //       {
 //         path: "/dashboard/super_admin/stock/allimg",
@@ -1227,6 +1044,7 @@
 //             <Info />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin"],
 //       },
 //       {
 //         path: "/dashboard/super_admin/stock/allimg",
@@ -1236,101 +1054,11 @@
 //             <Description />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin",'teacher'],
 //       },
 //     ],
 //   },
-//   {
-//     title: "Faculty",
-//     icon: (
-//       <ColorfulIcon color="#0F9D58">
-//         <Groups />
-//       </ColorfulIcon>
-//     ),
-//     children: [
-//       {
-//         path: "/dashboard/super_admin/stock/allimg",
-//         title: "New Faculty",
-//         icon: (
-//           <ColorfulIcon color="#0F9D58">
-//             <Faculty />
-//           </ColorfulIcon>
-//         ),
-//       },
-//       {
-//         path: "/dashboard/super_admin/stock/allimg",
-//         title: "Faculty List",
-//         icon: (
-//           <ColorfulIcon color="#0F9D58">
-//             <FormatListNumbered />
-//           </ColorfulIcon>
-//         ),
-//       },
-//       {
-//         path: "/dashboard/super_admin/stock/allimg",
-//         title: "New Department",
-//         icon: (
-//           <ColorfulIcon color="#0F9D58">
-//             <Domain />
-//           </ColorfulIcon>
-//         ),
-//       },
-//       {
-//         path: "/dashboard/super_admin/stock/allimg",
-//         title: "Department List",
-//         icon: (
-//           <ColorfulIcon color="#0F9D58">
-//             <FormatListNumbered />
-//           </ColorfulIcon>
-//         ),
-//       },
-//     ],
-//   },
-//   {
-//     title: "Institute Media ",
-//     icon: (
-//       <ColorfulIcon color="#F4B400">
-//         <PhotoLibrary />
-//       </ColorfulIcon>
-//     ),
-//     children: [
-//       {
-//         path: "/dashboard/super_admin/stock/allimg",
-//         title: "New Media ",
-//         icon: (
-//           <ColorfulIcon color="#F4B400">
-//             <PhotoLibrary />
-//           </ColorfulIcon>
-//         ),
-//       },
-//       {
-//         path: "/dashboard/super_admin/stock/allimg",
-//         title: "Media List",
-//         icon: (
-//           <ColorfulIcon color="#F4B400">
-//             <FormatListNumbered />
-//           </ColorfulIcon>
-//         ),
-//       },
-//       {
-//         path: "/dashboard/super_admin/stock/allimg",
-//         title: "New Video",
-//         icon: (
-//           <ColorfulIcon color="#F4B400">
-//             <VideoLibrary />
-//           </ColorfulIcon>
-//         ),
-//       },
-//       {
-//         path: "/dashboard/super_admin/stock/allimg",
-//         title: "Video List",
-//         icon: (
-//           <ColorfulIcon color="#F4B400">
-//             <FormatListNumbered />
-//           </ColorfulIcon>
-//         ),
-//       },
-//     ],
-//   },
+  
 //   {
 //     title: "Administration",
 //     icon: (
@@ -1338,6 +1066,7 @@
 //         <AdminPanelSettings />
 //       </ColorfulIcon>
 //     ),
+//     roles: ["admin", "super_admin"],
 //     children: [
 //       {
 //         path: "/dashboard/super_admin/stock/allimg",
@@ -1347,6 +1076,7 @@
 //             <AdminPanelSettings />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin"],
 //       },
 //       {
 //         path: "/dashboard/super_admin/stock/allimg",
@@ -1356,6 +1086,7 @@
 //             <SupervisorAccount />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin"],
 //       },
 //       {
 //         path: "/dashboard/super_admin/stock/allimg",
@@ -1365,6 +1096,7 @@
 //             <Person />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin"],
 //       },
 //     ],
 //   },
@@ -1375,6 +1107,7 @@
 //         <Settings />
 //       </ColorfulIcon>
 //     ),
+//     roles: ["super_admin", "admin"],
 //     children: [
 //       {
 //         path: "/dashboard/super_admin/stock/allimg",
@@ -1384,37 +1117,11 @@
 //             <Tune />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin"],
 //       },
 //     ],
 //   },
-//   {
-//     title: "Help",
-//     icon: (
-//       <ColorfulIcon color="#0F9D58">
-//         <Help />
-//       </ColorfulIcon>
-//     ),
-//     children: [
-//       {
-//         path: "/dashboard/super_admin/stock/help",
-//         title: "Help",
-//         icon: (
-//           <ColorfulIcon color="#0F9D58">
-//             <LiveHelp />
-//           </ColorfulIcon>
-//         ),
-//       },
-//       {
-//         path: "/dashboard/super_admin/stock/help",
-//         title: "Tutorials",
-//         icon: (
-//           <ColorfulIcon color="#0F9D58">
-//             <VideoSettings />
-//           </ColorfulIcon>
-//         ),
-//       },
-//     ],
-//   },
+
 //   {
 //     title: "Gallery",
 //     icon: (
@@ -1422,6 +1129,7 @@
 //         <PhotoLibrary />
 //       </ColorfulIcon>
 //     ),
+//     roles: ["admin", "super_admin", "teacher", "student"],
 //     children: [
 //       {
 //         path: "/dashboard/super_admin/folder",
@@ -1431,6 +1139,7 @@
 //             <Photos />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin", "teacher", "student"],
 //       },
 //       {
 //         path: "/dashboard/super_admin/photos",
@@ -1440,9 +1149,11 @@
 //             <Folder />
 //           </ColorfulIcon>
 //         ),
+//         roles: ["super_admin", "admin", "teacher", "student"],
 //       },
 //     ],
-//   },  
+//   },
+
 //   {
 //     title: "User Management",
 //     path: "/dashboard/super_admin/user-management",
@@ -1450,7 +1161,8 @@
 //       <ColorfulIcon color="#F4B400">
 //         <Group />
 //       </ColorfulIcon>
-//     ),    
+//     ),
+//     roles: ["super_admin", "admin"],
 //   },
 //   {
 //     title: "Database Backup",
@@ -1459,7 +1171,8 @@
 //       <ColorfulIcon color="#4285F4">
 //         <Storage />
 //       </ColorfulIcon>
-//     ),    
+//     ),
+//     roles: ["super_admin"],
 //   },
 //   {
 //     title: "Log Out",
@@ -1468,6 +1181,7 @@
 //       <ColorfulIcon color="#DB4437">
 //         <Logout />
 //       </ColorfulIcon>
-//     ),    
+//     ),
+//     roles: ["admin", "teacher", "student", "super_admin"],
 //   },
 // ]

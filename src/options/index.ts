@@ -159,7 +159,6 @@ export const teacherName = [
     "Administration",
     "Support Staff",
   ]
-
   export const designations = [
     "Principal",
     "Vice Principal",
@@ -172,8 +171,6 @@ export const teacherName = [
     "Counselor",
     "Administrative Staff",
   ]
-  
-
   export const maritalStatuses = ["Single", "Married", "Divorced", "Widowed", "Other"]
   
   export const sectionTypeNames = ['morning', 'evening',];
@@ -203,3 +200,6 @@ export const teacherName = [
   ]
   export const paper = ["1st", "2nd"]
   
+export const lessonEvaluation = ["পড়া শিখেছে", "আংশিক শিখেছে", "পড়া শিখেনি",'অনুপস্থিত']
+export const handWritting = ["লিখেছে", "আংশিক লিখেছে", "লিখেনি"]
+export const attendance =["উপস্থিত", "অনুপস্থিত", "ছুটি"]

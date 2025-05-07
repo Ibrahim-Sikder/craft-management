@@ -82,8 +82,8 @@ export default function ClassForm({ id }: ClassProps) {
     }, [studentData])
 
     const teacherOption = useMemo(() => {
-        if (!teacherData?.data) return []
-        return teacherData.data.map((teacher: any) => ({
+        if (!teacherData?.data?.data) return []
+        return teacherData?.data?.data.map((teacher: any) => ({
             label: teacher.name,
             value: teacher._id,
         }))

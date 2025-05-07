@@ -23,7 +23,6 @@ import {
   TableHead,
   TableRow,
   TablePagination,
-  Menu,
   MenuItem,
   Divider,
   InputAdornment,
@@ -48,7 +47,6 @@ import {
 import {
   Add as AddIcon,
   Search as SearchIcon,
-  MoreVert as MoreVertIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
   Visibility as VisibilityIcon,
@@ -65,8 +63,8 @@ import {
   Print as PrintIcon,
   Refresh as RefreshIcon,
 } from "@mui/icons-material"
-import DrawIcon from "@mui/icons-material/Draw";
-import BlockIcon from "@mui/icons-material/Block";
+import DrawIcon from "@mui/icons-material/Draw"
+import BlockIcon from "@mui/icons-material/Block"
 import Link from "next/link"
 import { format } from "date-fns"
 import { customTheme } from "@/ThemeStyle"
@@ -74,7 +72,7 @@ import { useDeleteClassReportMutation, useGetAllClassReportsQuery } from "@/redu
 import { useGetAllClassesQuery } from "@/redux/api/classApi"
 import { useGetAllSubjectsQuery } from "@/redux/api/subjectApi"
 import { useGetAllTeachersQuery } from "@/redux/api/teacherApi"
-import { Filters } from "@/interface"
+import type { Filters } from "@/interface"
 
 export default function ClassReportList() {
   // State
@@ -88,7 +86,6 @@ export default function ClassReportList() {
     date: "",
     hour: "",
   })
-  console.log(filters)
   const [orderBy, setOrderBy] = useState<string>("createdAt")
   const [order, setOrder] = useState<"asc" | "desc">("desc")
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
@@ -98,25 +95,29 @@ export default function ClassReportList() {
   const [expandedReport, setExpandedReport] = useState<string | null>(null)
   const [detailsModalOpen, setDetailsModalOpen] = useState(false)
   const [selectedReportDetails, setSelectedReportDetails] = useState<any | null>(null)
-const [deleteClassReport] = useDeleteClassReportMutation()
+  const [deleteClassReport] = useDeleteClassReportMutation()
+
   // API queries
   const {
     data: classReport,
     isLoading,
     refetch,
-  } = useGetAllClassReportsQuery({
-    limit: rowsPerPage,
-    page: page + 1,
-    searchTerm: searchTerm,
-    class: filters.class,      
-    subject: filters.subject,   
-    teacher: filters.teacher,  
-    date: filters.date,
-    hour: filters.hour,
-  }, {
-    // Re-fetch when filters or search term changes
-    refetchOnMountOrArgChange: true
-  })
+  } = useGetAllClassReportsQuery(
+    {
+      limit: rowsPerPage,
+      page: page + 1,
+      searchTerm: searchTerm,
+      className: filters.class, // Changed from class to className to match API
+      subject: filters.subject,
+      teacher: filters.teacher,
+      date: filters.date,
+      hour: filters.hour,
+    },
+    {
+      // Re-fetch when filters or search term changes
+      refetchOnMountOrArgChange: true,
+    },
+  )
 
   const { data: classData } = useGetAllClassesQuery({
     limit: 100, // Increased to fetch more classes
@@ -138,8 +139,8 @@ const [deleteClassReport] = useDeleteClassReportMutation()
 
   // Effect to refetch data when filters change
   useEffect(() => {
-    refetch();
-  }, [filters, searchTerm, page, rowsPerPage, refetch]);
+    refetch()
+  }, [filters, searchTerm, page, rowsPerPage, refetch])
 
   const theme = customTheme
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"))
@@ -154,11 +155,13 @@ const [deleteClassReport] = useDeleteClassReportMutation()
 
   // Update your filter options to use proper IDs
   const classOptions = useMemo(() => {
-    return classData?.data?.classes?.map((cls: any) => ({
-      label: cls.className,
-      value: cls._id,
-    })) || [];
-  }, [classData]);
+    return (
+      classData?.data?.classes?.map((cls: any) => ({
+        label: cls.className,
+        value: cls._id,
+      })) || []
+    )
+  }, [classData])
 
   const subjectOptions = useMemo(() => {
     if (!subjectData?.data?.subjects) return []
@@ -170,7 +173,7 @@ const [deleteClassReport] = useDeleteClassReportMutation()
 
   const teacherOptions = useMemo(() => {
     if (!teacherData?.data) return []
-    return teacherData.data.map((teacher: any) => ({
+    return teacherData.data?.data?.map((teacher: any) => ({
       label: teacher.name,
       value: teacher._id,
     }))
@@ -206,9 +209,11 @@ const [deleteClassReport] = useDeleteClassReportMutation()
     setFilters((prev) => ({
       ...prev,
       [filterName]: value,
-    }));
-    setPage(0);
-  };
+    }))
+    setPage(0)
+    // Trigger refetch when filters change
+    refetch()
+  }
 
   // Handle sorting
   const handleSort = (property: string) => {
@@ -228,16 +233,27 @@ const [deleteClassReport] = useDeleteClassReportMutation()
   }
 
   // Handle delete
-  const handleDeleteClick = () => {
+  const handleDeleteClick = (event: React.MouseEvent<HTMLButtonElement>, report: any) => {
+    event.stopPropagation()
+    setSelectedReport(report)
     setDeleteDialogOpen(true)
     setAnchorEl(null)
   }
 
-  const handleDeleteConfirm = () => {
-    // Implement delete functionality here
+  const handleDeleteConfirm = async () => {
+    if (selectedReport) {
+      try {
+        await deleteClassReport(selectedReport._id).unwrap()
+        // Show success message or notification here if needed
+        setDeleteDialogOpen(false)
+        setSelectedReport(null)
+        refetch() // Refresh the data after deletion
+      } catch (error) {
+        console.error("Error deleting class report:", error)
+        // Show error message or notification here if needed
+      }
+    }
     setDeleteDialogOpen(false)
-    setSelectedReport(null)
-    refetch()
   }
 
   const handleDeleteCancel = () => {
@@ -285,41 +301,30 @@ const [deleteClassReport] = useDeleteClassReportMutation()
     }
   }
 
-  // Filter reports by hour (client-side filtering for hour)
-  const filteredReportsByHour = useMemo(() => {
-    if (!filters.hour) return reports
-    return reports.filter((report: any) => report.hour === filters.hour)
-  }, [reports, filters.hour])
+  // Get filtered reports based on all filters
+  const filteredReports = useMemo(() => {
+    const filtered = [...reports]
 
-  // Filter reports by date (client-side filtering for date)
-  const filteredReportsByDate = useMemo(() => {
-    if (!filters.date) return filteredReportsByHour
+    // We only need to filter client-side for any filters that aren't properly handled by the API
+    // Most filtering should now be handled by the API
 
-    const filterDate = new Date(filters.date)
-    return filteredReportsByHour.filter((report: any) => {
-      const reportDate = new Date(report.date)
-      return (
-        reportDate.getDate() === filterDate.getDate() &&
-        reportDate.getMonth() === filterDate.getMonth() &&
-        reportDate.getFullYear() === filterDate.getFullYear()
-      )
-    })
-  }, [filteredReportsByHour, filters.date])
+    return filtered
+  }, [reports])
 
   // Sort reports
   const sortedReports = useMemo(() => {
-    return [...filteredReportsByDate].sort((a, b) => {
+    return [...filteredReports].sort((a, b) => {
       if (orderBy === "date") {
         return order === "asc"
           ? new Date(a.date).getTime() - new Date(b.date).getTime()
           : new Date(b.date).getTime() - new Date(a.date).getTime()
       } else if (orderBy === "classes") {
-        const classA = a.classes?.className || ""
-        const classB = b.classes?.className || ""
+        const classA = a.classes || ""
+        const classB = b.classes || ""
         return order === "asc" ? classA.localeCompare(classB) : classB.localeCompare(classA)
       } else if (orderBy === "subjects") {
-        const subjectA = a.subjects?.name || ""
-        const subjectB = b.subjects?.name || ""
+        const subjectA = a.subjects || ""
+        const subjectB = b.subjects || ""
         return order === "asc" ? subjectA.localeCompare(subjectB) : subjectB.localeCompare(subjectA)
       } else {
         // Default sort by createdAt
@@ -328,7 +333,7 @@ const [deleteClassReport] = useDeleteClassReportMutation()
           : new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       }
     })
-  }, [filteredReportsByDate, orderBy, order])
+  }, [filteredReports, orderBy, order])
 
   // Prepare student data for display
   const getStudentRows = (report: any) => {
@@ -517,7 +522,6 @@ const [deleteClassReport] = useDeleteClassReportMutation()
                                 {hour}
                               </MenuItem>
                             ))}
-
                           </Select>
                         </FormControl>
                       </CardContent>
@@ -657,12 +661,8 @@ const [deleteClassReport] = useDeleteClassReportMutation()
                                 )}
                               </Box>
                             </TableCell>
-                            <TableCell>
-                              Roll
-                            </TableCell>
-                            <TableCell>
-                              Student Name
-                            </TableCell>
+                            <TableCell>Roll</TableCell>
+                            <TableCell>Student Name</TableCell>
                             <TableCell>
                               <Box
                                 sx={{
@@ -687,13 +687,7 @@ const [deleteClassReport] = useDeleteClassReportMutation()
                               </Box>
                             </TableCell>
 
-                            <TableCell>
-
-                              Subject
-
-
-
-                            </TableCell>
+                            <TableCell>Subject</TableCell>
                             <TableCell>Hour</TableCell>
                             <TableCell>Attendance</TableCell>
                             <TableCell>Lesson</TableCell>
@@ -705,17 +699,16 @@ const [deleteClassReport] = useDeleteClassReportMutation()
                         <TableBody>
                           {sortedReports.length > 0 ? (
                             sortedReports.map((report: any) => {
-                             
-                              const className = report.classes?.className || "N/A";
-                              const subjectName = report.subjects?.name || "N/A";
-                              const hasLesson = !!report.todayLesson;
-                              const hasHomework = !!report.homeTask;
-                              const isExpanded = expandedReport === report._id;
+                              const className = report.classes?.className || "N/A"
+                              const subjectName = report.subjects?.name || "N/A"
+                              const hasLesson = !!report.todayLesson
+                              const hasHomework = !!report.homeTask
+                              const isExpanded = expandedReport === report._id
 
                               return (
                                 <React.Fragment key={report._id}>
                                   {report.studentEvaluations?.map((evaluation: any, index: number) => {
-                                    const student = evaluation.studentId;
+                                    const student = evaluation.studentId
 
                                     return (
                                       <TableRow
@@ -761,7 +754,9 @@ const [deleteClassReport] = useDeleteClassReportMutation()
                                               )
                                             }
                                             label={evaluation?.attendance || "Not Marked"}
-                                            color={evaluation?.attendance?.toLowerCase() === "উপস্থিত" ? "success" : "error"}
+                                            color={
+                                              evaluation?.attendance?.toLowerCase() === "উপস্থিত" ? "success" : "error"
+                                            }
                                             size="small"
                                             sx={{
                                               fontWeight: 500,
@@ -770,10 +765,7 @@ const [deleteClassReport] = useDeleteClassReportMutation()
                                                   ? alpha(theme.palette.success.main, 0.1)
                                                   : alpha(theme.palette.error.main, 0.1),
                                             }}
-
                                           />
-
-
                                         </TableCell>
                                         <TableCell>
                                           <Chip
@@ -793,12 +785,9 @@ const [deleteClassReport] = useDeleteClassReportMutation()
                                               border: `1px solid ${evaluation?.handwriting ? "#00BFA6" : "#FF1744"}`,
                                             }}
                                           />
-
-
                                         </TableCell>
 
                                         <TableCell>
-
                                           <Chip
                                             icon={
                                               evaluation?.lessonEvaluation ? (
@@ -816,11 +805,9 @@ const [deleteClassReport] = useDeleteClassReportMutation()
                                               border: `1px solid ${evaluation?.lessonEvaluation ? "#651FFF" : "#FF1744"}`,
                                             }}
                                           />
-
                                         </TableCell>
 
                                         <TableCell>
-
                                           <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
                                             {!isMobile && (
                                               <>
@@ -871,7 +858,7 @@ const [deleteClassReport] = useDeleteClassReportMutation()
                                                     bgcolor: alpha(theme.palette.error.main, 0.2),
                                                   },
                                                 }}
-                                                onClick={handleDeleteClick}
+                                                onClick={(e) => handleDeleteClick(e, report)}
                                               >
                                                 <DeleteIcon fontSize="small" />
                                               </IconButton>
@@ -879,10 +866,10 @@ const [deleteClassReport] = useDeleteClassReportMutation()
                                           </Box>
                                         </TableCell>
                                       </TableRow>
-                                    );
+                                    )
                                   })}
                                 </React.Fragment>
-                              );
+                              )
                             })
                           ) : (
                             <TableRow>
@@ -900,7 +887,6 @@ const [deleteClassReport] = useDeleteClassReportMutation()
                             </TableRow>
                           )}
                         </TableBody>
-
                       </Table>
                     </TableContainer>
                     <TablePagination
@@ -922,8 +908,6 @@ const [deleteClassReport] = useDeleteClassReportMutation()
           </Fade>
         </Container>
       </Box>
-
-
 
       {/* Delete Confirmation Dialog */}
       <Dialog
@@ -990,7 +974,7 @@ const [deleteClassReport] = useDeleteClassReportMutation()
                       Class
                     </Typography>
                     <Typography variant="body1" fontWeight={500}>
-                      {selectedReportDetails.classes?.className || "N/A"}
+                      {selectedReportDetails.classes?.className || selectedReportDetails.classes || "N/A"}
                     </Typography>
                   </Grid>
                   <Grid item xs={12} sm={6} md={3}>
@@ -998,7 +982,7 @@ const [deleteClassReport] = useDeleteClassReportMutation()
                       Subject
                     </Typography>
                     <Typography variant="body1" fontWeight={500}>
-                      {selectedReportDetails.subjects?.name || "N/A"}
+                      {selectedReportDetails.subjects?.name || selectedReportDetails.subjects || "N/A"}
                     </Typography>
                   </Grid>
                   <Grid item xs={12} sm={6} md={3}>

@@ -14,7 +14,8 @@
     "@emotion/styled": "^11.14.0",
     "@hookform/resolvers": "^5.0.1",
     "@mui/icons-material": "^6.4.10",
-    "@mui/material": "^6.4.10",
+    "@mui/lab": "^7.0.0-beta.11",
+    "@mui/material": "^6.4.11",
     "@mui/x-data-grid": "^7.28.3",
     "@mui/x-date-pickers": "^7.28.3",
     "@mui/x-date-pickers-pro": "^7.28.3",
@@ -44,6 +45,7 @@
     "react-spring": "^9.7.5",
     "recharts": "^2.15.2",
     "sharp": "^0.34.1",
+    "sweetalert2": "^11.20.0",
     "zod": "^3.24.3"
   },
   "devDependencies": {
