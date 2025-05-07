@@ -7,7 +7,7 @@ interface ITextField {
   name: string;
   size?: "small" | "medium";
   placeholder?: string;
-  label?: string;
+  label?: React.ReactNode;
   required?: boolean;
   fullWidth?: boolean;
   sx?: SxProps;

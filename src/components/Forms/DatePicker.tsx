@@ -9,7 +9,7 @@ import { SxProps } from "@mui/material";
 interface ITASDatepickerProps {
   name: string;
   size?: "small" | "medium";
-  label?: string;
+  label?: React.ReactNode;
   required?: boolean;
   fullWidth?: boolean;
   margin?: "none" | "normal" | "dense";

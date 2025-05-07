@@ -75,6 +75,8 @@ import FileUploadWithIcon from "@/components/Forms/Upload"
 import CraftDatePicker from "@/components/Forms/DatePicker"
 import toast from "react-hot-toast"
 import { useCreateStaffMutation, useGetSingleStaffQuery, useUpdateStaffMutation } from "@/redux/api/staffApi"
+import { staffSchema } from "@/schema"
+import { zodResolver } from "@hookform/resolvers/zod"
 
 interface TeacherFormProps {
     id?: string
@@ -237,145 +239,144 @@ export default function StaffForm({ id }: TeacherFormProps = {}) {
     }
 
     const handleSubmit = async (data: any) => {
+console.log(data)
+        if (!data.name) {
+            toast.error("Name is required!");
+            return;
+        } else if (!data.gender) {
+            toast.error("Gender is required!");
+            return;
+        } else if (!data.email) {
+            toast.error("Email is required!");
+            return;
+        }
 
-      
+        else {
 
-        try {
-            const monthlySalaryNum = data.monthlySalary ? Number(data.monthlySalary) : undefined
-            const staffSerialNum = data.teacherSerial ? Number(data.teacherSerial) : undefined
+            try {
+                const monthlySalaryNum = data.monthlySalary ? Number(data.monthlySalary) : undefined
+                const staffSerialNum = data.teacherSerial ? Number(data.teacherSerial) : undefined
 
-            const submissionData = {
-                ...data,
-                staffSerial: staffSerialNum,
-                smartIdCard: data.smartIdCard,
-                name: data.name,
-                phone: data.phone,
-                email: data.email,
-                dateOfBirth: data.dateOfBirth,
-                bloodGroup: data.bloodGroup,
-                gender: data.gender,
-                nationality: data.nationality,
-                religion: data.religion,
-                maritalStatus: data.maritalStatus,
-                staffPhoto: data.staffPhoto,
+                const submissionData = {
+                    ...data,
+                    staffSerial: staffSerialNum,
+                    smartIdCard: data.smartIdCard,
+                    name: data.name,
+                    phone: data.phone,
+                    email: data.email,
+                    dateOfBirth: data.dateOfBirth,
+                    bloodGroup: data.bloodGroup,
+                    gender: data.gender,
+                    nationality: data.nationality,
+                    religion: data.religion,
+                    maritalStatus: data.maritalStatus,
+                    staffPhoto: data.staffPhoto,
 
-                // Address information
-                permanentAddress: {
-                    address: data.address,
-                    village: data.village,
-                    postOffice: data.postOffice,
-                    thana: data.thana,
-                    district: data.district,
-                    state: data.state,
-                    country: data.country,
-                    zipCode: data.zipCode,
-                },
+                    // Address information
+                    permanentAddress: {
+                        address: data.address,
+                        village: data.village,
+                        postOffice: data.postOffice,
+                        thana: data.thana,
+                        district: data.district,
+                        state: data.state,
+                        country: data.country,
+                        zipCode: data.zipCode,
+                    },
 
-                currentAddress: {
-                    address: data.address,
-                    village: data.village,
-                    postOffice: data.postOffice,
-                    thana: data.thana,
-                    district: data.thana,
-                    state: data.state,
-                    country: data.country,
-                    zipCode: data.zipCode,
-                },
-                sameAsPermanent: data.sameAsPermanent,
-                designation: data.designation,
-                department: data.department,
-                joiningDate: data.joiningDate,
-                monthlySalary: monthlySalaryNum,
-                staffType: data.staffType,
-                educationalQualifications: [
-                    data.degree
-                        ? {
-                            degree: data.degree,
-                            institution: data.institution,
-                            year: data.year,
-                            specialization: data.specialization,
-                        }
-                        : null,
-                ].filter(Boolean),
-                certifications: [
-                    data.certificateName
-                        ? {
-                            certificateName: data.certificateName,
-                            issuedBy: data.issuedBy,
-                            year: data.year,
-                            description: data.description,
-                        }
-                        : null,
-                ].filter(Boolean),
-
-
-                workExperience: [
-                    data.organization
-                        ? {
-                            organization: data.organization,
-                            position: data.position,
-                            from: data.from,
-                            to: data.to,
-                            description: data.description,
-                        }
-                        : null,
-                ].filter(Boolean),
+                    currentAddress: {
+                        address: data.address,
+                        village: data.village,
+                        postOffice: data.postOffice,
+                        thana: data.thana,
+                        district: data.thana,
+                        state: data.state,
+                        country: data.country,
+                        zipCode: data.zipCode,
+                    },
+                    sameAsPermanent: data.sameAsPermanent,
+                    designation: data.designation,
+                    department: data.department,
+                    joiningDate: data.joiningDate,
+                    monthlySalary: monthlySalaryNum,
+                    staffType: data.staffType,
+                    educationalQualifications: [
+                        data.degree
+                            ? {
+                                degree: data.degree,
+                                institution: data.institution,
+                                year: data.year,
+                                specialization: data.specialization,
+                            }
+                            : null,
+                    ].filter(Boolean),
+                    certifications: [
+                        data.certificateName
+                            ? {
+                                certificateName: data.certificateName,
+                                issuedBy: data.issuedBy,
+                                year: data.year,
+                                description: data.description,
+                            }
+                            : null,
+                    ].filter(Boolean),
 
 
-                status: data.status || "Active",
-                language: data.language,
-                activeSession: data.activeSession,
-            }
+                    workExperience: [
+                        data.organization
+                            ? {
+                                organization: data.organization,
+                                position: data.position,
+                                from: data.from,
+                                to: data.to,
+                                description: data.description,
+                            }
+                            : null,
+                    ].filter(Boolean),
 
-            if (id) {
-                const res = await updateStaff({ id, data: submissionData }).unwrap()
-                if (res.success) {
-                    setSuccess(true)
-                    setSnackbar({
-                        open: true,
-                        message: "Staff updated successfully!",
-                        severity: "success",
-                    })
 
-                    setTimeout(() => {
-                        router.push("/dashboard/super_admin/staff/list")
-                    }, 2000)
+                    status: data.status || "Active",
+                    language: data.language,
+                    activeSession: data.activeSession,
                 }
-            } else {
-                const res = await createStaff(submissionData).unwrap()
 
-                if (res.success) {
-                    setSuccess(true)
-                    setSnackbar({
-                        open: true,
-                        message: "Staff registered successfully!",
-                        severity: "success",
-                    })
+                if (id) {
+                    const res = await updateStaff({ id, data: submissionData }).unwrap()
+                    if (res.success) {
+                        setSuccess(true)
+                        setSnackbar({
+                            open: true,
+                            message: "Staff updated successfully!",
+                            severity: "success",
+                        })
 
-                    setTimeout(() => {
-                        router.push("/dashboard/super_admin/staff/list")
-                    }, 2000)
+                        setTimeout(() => {
+                            router.push("/dashboard/super_admin/staff/list")
+                        }, 2000)
+                    }
+                } else {
+                    const res = await createStaff(submissionData).unwrap()
+
+                    if (res.success) {
+                        setSuccess(true)
+                        setSnackbar({
+                            open: true,
+                            message: "Staff registered successfully!",
+                            severity: "success",
+                        })
+
+                        setTimeout(() => {
+                            router.push("/dashboard/super_admin/staff/list")
+                        }, 2000)
+                    }
                 }
-            }
-        } catch (error: any) {
-            console.error("❌ Submission error:", error);
+            } catch (error: any) {
+                toast.error('Failed to create staff!')
 
-            const errorSources = error?.data?.errorSources;
 
-            if (Array.isArray(errorSources) && errorSources.length > 0) {
-                const firstError = errorSources[0];
-                const field = firstError?.path || 'Field';
-                const message = firstError?.message || 'is invalid';
-                toast.error(`${field}: ${message}`);
-            } else {
-                toast.error(error?.data?.message || 'Please fill all required field!');
             }
         }
 
-
-        finally {
-            setIsSubmitting(false)
-        }
     }
 
     // Add handleCloseSnackbar function
@@ -406,20 +407,24 @@ export default function StaffForm({ id }: TeacherFormProps = {}) {
                 <Grid container spacing={3}>
                     <Grid item xs={12} md={4}>
                         <CraftInputWithIcon
-                            required
+
                             fullWidth
-                            label="Staff ID"
-                            name="teacherId"
-                            onChange={handleInputChange}
+
+                            name="name"
+                            label={
+                                <span>
+                                    Full Name <span style={{ color: 'red' }}>*</span>
+                                </span>
+                            }
                             size="medium"
                             InputProps={{
-                                startAdornment: <Fingerprint sx={{ color: "text.secondary", mr: 1 }} />,
+                                startAdornment: <DriveFileRenameOutline sx={{ color: "text.secondary", mr: 1 }} />,
                             }}
                         />
                     </Grid>
                     <Grid item xs={12} md={4}>
                         <CraftInputWithIcon
-                            required
+
                             fullWidth
                             label="Staff Serial"
                             name="teacherSerial"
@@ -432,7 +437,7 @@ export default function StaffForm({ id }: TeacherFormProps = {}) {
                     </Grid>
                     <Grid item xs={12} md={4}>
                         <CraftInputWithIcon
-                            required
+
                             fullWidth
                             label="Smart ID Card"
                             name="smartIdCard"
@@ -442,22 +447,11 @@ export default function StaffForm({ id }: TeacherFormProps = {}) {
                             }}
                         />
                     </Grid>
-                    <Grid item xs={12} md={6}>
-                        <CraftInputWithIcon
-                            required
-                            fullWidth
-                            label="Full Name"
-                            name="name"
-                            size="medium"
-                            InputProps={{
-                                startAdornment: <DriveFileRenameOutline sx={{ color: "text.secondary", mr: 1 }} />,
-                            }}
-                        />
-                    </Grid>
+
 
                     <Grid item xs={12} md={4}>
                         <CraftInputWithIcon
-                            required
+
                             fullWidth
                             label="Phone Number"
                             name="phone"
@@ -469,10 +463,15 @@ export default function StaffForm({ id }: TeacherFormProps = {}) {
                     </Grid>
                     <Grid item xs={12} md={4}>
                         <CraftInputWithIcon
-                            required
+
                             fullWidth
-                            label="Email Address"
+
                             name="email"
+                            label={
+                                <span>
+                                    Email Address <span style={{ color: 'red' }}>*</span>
+                                </span>
+                            }
                             type="email"
                             size="medium"
                             InputProps={{
@@ -483,11 +482,14 @@ export default function StaffForm({ id }: TeacherFormProps = {}) {
                     <Grid item xs={12} md={4}>
                         <CraftDatePicker
                             fullWidth
-                            label="Date of Birth"
+
                             name="dateOfBirth"
-                        // InputProps={{
-                        //   startAdornment: <Cake sx={{ color: "text.secondary", mr: 1 }} />,
-                        // }}
+                            label={
+                                <span>
+                                    Date of Birth <span style={{ color: 'red' }}>*</span>
+                                </span>
+                            }
+
                         />
                     </Grid>
                     <Grid item xs={12} md={4}>
@@ -502,10 +504,15 @@ export default function StaffForm({ id }: TeacherFormProps = {}) {
                     </Grid>
                     <Grid item xs={12} md={4}>
                         <CraftSelectWithIcon
-                            required
+
                             name="gender"
                             size="medium"
-                            label="Gender"
+                            label={
+                                <span>
+                                    Gender <span style={{ color: 'red' }}>*</span>
+                                </span>
+                            }
+
                             placeholder="Select Gender"
                             items={genders}
                             adornment={<Wc color="action" />}
@@ -564,7 +571,7 @@ export default function StaffForm({ id }: TeacherFormProps = {}) {
                             <Grid container spacing={2}>
                                 <Grid item xs={12}>
                                     <CraftInputWithIcon
-                                        required
+
                                         fullWidth
                                         label="Address Line"
                                         name="address"
@@ -613,7 +620,7 @@ export default function StaffForm({ id }: TeacherFormProps = {}) {
                                 </Grid>
                                 <Grid item xs={12} sm={6}>
                                     <CraftInputWithIcon
-                                        required
+
                                         fullWidth
                                         label="District"
                                         name="district"
@@ -636,7 +643,7 @@ export default function StaffForm({ id }: TeacherFormProps = {}) {
                                 </Grid>
                                 <Grid item xs={12} sm={6}>
                                     <CraftInputWithIcon
-                                        required
+
                                         fullWidth
                                         label="Country"
                                         name="country"
@@ -709,10 +716,15 @@ export default function StaffForm({ id }: TeacherFormProps = {}) {
                 <Grid container spacing={3}>
                     <Grid item xs={12} md={6}>
                         <CraftSelectWithIcon
-                            required
+
                             name="designation"
                             size="medium"
-                            label="Designation"
+                            label={
+                                <span>
+                                    Designation
+                                </span>
+                            }
+
                             placeholder="Select Designation"
                             items={designations}
                             adornment={<BusinessCenter color="action" />}
@@ -720,7 +732,7 @@ export default function StaffForm({ id }: TeacherFormProps = {}) {
                     </Grid>
                     <Grid item xs={12} md={6}>
                         <CraftSelectWithIcon
-                            required
+
                             name="department"
                             size="medium"
                             label="Department"
@@ -731,7 +743,7 @@ export default function StaffForm({ id }: TeacherFormProps = {}) {
                     </Grid>
                     <Grid item xs={12} md={4}>
                         <CraftDatePicker
-                            required
+
                             fullWidth
                             label="Joining Date"
                             name="joiningDate"
@@ -743,7 +755,7 @@ export default function StaffForm({ id }: TeacherFormProps = {}) {
                     </Grid>
                     <Grid item xs={12} md={4}>
                         <CraftInputWithIcon
-                            required
+
                             fullWidth
                             label="Monthly Salary"
                             name="monthlySalary"
@@ -757,7 +769,7 @@ export default function StaffForm({ id }: TeacherFormProps = {}) {
                     </Grid>
                     <Grid item xs={12} md={4}>
                         <CraftSelectWithIcon
-                            required
+
                             name="staffType"
                             size="medium"
                             label="Staff Type"
@@ -797,7 +809,7 @@ export default function StaffForm({ id }: TeacherFormProps = {}) {
                             <Grid container spacing={3}>
                                 <Grid item xs={12} md={6}>
                                     <CraftInputWithIcon
-                                        required
+
                                         fullWidth
                                         label="Degree/Certificate"
                                         name="degree"
@@ -809,7 +821,7 @@ export default function StaffForm({ id }: TeacherFormProps = {}) {
                                 </Grid>
                                 <Grid item xs={12} md={6}>
                                     <CraftInputWithIcon
-                                        required
+
                                         fullWidth
                                         label="Institution"
                                         name="institution"
@@ -821,7 +833,7 @@ export default function StaffForm({ id }: TeacherFormProps = {}) {
                                 </Grid>
                                 <Grid item xs={12} md={6}>
                                     <CraftInputWithIcon
-                                        required
+
                                         fullWidth
                                         label="Year of Completion"
                                         name="year"
@@ -1015,7 +1027,7 @@ export default function StaffForm({ id }: TeacherFormProps = {}) {
                             <Grid container spacing={3}>
                                 <Grid item xs={12} md={6}>
                                     <CraftSelectWithIcon
-                                        required
+
                                         name="status"
                                         size="medium"
                                         label="Status"
@@ -1107,6 +1119,7 @@ export default function StaffForm({ id }: TeacherFormProps = {}) {
                 </Box>
 
                 <CraftForm
+                    // resolver={zodResolver(staffSchema)}
                     onSubmit={handleSubmit}
                     defaultValues={defaultValues}
                     key={Object.keys(defaultValues).length > 0 ? "form-with-data" : "empty-form"}

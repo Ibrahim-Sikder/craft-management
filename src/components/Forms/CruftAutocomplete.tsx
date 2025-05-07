@@ -30,6 +30,7 @@ type TStateProps = {
   margin?: "none" | "normal" | "dense"
   defaultValue?: any
   placeholder?: string
+  disabled?:any,
   onInputChange?: (event: React.SyntheticEvent, value: string) => void
   onChange?: (event: React.SyntheticEvent, value: any) => void
 }
@@ -49,6 +50,7 @@ const CraftIntAutoComplete = ({
   placeholder = "Select options",
   onInputChange,
   onChange,
+  disabled
 }: TStateProps) => {
   const { control } = useFormContext()
 
@@ -109,6 +111,7 @@ const CraftIntAutoComplete = ({
               placeholder={placeholder}
               fullWidth={fullWidth}
               required={required}
+              disabled={disabled}
               margin={margin}
               error={!!error}
               helperText={error?.message}

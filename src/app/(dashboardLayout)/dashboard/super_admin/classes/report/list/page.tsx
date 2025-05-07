@@ -5,7 +5,7 @@
 
 import React from "react"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import {
   Box,
   Container,
@@ -23,7 +23,6 @@ import {
   TableHead,
   TableRow,
   TablePagination,
-  Menu,
   MenuItem,
   Divider,
   InputAdornment,
@@ -48,7 +47,6 @@ import {
 import {
   Add as AddIcon,
   Search as SearchIcon,
-  MoreVert as MoreVertIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
   Visibility as VisibilityIcon,
@@ -64,18 +62,17 @@ import {
   Download as DownloadIcon,
   Print as PrintIcon,
   Refresh as RefreshIcon,
-
 } from "@mui/icons-material"
-import DrawIcon from "@mui/icons-material/Draw";
-import BlockIcon from "@mui/icons-material/Block";
+import DrawIcon from "@mui/icons-material/Draw"
+import BlockIcon from "@mui/icons-material/Block"
 import Link from "next/link"
 import { format } from "date-fns"
 import { customTheme } from "@/ThemeStyle"
-import { useGetAllClassReportsQuery } from "@/redux/api/classReportApi"
+import { useDeleteClassReportMutation, useGetAllClassReportsQuery } from "@/redux/api/classReportApi"
 import { useGetAllClassesQuery } from "@/redux/api/classApi"
 import { useGetAllSubjectsQuery } from "@/redux/api/subjectApi"
 import { useGetAllTeachersQuery } from "@/redux/api/teacherApi"
-import { ErrorIcon } from "react-hot-toast"
+import type { Filters } from "@/interface"
 
 export default function ClassReportList() {
   // State
@@ -98,36 +95,52 @@ export default function ClassReportList() {
   const [expandedReport, setExpandedReport] = useState<string | null>(null)
   const [detailsModalOpen, setDetailsModalOpen] = useState(false)
   const [selectedReportDetails, setSelectedReportDetails] = useState<any | null>(null)
+  const [deleteClassReport] = useDeleteClassReportMutation()
 
   // API queries
   const {
     data: classReport,
     isLoading,
     refetch,
-  } = useGetAllClassReportsQuery({
-    limit: rowsPerPage,
-    page: page + 1,
-    searchTerm: searchTerm,
-    classId: filters.class || undefined,
-    subjectId: filters.subject || undefined,
-    teacherId: filters.teacher || undefined,
-  })
-  console.log(classReport)
+  } = useGetAllClassReportsQuery(
+    {
+      limit: rowsPerPage,
+      page: page + 1,
+      searchTerm: searchTerm,
+      className: filters.class, // Changed from class to className to match API
+      subject: filters.subject,
+      teacher: filters.teacher,
+      date: filters.date,
+      hour: filters.hour,
+    },
+    {
+      // Re-fetch when filters or search term changes
+      refetchOnMountOrArgChange: true,
+    },
+  )
 
   const { data: classData } = useGetAllClassesQuery({
-    limit: 100,
+    limit: 100, // Increased to fetch more classes
     page: 1,
+    searchTerm: "",
   })
 
   const { data: subjectData } = useGetAllSubjectsQuery({
-    limit: 100,
+    limit: 100, // Increased to fetch more subjects
     page: 1,
+    searchTerm: "",
   })
 
   const { data: teacherData } = useGetAllTeachersQuery({
-    limit: 100,
+    limit: 100, // Increased to fetch more teachers
     page: 1,
+    searchTerm: "",
   })
+
+  // Effect to refetch data when filters change
+  useEffect(() => {
+    refetch()
+  }, [filters, searchTerm, page, rowsPerPage, refetch])
 
   const theme = customTheme
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"))
@@ -140,13 +153,14 @@ export default function ClassReportList() {
   // Total count for pagination
   const totalCount = classReport?.data?.meta?.total || 0
 
-  // Prepare options for filters
+  // Update your filter options to use proper IDs
   const classOptions = useMemo(() => {
-    if (!classData?.data?.classes) return []
-    return classData.data.classes.map((cls: any) => ({
-      label: cls.className,
-      value: cls._id,
-    }))
+    return (
+      classData?.data?.classes?.map((cls: any) => ({
+        label: cls.className,
+        value: cls._id,
+      })) || []
+    )
   }, [classData])
 
   const subjectOptions = useMemo(() => {
@@ -158,8 +172,8 @@ export default function ClassReportList() {
   }, [subjectData])
 
   const teacherOptions = useMemo(() => {
-    if (!teacherData?.data?.teachers) return []
-    return teacherData.data.teachers.map((teacher: any) => ({
+    if (!teacherData?.data) return []
+    return teacherData.data?.data?.map((teacher: any) => ({
       label: teacher.name,
       value: teacher._id,
     }))
@@ -191,12 +205,14 @@ export default function ClassReportList() {
   }
 
   // Handle filter changes
-  const handleFilterChange = (filterName: string, value: string) => {
+  const handleFilterChange = (filterName: keyof Filters, value: string) => {
     setFilters((prev) => ({
       ...prev,
       [filterName]: value,
     }))
     setPage(0)
+    // Trigger refetch when filters change
+    refetch()
   }
 
   // Handle sorting
@@ -217,16 +233,27 @@ export default function ClassReportList() {
   }
 
   // Handle delete
-  const handleDeleteClick = () => {
+  const handleDeleteClick = (event: React.MouseEvent<HTMLButtonElement>, report: any) => {
+    event.stopPropagation()
+    setSelectedReport(report)
     setDeleteDialogOpen(true)
     setAnchorEl(null)
   }
 
-  const handleDeleteConfirm = () => {
-    // Implement delete functionality here
+  const handleDeleteConfirm = async () => {
+    if (selectedReport) {
+      try {
+        await deleteClassReport(selectedReport._id).unwrap()
+        // Show success message or notification here if needed
+        setDeleteDialogOpen(false)
+        setSelectedReport(null)
+        refetch() // Refresh the data after deletion
+      } catch (error) {
+        console.error("Error deleting class report:", error)
+        // Show error message or notification here if needed
+      }
+    }
     setDeleteDialogOpen(false)
-    setSelectedReport(null)
-    refetch()
   }
 
   const handleDeleteCancel = () => {
@@ -274,41 +301,30 @@ export default function ClassReportList() {
     }
   }
 
-  // Filter reports by hour (client-side filtering for hour)
-  const filteredReportsByHour = useMemo(() => {
-    if (!filters.hour) return reports
-    return reports.filter((report: any) => report.hour === filters.hour)
-  }, [reports, filters.hour])
+  // Get filtered reports based on all filters
+  const filteredReports = useMemo(() => {
+    const filtered = [...reports]
 
-  // Filter reports by date (client-side filtering for date)
-  const filteredReportsByDate = useMemo(() => {
-    if (!filters.date) return filteredReportsByHour
+    // We only need to filter client-side for any filters that aren't properly handled by the API
+    // Most filtering should now be handled by the API
 
-    const filterDate = new Date(filters.date)
-    return filteredReportsByHour.filter((report: any) => {
-      const reportDate = new Date(report.date)
-      return (
-        reportDate.getDate() === filterDate.getDate() &&
-        reportDate.getMonth() === filterDate.getMonth() &&
-        reportDate.getFullYear() === filterDate.getFullYear()
-      )
-    })
-  }, [filteredReportsByHour, filters.date])
+    return filtered
+  }, [reports])
 
   // Sort reports
   const sortedReports = useMemo(() => {
-    return [...filteredReportsByDate].sort((a, b) => {
+    return [...filteredReports].sort((a, b) => {
       if (orderBy === "date") {
         return order === "asc"
           ? new Date(a.date).getTime() - new Date(b.date).getTime()
           : new Date(b.date).getTime() - new Date(a.date).getTime()
       } else if (orderBy === "classes") {
-        const classA = a.classes?.className || ""
-        const classB = b.classes?.className || ""
+        const classA = a.classes || ""
+        const classB = b.classes || ""
         return order === "asc" ? classA.localeCompare(classB) : classB.localeCompare(classA)
       } else if (orderBy === "subjects") {
-        const subjectA = a.subjects?.name || ""
-        const subjectB = b.subjects?.name || ""
+        const subjectA = a.subjects || ""
+        const subjectB = b.subjects || ""
         return order === "asc" ? subjectA.localeCompare(subjectB) : subjectB.localeCompare(subjectA)
       } else {
         // Default sort by createdAt
@@ -317,7 +333,7 @@ export default function ClassReportList() {
           : new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
       }
     })
-  }, [filteredReportsByDate, orderBy, order])
+  }, [filteredReports, orderBy, order])
 
   // Prepare student data for display
   const getStudentRows = (report: any) => {
@@ -409,7 +425,7 @@ export default function ClassReportList() {
                           >
                             <MenuItem value="">All Classes</MenuItem>
                             {classOptions.map((option: any) => (
-                              <MenuItem key={option.value} value={option.value}>
+                              <MenuItem key={option.value} value={option.label}>
                                 {option.label}
                               </MenuItem>
                             ))}
@@ -440,7 +456,7 @@ export default function ClassReportList() {
                           >
                             <MenuItem value="">All Subjects</MenuItem>
                             {subjectOptions.map((option: any) => (
-                              <MenuItem key={option.value} value={option.value}>
+                              <MenuItem key={option.value} value={option.label}>
                                 {option.label}
                               </MenuItem>
                             ))}
@@ -471,7 +487,7 @@ export default function ClassReportList() {
                           >
                             <MenuItem value="">All Teachers</MenuItem>
                             {teacherOptions.map((option: any) => (
-                              <MenuItem key={option.value} value={option.value}>
+                              <MenuItem key={option.value} value={option.label}>
                                 {option.label}
                               </MenuItem>
                             ))}
@@ -645,12 +661,8 @@ export default function ClassReportList() {
                                 )}
                               </Box>
                             </TableCell>
-                            <TableCell>
-                              Roll
-                            </TableCell>
-                            <TableCell>
-                              Student Name
-                            </TableCell>
+                            <TableCell>Roll</TableCell>
+                            <TableCell>Student Name</TableCell>
                             <TableCell>
                               <Box
                                 sx={{
@@ -675,13 +687,7 @@ export default function ClassReportList() {
                               </Box>
                             </TableCell>
 
-                            <TableCell>
-
-                              Subject
-
-
-
-                            </TableCell>
+                            <TableCell>Subject</TableCell>
                             <TableCell>Hour</TableCell>
                             <TableCell>Attendance</TableCell>
                             <TableCell>Lesson</TableCell>
@@ -693,17 +699,17 @@ export default function ClassReportList() {
                         <TableBody>
                           {sortedReports.length > 0 ? (
                             sortedReports.map((report: any) => {
-                              const className = report.classes?.className || "N/A";
-                              const subjectName = report.subjects?.name || "N/A";
-                              const hasLesson = !!report.todayLesson;
-                              const hasHomework = !!report.homeTask;
-                              const isExpanded = expandedReport === report._id;
+                              const className = report.classes?.className || "N/A"
+                              const subjectName = report.subjects?.name || "N/A"
+                              const hasLesson = !!report.todayLesson
+                              const hasHomework = !!report.homeTask
+                              const isExpanded = expandedReport === report._id
 
                               return (
                                 <React.Fragment key={report._id}>
                                   {report.studentEvaluations?.map((evaluation: any, index: number) => {
-                                    const student = evaluation.studentId;
-                                    console.log('evaluation ', evaluation)
+                                    const student = evaluation.studentId
+
                                     return (
                                       <TableRow
                                         key={`${report._id}-${index}`}
@@ -721,12 +727,12 @@ export default function ClassReportList() {
                                         <TableCell>{student?.name || "Note"}</TableCell>
                                         <TableCell>
                                           <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                                            {className}
+                                            {report.classes}
                                           </Typography>
                                         </TableCell>
                                         <TableCell>
                                           <Chip
-                                            label={subjectName}
+                                            label={report?.subjects}
                                             size="small"
                                             sx={{
                                               bgcolor: "rgba(99, 102, 241, 0.08)",
@@ -748,7 +754,9 @@ export default function ClassReportList() {
                                               )
                                             }
                                             label={evaluation?.attendance || "Not Marked"}
-                                            color={evaluation?.attendance?.toLowerCase() === "উপস্থিত" ? "success" : "error"}
+                                            color={
+                                              evaluation?.attendance?.toLowerCase() === "উপস্থিত" ? "success" : "error"
+                                            }
                                             size="small"
                                             sx={{
                                               fontWeight: 500,
@@ -757,10 +765,7 @@ export default function ClassReportList() {
                                                   ? alpha(theme.palette.success.main, 0.1)
                                                   : alpha(theme.palette.error.main, 0.1),
                                             }}
-
                                           />
-
-
                                         </TableCell>
                                         <TableCell>
                                           <Chip
@@ -780,12 +785,9 @@ export default function ClassReportList() {
                                               border: `1px solid ${evaluation?.handwriting ? "#00BFA6" : "#FF1744"}`,
                                             }}
                                           />
-
-
                                         </TableCell>
 
                                         <TableCell>
-
                                           <Chip
                                             icon={
                                               evaluation?.lessonEvaluation ? (
@@ -803,11 +805,9 @@ export default function ClassReportList() {
                                               border: `1px solid ${evaluation?.lessonEvaluation ? "#651FFF" : "#FF1744"}`,
                                             }}
                                           />
-
                                         </TableCell>
 
                                         <TableCell>
-
                                           <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
                                             {!isMobile && (
                                               <>
@@ -847,31 +847,29 @@ export default function ClassReportList() {
                                                 </Tooltip>
                                               </>
                                             )}
-                                            <Tooltip title="More Actions">
+
+                                            <Tooltip title="Delete Subject">
                                               <IconButton
                                                 size="small"
-                                                onClick={(e) => {
-                                                  e.stopPropagation();
-                                                  handleMenuClick(e, report);
-                                                }}
                                                 sx={{
-                                                  color: "text.secondary",
-                                                  bgcolor: "rgba(0, 0, 0, 0.04)",
+                                                  color: "error.main",
+                                                  bgcolor: alpha(theme.palette.error.main, 0.1),
                                                   "&:hover": {
-                                                    bgcolor: "rgba(0, 0, 0, 0.08)",
+                                                    bgcolor: alpha(theme.palette.error.main, 0.2),
                                                   },
                                                 }}
+                                                onClick={(e) => handleDeleteClick(e, report)}
                                               >
-                                                <MoreVertIcon fontSize="small" />
+                                                <DeleteIcon fontSize="small" />
                                               </IconButton>
                                             </Tooltip>
                                           </Box>
                                         </TableCell>
                                       </TableRow>
-                                    );
+                                    )
                                   })}
                                 </React.Fragment>
-                              );
+                              )
                             })
                           ) : (
                             <TableRow>
@@ -889,7 +887,6 @@ export default function ClassReportList() {
                             </TableRow>
                           )}
                         </TableBody>
-
                       </Table>
                     </TableContainer>
                     <TablePagination
@@ -911,46 +908,6 @@ export default function ClassReportList() {
           </Fade>
         </Container>
       </Box>
-
-      {/* Context Menu */}
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleMenuClose}
-        PaperProps={{
-          elevation: 3,
-          sx: {
-            mt: 1,
-            minWidth: 180,
-            borderRadius: 2,
-            overflow: "hidden",
-          },
-        }}
-      >
-        <MenuItem
-          component={Link}
-          href={`/dashboard/admin/class-reports/${selectedReport?._id}`}
-          onClick={handleMenuClose}
-          sx={{ py: 1.5 }}
-        >
-          <VisibilityIcon fontSize="small" sx={{ mr: 2, color: "info.main" }} />
-          View Details
-        </MenuItem>
-        <MenuItem
-          component={Link}
-          href={`/dashboard/admin/class-reports/edit/${selectedReport?._id}`}
-          onClick={handleMenuClose}
-          sx={{ py: 1.5 }}
-        >
-          <EditIcon fontSize="small" sx={{ mr: 2, color: "warning.main" }} />
-          Edit Report
-        </MenuItem>
-        <Divider />
-        <MenuItem onClick={handleDeleteClick} sx={{ py: 1.5, color: "error.main" }}>
-          <DeleteIcon fontSize="small" sx={{ mr: 2 }} />
-          Delete Report
-        </MenuItem>
-      </Menu>
 
       {/* Delete Confirmation Dialog */}
       <Dialog
@@ -1017,7 +974,7 @@ export default function ClassReportList() {
                       Class
                     </Typography>
                     <Typography variant="body1" fontWeight={500}>
-                      {selectedReportDetails.classes?.className || "N/A"}
+                      {selectedReportDetails.classes?.className || selectedReportDetails.classes || "N/A"}
                     </Typography>
                   </Grid>
                   <Grid item xs={12} sm={6} md={3}>
@@ -1025,7 +982,7 @@ export default function ClassReportList() {
                       Subject
                     </Typography>
                     <Typography variant="body1" fontWeight={500}>
-                      {selectedReportDetails.subjects?.name || "N/A"}
+                      {selectedReportDetails.subjects?.name || selectedReportDetails.subjects || "N/A"}
                     </Typography>
                   </Grid>
                   <Grid item xs={12} sm={6} md={3}>

@@ -48,7 +48,7 @@ import type { FieldValues } from "react-hook-form"
 import { useRouter } from "next/navigation"
 
 export default function UserForm({ id }: any) {
-    console.log(id)
+
     const [activeStep, setActiveStep] = useState(0)
     const [showPassword, setShowPassword] = useState(false)
     const router = useRouter()
@@ -72,7 +72,7 @@ export default function UserForm({ id }: any) {
         email: singleUser?.data.email,
         role: singleUser?.data.role,
         status: singleUser?.data.status,
-        password: singleUser?.data.password,
+        // password: singleUser?.data.password,
     }
 
     const handleSubmit = async (data: FieldValues) => {
@@ -82,6 +82,7 @@ export default function UserForm({ id }: any) {
             if (!id) {
 
                 res = await createUser({ ...data }).unwrap();
+                console.log(res)
                 if (res.success) {
                     toast.success("User created successfully!");
                     router.push('/dashboard/super_admin/user-management');
@@ -89,10 +90,10 @@ export default function UserForm({ id }: any) {
                 }
             } else {
 
-                res = await updateUser({ id, ...data }).unwrap();
+                res = await updateUser({ id, data }).unwrap();
                 if (res.success) {
                     toast.success("User updated successfully!");
-                    router.push('/dashboard/super_admin/user-management');
+                    // router.push('/dashboard/super_admin/user-management');
                 }
             }
         } catch (err) {
@@ -507,7 +508,7 @@ export default function UserForm({ id }: any) {
                                                         name="password"
                                                         label="Password"
                                                         placeholder="Enter secure password"
-                                                        required
+
                                                         fullWidth
                                                         type={showPassword ? "text" : "password"}
                                                     />

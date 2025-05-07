@@ -203,9 +203,6 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
     }
   }, [singlesTeacher])
 
-  const handleInputChange = () => {
-
-  }
 
   const handleSwitchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
 
@@ -236,12 +233,30 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
   }
 
   const handleSubmit = async (data: any) => {
-    setIsSubmitting(true)
-    console.log(data)
+    setIsSubmitting(true);
+
+    // Validation
+    if (!data.name) {
+      toast.error('Teacher name is required!');
+      setIsSubmitting(false);
+      return;
+    } else if (!data.gender) {
+      toast.error('Gender is required!');
+      setIsSubmitting(false);
+      return;
+    } else if (!data.email) {
+      toast.error('Email is required!');
+      setIsSubmitting(false);
+      return;
+    } else if (!data.dateOfBirth) {
+      toast.error('Date of Birth is required!');
+      setIsSubmitting(false);
+      return;
+    }
 
     try {
-      const monthlySalaryNum = data.monthlySalary ? Number(data.monthlySalary) : undefined
-      const teacherSerialNum = data.teacherSerial ? Number(data.teacherSerial) : undefined
+      const monthlySalaryNum = data.monthlySalary ? Number(data.monthlySalary) : undefined;
+      const teacherSerialNum = data.teacherSerial ? Number(data.teacherSerial) : undefined;
 
       const submissionData = {
         ...data,
@@ -259,7 +274,6 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
         maritalStatus: data.maritalStatus,
         teacherPhoto: data.teacherPhoto,
 
-        // Address information
         permanentAddress: {
           address: data.address,
           village: data.village,
@@ -281,12 +295,14 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
           country: data.country,
           zipCode: data.zipCode,
         },
+
         sameAsPermanent: data.sameAsPermanent,
         designation: data.designation,
         department: data.department,
         joiningDate: data.joiningDate,
         monthlySalary: monthlySalaryNum,
         staffType: data.staffType,
+
         educationalQualifications: [
           data.degree
             ? {
@@ -297,6 +313,7 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
             }
             : null,
         ].filter(Boolean),
+
         certifications: [
           data.certificateName
             ? {
@@ -307,7 +324,6 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
             }
             : null,
         ].filter(Boolean),
-
 
         workExperience: [
           data.organization
@@ -321,62 +337,50 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
             : null,
         ].filter(Boolean),
 
-
         status: data.status || "Active",
         language: data.language,
         activeSession: data.activeSession,
-      }
+      };
 
       if (id) {
-        const res = await updateTeacher({ id, data: submissionData }).unwrap()
+        const res = await updateTeacher({ id, data: submissionData }).unwrap();
         if (res.success) {
-          setSuccess(true)
+          setSuccess(true);
           setSnackbar({
             open: true,
             message: "Teacher updated successfully!",
             severity: "success",
-          })
-
+          });
           setTimeout(() => {
-            router.push("/dashboard/super_admin/teacher/list")
-          }, 2000)
+            router.push("/dashboard/super_admin/teacher/list");
+          }, 2000);
         }
       } else {
-        const res = await createTeacher(submissionData).unwrap()
-
+        const res = await createTeacher(submissionData).unwrap();
         if (res.success) {
-          setSuccess(true)
+          setSuccess(true);
           setSnackbar({
             open: true,
             message: "Teacher registered successfully!",
             severity: "success",
-          })
-
+          });
           setTimeout(() => {
-            router.push("/dashboard/super_admin/teacher/list")
-          }, 2000)
+            router.push("/dashboard/super_admin/teacher/list");
+          }, 2000);
         }
       }
     } catch (error: any) {
       console.error("❌ Submission error:", error);
+      // const errorSources = error?.data?.errorSources;
+      // if (Array.isArray(errorSources) && errorSources.length > 0) {
+      //   const firstError = errorSources[0];
+      //   const field = firstError?.path || "Field";
+      //   const message = firstError?.message || "is invalid";
+      // toast.error(`${field}: ${message}`);
 
-      const errorSources = error?.data?.errorSources;
-
-      if (Array.isArray(errorSources) && errorSources.length > 0) {
-        const firstError = errorSources[0];
-        const field = firstError?.path || 'Field';
-        const message = firstError?.message || 'is invalid';
-        toast.error(`${field}: ${message}`);
-      } else {
-        toast.error(error?.data?.message || 'Please fill all required field!');
-      }
     }
+  };
 
-
-    finally {
-      setIsSubmitting(false)
-    }
-  }
 
   // Add handleCloseSnackbar function
   const handleCloseSnackbar = () => {
@@ -406,20 +410,25 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
         <Grid container spacing={3}>
           <Grid item xs={12} md={4}>
             <CraftInputWithIcon
-              required
               fullWidth
-              label="Teacher ID"
-              name="teacherId"
-              onChange={handleInputChange}
+              label={
+                <span>
+                  Full Name <span style={{ color: 'red' }}>*</span>
+                </span>
+              }
+              name="name"
               size="medium"
               InputProps={{
-                startAdornment: <Fingerprint sx={{ color: "text.secondary", mr: 1 }} />,
+                startAdornment: (
+                  <DriveFileRenameOutline sx={{ color: 'text.secondary', mr: 1 }} />
+                ),
               }}
             />
           </Grid>
+
           <Grid item xs={12} md={4}>
             <CraftInputWithIcon
-              required
+
               fullWidth
               label="Teacher Serial"
               name="teacherSerial"
@@ -432,7 +441,7 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
           </Grid>
           <Grid item xs={12} md={4}>
             <CraftInputWithIcon
-              required
+
               fullWidth
               label="Smart ID Card"
               name="smartIdCard"
@@ -442,22 +451,11 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
               }}
             />
           </Grid>
-          <Grid item xs={12} md={6}>
-            <CraftInputWithIcon
-              required
-              fullWidth
-              label="Full Name"
-              name="name"
-              size="medium"
-              InputProps={{
-                startAdornment: <DriveFileRenameOutline sx={{ color: "text.secondary", mr: 1 }} />,
-              }}
-            />
-          </Grid>
+
 
           <Grid item xs={12} md={4}>
             <CraftInputWithIcon
-              required
+
               fullWidth
               label="Phone Number"
               name="phone"
@@ -469,9 +467,14 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
           </Grid>
           <Grid item xs={12} md={4}>
             <CraftInputWithIcon
-              required
+
               fullWidth
-              label="Email Address"
+              label={
+                <span>
+                  Email Address <span style={{ color: 'red' }}>*</span>
+                </span>
+              }
+
               name="email"
               type="email"
               size="medium"
@@ -483,11 +486,13 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
           <Grid item xs={12} md={4}>
             <CraftDatePicker
               fullWidth
-              label="Date of Birth"
+              label={
+                <span>
+                  Date of Birth <span style={{ color: 'red' }}>*</span>
+                </span>
+              }
               name="dateOfBirth"
-            // InputProps={{
-            //   startAdornment: <Cake sx={{ color: "text.secondary", mr: 1 }} />,
-            // }}
+
             />
           </Grid>
           <Grid item xs={12} md={4}>
@@ -502,10 +507,15 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
           </Grid>
           <Grid item xs={12} md={4}>
             <CraftSelectWithIcon
-              required
+
               name="gender"
               size="medium"
-              label="Gender"
+
+              label={
+                <span>
+                  Gender <span style={{ color: 'red' }}>*</span>
+                </span>
+              }
               placeholder="Select Gender"
               items={genders}
               adornment={<Wc color="action" />}
@@ -564,7 +574,7 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
               <Grid container spacing={2}>
                 <Grid item xs={12}>
                   <CraftInputWithIcon
-                    required
+
                     fullWidth
                     label="Address Line"
                     name="address"
@@ -613,7 +623,7 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <CraftInputWithIcon
-                    required
+
                     fullWidth
                     label="District"
                     name="district"
@@ -636,7 +646,7 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
                 </Grid>
                 <Grid item xs={12} sm={6}>
                   <CraftInputWithIcon
-                    required
+
                     fullWidth
                     label="Country"
                     name="country"
@@ -709,7 +719,7 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
         <Grid container spacing={3}>
           <Grid item xs={12} md={6}>
             <CraftSelectWithIcon
-              required
+
               name="designation"
               size="medium"
               label="Designation"
@@ -720,7 +730,7 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
           </Grid>
           <Grid item xs={12} md={6}>
             <CraftSelectWithIcon
-              required
+
               name="department"
               size="medium"
               label="Department"
@@ -731,7 +741,7 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
           </Grid>
           <Grid item xs={12} md={4}>
             <CraftDatePicker
-              required
+
               fullWidth
               label="Joining Date"
               name="joiningDate"
@@ -743,7 +753,7 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
           </Grid>
           <Grid item xs={12} md={4}>
             <CraftInputWithIcon
-              required
+
               fullWidth
               label="Monthly Salary"
               name="monthlySalary"
@@ -757,7 +767,7 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
           </Grid>
           <Grid item xs={12} md={4}>
             <CraftSelectWithIcon
-              required
+
               name="staffType"
               size="medium"
               label="Staff Type"
@@ -797,7 +807,7 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
               <Grid container spacing={3}>
                 <Grid item xs={12} md={6}>
                   <CraftInputWithIcon
-                    required
+
                     fullWidth
                     label="Degree/Certificate"
                     name="degree"
@@ -809,7 +819,7 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
                 </Grid>
                 <Grid item xs={12} md={6}>
                   <CraftInputWithIcon
-                    required
+
                     fullWidth
                     label="Institution"
                     name="institution"
@@ -821,7 +831,7 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
                 </Grid>
                 <Grid item xs={12} md={6}>
                   <CraftInputWithIcon
-                    required
+
                     fullWidth
                     label="Year of Completion"
                     name="year"
@@ -1015,7 +1025,7 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
               <Grid container spacing={3}>
                 <Grid item xs={12} md={6}>
                   <CraftSelectWithIcon
-                    required
+
                     name="status"
                     size="medium"
                     label="Status"
@@ -1082,8 +1092,8 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
           </Box>
           <Typography variant="body1" sx={{ opacity: 0.9, maxWidth: 700 }}>
             {id
-              ? "Update teacher information by modifying the required fields."
-              : "Register a new teacher by filling in the required information. Follow the steps to complete the registration process."}
+              ? "Update teacher information by modifying the  fields."
+              : "Register a new teacher by filling in the  information. Follow the steps to complete the registration process."}
           </Typography>
         </Container>
       </Box>
@@ -1219,7 +1229,7 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
             </Typography>
             <Typography variant="body2" sx={{ color: "#1b5e20" }}>
               Registering a teacher is the first step in the onboarding process. After registration, you can manage the
-              teacher's professional records, attendance, and salary payments. Make sure to fill in all required fields
+              teacher's professional records, attendance, and salary payments. Make sure to fill in all  fields
               marked with an asterisk (*) for successful registration.
             </Typography>
           </Box>

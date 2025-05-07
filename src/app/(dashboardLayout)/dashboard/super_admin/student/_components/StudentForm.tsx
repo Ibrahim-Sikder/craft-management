@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react/no-unescaped-entities */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
 import type React from "react"
 
-import { useState, useEffect, useRef } from "react"
+import { useState, useEffect, useRef, useMemo } from "react"
 import {
   Box,
   Button,
@@ -61,6 +62,11 @@ import { zodResolver } from "@hookform/resolvers/zod"
 import FileUploadWithIcon from "@/components/Forms/Upload"
 import { studentSchema } from "@/schema"
 import { FieldValues } from "react-hook-form"
+import { useGetAllClassesQuery } from "@/redux/api/classApi"
+import { useGetAllSectionsQuery } from "@/redux/api/sectionApi"
+import { useGetAllSessionsQuery } from "@/redux/api/sessionApi"
+import CraftIntAutoCompleteWithIcon from "@/components/Forms/AutocompleteWithIcon"
+import toast from "react-hot-toast"
 
 interface StudentFormProps {
   id?: string
@@ -91,7 +97,7 @@ const StudentForm = ({ id }: StudentFormProps) => {
     sendAdmissionSMS?: boolean
     sendAttendanceSMS?: boolean
     studentPhoto?: string | File
- 
+
   }
 
   const [formData, setFormData] = useState<FormData>({})
@@ -140,11 +146,11 @@ const StudentForm = ({ id }: StudentFormProps) => {
         presentThana: studentData.presentThana || "",
 
         // Academic Information
-        className: studentData.className || "",
+        className: studentData.className || [],
         studentClassRoll: studentData.studentClassRoll || "",
         batch: studentData.batch || "",
-        section: studentData.section || "",
-        activeSession: studentData.activeSession || "",
+        section: studentData.section || [],
+        activeSession: studentData.activeSession || [],
         status: studentData.status || "",
         studentType: studentData.studentType || "",
         additionalNote: studentData.additionalNote || "",
@@ -177,6 +183,49 @@ const StudentForm = ({ id }: StudentFormProps) => {
     message: "",
     severity: "success" as "success" | "error",
   })
+  const [page, setPage] = useState(0)
+  const [rowsPerPage, setRowsPerPage] = useState(10)
+  const [searchTerm, setSearchTerm] = useState("")
+
+  const { data: classData } = useGetAllClassesQuery({
+    limit: rowsPerPage,
+    page: page + 1,
+    searchTerm: searchTerm,
+  })
+  const { data: sectionData } = useGetAllSectionsQuery({
+    limit: rowsPerPage,
+    page: page + 1,
+    searchTerm: searchTerm,
+  })
+  const { data: sessionData } = useGetAllSessionsQuery({
+    limit: rowsPerPage,
+    page: page + 1,
+    searchTerm: searchTerm,
+  })
+  const classOption = useMemo(() => {
+    if (!classData?.data?.classes) return []
+    return classData?.data?.classes.map((clg: any) => ({
+      label: clg.className,
+      value: clg._id,
+    }))
+  }, [classData])
+  const secionOption = useMemo(() => {
+    if (!sectionData?.data?.sections) return []
+    return sectionData?.data?.sections.map((sec: any) => ({
+      label: sec.name,
+      value: sec._id,
+    }))
+  }, [sectionData])
+
+  const sessionOption = useMemo(() => {
+    if (!sessionData?.data?.sessions) return []
+    return sessionData?.data?.sessions.map((sec: any) => ({
+      label: sec.sessionName,
+      value: sec._id,
+    }))
+  }, [sessionData])
+
+
 
   const [success, setSuccess] = useState(false)
 
@@ -207,64 +256,90 @@ const StudentForm = ({ id }: StudentFormProps) => {
   }
 
   const handleSubmit = async (data: FieldValues) => {
-
-    const submissionData = {
-      ...data,
-      sameAsPermanent: formData.sameAsPermanent || false,
-      presentAddress: formData.sameAsPermanent ? data.permanentAddress : data.presentAddress,
-      presentDistrict: formData.sameAsPermanent ? data.permanentDistrict : data.presentDistrict,
-      presentThana: formData.sameAsPermanent ? data.permanentThana : data.presentThana,
-      // Fee Information
-      admissionFee: Number(data.admissionFee || 0),
-      monthlyFee: Number(data.monthlyFee || 0),
-      previousDues: Number(data.previousDues || 0),
-      sessionFee: Number(data.sessionFee || 0),
-      residenceFee: Number(data.residenceFee || 0),
-      otherFee: Number(data.otherFee || 0),
-      transportFee: Number(data.transportFee || 0),
-      boardingFee: Number(data.boardingFee || 0),
-      studentPhoto: data.studentPhoto,
+    if (!data.name) {
+      toast.error("Student name is missing!");
+    } else if (!data.gender) {
+      toast.error("Gender is missing!");
+    } else if (!data.birthDate) {
+      toast.error("Birth Date is missing!");
+    } else if (!data.birthRegistrationNo) {
+      toast.error("Birth registration is missing!");
+    } else if (!data.fatherName) {
+      toast.error("Father's name is missing!");
+    } else if (!data.motherName) {
+      toast.error("Mother's name is missing!");
+    } else if (!data.permanentAddress) {
+      toast.error("Permanent address is missing!");
+    } else if (!data.className) {
+      toast.error("Class name is missing!");
+    } else if (!data.section) {
+      toast.error("Section name is missing!");
+    } else if (!data.activeSession) {
+      toast.error("Active session is missing!");
     }
-    console.log('submission data', submissionData)
-    try {
-      if (id) {
-        const res = await updateStudent({ id, data: submissionData }).unwrap()
-        console.log(res)
-        if (res.success) {
-          setSuccess(true)
-          setSnackbar({
-            open: true,
-            message: "Student updated successfully!",
-            severity: "success",
-          })
-          setTimeout(() => {
-            router.push("/dashboard/super_admin/student/list")
-          }, 2000)
+    else if (!data.studentType) {
+      toast.error("Student type is missing!");
+    } else {
+      const classArray = data.className?.map((item: any) => item.label) || [];
+      const sectionArray = data.section?.map((item: any) => item.label) || [];
+      const sessionArray = data.activeSession?.map((item: any) => item.label) || [];
+
+      const submissionData = {
+        ...data,
+        sameAsPermanent: formData.sameAsPermanent || false,
+        presentAddress: formData.sameAsPermanent ? data.permanentAddress : data.presentAddress,
+        presentDistrict: formData.sameAsPermanent ? data.permanentDistrict : data.presentDistrict,
+        presentThana: formData.sameAsPermanent ? data.permanentThana : data.presentThana,
+        admissionFee: Number(data.admissionFee || 0),
+        monthlyFee: Number(data.monthlyFee || 0),
+        previousDues: Number(data.previousDues || 0),
+        sessionFee: Number(data.sessionFee || 0),
+        residenceFee: Number(data.residenceFee || 0),
+        otherFee: Number(data.otherFee || 0),
+        transportFee: Number(data.transportFee || 0),
+        boardingFee: Number(data.boardingFee || 0),
+        studentPhoto: data.studentPhoto,
+        className: classArray,
+        section: sectionArray,
+        activeSession: sessionArray,
+      };
+
+
+
+      try {
+        if (id) {
+          const res = await updateStudent({ id, data: submissionData }).unwrap();
+          if (res.success) {
+            setSuccess(true);
+            setSnackbar({
+              open: true,
+              message: "Student updated successfully!",
+              severity: "success",
+            });
+            setTimeout(() => {
+              router.push("/dashboard/super_admin/student/list");
+            }, 2000);
+          }
+        } else {
+          const res = await createStudents(submissionData).unwrap();
+          if (res.success) {
+            setSuccess(true);
+            setSnackbar({
+              open: true,
+              message: "Student registered successfully!",
+              severity: "success",
+            });
+            setTimeout(() => {
+              router.push("/dashboard/super_admin/student/list");
+            }, 2000);
+          }
         }
-      } else {
-        const res = await createStudents(submissionData).unwrap()
-        if (res.success) {
-          setSuccess(true)
-          setSnackbar({
-            open: true,
-            message: "Student registered successfully!",
-            severity: "success",
-          })
-          setTimeout(() => {
-            router.push("/dashboard/super_admin/student/list")
-          }, 2000)
-        }
+      } catch (error: any) {
+        console.error("❌ Submission error:", error);
 
       }
-    } catch (error: any) {
-      console.error("❌ Submission error:", error)
-      setSnackbar({
-        open: true,
-        message: error?.data?.message || "Error updating student.",
-        severity: "error",
-      })
     }
-  }
+  };
 
 
 
@@ -294,7 +369,12 @@ const StudentForm = ({ id }: StudentFormProps) => {
             <CraftInputWithIcon
               fullWidth
               name="name"
-              label="Student Name"
+
+              label={
+                <span>
+                  Student Name <span style={{ color: 'red' }}>*</span>
+                </span>
+              }
               placeholder="e.g., John Smith"
               size="medium"
               InputProps={{
@@ -320,7 +400,12 @@ const StudentForm = ({ id }: StudentFormProps) => {
             <CraftSelectWithIcon
               name="gender"
               size="medium"
-              label="Gender"
+              label={
+                <span>
+                  Gender <span style={{ color: 'red' }}>*</span>
+                </span>
+              }
+
               placeholder="Select Gender"
               items={["Male", "Female", "Other"]}
               adornment={<Person color="action" />}
@@ -355,7 +440,11 @@ const StudentForm = ({ id }: StudentFormProps) => {
             <CraftInputWithIcon
               fullWidth
               name="birthDate"
-              label="Birth Date"
+              label={
+                <span>
+                  Birth Date <span style={{ color: 'red' }}>*</span>
+                </span>
+              }
               type="date"
               size="medium"
               InputProps={{
@@ -368,7 +457,12 @@ const StudentForm = ({ id }: StudentFormProps) => {
             <CraftInputWithIcon
               fullWidth
               name="birthRegistrationNo"
-              label="Birth Registration No."
+              label={
+                <span>
+                  Birth Registration No. <span style={{ color: 'red' }}>*</span>
+                </span>
+              }
+
               placeholder="Birth Registration Number"
               size="medium"
               InputProps={{
@@ -380,7 +474,12 @@ const StudentForm = ({ id }: StudentFormProps) => {
             <CraftInputWithIcon
               fullWidth
               name="email"
-              label="Email"
+              label={
+                <span>
+                  Email
+                </span>
+              }
+
               placeholder="e.g., exmaple@gmail.com"
               size="medium"
               InputProps={{
@@ -409,7 +508,12 @@ const StudentForm = ({ id }: StudentFormProps) => {
             <CraftInputWithIcon
               fullWidth
               name="fatherName"
-              label="Father's Name"
+              label={
+                <span>
+                  Father's Name. <span style={{ color: 'red' }}>*</span>
+                </span>
+              }
+
               placeholder="Father's Name"
               size="medium"
               InputProps={{
@@ -421,8 +525,13 @@ const StudentForm = ({ id }: StudentFormProps) => {
           <Grid item xs={12} md={6}>
             <CraftInputWithIcon
               fullWidth
+              label={
+                <span>
+                  Mother's Name. <span style={{ color: 'red' }}>*</span>
+                </span>
+              }
               name="motherName"
-              label="Mother's Name"
+
               placeholder="Mother Name"
               size="medium"
               InputProps={{
@@ -474,7 +583,12 @@ const StudentForm = ({ id }: StudentFormProps) => {
             <CraftInputWithIcon
               fullWidth
               name="nidFatherMotherGuardian"
-              label="NID (Father/Mother/Guardian)"
+
+              label={
+                <span>
+                  NID (Father/Mother/Guardian)
+                </span>
+              }
               placeholder="NID (Father/Mother/Guardian)"
               size="medium"
               InputProps={{
@@ -525,8 +639,13 @@ const StudentForm = ({ id }: StudentFormProps) => {
                 <Grid item xs={12}>
                   <CraftInputWithIcon
                     fullWidth
+                    label={
+                      <span>
+                        Permanent Address <span style={{ color: 'red' }}>*</span>
+                      </span>
+                    }
                     name="permanentAddress"
-                    label="Permanent Address"
+
                     placeholder="Permanent Address"
                     size="medium"
                     multiline
@@ -648,13 +767,19 @@ const StudentForm = ({ id }: StudentFormProps) => {
       content: (
         <Grid container spacing={3}>
           <Grid item xs={12} md={6}>
-            <CraftSelectWithIcon
+            <CraftIntAutoCompleteWithIcon
               name="className"
-              size="medium"
-              label="Class"
+
+              label={
+                <span>
+                  Class <span style={{ color: 'red' }}>*</span>
+                </span>
+              }
               placeholder="Select Class"
-              items={classes}
-              adornment={<Class color="action" />}
+              options={classOption}
+              fullWidth
+              multiple
+              icon={<Class color="primary" />}
             />
           </Grid>
 
@@ -683,25 +808,42 @@ const StudentForm = ({ id }: StudentFormProps) => {
           </Grid>
 
           <Grid item xs={12} md={6}>
-            <CraftSelectWithIcon
+            <CraftIntAutoCompleteWithIcon
               name="section"
               size="medium"
-              label="Section"
+
               placeholder="Select Section"
-              items={sections}
-              adornment={<Class color="action" />}
+              label={
+                <span>
+                  Section <span style={{ color: 'red' }}>*</span>
+                </span>
+              }
+              options={secionOption}
+              fullWidth
+              multiple
+              icon={<Class color="primary" />}
             />
+
           </Grid>
 
           <Grid item xs={12} md={6}>
-            <CraftSelectWithIcon
+            <CraftIntAutoCompleteWithIcon
               name="activeSession"
               size="medium"
-              label="Active Session"
+
               placeholder="Select Active Session"
-              items={["2023", "2024", "2025"]}
-              adornment={<CalendarMonth color="action" />}
+              options={sessionOption}
+              label={
+                <span>
+                  Active Session <span style={{ color: 'red' }}>*</span>
+                </span>
+              }
+              fullWidth
+              multiple
+              icon={<CalendarMonth color="primary" />}
             />
+
+
           </Grid>
 
           <Grid item xs={12} md={6}>
@@ -719,9 +861,14 @@ const StudentForm = ({ id }: StudentFormProps) => {
             <CraftSelectWithIcon
               name="studentType"
               size="medium"
-              label="Student Type"
+
+              label={
+                <span>
+                  Student Type <span style={{ color: 'red' }}>*</span>
+                </span>
+              }
               placeholder="Select Student Type"
-              items={["Residential", "Day"]}
+              items={["Residential", "Non-residential"]}
               adornment={<Person color="action" />}
             />
           </Grid>
@@ -1023,7 +1170,7 @@ const StudentForm = ({ id }: StudentFormProps) => {
         <CraftForm
 
           onSubmit={handleSubmit}
-          resolver={zodResolver(studentSchema)}
+          // resolver={zodResolver(studentSchema)}
           defaultValues={defaultValues}
           key={Object.keys(defaultValues).length > 0 ? "form-with-data" : "empty-form"}
         >

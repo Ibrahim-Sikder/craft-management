@@ -52,7 +52,8 @@ import {
 } from "@mui/icons-material"
 import Link from "next/link"
 import { useDeleteStudentMutation, useGetAllStudentsQuery } from "@/redux/api/studentApi"
-import toast from "react-hot-toast"
+
+import Swal from "sweetalert2"
 
 const StudentList = () => {
   const theme = useTheme()
@@ -71,7 +72,7 @@ const StudentList = () => {
     background: "#f5f5f5",
   }
 
-  // State for pagination and filtering
+
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(10)
   const [searchTerm, setSearchTerm] = useState("")
@@ -97,7 +98,6 @@ const StudentList = () => {
   })
   const [deleteStudent] = useDeleteStudentMutation()
 
-  // Extract students from the response
   const students = studentData?.data || []
   const totalStudents = studentData?.meta?.total || 0
 
@@ -129,18 +129,18 @@ const StudentList = () => {
     refetch()
   }
 
-  // Handle page change
+
   const handleChangePage = (_event: unknown, newPage: number) => {
     setPage(newPage)
   }
 
-  // Handle rows per page change
+
   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
     setRowsPerPage(Number.parseInt(event.target.value, 10))
     setPage(0)
   }
 
-  // Get status chip color
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case "Active":
@@ -154,7 +154,7 @@ const StudentList = () => {
     }
   }
 
-  // Get student type color
+
   const getStudentTypeColor = (type: string) => {
     switch (type) {
       case "Residential":
@@ -166,16 +166,44 @@ const StudentList = () => {
     }
   }
 
-  // Handle student deletion
-  const handleDelete = async (id: string) => {
-    const res = await deleteStudent(id).unwrap()
-    if (res.success) {
-      toast.success(res.message || 'Studetn delete successfully!')
-    } else {
-      toast.error('Failed to delete student.')
-    }
 
-  }
+  const handleDelete = async (id: string) => {
+
+
+    setTimeout(() => {
+      Swal.fire({
+        title: "Are you sure?",
+        text: "You want to delete this student?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, delete it!"
+      }).then(async (result) => {
+        if (result.isConfirmed) {
+          try {
+            await deleteStudent(id).unwrap();
+
+            Swal.fire({
+              title: "Deleted!",
+              text: `student has been deleted successfully.`,
+              icon: "success"
+            });
+
+
+            refetch();
+          } catch (err: any) {
+
+            Swal.fire({
+              title: "Error!",
+              text: err.data?.message || "Failed to delete student",
+              icon: "error"
+            });
+          }
+        }
+      });
+    }, 100);
+  };
 
   // Apply filters to students
   const filteredStudents = students.filter((student: any) => {

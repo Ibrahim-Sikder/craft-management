@@ -23,7 +23,7 @@ type Option = {
 
 type TStateProps = {
   name: string
-  label?: string
+  label?: React.ReactNode;
   fullWidth?: boolean
   sx?: SxProps
   required?: boolean

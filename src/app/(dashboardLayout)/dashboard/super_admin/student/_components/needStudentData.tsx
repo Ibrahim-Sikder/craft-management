@@ -145,11 +145,11 @@
 //         presentThana: studentData.presentThana || "",
 
 //         // Academic Information
-//         className: studentData.className || "",
+//         className: studentData.className || '',
 //         studentClassRoll: studentData.studentClassRoll || "",
 //         batch: studentData.batch || "",
-//         section: studentData.section || [],
-//         activeSession: studentData.activeSession || [],
+//         section: studentData.section || '',
+//         activeSession: studentData.activeSession || '',
 //         status: studentData.status || "",
 //         studentType: studentData.studentType || "",
 //         additionalNote: studentData.additionalNote || "",
@@ -255,38 +255,11 @@
 //   }
 
 //   const handleSubmit = async (data: FieldValues) => {
-//     console.log('reaw data', data)
-
-//     const classArray = Array.isArray(data.classes)
-//       ? data.classes
-//         .map((item: any) => {
-//           if (item && typeof item === "object" && "value" in item) {
-//             return item.value
-//           }
-//           return null
-//         })
-//         .filter(Boolean)
-//       : []
-//     const sessionArray = Array.isArray(data.activeSession)
-//       ? data.activeSession
-//         .map((item: any) => {
-//           if (item && typeof item === "object" && "value" in item) {
-//             return item.value
-//           }
-//           return null
-//         })
-//         .filter(Boolean)
-//       : []
-//     const sectionArray = Array.isArray(data.section)
-//       ? data.section
-//         .map((item: any) => {
-//           if (item && typeof item === "object" && "value" in item) {
-//             return item.value
-//           }
-//           return null
-//         })
-//         .filter(Boolean)
-//       : []
+//     console.log('raw data ', data)
+//     const classArray = data.className?.map((item: any) => item.label) || [];
+//     const sectionArray = data.section?.map((item: any) => item.label) || [];
+//     const sessionArray = data.activeSession?.map((item: any) => item.label) || [];
+    
 //     const submissionData = {
 //       ...data,
 //       sameAsPermanent: formData.sameAsPermanent || false,
@@ -303,11 +276,11 @@
 //       transportFee: Number(data.transportFee || 0),
 //       boardingFee: Number(data.boardingFee || 0),
 //       studentPhoto: data.studentPhoto,
-//       className: classArray,
-//       activeSession: sessionArray,
-//       section: sessionArray,
+//       className: classArray.join(', '),
+//       section: sectionArray.join(', '),
+//       activeSession: sessionArray.join(', ')
 //     }
-//     console.log('submission data', submissionData)
+//     console.log(submissionData)
 //     try {
 //       if (id) {
 //         const res = await updateStudent({ id, data: submissionData }).unwrap()
@@ -1113,9 +1086,9 @@
 //         <CraftForm
 
 //           onSubmit={handleSubmit}
-//           resolver={zodResolver(studentSchema)}
+//           // resolver={zodResolver(studentSchema)}
 //           defaultValues={defaultValues}
-//           key={Object.keys(defaultValues).length > 0 ? "form-with-data" : "empty-form"}
+//         // key={Object.keys(defaultValues).length > 0 ? "form-with-data" : "empty-form"}
 //         >
 //           <Paper
 //             elevation={3}

@@ -59,7 +59,7 @@ const LoginDashboard = () => {
   const handleSubmit = async (data: FieldValues) => {
     try {
       const res = await login(data).unwrap() as LoginResponse;
-      console.log(res);
+     
 
       // Store accessToken to cookie
       setCookie('craft-token', res?.data?.accessToken, { expires: 7 });
@@ -73,8 +73,14 @@ const LoginDashboard = () => {
       toast.success(res.message || 'Login Successful!');
       router.push('/dashboard');
     } catch (err: any) {
-      toast.error(err?.data?.message || 'An error occurred during login.');
+      const errorMessage =
+        err?.data?.message || 
+        err?.error || 
+        'An error occurred during login.';
+      
+      toast.error(errorMessage);
     }
+    
   };
 
 
@@ -87,7 +93,7 @@ const LoginDashboard = () => {
           fill
           style={{
             objectFit: 'cover',
-            objectPosition: 'top center',
+            objectPosition: 'bottom center',
           }}
           className="overflow-hidden"
           quality={100}

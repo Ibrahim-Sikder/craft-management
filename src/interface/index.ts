@@ -46,3 +46,10 @@ export interface FormData {
   sectionType: number
   isActive: boolean
 }
+export interface Filters {
+  class: string;
+  subject: string;
+  teacher: string;
+  date: string;
+  hour: string;
+}
