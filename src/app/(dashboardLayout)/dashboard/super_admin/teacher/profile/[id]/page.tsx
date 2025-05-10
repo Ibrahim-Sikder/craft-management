@@ -677,3 +677,4 @@ export default function TeacherProfile({ params }: PageProps) {
     </Container>
   )
 }
+
