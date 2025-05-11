@@ -52,33 +52,6 @@ import {
   Logout,
 } from "@mui/icons-material"
 import { useRouter } from "next/navigation"
-
-// Custom gradient background component
-// const GradientBackground = ({ children, startColor, endColor, direction = "to right" }: any) => {
-//   return (
-//     <Box
-//       sx={{
-//         background: `linear-gradient(${direction}, ${startColor}, ${endColor})`,
-//         borderRadius: 2,
-//         height: "100%",
-//         display: "flex",
-//         flexDirection: "column",
-//         justifyContent: "space-between",
-//         overflow: "hidden",
-//         position: "relative",
-//         transition: "all 0.3s ease",
-//         "&:hover": {
-//           transform: "translateY(-5px)",
-//           boxShadow: "0 10px 20px rgba(0,0,0,0.1)",
-//         },
-//       }}
-//     >
-//       {children}
-//     </Box>
-//   )
-// }
-
-// Animated stat card component
 const StatCard = ({ icon, title, value, trend, trendValue, color }: any) => {
   const theme = useTheme()
   const isPositive = trend === "up"

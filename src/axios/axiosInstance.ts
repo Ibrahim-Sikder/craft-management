@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
 import { authKey } from "@/constant/authkey";
 import { getNewAccessToken } from "@/services/auth.services";
 import { setAccessToken } from "@/services/setAccessToken";
@@ -28,6 +27,7 @@ instance.interceptors.request.use(
 
 // Add a response interceptor
 instance.interceptors.response.use(
+  // eslint-disable-next-line @typescript-eslint/ban-ts-comment
   //@ts-ignore
   function (response) {
     const responseObject: ResponseSuccessType = {

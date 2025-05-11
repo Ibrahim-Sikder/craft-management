@@ -137,7 +137,7 @@ export default function TeachersDashboard() {
 
   useEffect(() => {
     if (teacherData && !isLoading) {
-      const formattedTeachers = teacherData?.data.data.map((teacher: any, index: any) => ({
+      const formattedTeachers = teacherData?.data.map((teacher: any, index: any) => ({
         id: index + 1,
         _id: teacher._id,
         name: teacher.englishName || teacher.name,

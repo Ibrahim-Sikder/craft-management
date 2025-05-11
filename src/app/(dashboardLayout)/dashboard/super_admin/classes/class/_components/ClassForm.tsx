@@ -20,25 +20,20 @@ import {
 import {
     Save as SaveIcon,
     School as SchoolIcon,
-    Person as PersonIcon,
-    Book as BookIcon,
     Class as ClassIcon,
-    Description as DescriptionIcon,
     CheckCircleOutline as CheckCircleOutlineIcon,
 } from "@mui/icons-material"
 import CraftForm from "@/components/Forms/Form"
 import CraftInputWithIcon from "@/components/Forms/inputWithIcon"
 import CraftIntAutoCompleteWithIcon from "@/components/Forms/AutocompleteWithIcon"
-import CraftTextArea from "@/components/Forms/TextArea"
 import { theme } from "@/lib/Theme/Theme"
 import toast from "react-hot-toast"
 import { useCreateClassMutation, useGetSingleClassQuery, useUpdateClassMutation } from "@/redux/api/classApi"
 import type { FieldValues } from "react-hook-form"
-import { useGetAllStudentsQuery } from "@/redux/api/studentApi"
 import { useMemo, useState } from "react"
-import { useGetAllTeachersQuery } from "@/redux/api/teacherApi"
 import { useGetAllSubjectsQuery } from "@/redux/api/subjectApi"
 import { useRouter } from "next/navigation"
+import { useGetAllSectionsQuery } from "@/redux/api/sectionApi"
 
 
 interface ClassProps {
@@ -52,88 +47,31 @@ export default function ClassForm({ id }: ClassProps) {
     const { data: singleClass, isLoading } = useGetSingleClassQuery({ id })
 
     const [createClass, { isSuccess }] = useCreateClassMutation()
-    const [updateclass] = useUpdateClassMutation()
+    const [updateClass] = useUpdateClassMutation()
     const {
-        data: studentData,
+        data: sectionData,
 
         refetch,
-    } = useGetAllStudentsQuery({
+    } = useGetAllSectionsQuery({
         limit: rowsPerPage,
         page: page + 1,
         searchTerm: searchTerm,
     })
-    const { data: teacherData } = useGetAllTeachersQuery({
-        limit: rowsPerPage,
-        page: page + 1,
-        searchTerm: searchTerm,
-    })
-    const { data: subjectData } = useGetAllSubjectsQuery({
-        limit: rowsPerPage,
-        page: page + 1,
-        searchTerm: searchTerm,
-    })
+    console.log('section data ', sectionData)
 
-    const studentOption = useMemo(() => {
-        if (!studentData?.data) return []
-        return studentData.data.map((student: any) => ({
-            label: student.name,
-            value: student._id,
-        }))
-    }, [studentData])
 
-    const teacherOption = useMemo(() => {
-        if (!teacherData?.data?.data) return []
-        return teacherData?.data?.data.map((teacher: any) => ({
-            label: teacher.name,
-            value: teacher._id,
-        }))
-    }, [teacherData])
 
-    const subjectOption = useMemo(() => {
-        if (!subjectData?.data?.subjects) return []
-        return subjectData?.data?.subjects.map((sub: any) => ({
+    const sectionOption = useMemo(() => {
+        if (!sectionData?.data?.classes) return []
+        return sectionData?.data?.classes.map((sub: any) => ({
             label: sub.name,
             value: sub._id,
         }))
-    }, [subjectData])
+    }, [sectionData])
 
     const handleSubmit = async (data: FieldValues) => {
 
-console.log('raw data', data)
 
-        const studentsArray = Array.isArray(data.students)
-            ? data.students
-                .map((item: any) => {
-
-                    if (item && typeof item === "object" && "value" in item) {
-                        return item.value
-                    }
-                    return null
-                })
-                .filter(Boolean)
-            : []
-
-        const teachersArray = Array.isArray(data.teachers)
-            ? data.teachers
-                .map((item: any) => {
-                    if (item && typeof item === "object" && "value" in item) {
-                        return item.value
-                    }
-                    return null
-                })
-                .filter(Boolean)
-            : []
-
-        const subjectsArray = Array.isArray(data.subjects)
-            ? data.subjects
-                .map((item: any) => {
-                    if (item && typeof item === "object" && "value" in item) {
-                        return item.value
-                    }
-                    return null
-                })
-                .filter(Boolean)
-            : []
 
         const sectionsArray = Array.isArray(data.sections)
             ? data.sections
@@ -148,18 +86,15 @@ console.log('raw data', data)
 
         const modifyValues = {
             ...data,
-            students: studentsArray,
-            teachers: teachersArray,
-            subjects: subjectsArray,
             sections: sectionsArray,
         }
 
-        console.log("Modified data being sent to API:", modifyValues)
+
 
         try {
             let res;
             if (id) {
-                res = await updateclass({ id, body: modifyValues }).unwrap();
+                res = await updateClass({ id, body: modifyValues }).unwrap();
                 if (res.success) {
                     toast.success("Class updated successfully!");
                     router.push('/dashboard/super_admin/classes/class')
@@ -179,22 +114,15 @@ console.log('raw data', data)
 
     const defaultValue = {
         className: singleClass?.data.className || '',
-        description: singleClass?.data.description || '',
-        students: singleClass?.data.students || [],
-        teachers: singleClass?.data.teachers || [],
-        subjects: singleClass?.data.subjects || [],
         sections: singleClass?.data.sections || [],
-        // sections:   singleClass?.data?.classes?.map((classItem: any) => ({
-        //   label: classItem.className,
-        //   value: classItem._id,
-        // })) || [],
+
 
     }
     if (isLoading) {
         return <h3>Loading........</h3>
     }
 
-    console.log(singleClass)
+
     return (
         <CraftForm onSubmit={handleSubmit} defaultValues={defaultValue}>
             <Box
@@ -319,87 +247,13 @@ console.log('raw data', data)
                                                         <CraftIntAutoCompleteWithIcon
                                                             name="sections"
                                                             label="Select Section"
-                                                            options={subjectOption}
+                                                            options={sectionOption}
                                                             fullWidth
                                                             icon={<ClassIcon color="secondary" />}
                                                         />
                                                     </Grid>
 
-                                                    <Grid item xs={12}>
-                                                        <Divider sx={{ my: 1 }}>
-                                                            <Chip
-                                                                label="Description"
-                                                                icon={<DescriptionIcon />}
-                                                                sx={{
-                                                                    bgcolor: alpha(theme.palette.primary.main, 0.1),
-                                                                    color: "primary.main",
-                                                                    fontWeight: 500,
-                                                                }}
-                                                            />
-                                                        </Divider>
-                                                    </Grid>
 
-                                                    <Grid item xs={12}>
-                                                        <CraftTextArea name="description" label="Description" />
-                                                    </Grid>
-
-                                                    <Grid item xs={12}>
-                                                        <Divider sx={{ my: 1 }}>
-                                                            <Chip
-                                                                label="Assign Teachers & Subjects"
-                                                                icon={<PersonIcon />}
-                                                                sx={{
-                                                                    bgcolor: alpha(theme.palette.primary.main, 0.1),
-                                                                    color: "primary.main",
-                                                                    fontWeight: 500,
-                                                                }}
-                                                            />
-                                                        </Divider>
-                                                    </Grid>
-
-                                                    <Grid item xs={12} md={6}>
-                                                        <CraftIntAutoCompleteWithIcon
-                                                            name="teachers"
-                                                            label="Select Teachers"
-                                                            options={teacherOption}
-                                                            fullWidth
-                                                            icon={<PersonIcon color="secondary" />}
-                                                        />
-                                                    </Grid>
-
-                                                    <Grid item xs={12} md={6}>
-                                                        <CraftIntAutoCompleteWithIcon
-                                                            name="subjects"
-                                                            label="Select Subjects"
-                                                            options={subjectOption}
-                                                            fullWidth
-                                                            icon={<BookIcon color="secondary" />}
-                                                        />
-                                                    </Grid>
-
-                                                    <Grid item xs={12}>
-                                                        <Divider sx={{ my: 1 }}>
-                                                            <Chip
-                                                                label="Assign Students"
-                                                                icon={<SchoolIcon />}
-                                                                sx={{
-                                                                    bgcolor: alpha(theme.palette.primary.main, 0.1),
-                                                                    color: "primary.main",
-                                                                    fontWeight: 500,
-                                                                }}
-                                                            />
-                                                        </Divider>
-                                                    </Grid>
-
-                                                    <Grid item xs={12}>
-                                                        <CraftIntAutoCompleteWithIcon
-                                                            name="students"
-                                                            label="Select Students"
-                                                            options={studentOption}
-                                                            fullWidth
-                                                            icon={<SchoolIcon color="secondary" />}
-                                                        />
-                                                    </Grid>
                                                 </Grid>
                                             </CardContent>
                                         </Card>

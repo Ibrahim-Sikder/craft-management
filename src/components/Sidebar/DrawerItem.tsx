@@ -16,13 +16,9 @@ import {
   HowToReg,
   PhotoLibrary,
   Settings,
-  AccessTime,
   Class,
   Group,
-  MenuBook as Curriculum,
-  AssignmentInd,
   Subject,
-  Schedule,
   Assessment,
   BarChart,
   CloudUpload,
@@ -59,7 +55,6 @@ import {
   Report,
   People,
   Info,
-
   AdminPanelSettings,
   Tune,
   Addchart,
@@ -182,16 +177,7 @@ export const navigationItems: NavigationItem[] = [
     ),
     roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
     children: [
-      {
-        title: "Session ",
-        icon: (
-          <ColorfulIcon color="#0F9D58">
-            <AccessTime />
-          </ColorfulIcon>
-        ),
-        path: "/dashboard/super_admin/classes/session",
-        roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
-      },
+     
       {
         title: "Sections",
         icon: (
@@ -212,56 +198,9 @@ export const navigationItems: NavigationItem[] = [
         path: "/dashboard/super_admin/classes/class",
         roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
       },
-      {
-        title: "Batches",
-        icon: (
-          <ColorfulIcon color="#0F9D58">
-            <Group />
-          </ColorfulIcon>
-        ),
-        path: "/dashboard/super_admin/classes/batches",
-        roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
-      },
-      {
-        title: "Curriculum",
-        icon: (
-          <ColorfulIcon color="#0F9D58">
-            <Curriculum />
-          </ColorfulIcon>
-        ),
-        path: "/dashboard/super_admin/classes/curriculum",
-        roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
-      },
-      {
-        title: "Assign Teachers ",
-        icon: (
-          <ColorfulIcon color="#0F9D58">
-            <AssignmentInd />
-          </ColorfulIcon>
-        ),
-        path: "/dashboard/super_admin/classes/assign-teacher",
-        roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
-      },
-      {
-        title: "Assign Subjects ",
-        icon: (
-          <ColorfulIcon color="#0F9D58">
-            <Subject />
-          </ColorfulIcon>
-        ),
-        path: "/dashboard/super_admin/classes/assign-subjects/list",
-        roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
-      },
-      {
-        title: "Assign Routines ",
-        icon: (
-          <ColorfulIcon color="#0F9D58">
-            <Schedule />
-          </ColorfulIcon>
-        ),
-        path: "/dashboard/super_admin/classes/assign-routines/list",
-        roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
-      },
+      
+     
+     
       {
         title: "Class Report List ",
         icon: (
