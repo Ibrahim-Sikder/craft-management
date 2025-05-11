@@ -4,6 +4,7 @@ export enum Gender {
   MALE = "Male",
   FEMALE = "Female",
   OTHER = "Other",
+  '' = ''
 }
 
 export enum StudentStatus {
@@ -20,9 +21,7 @@ export enum StudentType {
 
 
 export const teacherSchema = z.object({
-  teacherId: z.string({
-    required_error: "Teacher ID is required",
-  }),
+
   teacherSerial: z.string({
     required_error: "Teacher Serial is required",
   }),

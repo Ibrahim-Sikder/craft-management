@@ -66,6 +66,7 @@
 // import { useGetAllSectionsQuery } from "@/redux/api/sectionApi"
 // import { useGetAllSessionsQuery } from "@/redux/api/sessionApi"
 // import CraftIntAutoCompleteWithIcon from "@/components/Forms/AutocompleteWithIcon"
+// import toast from "react-hot-toast"
 
 // interface StudentFormProps {
 //   id?: string
@@ -145,11 +146,11 @@
 //         presentThana: studentData.presentThana || "",
 
 //         // Academic Information
-//         className: studentData.className || '',
+//         className: studentData.className || [],
 //         studentClassRoll: studentData.studentClassRoll || "",
 //         batch: studentData.batch || "",
-//         section: studentData.section || '',
-//         activeSession: studentData.activeSession || '',
+//         section: studentData.section || [],
+//         activeSession: studentData.activeSession || [],
 //         status: studentData.status || "",
 //         studentType: studentData.studentType || "",
 //         additionalNote: studentData.additionalNote || "",
@@ -208,7 +209,7 @@
 //       value: clg._id,
 //     }))
 //   }, [classData])
-//   const secionOption = useMemo(() => {
+//   const sectionOption = useMemo(() => {
 //     if (!sectionData?.data?.sections) return []
 //     return sectionData?.data?.sections.map((sec: any) => ({
 //       label: sec.name,
@@ -255,71 +256,72 @@
 //   }
 
 //   const handleSubmit = async (data: FieldValues) => {
-//     console.log('raw data ', data)
-//     const classArray = data.className?.map((item: any) => item.label) || [];
-//     const sectionArray = data.section?.map((item: any) => item.label) || [];
-//     const sessionArray = data.activeSession?.map((item: any) => item.label) || [];
-    
-//     const submissionData = {
-//       ...data,
-//       sameAsPermanent: formData.sameAsPermanent || false,
-//       presentAddress: formData.sameAsPermanent ? data.permanentAddress : data.presentAddress,
-//       presentDistrict: formData.sameAsPermanent ? data.permanentDistrict : data.presentDistrict,
-//       presentThana: formData.sameAsPermanent ? data.permanentThana : data.presentThana,
-//       // Fee Information
-//       admissionFee: Number(data.admissionFee || 0),
-//       monthlyFee: Number(data.monthlyFee || 0),
-//       previousDues: Number(data.previousDues || 0),
-//       sessionFee: Number(data.sessionFee || 0),
-//       residenceFee: Number(data.residenceFee || 0),
-//       otherFee: Number(data.otherFee || 0),
-//       transportFee: Number(data.transportFee || 0),
-//       boardingFee: Number(data.boardingFee || 0),
-//       studentPhoto: data.studentPhoto,
-//       className: classArray.join(', '),
-//       section: sectionArray.join(', '),
-//       activeSession: sessionArray.join(', ')
+//     if (!data.name) {
+//       toast.error("Student name is missing!");
 //     }
-//     console.log(submissionData)
-//     try {
-//       if (id) {
-//         const res = await updateStudent({ id, data: submissionData }).unwrap()
-//         console.log(res)
-//         if (res.success) {
-//           setSuccess(true)
-//           setSnackbar({
-//             open: true,
-//             message: "Student updated successfully!",
-//             severity: "success",
-//           })
-//           setTimeout(() => {
-//             router.push("/dashboard/super_admin/student/list")
-//           }, 2000)
+//     else if (!data.studentType) {
+//       toast.error("Student type is missing!");
+//     } else {
+//       const classArray = data.className?.map((item: any) => item.label) || [];
+//       const sectionArray = data.section?.map((item: any) => item.label) || [];
+//       const sessionArray = data.activeSession?.map((item: any) => item.label) || [];
+
+//       const submissionData = {
+//         ...data,
+//         sameAsPermanent: formData.sameAsPermanent || false,
+//         presentAddress: formData.sameAsPermanent ? data.permanentAddress : data.presentAddress,
+//         presentDistrict: formData.sameAsPermanent ? data.permanentDistrict : data.presentDistrict,
+//         presentThana: formData.sameAsPermanent ? data.permanentThana : data.presentThana,
+//         admissionFee: Number(data.admissionFee || 0),
+//         monthlyFee: Number(data.monthlyFee || 0),
+//         previousDues: Number(data.previousDues || 0),
+//         sessionFee: Number(data.sessionFee || 0),
+//         residenceFee: Number(data.residenceFee || 0),
+//         otherFee: Number(data.otherFee || 0),
+//         transportFee: Number(data.transportFee || 0),
+//         boardingFee: Number(data.boardingFee || 0),
+//         studentPhoto: data.studentPhoto,
+//         className: classArray,
+//         section: sectionArray,
+//         activeSession: sessionArray,
+//       };
+
+
+
+//       try {
+//         if (id) {
+//           const res = await updateStudent({ id, data: submissionData }).unwrap();
+//           if (res.success) {
+//             setSuccess(true);
+//             setSnackbar({
+//               open: true,
+//               message: "Student updated successfully!",
+//               severity: "success",
+//             });
+//             setTimeout(() => {
+//               router.push("/dashboard/super_admin/student/list");
+//             }, 2000);
+//           }
+//         } else {
+//           const res = await createStudents(submissionData).unwrap();
+//           if (res.success) {
+//             setSuccess(true);
+//             setSnackbar({
+//               open: true,
+//               message: "Student registered successfully!",
+//               severity: "success",
+//             });
+//             setTimeout(() => {
+//               router.push("/dashboard/super_admin/student/list");
+//             }, 2000);
+//           }
 //         }
-//       } else {
-//         const res = await createStudents(submissionData).unwrap()
-//         if (res.success) {
-//           setSuccess(true)
-//           setSnackbar({
-//             open: true,
-//             message: "Student registered successfully!",
-//             severity: "success",
-//           })
-//           setTimeout(() => {
-//             router.push("/dashboard/super_admin/student/list")
-//           }, 2000)
-//         }
+//       } catch (error: any) {
+//         console.error("❌ Submission error:", error);
 
 //       }
-//     } catch (error: any) {
-//       console.error("❌ Submission error:", error)
-//       setSnackbar({
-//         open: true,
-//         message: error?.data?.message || "Error updating student.",
-//         severity: "error",
-//       })
 //     }
-//   }
+//   };
 
 
 
@@ -349,7 +351,12 @@
 //             <CraftInputWithIcon
 //               fullWidth
 //               name="name"
-//               label="Student Name"
+
+//               label={
+//                 <span>
+//                   Student Name <span style={{ color: 'red' }}>*</span>
+//                 </span>
+//               }
 //               placeholder="e.g., John Smith"
 //               size="medium"
 //               InputProps={{
@@ -375,7 +382,8 @@
 //             <CraftSelectWithIcon
 //               name="gender"
 //               size="medium"
-//               label="Gender"
+//               label='Gender'
+
 //               placeholder="Select Gender"
 //               items={["Male", "Female", "Other"]}
 //               adornment={<Person color="action" />}
@@ -410,7 +418,7 @@
 //             <CraftInputWithIcon
 //               fullWidth
 //               name="birthDate"
-//               label="Birth Date"
+//               label='  Birth Date'
 //               type="date"
 //               size="medium"
 //               InputProps={{
@@ -423,7 +431,8 @@
 //             <CraftInputWithIcon
 //               fullWidth
 //               name="birthRegistrationNo"
-//               label="Birth Registration No."
+//               label='Birth Registration No.'
+
 //               placeholder="Birth Registration Number"
 //               size="medium"
 //               InputProps={{
@@ -435,7 +444,8 @@
 //             <CraftInputWithIcon
 //               fullWidth
 //               name="email"
-//               label="Email"
+//               label='Email'
+
 //               placeholder="e.g., exmaple@gmail.com"
 //               size="medium"
 //               InputProps={{
@@ -464,7 +474,8 @@
 //             <CraftInputWithIcon
 //               fullWidth
 //               name="fatherName"
-//               label="Father's Name"
+//               label=" Father's Name."
+
 //               placeholder="Father's Name"
 //               size="medium"
 //               InputProps={{
@@ -476,8 +487,9 @@
 //           <Grid item xs={12} md={6}>
 //             <CraftInputWithIcon
 //               fullWidth
+//               label='Mother Name'
 //               name="motherName"
-//               label="Mother's Name"
+
 //               placeholder="Mother Name"
 //               size="medium"
 //               InputProps={{
@@ -529,7 +541,12 @@
 //             <CraftInputWithIcon
 //               fullWidth
 //               name="nidFatherMotherGuardian"
-//               label="NID (Father/Mother/Guardian)"
+
+//               label={
+//                 <span>
+//                   NID (Father/Mother/Guardian)
+//                 </span>
+//               }
 //               placeholder="NID (Father/Mother/Guardian)"
 //               size="medium"
 //               InputProps={{
@@ -580,8 +597,9 @@
 //                 <Grid item xs={12}>
 //                   <CraftInputWithIcon
 //                     fullWidth
+//                     label=' Permanent Address'
 //                     name="permanentAddress"
-//                     label="Permanent Address"
+
 //                     placeholder="Permanent Address"
 //                     size="medium"
 //                     multiline
@@ -705,7 +723,8 @@
 //           <Grid item xs={12} md={6}>
 //             <CraftIntAutoCompleteWithIcon
 //               name="className"
-//               label="Class"
+
+//               label='Class'
 //               placeholder="Select Class"
 //               options={classOption}
 //               fullWidth
@@ -742,9 +761,9 @@
 //             <CraftIntAutoCompleteWithIcon
 //               name="section"
 //               size="medium"
-//               label="Section"
 //               placeholder="Select Section"
-//               options={secionOption}
+//               label='Section'
+//               options={sectionOption}
 //               fullWidth
 //               multiple
 //               icon={<Class color="primary" />}
@@ -756,9 +775,10 @@
 //             <CraftIntAutoCompleteWithIcon
 //               name="activeSession"
 //               size="medium"
-//               label="Active Session"
+
 //               placeholder="Select Active Session"
 //               options={sessionOption}
+//               label=' Active Session'
 //               fullWidth
 //               multiple
 //               icon={<CalendarMonth color="primary" />}
@@ -782,9 +802,14 @@
 //             <CraftSelectWithIcon
 //               name="studentType"
 //               size="medium"
-//               label="Student Type"
+
+//               label={
+//                 <span>
+//                   Student Type <span style={{ color: 'red' }}>*</span>
+//                 </span>
+//               }
 //               placeholder="Select Student Type"
-//               items={["Residential", "Day"]}
+//               items={["Residential", "Non-residential", "Day-care"]}
 //               adornment={<Person color="action" />}
 //             />
 //           </Grid>
@@ -1088,7 +1113,7 @@
 //           onSubmit={handleSubmit}
 //           // resolver={zodResolver(studentSchema)}
 //           defaultValues={defaultValues}
-//         // key={Object.keys(defaultValues).length > 0 ? "form-with-data" : "empty-form"}
+//           key={Object.keys(defaultValues).length > 0 ? "form-with-data" : "empty-form"}
 //         >
 //           <Paper
 //             elevation={3}
