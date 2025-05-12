@@ -63,9 +63,6 @@ import Link from "next/link"
 import { useGetAllClassesQuery } from "@/redux/api/classApi"
 import { theme } from "@/lib/Theme/Theme"
 
-
-
-
 export default function ClassesListPage() {
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(10)
@@ -384,105 +381,29 @@ export default function ClassesListPage() {
                         <TableHead>
                           <TableRow>
                             <TableCell>
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  cursor: "pointer",
-                                  userSelect: "none",
-                                  color: orderBy === "className" ? "primary.main" : "inherit",
-                                }}
-                                onClick={() => handleSort("className")}
-                              >
-                                Class Name
-                                {orderBy === "className" && (
-                                  <Box component="span" sx={{ display: "inline-flex", ml: 0.5 }}>
-                                    {order === "asc" ? (
-                                      <ArrowUpwardIcon fontSize="small" />
-                                    ) : (
-                                      <ArrowDownwardIcon fontSize="small" />
-                                    )}
-                                  </Box>
-                                )}
-                              </Box>
+                              SL. No
                             </TableCell>
                             <TableCell>
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  cursor: "pointer",
-                                  userSelect: "none",
-                                }}
-                              >
-                                Description
-                              </Box>
+                              Class Name
                             </TableCell>
                             <TableCell>
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  cursor: "pointer",
-                                  userSelect: "none",
-                                }}
-                              >
-                                Teacher
-                              </Box>
+                              Section
                             </TableCell>
                             <TableCell>
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  cursor: "pointer",
-                                  userSelect: "none",
-                                }}
-                              >
-                                Students
-                              </Box>
+                              Class Teacher
                             </TableCell>
                             <TableCell>
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  cursor: "pointer",
-                                  userSelect: "none",
-                                }}
-                              >
-                                Subjects
-                              </Box>
+                              Total Students
                             </TableCell>
                             <TableCell>
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  cursor: "pointer",
-                                  userSelect: "none",
-                                  color: orderBy === "createdAt" ? "primary.main" : "inherit",
-                                }}
-                                onClick={() => handleSort("createdAt")}
-                              >
-                                Created
-                                {orderBy === "createdAt" && (
-                                  <Box component="span" sx={{ display: "inline-flex", ml: 0.5 }}>
-                                    {order === "asc" ? (
-                                      <ArrowUpwardIcon fontSize="small" />
-                                    ) : (
-                                      <ArrowDownwardIcon fontSize="small" />
-                                    )}
-                                  </Box>
-                                )}
-                              </Box>
+                              Total Subjects
                             </TableCell>
                             <TableCell align="right">Actions</TableCell>
                           </TableRow>
                         </TableHead>
                         <TableBody>
                           {classes.length > 0 ? (
-                            classes.map((classItem: any) => {
+                            classes.map((classItem: any, index: number) => {
                               // Get the teacher name from the teachers array
                               const teacherName =
                                 classItem.teachers && classItem.teachers.length > 0
@@ -502,6 +423,11 @@ export default function ClassesListPage() {
                                 <TableRow key={classItem._id} sx={{ transition: "all 0.2s" }}>
                                   <TableCell component="th" scope="row">
                                     <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                                      {index + 1}
+                                    </Typography>
+                                  </TableCell>
+                                  <TableCell component="th" scope="row">
+                                    <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
                                       {classItem.className}
                                     </Typography>
                                   </TableCell>
@@ -515,7 +441,7 @@ export default function ClassesListPage() {
                                         whiteSpace: "nowrap",
                                       }}
                                     >
-                                      {classItem.description || "No description"}
+                                      {classItem.section || "No Section"}
                                     </Typography>
                                   </TableCell>
                                   <TableCell>
@@ -556,11 +482,6 @@ export default function ClassesListPage() {
                                       }}
                                     />
                                   </TableCell>
-                                  <TableCell>
-                                    <Typography variant="body2" color="text.secondary">
-                                      {createdDate}
-                                    </Typography>
-                                  </TableCell>
                                   <TableCell align="right">
                                     <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
                                       {!isMobile && (
@@ -582,8 +503,8 @@ export default function ClassesListPage() {
                                           </Tooltip>
                                           <Tooltip title="Edit Class">
                                             <IconButton
-                                            component={Link} 
-                                            href={`/dashboard/super_admin/classes/class/update?id=${classItem._id}`}
+                                              component={Link}
+                                              href={`/dashboard/super_admin/classes/class/update?id=${classItem._id}`}
                                               size="small"
                                               sx={{
                                                 color: "warning.main",
@@ -727,3 +648,44 @@ export default function ClassesListPage() {
     </ThemeProvider>
   )
 }
+
+
+
+
+
+
+// <TableCell>
+//                               <Box
+//                                 sx={{
+//                                   display: "flex",
+//                                   alignItems: "center",
+//                                   cursor: "pointer",
+//                                   userSelect: "none",
+//                                   color: orderBy === "className" ? "primary.main" : "inherit",
+//                                 }}
+//                                 onClick={() => handleSort("className")}
+//                               >
+//                                 Class Name
+//                                 {orderBy === "className" && (
+//                                   <Box component="span" sx={{ display: "inline-flex", ml: 0.5 }}>
+//                                     {order === "asc" ? (
+//                                       <ArrowUpwardIcon fontSize="small" />
+//                                     ) : (
+//                                       <ArrowDownwardIcon fontSize="small" />
+//                                     )}
+//                                   </Box>
+//                                 )}
+//                               </Box>
+//                             </TableCell>
+//                             <TableCell>
+//                               <Box
+//                                 sx={{
+//                                   display: "flex",
+//                                   alignItems: "center",
+//                                   cursor: "pointer",
+//                                   userSelect: "none",
+//                                 }}
+//                               >
+//                                 Description
+//                               </Box>
+//                             </TableCell>

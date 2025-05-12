@@ -176,10 +176,14 @@ export default function ClassReportForm({ id }: any) {
       setIsEditMode(true)
 
       // Extract student data from the report
-      const studentsFromReport = singleClassReport.data.studentEvaluations.map((studentEval: any) => {
+      const studentsFromReport = singleClassReport.data.studentEvaluations
+       .filter((studentEval: any) => studentEval?.studentId) 
+      .map((studentEval: any) => {
         const student = studentEval.studentId
+
+        if (!student) return null
         return {
-          _id: student._id,
+          id: student._id,
           name: student.name,
           studentId: student.studentId,
           className: student.className,

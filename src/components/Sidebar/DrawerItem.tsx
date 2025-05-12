@@ -85,6 +85,71 @@ export const navigationItems: NavigationItem[] = [
     path: "/dashboard",
     roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
   },
+    {
+    title: "Classes",
+    icon: (
+      <ColorfulIcon color="#0F9D58">
+        <School />
+      </ColorfulIcon>
+    ),
+    roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
+    children: [
+     
+      {
+        title: "Sections",
+        icon: (
+          <ColorfulIcon color="#0F9D58">
+            <ClassOutlined />
+          </ColorfulIcon>
+        ),
+        path: "/dashboard/super_admin/classes/section/list",
+        roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
+      },
+      {
+        title: "Classes",
+        icon: (
+          <ColorfulIcon color="#0F9D58">
+            <Class />
+          </ColorfulIcon>
+        ),
+        path: "/dashboard/super_admin/classes/class",
+        roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
+      },
+      
+     {
+    title: "Subject",
+    
+    icon: (
+      <ColorfulIcon color="#0F9D58">
+        <Book />
+      </ColorfulIcon>
+    ),
+    path: "/dashboard/super_admin/subject",
+    roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
+  },
+     
+      {
+        title: "Class Report List ",
+        icon: (
+          <ColorfulIcon color="#0F9D58">
+            <BarChart />
+          </ColorfulIcon>
+        ),
+        path: "/dashboard/super_admin/classes/report/list",
+        roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
+      },
+      {
+        title: "New Report ",
+        icon: (
+          <ColorfulIcon color="#0F9D58">
+            <Addchart />
+          </ColorfulIcon>
+        ),
+        path: "/dashboard/super_admin/classes/report/new",
+        roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
+      },
+    ],
+  },
   {
     title: "Teacher",
     icon: (
@@ -168,71 +233,10 @@ export const navigationItems: NavigationItem[] = [
     ],
   },
   
-  {
-    title: "Classes",
-    icon: (
-      <ColorfulIcon color="#0F9D58">
-        <School />
-      </ColorfulIcon>
-    ),
-    roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
-    children: [
-     
-      {
-        title: "Sections",
-        icon: (
-          <ColorfulIcon color="#0F9D58">
-            <ClassOutlined />
-          </ColorfulIcon>
-        ),
-        path: "/dashboard/super_admin/classes/section/list",
-        roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
-      },
-      {
-        title: "Classes",
-        icon: (
-          <ColorfulIcon color="#0F9D58">
-            <Class />
-          </ColorfulIcon>
-        ),
-        path: "/dashboard/super_admin/classes/class",
-        roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
-      },
-      
-     
-     
-      {
-        title: "Class Report List ",
-        icon: (
-          <ColorfulIcon color="#0F9D58">
-            <BarChart />
-          </ColorfulIcon>
-        ),
-        path: "/dashboard/super_admin/classes/report/list",
-        roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
-      },
-      {
-        title: "New Report ",
-        icon: (
-          <ColorfulIcon color="#0F9D58">
-            <Addchart />
-          </ColorfulIcon>
-        ),
-        path: "/dashboard/super_admin/classes/report/new",
-        roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
-      },
-    ],
-  },
-  {
-    title: "Subject",
-    path: "/dashboard/super_admin/subject",
-    icon: (
-      <ColorfulIcon color="#0F9D58">
-        <Book />
-      </ColorfulIcon>
-    ),
-    roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
-  },
+
+  
+
+
   {
     title: "Student",
     icon: (
@@ -252,57 +256,57 @@ export const navigationItems: NavigationItem[] = [
         ),
         roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
       },
-      {
-        path: "/dashboard/super_admin/daily-student-report",
-        title: "Daily Report ",
-        icon: (
-          <ColorfulIcon color="#DB4437">
-            <ListAlt />
-          </ColorfulIcon>
-        ),
-        roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
-      },
-      {
-        path: "/dashboard/super_admin/daily-student-report/add",
-        title: "Add daily Report ",
-        icon: (
-          <ColorfulIcon color="#DB4437">
-            <PostAdd />
-          </ColorfulIcon>
-        ),
-        roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
-      },
+      // {
+      //   path: "/dashboard/super_admin/daily-student-report",
+      //   title: "Daily Report ",
+      //   icon: (
+      //     <ColorfulIcon color="#DB4437">
+      //       <ListAlt />
+      //     </ColorfulIcon>
+      //   ),
+      //   roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
+      // },
+      // {
+      //   path: "/dashboard/super_admin/daily-student-report/add",
+      //   title: "Add daily Report ",
+      //   icon: (
+      //     <ColorfulIcon color="#DB4437">
+      //       <PostAdd />
+      //     </ColorfulIcon>
+      //   ),
+      //   roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
+      // },
      
-      {
-        path: "/dashboard/super_admin/student-migrate",
-        title: "Migrate Student",
-        icon: (
-          <ColorfulIcon color="#DB4437">
-            <CompareArrows />
-          </ColorfulIcon>
-        ),
-        roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
-      },
-      {
-        path: "/dashboard/super_admin/student-status-migrate",
-        title: "Migrate Status ",
-        icon: (
-          <ColorfulIcon color="#DB4437">
-            <SwapHoriz />
-          </ColorfulIcon>
-        ),
-        roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
-      },
-      {
-        path: "/dashboard/super_admin/shop/list",
-        title: "Migrate Branch ",
-        icon: (
-          <ColorfulIcon color="#DB4437">
-            <CompareArrows />
-          </ColorfulIcon>
-        ),
-        roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
-      },
+      // {
+      //   path: "/dashboard/super_admin/student-migrate",
+      //   title: "Migrate Student",
+      //   icon: (
+      //     <ColorfulIcon color="#DB4437">
+      //       <CompareArrows />
+      //     </ColorfulIcon>
+      //   ),
+      //   roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
+      // },
+      // {
+      //   path: "/dashboard/super_admin/student-status-migrate",
+      //   title: "Migrate Status ",
+      //   icon: (
+      //     <ColorfulIcon color="#DB4437">
+      //       <SwapHoriz />
+      //     </ColorfulIcon>
+      //   ),
+      //   roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
+      // },
+      // {
+      //   path: "/dashboard/super_admin/shop/list",
+      //   title: "Migrate Branch ",
+      //   icon: (
+      //     <ColorfulIcon color="#DB4437">
+      //       <CompareArrows />
+      //     </ColorfulIcon>
+      //   ),
+      //   roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
+      // },
     ],
   },
 

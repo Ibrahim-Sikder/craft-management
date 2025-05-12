@@ -3,7 +3,6 @@
 "use client"
 
 import type React from "react"
-
 import {
   Box,
   Container,
@@ -15,21 +14,14 @@ import {
   CardContent,
   Button
 } from "@mui/material"
-
 import CraftForm from "@/components/Forms/Form"
 import CraftSelect from "@/components/Forms/Select"
 import { paper } from "@/options"
 import {
   MenuBook,
-  School,
   Assignment,
-  Code,
-  FormatListNumbered,
-  Info as InfoIcon,
   Save as SaveIcon,
-  CloudUpload as CloudUploadIcon,
 } from "@mui/icons-material"
-import { useState } from "react"
 import CraftInputWithIcon from "@/components/Forms/inputWithIcon"
 import type { FieldValues } from "react-hook-form"
 import { useCreateSubjectMutation, useGetSingleSubjectQuery, useUpdateSubjectMutation } from "@/redux/api/subjectApi"
@@ -42,17 +34,11 @@ export default function SubjectForm({ id }: any) {
   const router = useRouter()
   const [createSubject] = useCreateSubjectMutation()
   const [updateSubject] = useUpdateSubjectMutation()
-  const [page, setPage] = useState(0)
-  const [rowsPerPage, setRowsPerPage] = useState(10)
-  const [searchTerm, setSearchTerm] = useState("")
 
   const { data: singleSubject, isLoading } = useGetSingleSubjectQuery({ id })
   const theme = customTheme
 
-
   const handleSubmit = async (data: FieldValues) => {
-
-
     try {
       let res
 
@@ -75,15 +61,10 @@ export default function SubjectForm({ id }: any) {
     }
   }
 
-
-
   const defaultValues = {
     name: singleSubject?.data?.name || "",
-
     paper: singleSubject?.data?.paper || "",
-
   }
-
 
   return (
     <>
@@ -141,9 +122,8 @@ export default function SubjectForm({ id }: any) {
                             />
                           </Grid>
                           <Grid item xs={12} md={6}>
-                            <CraftSelect size="medium" name="paper" label="Paper" items={paper} fullWidth required />
+                            <CraftSelect size="medium" name="paper" label="Paper" items={paper} fullWidth />
                           </Grid>
-
 
                           <Grid item xs={12} sx={{ mt: 3, display: "flex", justifyContent: "flex-end" }}>
                             <Button
@@ -168,9 +148,6 @@ export default function SubjectForm({ id }: any) {
                               {id ? "Update Subject" : "Save Subject"}
                             </Button>
                           </Grid>
-
-
-
                         </Grid>
                       </CardContent>
                     </Card>

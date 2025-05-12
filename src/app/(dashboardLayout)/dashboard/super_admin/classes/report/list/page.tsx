@@ -424,11 +424,18 @@ export default function ClassReportList() {
                             onChange={(e: SelectChangeEvent) => handleFilterChange("class", e.target.value)}
                           >
                             <MenuItem value="">All Classes</MenuItem>
-                            {classOptions.map((option: any) => (
-                              <MenuItem key={option.value} value={option.label}>
+                            {classOptions?.length > 0 &&
+                              classOptions.map((option: any) => (
+                                <MenuItem key={option.value} value={option.value}>
+                                  {option.label}
+                                </MenuItem>
+                              ))}
+
+                            {/* {classOptions.map((option: any) => (
+                              <MenuItem key={option.value} value={option.value}>
                                 {option.label}
                               </MenuItem>
-                            ))}
+                            ))} */}
                           </Select>
                         </FormControl>
                       </CardContent>
@@ -455,11 +462,18 @@ export default function ClassReportList() {
                             onChange={(e: SelectChangeEvent) => handleFilterChange("subject", e.target.value)}
                           >
                             <MenuItem value="">All Subjects</MenuItem>
-                            {subjectOptions.map((option: any) => (
-                              <MenuItem key={option.value} value={option.label}>
+                            {subjectOptions?.length > 0 &&
+                              subjectOptions.map((option: any) => (
+                                <MenuItem key={option.value} value={option.value}>
+                                  {option.label}
+                                </MenuItem>
+                              ))}
+
+                            {/* {subjectOptions.map((option: any) => (
+                              <MenuItem key={option.value} value={option.value}>
                                 {option.label}
                               </MenuItem>
-                            ))}
+                            ))} */}
                           </Select>
                         </FormControl>
                       </CardContent>
@@ -486,11 +500,17 @@ export default function ClassReportList() {
                             onChange={(e: SelectChangeEvent) => handleFilterChange("teacher", e.target.value)}
                           >
                             <MenuItem value="">All Teachers</MenuItem>
-                            {teacherOptions.map((option: any) => (
-                              <MenuItem key={option.value} value={option.label}>
+                            {teacherOptions?.length > 0 &&
+                              teacherOptions.map((option: any) => (
+                                <MenuItem key={option.value} value={option.value}>
+                                  {option.label}
+                                </MenuItem>
+                              ))}
+                            {/* {teacherOptions.map((option: any) => (
+                              <MenuItem key={option.value} value={option.value}>
                                 {option.label}
                               </MenuItem>
-                            ))}
+                            ))} */}
                           </Select>
                         </FormControl>
                       </CardContent>
