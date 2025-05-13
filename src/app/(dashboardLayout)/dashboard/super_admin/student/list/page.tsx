@@ -428,7 +428,7 @@ const StudentList = () => {
                   <TableCell sx={{ fontWeight: "bold", color: customColors.primary }}>Guardian</TableCell>
                   <TableCell sx={{ fontWeight: "bold", color: customColors.primary }}>Contact</TableCell>
                   <TableCell sx={{ fontWeight: "bold", color: customColors.primary }}>Type</TableCell>
-                  <TableCell sx={{ fontWeight: "bold", color: customColors.primary }}>Status</TableCell>
+                  {/* <TableCell sx={{ fontWeight: "bold", color: customColors.primary }}>Status</TableCell> */}
                   <TableCell sx={{ fontWeight: "bold", color: customColors.primary }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
@@ -533,14 +533,14 @@ const StudentList = () => {
                           }}
                         />
                       </TableCell>
-                      <TableCell>
+                      {/* <TableCell>
                         <Chip
                           label={student.status}
                           size="small"
                           color={getStatusColor(student.status)}
                           sx={{ fontWeight: "medium" }}
                         />
-                      </TableCell>
+                      </TableCell> */}
                       <TableCell>
                         <Box sx={{ display: "flex" }}>
                           <Tooltip title="View Details">
@@ -615,7 +615,7 @@ const StudentList = () => {
         </CardContent>
       </Card>
 
-      <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 3, mb: 3 }}>
+      {/* <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 3, mb: 3 }}>
         <Card
           sx={{
             width: { xs: "100%", md: "48%" },
@@ -817,7 +817,7 @@ const StudentList = () => {
             </Grid>
           </CardContent>
         </Card>
-      </Box>
+      </Box> */}
     </Container>
   )
 }

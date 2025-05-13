@@ -723,13 +723,13 @@ const StudentForm = ({ id }: StudentFormProps) => {
           <Grid item xs={12} md={6}>
             <CraftIntAutoCompleteWithIcon
               name="className"
-
               label='Class'
               placeholder="Select Class"
               options={classOption}
               fullWidth
               multiple
               icon={<Class color="primary" />}
+              required
             />
           </Grid>
 

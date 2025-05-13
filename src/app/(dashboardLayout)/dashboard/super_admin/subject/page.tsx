@@ -704,6 +704,12 @@ export default function SubjectManagementPage() {
                         <TableHead>
                           <TableRow>
                             <TableCell>
+                              
+                                SL. No.
+                                
+                              
+                            </TableCell>
+                            {/* <TableCell>
                               <Box
                                 sx={{
                                   display: "flex",
@@ -725,7 +731,7 @@ export default function SubjectManagementPage() {
                                   </Box>
                                 )}
                               </Box>
-                            </TableCell>
+                            </TableCell> */}
                             <TableCell>
                               <Box
                                 sx={{
@@ -773,17 +779,20 @@ export default function SubjectManagementPage() {
                               </Box>
                             </TableCell>
                             <TableCell>Classes</TableCell>
-                            <TableCell>Lessons</TableCell>
+                            {/* <TableCell>Lessons</TableCell>
                             <TableCell>Optional</TableCell>
-                            <TableCell>Created At</TableCell>
+                            <TableCell>Created At</TableCell> */}
                             <TableCell align="right">Actions</TableCell>
                           </TableRow>
                         </TableHead>
                         <TableBody>
                           {paginatedSubjects.length > 0 ? (
-                            paginatedSubjects.map((subject: any) => (
+                            paginatedSubjects.map((subject: any, index:number) => (
                               <TableRow key={subject._id} sx={{ transition: "all 0.2s" }}>
                                 <TableCell>
+                                  {index+1}
+                                </TableCell>
+                                {/* <TableCell>
                                   <Chip
                                     label={subject.code}
                                     size="small"
@@ -793,7 +802,7 @@ export default function SubjectManagementPage() {
                                       fontWeight: 500,
                                     }}
                                   />
-                                </TableCell>
+                                </TableCell> */}
                                 <TableCell>
                                   <Box sx={{ display: "flex", alignItems: "center" }}>
                                     <Avatar
@@ -845,7 +854,7 @@ export default function SubjectManagementPage() {
                                     </Typography>
                                   )}
                                 </TableCell>
-                                <TableCell>
+                                {/* <TableCell>
                                   <Button
                                     size="small"
                                     variant="outlined"
@@ -862,8 +871,8 @@ export default function SubjectManagementPage() {
                                   >
                                     {subject.lessons.length} Lessons
                                   </Button>
-                                </TableCell>
-                                <TableCell>
+                                </TableCell> */}
+                                {/* <TableCell>
                                   <Chip
                                     label={subject.isOptional ? "Optional" : "Required"}
                                     size="small"
@@ -872,8 +881,8 @@ export default function SubjectManagementPage() {
                                       fontWeight: 500,
                                     }}
                                   />
-                                </TableCell>
-                                <TableCell>{formatDate(subject.createdAt)}</TableCell>
+                                </TableCell> */}
+                                {/* <TableCell>{formatDate(subject.createdAt)}</TableCell> */}
                                 <TableCell align="right">
                                   <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
                                     <Tooltip title="View Details">
