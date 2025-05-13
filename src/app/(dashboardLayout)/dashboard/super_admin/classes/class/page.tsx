@@ -62,6 +62,7 @@ import {
 import Link from "next/link"
 import { useGetAllClassesQuery } from "@/redux/api/classApi"
 import { theme } from "@/lib/Theme/Theme"
+import { grey } from "@mui/material/colors"
 
 export default function ClassesListPage() {
   const [page, setPage] = useState(0)
@@ -378,27 +379,27 @@ export default function ClassesListPage() {
                   <>
                     <TableContainer>
                       <Table sx={{ minWidth: 650 }}>
-                        <TableHead>
-                          <TableRow>
-                            <TableCell>
+                        <TableHead sx={{ bgcolor:grey[100] }}>
+                          <TableRow sx={{  }}>
+                            <TableCell sx={{ fontWeight: 600 }}>
                               SL. No
                             </TableCell>
-                            <TableCell>
+                            <TableCell sx={{ fontWeight: 600 }}>
                               Class Name
                             </TableCell>
-                            <TableCell>
+                            <TableCell sx={{ fontWeight: 600 }}>
                               Section
                             </TableCell>
-                            <TableCell>
+                            <TableCell sx={{ fontWeight: 600 }}>
                               Class Teacher
                             </TableCell>
-                            <TableCell>
+                            <TableCell sx={{ fontWeight: 600 }}>
                               Total Students
                             </TableCell>
-                            <TableCell>
+                            <TableCell sx={{ fontWeight: 600 }}>
                               Total Subjects
                             </TableCell>
-                            <TableCell align="right">Actions</TableCell>
+                            <TableCell align="right" sx={{ fontWeight: 600 }}>Actions</TableCell>
                           </TableRow>
                         </TableHead>
                         <TableBody>
