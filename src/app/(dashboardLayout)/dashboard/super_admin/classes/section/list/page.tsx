@@ -43,19 +43,18 @@ import Link from "next/link"
 import { customTheme } from "@/ThemeStyle"
 import { useDeleteSectionMutation, useGetAllSectionsQuery } from "@/redux/api/sectionApi"
 import { toast } from "react-hot-toast"
-
 // Color palette for section customization
 const colorPalette = [
-  "#3b82f6", // Blue
-  "#8b5cf6", // Purple
-  "#ec4899", // Pink
-  "#f59e0b", // Amber
-  "#10b981", // Emerald
-  "#ef4444", // Red
-  "#6366f1", // Indigo
-  "#84cc16", // Lime
-  "#14b8a6", // Teal
-  "#f97316", // Orange
+  "#3b82f6",
+  "#8b5cf6",
+  "#ec4899",
+  "#f59e0b",
+  "#10b981",
+  "#ef4444",
+  "#6366f1",
+  "#84cc16",
+  "#14b8a6",
+  "#f97316",
 ]
 
 export default function SectionsListPage() {
@@ -81,7 +80,7 @@ export default function SectionsListPage() {
     searchTerm: searchTerm,
   })
 
-  console.log("section data ", sectionData)
+
 
   // Handle pagination
   const handleChangePage = (event: unknown, newPage: number) => {
@@ -131,9 +130,17 @@ export default function SectionsListPage() {
   const handleDeleteCancel = () => {
     setDeleteDialogOpen(false)
   }
+  type TSection = {
+    ame: string;
+    _id: string;
+    updatedAt: string;
+  }
 
-  // Get sections from API response
-  const sections = sectionData?.data?.sections || []
+  const sortSectionData = [...(sectionData?.data?.sections || [])].sort((a: TSection, b: TSection) => {
+    const dateA = new Date(a.updatedAt).getTime();
+    const dateB = new Date(b.updatedAt).getTime();
+    return dateB - dateA;
+  });
 
   return (
     <Box sx={{ flexGrow: 1, bgcolor: "background.default", minHeight: "100vh", borderRadius: 2 }}>
@@ -244,8 +251,8 @@ export default function SectionsListPage() {
                         </TableRow>
                       </TableHead>
                       <TableBody>
-                        {sections.length > 0 ? (
-                          sections.map((section: any) => {
+                        {sortSectionData.length > 0 ? (
+                          sortSectionData.map((section: any) => {
                             // Get a consistent color based on section name
                             const colorIndex = section.name.charCodeAt(0) % colorPalette.length
                             const color = colorPalette[colorIndex]

@@ -40,8 +40,9 @@ export default function SectionForm({ id }: { id?: string }) {
           setTimeout(() => setSuccess(false), 2000)
           router.push("/dashboard/super_admin/classes/section/list")
         }
+        
       } else {
-        const res = await updateSection({ id, ...data }).unwrap()
+        const res = await updateSection({ id, data: data }).unwrap()
 
         if (res.success) {
           toast.success("Section updated successfully!")

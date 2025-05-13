@@ -29,7 +29,7 @@ export const sectionApi = baseApi.injectEndpoints({
     }),
 
     updateSection: build.mutation({
-      query: ({ id, data }) => ({
+      query: ({ id,data }) => ({
         url: `/section/${id}`,
         method: "PATCH",
         data,

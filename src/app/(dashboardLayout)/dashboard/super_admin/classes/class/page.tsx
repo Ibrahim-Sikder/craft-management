@@ -36,7 +36,6 @@ import {
   Skeleton,
   Fade,
   alpha,
-
   ThemeProvider,
 } from "@mui/material"
 import {
@@ -60,11 +59,8 @@ import {
   School as SchoolIcon,
 } from "@mui/icons-material"
 import Link from "next/link"
-import { useGetAllClassesQuery } from "@/redux/api/classApi"
+import { useDeleteClassMutation, useGetAllClassesQuery } from "@/redux/api/classApi"
 import { theme } from "@/lib/Theme/Theme"
-
-
-
 
 export default function ClassesListPage() {
   const [page, setPage] = useState(0)
@@ -77,7 +73,7 @@ export default function ClassesListPage() {
   const [filterAnchorEl, setFilterAnchorEl] = useState<null | HTMLElement>(null)
   const [selectedClass, setSelectedClass] = useState<any | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-
+  const [deleteClass] = useDeleteClassMutation()
   const {
     data: classData,
     isLoading,
@@ -87,7 +83,6 @@ export default function ClassesListPage() {
     page: page + 1,
     searchTerm: searchTerm,
   })
-
 
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"))
 
@@ -143,8 +138,18 @@ export default function ClassesListPage() {
     setAnchorEl(null)
   }
 
-  const handleDeleteConfirm = () => {
-    // Implement actual delete logic here
+  const handleDeleteConfirm = async () => {
+    if (selectedClass?._id) {
+      try {
+        await deleteClass(selectedClass._id).unwrap()
+        // Refresh the class list after successful deletion
+        refetch()
+        // Show success message or notification here if needed
+      } catch (error) {
+        // Handle error - you could add a snackbar or alert here
+        console.error("Error deleting class:", error)
+      }
+    }
     setDeleteDialogOpen(false)
     setSelectedClass(null)
   }
@@ -158,8 +163,6 @@ export default function ClassesListPage() {
 
   // Get the total count from the API response
   const totalCount = classData?.data?.meta?.total || 0
-
-
 
   return (
     <ThemeProvider theme={theme}>
@@ -582,8 +585,8 @@ export default function ClassesListPage() {
                                           </Tooltip>
                                           <Tooltip title="Edit Class">
                                             <IconButton
-                                            component={Link} 
-                                            href={`/dashboard/super_admin/classes/class/update?id=${classItem._id}`}
+                                              component={Link}
+                                              href={`/dashboard/super_admin/classes/class/update?id=${classItem._id}`}
                                               size="small"
                                               sx={{
                                                 color: "warning.main",
