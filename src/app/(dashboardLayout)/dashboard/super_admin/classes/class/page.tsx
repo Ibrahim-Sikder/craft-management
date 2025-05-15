@@ -141,12 +141,9 @@ export default function ClassesListPage() {
   const handleDeleteConfirm = async () => {
     if (selectedClass?._id) {
       try {
-        await deleteClass(selectedClass._id).unwrap()
-        // Refresh the class list after successful deletion
-        refetch()
-        // Show success message or notification here if needed
+                await deleteClass(selectedClass._id).unwrap()
+        refetch()  
       } catch (error) {
-        // Handle error - you could add a snackbar or alert here
         console.error("Error deleting class:", error)
       }
     }
@@ -418,7 +415,7 @@ export default function ClassesListPage() {
                                   userSelect: "none",
                                 }}
                               >
-                                Description
+                                Section
                               </Box>
                             </TableCell>
                             <TableCell>
@@ -430,7 +427,7 @@ export default function ClassesListPage() {
                                   userSelect: "none",
                                 }}
                               >
-                                Teacher
+                                Class Teacher
                               </Box>
                             </TableCell>
                             <TableCell>
@@ -442,7 +439,7 @@ export default function ClassesListPage() {
                                   userSelect: "none",
                                 }}
                               >
-                                Students
+                               Total Students
                               </Box>
                             </TableCell>
                             <TableCell>
@@ -454,39 +451,15 @@ export default function ClassesListPage() {
                                   userSelect: "none",
                                 }}
                               >
-                                Subjects
+                                Total Subjects
                               </Box>
-                            </TableCell>
-                            <TableCell>
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  cursor: "pointer",
-                                  userSelect: "none",
-                                  color: orderBy === "createdAt" ? "primary.main" : "inherit",
-                                }}
-                                onClick={() => handleSort("createdAt")}
-                              >
-                                Created
-                                {orderBy === "createdAt" && (
-                                  <Box component="span" sx={{ display: "inline-flex", ml: 0.5 }}>
-                                    {order === "asc" ? (
-                                      <ArrowUpwardIcon fontSize="small" />
-                                    ) : (
-                                      <ArrowDownwardIcon fontSize="small" />
-                                    )}
-                                  </Box>
-                                )}
-                              </Box>
-                            </TableCell>
+                            </TableCell>                            
                             <TableCell align="right">Actions</TableCell>
                           </TableRow>
                         </TableHead>
                         <TableBody>
                           {classes.length > 0 ? (
-                            classes.map((classItem: any) => {
-                              // Get the teacher name from the teachers array
+                            classes.map((classItem: any) => {                            
                               const teacherName =
                                 classItem.teachers && classItem.teachers.length > 0
                                   ? classItem.teachers[0].name
@@ -499,7 +472,7 @@ export default function ClassesListPage() {
                               const subjectCount = classItem.subjects ? classItem.subjects.length : 0
 
                               // Format the date
-                              const createdDate = new Date(classItem.createdAt).toLocaleDateString()
+                              // const createdDate = new Date(classItem.createdAt).toLocaleDateString()
 
                               return (
                                 <TableRow key={classItem._id} sx={{ transition: "all 0.2s" }}>
@@ -558,12 +531,7 @@ export default function ClassesListPage() {
                                         color: "secondary.main",
                                       }}
                                     />
-                                  </TableCell>
-                                  <TableCell>
-                                    <Typography variant="body2" color="text.secondary">
-                                      {createdDate}
-                                    </Typography>
-                                  </TableCell>
+                                  </TableCell>                                 
                                   <TableCell align="right">
                                     <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
                                       {!isMobile && (
