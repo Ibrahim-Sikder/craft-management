@@ -43,7 +43,6 @@ import {
   Visibility as VisibilityIcon,
   Add,
   Save,
-  Person,
 } from "@mui/icons-material"
 import CraftForm from "@/components/Forms/Form"
 import CraftDatePicker from "@/components/Forms/DatePicker"
@@ -63,10 +62,10 @@ import {
 } from "@/redux/api/classReportApi"
 import { useGetAllClassesQuery } from "@/redux/api/classApi"
 import { useGetAllSubjectsQuery } from "@/redux/api/subjectApi"
-import CraftInputWithIcon from "@/components/Forms/inputWithIcon"
 import TodayLesson from "./TodayLesson"
 import TodayTask from "./TodayTask"
 import { format } from "date-fns"
+import { useGetAllTeachersQuery } from "@/redux/api/teacherApi"
 
 // Define a type for student evaluation
 type StudentEvaluation = {
@@ -106,8 +105,14 @@ export default function ClassReportForm({ id }: any) {
   const [isEditMode, setIsEditMode] = useState(false)
 
   const { data: singleClassReport, isLoading: singleClassReportLoading } = useGetSingleClassReportQuery({ id })
+  console.log("single classreport ", singleClassReport)
 
   const { data: classData } = useGetAllClassesQuery({
+    limit: rowsPerPage,
+    page: page + 1,
+    searchTerm: searchTerm,
+  })
+  const { data: teacherData } = useGetAllTeachersQuery({
     limit: rowsPerPage,
     page: page + 1,
     searchTerm: searchTerm,
@@ -133,6 +138,13 @@ export default function ClassReportForm({ id }: any) {
       value: sub._id,
     }))
   }, [subjectData])
+  const teacherOption = useMemo(() => {
+    if (!teacherData?.data) return []
+    return teacherData?.data?.map((sub: any) => ({
+      label: sub.name,
+      value: sub._id,
+    }))
+  }, [teacherData])
 
   // New state for dialog controls
   const [todayLessonDialogOpen, setTodayLessonDialogOpen] = useState(false)
@@ -155,14 +167,13 @@ export default function ClassReportForm({ id }: any) {
       className: filters.class ? filters.class : undefined,
     },
     {
-      skip: id && isEditMode, // Skip this query when in edit mode with an ID
+      skip: id && isEditMode,
     },
   )
 
   const [createClassReport, { isLoading: isSubmitting }] = useCreateClassReportMutation()
   const [updateClassReport, { isLoading: isUpdating }] = useUpdateClassReportMutation()
 
-  // Get students from API response or use report students in edit mode
   const students = useMemo(() => {
     if (id && isEditMode) {
       return reportStudents
@@ -177,20 +188,20 @@ export default function ClassReportForm({ id }: any) {
 
       // Extract student data from the report
       const studentsFromReport = singleClassReport.data.studentEvaluations
-       .filter((studentEval: any) => studentEval?.studentId) 
-      .map((studentEval: any) => {
-        const student = studentEval.studentId
+        .filter((studentEval: any) => studentEval?.studentId)
+        .map((studentEval: any) => {
+          const student = studentEval.studentId
 
-        if (!student) return null
-        return {
-          id: student._id,
-          name: student.name,
-          studentId: student.studentId,
-          className: student.className,
-          section: student.section || "",
-          // Add other student fields as needed
-        }
-      })
+          if (!student) return null
+          return {
+            id: student._id,
+            name: student.name,
+            studentId: student.studentId,
+            className: student.className,
+            section: student.section || "",
+            // Add other student fields as needed
+          }
+        })
 
       setReportStudents(studentsFromReport)
     }
@@ -200,15 +211,18 @@ export default function ClassReportForm({ id }: any) {
   useEffect(() => {
     if (singleClassReport?.data?.studentEvaluations?.length > 0) {
       // Use evaluations from the report when editing
-      const evaluations = singleClassReport?.data?.studentEvaluations?.map((studentEval: any) => ({
-        studentId: studentEval?.studentId?._id,
+      const evaluations = singleClassReport.data.studentEvaluations.map((studentEval: any) => ({
+        studentId: studentEval.studentId?._id,
         lessonEvaluation: studentEval.lessonEvaluation,
         handwriting: studentEval.handwriting,
         attendance: studentEval.attendance,
-        parentSignature: studentEval.parentSignature,
+        parentSignature: studentEval.parentSignature || false,
         comments: studentEval.comments || "",
       }))
       setStudentEvaluations(evaluations)
+
+      // Log to verify the data is correctly mapped
+      console.log("Setting student evaluations:", evaluations)
     } else if (students.length > 0 && studentEvaluations.length === 0) {
       // Initialize new evaluations for new report
       const initialEvaluations = students.map((student: any) => ({
@@ -221,12 +235,13 @@ export default function ClassReportForm({ id }: any) {
       }))
       setStudentEvaluations(initialEvaluations)
     }
-  }, [students, singleClassReport, studentEvaluations.length])
+  }, [students, singleClassReport])
 
   const defaultValues = useMemo(() => {
     if (!singleClassReport?.data) return null
 
     const report = singleClassReport.data
+    console.log("Setting default values from:", report)
 
     // Set today's lesson and home task IDs
     if (report.todayLesson?._id) {
@@ -238,56 +253,41 @@ export default function ClassReportForm({ id }: any) {
     }
 
     // Set class filter for student loading
-    if (report.classes?._id) {
+    if (report.classes) {
       setFilters((prev) => ({
         ...prev,
-        class: report.classes._id,
+        class: typeof report.classes === "string" ? report.classes : report.classes._id,
       }))
     }
 
     return {
-      classes: report.classes,
-      subjects: report.subjects,
+      classes: { label: report.classes, value: report.classes },
+      subjects: { label: report.subjects, value: report.subjects },
       hour: report.hour || "",
       date: report.date ? format(new Date(report.date), "yyyy-MM-dd") : "",
-      teachers: storedUser?.name || "",
+      teachers: report.teachers || storedUser?.name || "",
     }
   }, [singleClassReport])
 
   const handleSubmit = async (data: FieldValues) => {
-    let classValue = null
-    if (data.classes) {
-      if (typeof data.classes === "object" && data.classes !== null) {
-        classValue = data.classes.value || null
-      } else {
-        classValue = data.classes
-      }
-    }
-
-    let subjectValue = null
-    if (data.subjects) {
-      if (typeof data.subjects === "object" && data.subjects !== null) {
-        subjectValue = data.subjects.value || null
-      } else {
-        subjectValue = data.subjects
-      }
-    }
-
     try {
-      if (!classValue) {
+      if (!data.classes) {
         toast.error("শ্রেণী নির্বাচন করুন")
         return
       }
 
-      if (!subjectValue) {
+      if (!data.subjects) {
         toast.error("বিষয় নির্বাচন করুন")
         return
       }
 
+      const classValue = typeof data.classes === "object" ? data.classes.label : data.classes
+      const subjectValue = typeof data.subjects === "object" ? data.subjects.label : data.subjects
+
       const formattedData = {
-        teachers: storedUser.name,
-        subjects: data.classes.label,
-        classes: data.subjects.label,
+        teachers: data.teachers || storedUser.name,
+        subjects: subjectValue,
+        classes: classValue,
         hour: data.hour,
         date: data.date,
 
@@ -318,6 +318,7 @@ export default function ClassReportForm({ id }: any) {
         homeTask: homeTaskId,
       }
 
+      // Rest of your submit logic remains the same
       if (!id) {
         const response = await createClassReport(formattedData).unwrap()
 
@@ -540,9 +541,13 @@ export default function ClassReportForm({ id }: any) {
 
   // Get evaluation for a specific student
   const getStudentEvaluation = (studentId: string) => {
+    console.log("Looking for evaluation for student:", studentId)
+    console.log("Available evaluations:", studentEvaluations)
+
     const evaluation = studentEvaluations.find((evaluation) => evaluation.studentId === studentId)
 
     if (!evaluation) {
+      console.log("No evaluation found, creating default")
       // If no evaluation exists, create a default one and add it to the array
       const defaultEvaluation = {
         studentId,
@@ -559,6 +564,7 @@ export default function ClassReportForm({ id }: any) {
       return defaultEvaluation
     }
 
+    console.log("Found evaluation:", evaluation)
     return evaluation
   }
 
@@ -672,7 +678,7 @@ export default function ClassReportForm({ id }: any) {
                             <Grid container spacing={2}>
                               {/* Teacher Name */}
                               <Grid item xs={12} md={4}>
-                                <CraftInputWithIcon
+                                {/* <CraftInputWithIcon
                                   name="teachers"
                                   label="শিক্ষকের নাম"
                                   placeholder="শিক্ষকের নাম লিখুন"
@@ -686,6 +692,17 @@ export default function ClassReportForm({ id }: any) {
                                   InputProps={{
                                     startAdornment: <Person sx={{ color: "primary.main", mr: 1 }} />,
                                   }}
+                                /> */}
+                                <CraftIntAutoComplete
+                                  name="teachers"
+                                  placeholder="শিক্ষকের নাম লিখুন"
+                                  label="শিক্ষকের নাম"
+                                  fullWidth
+                                  freeSolo
+                                  multiple={false}
+                                  options={teacherOption}
+                                  // onChange={handleClassChange}
+                                  disabled={id ? true : false}
                                 />
                               </Grid>
 
