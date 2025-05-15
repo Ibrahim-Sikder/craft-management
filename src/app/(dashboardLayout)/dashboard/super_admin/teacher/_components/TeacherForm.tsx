@@ -82,6 +82,7 @@ import { useCreateTeacherMutation, useGetSingleTeacherQuery, useUpdateTeacherMut
 import FileUploadWithIcon from "@/components/Forms/Upload"
 import CraftDatePicker from "@/components/Forms/DatePicker"
 import toast from "react-hot-toast"
+import MultiFileUploadController from "@/components/Forms/multiFileUploadController"
 
 // Styled components for file upload
 const VisuallyHiddenInput = styled("input")({
@@ -153,12 +154,6 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
   const [certificateFiles, setCertificateFiles] = useState<File[]>([])
   const [nidFiles, setNidFiles] = useState<File[]>([])
 
-  // File input refs
-  const profileImageRef = useRef<HTMLInputElement>(null)
-  const cvFileRef = useRef<HTMLInputElement>(null)
-  const certificateFileRef = useRef<HTMLInputElement>(null)
-  const nidFileRef = useRef<HTMLInputElement>(null)
-
   // Add API hooks
   const [createTeacher] = useCreateTeacherMutation()
   const [updateTeacher] = useUpdateTeacherMutation({})
@@ -229,6 +224,9 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
 
         // educational info
         teacherPhoto: teacher.teacherPhoto,
+        resumeDoc: teacher.resumeDoc,
+        certificateDoc: teacher.certificateDoc,
+        nationalIdDoc: teacher.nationalIdDoc,
 
         // Educational Info
         degree: teacher.educationalQualifications?.[0]?.degree || "",
@@ -265,99 +263,7 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
     }
   }, [singlesTeacher])
 
-  // File Upload Handlers
-  const handleProfileImageChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
-      const file = event.target.files[0] as FileWithPreview
 
-      // Create preview for image
-      if (file.type.startsWith("image/")) {
-        file.preview = URL.createObjectURL(file)
-      }
-
-      setProfileImages([...profileImages, file])
-
-      // Reset the input value so the same file can be selected again
-      if (profileImageRef.current) {
-        profileImageRef.current.value = ""
-      }
-    }
-  }
-
-  const handleCvFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
-      setCvFiles([...cvFiles, event.target.files[0]])
-
-      // Reset the input value
-      if (cvFileRef.current) {
-        cvFileRef.current.value = ""
-      }
-    }
-  }
-
-  const handleCertificateFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
-      setCertificateFiles([...certificateFiles, event.target.files[0]])
-
-      // Reset the input value
-      if (certificateFileRef.current) {
-        certificateFileRef.current.value = ""
-      }
-    }
-  }
-
-  const handleNidFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    if (event.target.files && event.target.files[0]) {
-      setNidFiles([...nidFiles, event.target.files[0]])
-
-      // Reset the input value
-      if (nidFileRef.current) {
-        nidFileRef.current.value = ""
-      }
-    }
-  }
-
-  // Remove file handlers
-  const handleRemoveProfileImage = (index: number) => {
-    const newProfileImages = [...profileImages]
-
-    // Revoke object URL to prevent memory leaks
-    if (newProfileImages[index]?.preview) {
-      URL.revokeObjectURL(newProfileImages[index].preview!)
-    }
-
-    newProfileImages.splice(index, 1)
-    setProfileImages(newProfileImages)
-  }
-
-  const handleRemoveCvFile = (index: number) => {
-    const newCvFiles = [...cvFiles]
-    newCvFiles.splice(index, 1)
-    setCvFiles(newCvFiles)
-  }
-
-  const handleRemoveCertificateFile = (index: number) => {
-    const newCertificateFiles = [...certificateFiles]
-    newCertificateFiles.splice(index, 1)
-    setCertificateFiles(newCertificateFiles)
-  }
-
-  const handleRemoveNidFile = (index: number) => {
-    const newNidFiles = [...nidFiles]
-    newNidFiles.splice(index, 1)
-    setNidFiles(newNidFiles)
-  }
-
-  // Get file size in readable format
-  const getFileSize = (size: number): string => {
-    if (size < 1024) {
-      return `${size} bytes`
-    } else if (size < 1024 * 1024) {
-      return `${(size / 1024).toFixed(2)} KB`
-    } else {
-      return `${(size / (1024 * 1024)).toFixed(2)} MB`
-    }
-  }
 
   const handleSwitchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     // Your existing switch change handler
@@ -367,16 +273,8 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
     // Your existing add education handler
   }
 
-  const removeEducation = (index: number) => {
-    // Your existing remove education handler
-  }
-
   const addCertification = () => {
     // Your existing add certification handler
-  }
-
-  const removeCertification = (index: number) => {
-    // Your existing remove certification handler
   }
 
   const addExperience = () => {
@@ -396,6 +294,7 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
   }
 
   const handleSubmit = async (data: any) => {
+    console.log(data)
     setIsSubmitting(true)
 
     // Validation
@@ -492,34 +391,34 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
         educationalQualifications: [
           data.degree
             ? {
-                degree: data.degree,
-                institution: data.institution,
-                year: data.year,
-                specialization: data.specialization,
-              }
+              degree: data.degree,
+              institution: data.institution,
+              year: data.year,
+              specialization: data.specialization,
+            }
             : null,
         ].filter(Boolean),
 
         certifications: [
           data.certificateName
             ? {
-                certificateName: data.certificateName,
-                issuedBy: data.issuedBy,
-                year: data.year,
-                description: data.description,
-              }
+              certificateName: data.certificateName,
+              issuedBy: data.issuedBy,
+              year: data.year,
+              description: data.description,
+            }
             : null,
         ].filter(Boolean),
 
         workExperience: [
           data.organization
             ? {
-                organization: data.organization,
-                position: data.position,
-                from: data.from,
-                to: data.to,
-                description: data.description,
-              }
+              organization: data.organization,
+              position: data.position,
+              from: data.from,
+              to: data.to,
+              description: data.description,
+            }
             : null,
         ].filter(Boolean),
 
@@ -727,332 +626,33 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
             <Grid container spacing={3}>
               {/* Profile Image Upload */}
               <Grid item xs={12} md={6}>
-                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
-                  <Typography variant="subtitle1" fontWeight={600}>
-                    Profile Images
-                  </Typography>
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    startIcon={<Add />}
-                    onClick={() => profileImageRef.current?.click()}
-                    sx={{ borderRadius: 8 }}
-                  >
-                    Add Image
-                  </Button>
-                </Box>
+                <MultiFileUploadController name="teacherPhoto" label="Profile Images" />
 
-                {profileImages.length === 0 ? (
-                  <UploadBox
-                    onClick={() => profileImageRef.current?.click()}
-                    sx={{
-                      height: 200,
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
-                  >
-                    <ImageIcon sx={{ fontSize: 48, color: "primary.main", opacity: 0.7, mb: 1 }} />
-                    <Typography variant="body1" fontWeight={500} color="primary.main">
-                      Click to upload profile image
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary" mt={0.5}>
-                      JPG, JPEG, PNG, PDF (Max. 5MB)
-                    </Typography>
-                  </UploadBox>
-                ) : (
-                  <Box sx={{ maxHeight: 300, overflowY: "auto", p: 1 }}>
-                    {profileImages.map((image, index) => (
-                      <FilePreviewBox key={index} sx={{ mb: 2 }}>
-                        {image.type.startsWith("image/") && image.preview ? (
-                          <Box
-                            sx={{
-                              width: 50,
-                              height: 50,
-                              borderRadius: 1,
-                              overflow: "hidden",
-                              mr: 2,
-                              flexShrink: 0,
-                              backgroundImage: `url(${image.preview})`,
-                              backgroundSize: "cover",
-                              backgroundPosition: "center",
-                            }}
-                          />
-                        ) : (
-                          <InsertDriveFile sx={{ fontSize: 40, color: "primary.main", mr: 2, flexShrink: 0 }} />
-                        )}
-                        <Box sx={{ flexGrow: 1, overflow: "hidden" }}>
-                          <Typography variant="body2" fontWeight={500} noWrap>
-                            {image.name}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {getFileSize(image.size)}
-                          </Typography>
-                        </Box>
-                        <IconButton
-                          size="small"
-                          color="error"
-                          onClick={() => handleRemoveProfileImage(index)}
-                          sx={{ ml: 1 }}
-                        >
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
-                      </FilePreviewBox>
-                    ))}
-                    <Button
-                      variant="outlined"
-                      fullWidth
-                      startIcon={<Add />}
-                      onClick={() => profileImageRef.current?.click()}
-                      sx={{ mt: 2, borderRadius: 8 }}
-                    >
-                      Add Another Image
-                    </Button>
-                  </Box>
-                )}
-                <VisuallyHiddenInput
-                  type="file"
-                  accept="image/jpeg,image/jpg,image/png,application/pdf"
-                  ref={profileImageRef}
-                  onChange={handleProfileImageChange}
-                />
               </Grid>
 
               {/* CV Upload */}
               <Grid item xs={12} md={6}>
-                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
-                  <Typography variant="subtitle1" fontWeight={600}>
-                    CV / Resume
-                  </Typography>
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    startIcon={<Add />}
-                    onClick={() => cvFileRef.current?.click()}
-                    sx={{ borderRadius: 8 }}
-                  >
-                    Add File
-                  </Button>
-                </Box>
+                <MultiFileUploadController name="resumeDoc" label="CV / Resume" />
 
-                {cvFiles.length === 0 ? (
-                  <UploadBox
-                    onClick={() => cvFileRef.current?.click()}
-                    sx={{
-                      height: 200,
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
-                  >
-                    <Description sx={{ fontSize: 48, color: "primary.main", opacity: 0.7, mb: 1 }} />
-                    <Typography variant="body1" fontWeight={500} color="primary.main">
-                      Click to upload CV
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary" mt={0.5}>
-                      PDF, DOC, DOCX, JPG, JPEG, PNG (Max. 10MB)
-                    </Typography>
-                  </UploadBox>
-                ) : (
-                  <Box sx={{ maxHeight: 300, overflowY: "auto", p: 1 }}>
-                    {cvFiles.map((file, index) => (
-                      <FilePreviewBox key={index} sx={{ mb: 2 }}>
-                        <InsertDriveFile sx={{ fontSize: 40, color: "primary.main", mr: 2, flexShrink: 0 }} />
-                        <Box sx={{ flexGrow: 1, overflow: "hidden" }}>
-                          <Typography variant="body2" fontWeight={500} noWrap>
-                            {file.name}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {getFileSize(file.size)}
-                          </Typography>
-                        </Box>
-                        <IconButton size="small" color="error" onClick={() => handleRemoveCvFile(index)} sx={{ ml: 1 }}>
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
-                      </FilePreviewBox>
-                    ))}
-                    <Button
-                      variant="outlined"
-                      fullWidth
-                      startIcon={<Add />}
-                      onClick={() => cvFileRef.current?.click()}
-                      sx={{ mt: 2, borderRadius: 8 }}
-                    >
-                      Add Another CV
-                    </Button>
-                  </Box>
-                )}
-                <VisuallyHiddenInput
-                  type="file"
-                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                  ref={cvFileRef}
-                  onChange={handleCvFileChange}
-                />
               </Grid>
 
               {/* Certificate Upload */}
+
               <Grid item xs={12} md={6}>
-                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
-                  <Typography variant="subtitle1" fontWeight={600}>
-                    Certificates
-                  </Typography>
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    startIcon={<Add />}
-                    onClick={() => certificateFileRef.current?.click()}
-                    sx={{ borderRadius: 8 }}
-                  >
-                    Add Certificate
-                  </Button>
-                </Box>
+                <MultiFileUploadController name="certificateDoc" label="Certificates" />
 
-                {certificateFiles.length === 0 ? (
-                  <UploadBox
-                    onClick={() => certificateFileRef.current?.click()}
-                    sx={{
-                      minHeight: 120,
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
-                  >
-                    <FilePresent sx={{ fontSize: 40, color: "primary.main", opacity: 0.7, mb: 1 }} />
-                    <Typography variant="body1" fontWeight={500} color="primary.main">
-                      Click to upload certificates
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary" mt={0.5}>
-                      PDF, DOC, DOCX, JPG, JPEG, PNG (Max. 10MB)
-                    </Typography>
-                  </UploadBox>
-                ) : (
-                  <Box sx={{ maxHeight: 300, overflowY: "auto", p: 1 }}>
-                    {certificateFiles.map((file, index) => (
-                      <FilePreviewBox key={index} sx={{ mb: 2 }}>
-                        <InsertDriveFile sx={{ fontSize: 40, color: "primary.main", mr: 2, flexShrink: 0 }} />
-                        <Box sx={{ flexGrow: 1, overflow: "hidden" }}>
-                          <Typography variant="body2" fontWeight={500} noWrap>
-                            {file.name}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {getFileSize(file.size)}
-                          </Typography>
-                        </Box>
-                        <IconButton
-                          size="small"
-                          color="error"
-                          onClick={() => handleRemoveCertificateFile(index)}
-                          sx={{ ml: 1 }}
-                        >
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
-                      </FilePreviewBox>
-                    ))}
-                    <Button
-                      variant="outlined"
-                      fullWidth
-                      startIcon={<Add />}
-                      onClick={() => certificateFileRef.current?.click()}
-                      sx={{ mt: 2, borderRadius: 8 }}
-                    >
-                      Add Another Certificate
-                    </Button>
-                  </Box>
-                )}
-                <VisuallyHiddenInput
-                  type="file"
-                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                  ref={certificateFileRef}
-                  onChange={handleCertificateFileChange}
-                />
               </Grid>
-
               {/* NID Upload */}
               <Grid item xs={12} md={6}>
-                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
-                  <Typography variant="subtitle1" fontWeight={600}>
-                    National ID
-                  </Typography>
-                  <Button
-                    variant="outlined"
-                    size="small"
-                    startIcon={<Add />}
-                    onClick={() => nidFileRef.current?.click()}
-                    sx={{ borderRadius: 8 }}
-                  >
-                    Add ID
-                  </Button>
-                </Box>
+                <MultiFileUploadController name="nationalIdDoc" label="National ID" />
 
-                {nidFiles.length === 0 ? (
-                  <UploadBox
-                    onClick={() => nidFileRef.current?.click()}
-                    sx={{
-                      minHeight: 120,
-                      display: "flex",
-                      flexDirection: "column",
-                      justifyContent: "center",
-                      alignItems: "center",
-                    }}
-                  >
-                    <BadgeIcon sx={{ fontSize: 40, color: "primary.main", opacity: 0.7, mb: 1 }} />
-                    <Typography variant="body1" fontWeight={500} color="primary.main">
-                      Click to upload National ID
-                    </Typography>
-                    <Typography variant="caption" color="text.secondary" mt={0.5}>
-                      PDF, DOC, DOCX, JPG, JPEG, PNG (Max. 5MB)
-                    </Typography>
-                  </UploadBox>
-                ) : (
-                  <Box sx={{ maxHeight: 300, overflowY: "auto", p: 1 }}>
-                    {nidFiles.map((file, index) => (
-                      <FilePreviewBox key={index} sx={{ mb: 2 }}>
-                        <InsertDriveFile sx={{ fontSize: 40, color: "primary.main", mr: 2, flexShrink: 0 }} />
-                        <Box sx={{ flexGrow: 1, overflow: "hidden" }}>
-                          <Typography variant="body2" fontWeight={500} noWrap>
-                            {file.name}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {getFileSize(file.size)}
-                          </Typography>
-                        </Box>
-                        <IconButton
-                          size="small"
-                          color="error"
-                          onClick={() => handleRemoveNidFile(index)}
-                          sx={{ ml: 1 }}
-                        >
-                          <DeleteIcon fontSize="small" />
-                        </IconButton>
-                      </FilePreviewBox>
-                    ))}
-                    <Button
-                      variant="outlined"
-                      fullWidth
-                      startIcon={<Add />}
-                      onClick={() => nidFileRef.current?.click()}
-                      sx={{ mt: 2, borderRadius: 8 }}
-                    >
-                      Add Another ID
-                    </Button>
-                  </Box>
-                )}
-                <VisuallyHiddenInput
-                  type="file"
-                  accept=".pdf,.doc,.docx,.jpg,.jpeg,.png"
-                  ref={nidFileRef}
-                  onChange={handleNidFileChange}
-                />
               </Grid>
             </Grid>
           </Grid>
-
+          {/* 
           <Grid item xs={12}>
             <FileUploadWithIcon name="teacherPhoto" label="Teacher Photo" />
-          </Grid>
+          </Grid> */}
         </Grid>
       ),
     },
@@ -1280,7 +880,7 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
                   right: 8,
                   color: "error.main",
                 }}
-                // onClick={() => removeEducation(index)}
+              // onClick={() => removeEducation(index)}
               >
                 <Clear fontSize="small" />
               </IconButton>
@@ -1347,7 +947,7 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
                   right: 8,
                   color: "error.main",
                 }}
-                // onClick={() => removeCertification(index)}
+              // onClick={() => removeCertification(index)}
               >
                 <Clear fontSize="small" />
               </IconButton>
@@ -1414,7 +1014,7 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
                   right: 8,
                   color: "error.main",
                 }}
-                // onClick={() => removeExperience(index)}
+              // onClick={() => removeExperience(index)}
               >
                 <Clear fontSize="small" />
               </IconButton>

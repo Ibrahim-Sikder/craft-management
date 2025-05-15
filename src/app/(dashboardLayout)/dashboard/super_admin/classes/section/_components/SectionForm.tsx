@@ -26,7 +26,7 @@ export default function SectionForm({ id }: { id?: string }) {
 
   // Handle form submission
   const handleSubmit = async (data: FieldValues) => {
-    console.log(data)
+
     setLoading(true)
     try {
 
@@ -40,7 +40,7 @@ export default function SectionForm({ id }: { id?: string }) {
           setTimeout(() => setSuccess(false), 2000)
           router.push("/dashboard/super_admin/classes/section/list")
         }
-        
+
       } else {
         const res = await updateSection({ id, data: data }).unwrap()
 
@@ -52,9 +52,14 @@ export default function SectionForm({ id }: { id?: string }) {
         }
       }
     } catch (err: any) {
+      const errorMessage =
+        err?.data?.message ||
+        err?.errorSources?.[0]?.message ||
+        "Section already exits!";
+      toast.error(errorMessage)
 
-      toast.error(err?.data?.message || "Failed to save section")
-    } finally {
+    }
+    finally {
       setLoading(false)
     }
   }

@@ -371,16 +371,7 @@ export default function SubjectManagementPage() {
 
   const paginatedSubjects = filteredSubjects.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
 
-  // Get unique papers and classes from the data for filters
-  const availablePapers = Array.from(new Set(subjects.map((subject: any) => subject.paper)))
-  const availableClasses = Array.from(
-    new Set(
-      subjects
-        .flatMap((subject: any) => subject.classes || [])
-        .map((cls: any) => cls.className)
-        .filter(Boolean),
-    ),
-  )
+
 
   const getSubjectColor = (name: string) => {
     const colors = [
@@ -398,7 +389,7 @@ export default function SubjectManagementPage() {
   const formatDate = (dateString: string) => {
     try {
       return format(new Date(dateString), "MMM dd, yyyy")
-    } catch (error:any) {
+    } catch (error: any) {
       return "Invalid date"
     }
   }
@@ -465,219 +456,7 @@ export default function SubjectManagementPage() {
                         }}
                       />
                     </Grid>
-                    <Grid item xs={12} md={7.5}>
-                      <Box sx={{ display: "flex", gap: 2, justifyContent: { xs: "flex-start", md: "flex-end" } }}>
-                        <Button
-                          variant="outlined"
-                          color="inherit"
-                          startIcon={<FilterListIcon />}
-                          onClick={handlePaperFilterClick}
-                          sx={{
-                            borderColor: "rgba(0, 0, 0, 0.12)",
-                            color: "text.secondary",
-                            "&:hover": {
-                              borderColor: "primary.main",
-                              bgcolor: "rgba(99, 102, 241, 0.04)",
-                            },
-                            ...(paperFilter && {
-                              borderColor: "primary.main",
-                              color: "primary.main",
-                              bgcolor: "rgba(99, 102, 241, 0.04)",
-                            }),
-                          }}
-                        >
-                          {paperFilter || "Filter by Paper"}
-                        </Button>
-                        <Menu
-                          anchorEl={paperFilterAnchorEl}
-                          open={Boolean(paperFilterAnchorEl)}
-                          onClose={handleFilterClose}
-                          PaperProps={{
-                            elevation: 3,
-                            sx: {
-                              mt: 1,
-                              minWidth: 180,
-                              borderRadius: 2,
-                              overflow: "hidden",
-                            },
-                          }}
-                        >
-                          <MenuItem
-                            onClick={() => handlePaperFilterSelect(null)}
-                            sx={{
-                              py: 1.5,
-                              ...(paperFilter === null && {
-                                bgcolor: "rgba(99, 102, 241, 0.08)",
-                                color: "primary.main",
-                              }),
-                            }}
-                          >
-                            All Papers
-                          </MenuItem>
-                          
-                        </Menu>
 
-                        <Button
-                          variant="outlined"
-                          color="inherit"
-                          startIcon={<FilterListIcon />}
-                          onClick={handleClassFilterClick}
-                          sx={{
-                            borderColor: "rgba(0, 0, 0, 0.12)",
-                            color: "text.secondary",
-                            "&:hover": {
-                              borderColor: "primary.main",
-                              bgcolor: "rgba(99, 102, 241, 0.04)",
-                            },
-                            ...(classFilter && {
-                              borderColor: "primary.main",
-                              color: "primary.main",
-                              bgcolor: "rgba(99, 102, 241, 0.04)",
-                            }),
-                          }}
-                        >
-                          {classFilter || "Filter by Class"}
-                        </Button>
-                        <Menu
-                          anchorEl={classFilterAnchorEl}
-                          open={Boolean(classFilterAnchorEl)}
-                          onClose={handleFilterClose}
-                          PaperProps={{
-                            elevation: 3,
-                            sx: {
-                              mt: 1,
-                              minWidth: 180,
-                              borderRadius: 2,
-                              overflow: "hidden",
-                            },
-                          }}
-                        >
-                          <MenuItem
-                            onClick={() => handleClassFilterSelect(null)}
-                            sx={{
-                              py: 1.5,
-                              ...(classFilter === null && {
-                                bgcolor: "rgba(99, 102, 241, 0.08)",
-                                color: "primary.main",
-                              }),
-                            }}
-                          >
-                            All Classes
-                          </MenuItem>
-                          
-                        </Menu>
-
-                        <Button
-                          variant="outlined"
-                          color="inherit"
-                          startIcon={<FilterListIcon />}
-                          onClick={handleOptionalFilterClick}
-                          sx={{
-                            borderColor: "rgba(0, 0, 0, 0.12)",
-                            color: "text.secondary",
-                            "&:hover": {
-                              borderColor: "primary.main",
-                              bgcolor: "rgba(99, 102, 241, 0.04)",
-                            },
-                            ...(optionalFilter !== null && {
-                              borderColor: "primary.main",
-                              color: "primary.main",
-                              bgcolor: "rgba(99, 102, 241, 0.04)",
-                            }),
-                          }}
-                        >
-                          {optionalFilter === null ? "Optional/Required" : optionalFilter ? "Optional" : "Required"}
-                        </Button>
-                        <Menu
-                          anchorEl={optionalFilterAnchorEl}
-                          open={Boolean(optionalFilterAnchorEl)}
-                          onClose={handleFilterClose}
-                          PaperProps={{
-                            elevation: 3,
-                            sx: {
-                              mt: 1,
-                              minWidth: 180,
-                              borderRadius: 2,
-                              overflow: "hidden",
-                            },
-                          }}
-                        >
-                          <MenuItem
-                            onClick={() => handleOptionalFilterSelect(null)}
-                            sx={{
-                              py: 1.5,
-                              ...(optionalFilter === null && {
-                                bgcolor: "rgba(99, 102, 241, 0.08)",
-                                color: "primary.main",
-                              }),
-                            }}
-                          >
-                            All Subjects
-                          </MenuItem>
-                          <MenuItem
-                            onClick={() => handleOptionalFilterSelect(true)}
-                            sx={{
-                              py: 1.5,
-                              ...(optionalFilter === true && {
-                                bgcolor: "rgba(99, 102, 241, 0.08)",
-                                color: "primary.main",
-                              }),
-                            }}
-                          >
-                            <CheckCircleIcon fontSize="small" color="info" sx={{ mr: 1 }} />
-                            Optional
-                          </MenuItem>
-                          <MenuItem
-                            onClick={() => handleOptionalFilterSelect(false)}
-                            sx={{
-                              py: 1.5,
-                              ...(optionalFilter === false && {
-                                bgcolor: "rgba(99, 102, 241, 0.08)",
-                                color: "primary.main",
-                              }),
-                            }}
-                          >
-                            <CheckCircleIcon fontSize="small" color="success" sx={{ mr: 1 }} />
-                            Required
-                          </MenuItem>
-                        </Menu>
-
-                        {!isMobile && (
-                          <>
-                            <Button
-                              variant="outlined"
-                              color="inherit"
-                              startIcon={<DownloadIcon />}
-                              sx={{
-                                borderColor: "rgba(0, 0, 0, 0.12)",
-                                color: "text.secondary",
-                                "&:hover": {
-                                  borderColor: "primary.main",
-                                  bgcolor: "rgba(99, 102, 241, 0.04)",
-                                },
-                              }}
-                            >
-                              Export
-                            </Button>
-                            <Button
-                              variant="outlined"
-                              color="inherit"
-                              startIcon={<PrintIcon />}
-                              sx={{
-                                borderColor: "rgba(0, 0, 0, 0.12)",
-                                color: "text.secondary",
-                                "&:hover": {
-                                  borderColor: "primary.main",
-                                  bgcolor: "rgba(99, 102, 241, 0.04)",
-                                },
-                              }}
-                            >
-                              Print
-                            </Button>
-                          </>
-                        )}
-                      </Box>
-                    </Grid>
                   </Grid>
                 </Box>
 
@@ -704,10 +483,10 @@ export default function SubjectManagementPage() {
                         <TableHead>
                           <TableRow>
                             <TableCell>
-                              
-                                SL. No.
-                                
-                              
+
+                              SL. No.
+
+
                             </TableCell>
                             {/* <TableCell>
                               <Box
@@ -778,31 +557,18 @@ export default function SubjectManagementPage() {
                                 )}
                               </Box>
                             </TableCell>
-                            <TableCell>Classes</TableCell>
-                            {/* <TableCell>Lessons</TableCell>
-                            <TableCell>Optional</TableCell>
-                            <TableCell>Created At</TableCell> */}
+                           
                             <TableCell align="right">Actions</TableCell>
                           </TableRow>
                         </TableHead>
                         <TableBody>
                           {paginatedSubjects.length > 0 ? (
-                            paginatedSubjects.map((subject: any, index:number) => (
+                            paginatedSubjects.map((subject: any, index: number) => (
                               <TableRow key={subject._id} sx={{ transition: "all 0.2s" }}>
                                 <TableCell>
-                                  {index+1}
+                                  {index + 1}
                                 </TableCell>
-                                {/* <TableCell>
-                                  <Chip
-                                    label={subject.code}
-                                    size="small"
-                                    sx={{
-                                      bgcolor: "rgba(99, 102, 241, 0.08)",
-                                      color: "primary.main",
-                                      fontWeight: 500,
-                                    }}
-                                  />
-                                </TableCell> */}
+                                
                                 <TableCell>
                                   <Box sx={{ display: "flex", alignItems: "center" }}>
                                     <Avatar
@@ -831,75 +597,10 @@ export default function SubjectManagementPage() {
                                     }}
                                   />
                                 </TableCell>
-                                <TableCell>
-                                  {subject.classes && subject.classes.length > 0 ? (
-                                    <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
-                                      {subject.classes.map((cls: any, index: number) => (
-                                        <Chip
-                                          key={index}
-                                          icon={<ClassIcon fontSize="small" />}
-                                          label={cls.className}
-                                          size="small"
-                                          color="secondary"
-                                          sx={{
-                                            fontWeight: 500,
-                                            fontSize: "0.7rem",
-                                          }}
-                                        />
-                                      ))}
-                                    </Box>
-                                  ) : (
-                                    <Typography variant="body2" color="text.secondary">
-                                      No classes assigned
-                                    </Typography>
-                                  )}
-                                </TableCell>
-                                {/* <TableCell>
-                                  <Button
-                                    size="small"
-                                    variant="outlined"
-                                    startIcon={<ListIcon />}
-                                    onClick={() => handleViewLessons(subject)}
-                                    sx={{
-                                      borderColor: "rgba(99, 102, 241, 0.3)",
-                                      color: "primary.main",
-                                      "&:hover": {
-                                        borderColor: "primary.main",
-                                        bgcolor: "rgba(99, 102, 241, 0.04)",
-                                      },
-                                    }}
-                                  >
-                                    {subject.lessons.length} Lessons
-                                  </Button>
-                                </TableCell> */}
-                                {/* <TableCell>
-                                  <Chip
-                                    label={subject.isOptional ? "Optional" : "Required"}
-                                    size="small"
-                                    color={subject.isOptional ? "info" : "success"}
-                                    sx={{
-                                      fontWeight: 500,
-                                    }}
-                                  />
-                                </TableCell> */}
-                                {/* <TableCell>{formatDate(subject.createdAt)}</TableCell> */}
+                                
                                 <TableCell align="right">
                                   <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-                                    <Tooltip title="View Details">
-                                      <IconButton
-                                        size="small"
-                                        sx={{
-                                          color: "info.main",
-                                          bgcolor: alpha(theme.palette.info.main, 0.1),
-                                          mr: 1,
-                                          "&:hover": {
-                                            bgcolor: alpha(theme.palette.info.main, 0.2),
-                                          },
-                                        }}
-                                      >
-                                        <VisibilityIcon fontSize="small" />
-                                      </IconButton>
-                                    </Tooltip>
+                                   
                                     <Tooltip title="Edit Subject">
                                       <IconButton
                                         size="small"

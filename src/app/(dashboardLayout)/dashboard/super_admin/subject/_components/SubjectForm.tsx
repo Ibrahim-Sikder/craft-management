@@ -37,7 +37,7 @@ export default function SubjectForm({ id }: any) {
 
   const { data: singleSubject, isLoading } = useGetSingleSubjectQuery({ id })
   const theme = customTheme
-
+  console.log(singleSubject)
   const handleSubmit = async (data: FieldValues) => {
     try {
       let res
@@ -56,8 +56,12 @@ export default function SubjectForm({ id }: any) {
           router.push("/dashboard/super_admin/subject")
         }
       }
-    } catch (err) {
-      toast.error(err instanceof Error ? err.message : "Failed to process subject!")
+    } catch (err: any) {
+      const errorMessage =
+        err?.data?.message ||
+        err?.errorSources?.[0]?.message ||
+        "Subject already exits!";
+      toast.error(errorMessage)
     }
   }
 
