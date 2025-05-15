@@ -239,17 +239,11 @@ export default function StaffForm({ id }: TeacherFormProps = {}) {
     }
 
     const handleSubmit = async (data: any) => {
-console.log(data)
+        console.log(data)
         if (!data.name) {
             toast.error("Name is required!");
             return;
-        } else if (!data.gender) {
-            toast.error("Gender is required!");
-            return;
-        } else if (!data.email) {
-            toast.error("Email is required!");
-            return;
-        }
+        } 
 
         else {
 
@@ -467,11 +461,7 @@ console.log(data)
                             fullWidth
 
                             name="email"
-                            label={
-                                <span>
-                                    Email Address <span style={{ color: 'red' }}>*</span>
-                                </span>
-                            }
+                            label=' Email Address'
                             type="email"
                             size="medium"
                             InputProps={{
@@ -484,11 +474,7 @@ console.log(data)
                             fullWidth
 
                             name="dateOfBirth"
-                            label={
-                                <span>
-                                    Date of Birth <span style={{ color: 'red' }}>*</span>
-                                </span>
-                            }
+                            label=' Date of Birth'
 
                         />
                     </Grid>
@@ -507,11 +493,7 @@ console.log(data)
 
                             name="gender"
                             size="medium"
-                            label={
-                                <span>
-                                    Gender <span style={{ color: 'red' }}>*</span>
-                                </span>
-                            }
+                            label='Gender'
 
                             placeholder="Select Gender"
                             items={genders}
