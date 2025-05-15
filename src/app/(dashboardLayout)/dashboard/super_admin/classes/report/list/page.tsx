@@ -173,7 +173,7 @@ export default function ClassReportList() {
 
   const teacherOptions = useMemo(() => {
     if (!teacherData?.data) return []
-    return teacherData.data?.data?.map((teacher: any) => ({
+    return teacherData.data?.map((teacher: any) => ({
       label: teacher.name,
       value: teacher._id,
     }))
