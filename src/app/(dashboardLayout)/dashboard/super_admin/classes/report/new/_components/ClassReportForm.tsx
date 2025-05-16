@@ -687,7 +687,7 @@ export default function ClassReportForm({ id }: any) {
                                   multiple={false}
                                   options={classOption}
                                   onChange={handleClassChange}
-                                  // disabled={id ? true : false}
+                                // disabled={id ? true : false}
                                 />
                               </Grid>
                               <Grid item xs={12} md={3}>
@@ -734,9 +734,9 @@ export default function ClassReportForm({ id }: any) {
                                 <TableHead>
                                   <TableRow>
                                     <TableCell>ছাত্রের নাম</TableCell>
+                                    <TableCell>উপস্থিতি</TableCell>
                                     <TableCell>পাঠ মূল্যায়ন</TableCell>
                                     <TableCell>হাতের লিখা</TableCell>
-                                    <TableCell>উপস্থিতি</TableCell>
 
                                     <TableCell align="center">অভিভাবকের স্বাক্ষর</TableCell>
                                     <TableCell align="center">মন্তব্য</TableCell>
@@ -762,6 +762,7 @@ export default function ClassReportForm({ id }: any) {
                                   {students.length > 0 ? (
                                     students.map((student: any) => {
                                       const evaluation = getStudentEvaluation(student._id)
+                                      const isAbsent = evaluation.attendance !== "উপস্থিত"
                                       return (
                                         <TableRow key={student._id} sx={{ transition: "all 0.2s" }}>
                                           <TableCell component="th" scope="row">
@@ -772,9 +773,20 @@ export default function ClassReportForm({ id }: any) {
                                               {student.studentId} • {student.className}, {student.section}
                                             </Typography>
                                           </TableCell>
-
                                           <TableCell align="center">
-                                            <FormControl fullWidth sx={{ minWidth: 160 }}>
+                                            <Checkbox
+                                              color="primary"
+                                              checked={evaluation.attendance === "উপস্থিত"}
+                                              onChange={(e) =>
+                                                handleAttendanceChange(
+                                                  student._id,
+                                                  e.target.checked ? "উপস্থিত" : "অনুপস্থিত",
+                                                )
+                                              }
+                                            />
+                                          </TableCell>
+                                          <TableCell align="center">
+                                            <FormControl fullWidth sx={{ minWidth: 160 }} disabled={isAbsent}>
                                               <InputLabel id={`lesson-label-${student._id}`}>
                                                 Lesson Evaluation
                                               </InputLabel>
@@ -796,7 +808,7 @@ export default function ClassReportForm({ id }: any) {
                                           </TableCell>
 
                                           <TableCell align="center">
-                                            <FormControl fullWidth sx={{ minWidth: 160 }}>
+                                            <FormControl fullWidth sx={{ minWidth: 160 }} disabled={isAbsent}>
                                               <InputLabel id={`handwriting-label-${student._id}`}>
                                                 Handwriting
                                               </InputLabel>
@@ -814,18 +826,7 @@ export default function ClassReportForm({ id }: any) {
                                               </Select>
                                             </FormControl>
                                           </TableCell>
-                                          <TableCell align="center">
-                                            <Checkbox
-                                              color="primary"
-                                              checked={evaluation.attendance === "উপস্থিত"}
-                                              onChange={(e) =>
-                                                handleAttendanceChange(
-                                                  student._id,
-                                                  e.target.checked ? "উপস্থিত" : "অনুপস্থিত",
-                                                )
-                                              }
-                                            />
-                                          </TableCell>
+
 
                                           <TableCell align="center">
                                             <Checkbox
@@ -834,6 +835,7 @@ export default function ClassReportForm({ id }: any) {
                                               onChange={(e) =>
                                                 handleParentSignatureChange(student._id, e.target.checked)
                                               }
+                                              disabled={isAbsent}
                                             />
                                           </TableCell>
                                           <TableCell>
@@ -845,6 +847,7 @@ export default function ClassReportForm({ id }: any) {
                                               placeholder="মন্তব্য"
                                               value={evaluation.comments || ""}
                                               onChange={(e) => handleCommentsChange(student._id, e.target.value)}
+                                              disabled={isAbsent}
                                             />
                                           </TableCell>
                                         </TableRow>
