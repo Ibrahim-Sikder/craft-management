@@ -39,7 +39,7 @@ import {
   Slideshow,
   Code,
 } from "@mui/icons-material"
-import { teacherData } from "./TeacherOverview"
+import { teacherData } from "./TeacherProfile"
 
 const TeacherResource = () => {
   const theme = useTheme()

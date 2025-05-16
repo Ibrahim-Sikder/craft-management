@@ -59,6 +59,7 @@ import ReportGenerator from "../_components/ReportGenerator"
 import StudentAnalytics from "../_components/StudentAnalytics"
 import ProfileSetting from "../_components/ProfileSetting"
 import { useGetSingleTeacherQuery } from "@/redux/api/teacherApi"
+import { formatDate } from "@/utils/formateDate"
 
 
 export const teacherData = {
@@ -290,9 +291,8 @@ function TabPanel(props: TabPanelProps) {
 export default function TeacherProfile({ params }: PageProps) {
   const { id } = params
 
-  const { data } = useGetSingleTeacherQuery({id})
-  console.log(data)
-
+  const { data: singleTeacher } = useGetSingleTeacherQuery({ id })
+  console.log('profile teacher data this ', singleTeacher)
   const theme = useTheme()
   const [tabValue, setTabValue] = useState(0)
   const isMobile = useMediaQuery(theme.breakpoints.down("md"))
@@ -349,8 +349,8 @@ export default function TeacherProfile({ params }: PageProps) {
                   }
                 >
                   <Avatar
-                    src={teacherData.avatar}
-                    alt={teacherData.name}
+                    src={singleTeacher?.data?.teacherPhoto}
+                    alt={singleTeacher?.data?.name}
                     sx={{
                       width: { xs: 100, sm: 130 },
                       height: { xs: 100, sm: 130 },
@@ -373,10 +373,10 @@ export default function TeacherProfile({ params }: PageProps) {
                   gutterBottom
                   sx={{ textShadow: "0 2px 4px rgba(0,0,0,0.2)" }}
                 >
-                  {teacherData.name}
+                  {singleTeacher?.data?.name}
                 </Typography>
                 <Typography variant="h6" gutterBottom sx={{ opacity: 0.9 }}>
-                  {teacherData.role} • {teacherData.department} Department
+                  • {singleTeacher?.data?.designation} Department
                 </Typography>
                 <Box
                   sx={{
@@ -389,7 +389,7 @@ export default function TeacherProfile({ params }: PageProps) {
                 >
                   <Chip
                     icon={<School />}
-                    label={`ID: ${teacherData.id}`}
+                    label={`ID: ${singleTeacher?.data?.teacherId}`}
                     size="small"
                     sx={{
                       bgcolor: "rgba(255, 255, 255, 0.15)",
@@ -403,7 +403,7 @@ export default function TeacherProfile({ params }: PageProps) {
                   />
                   <Chip
                     icon={<CalendarMonth />}
-                    label={`Joined: ${teacherData.joinDate}`}
+                    label={`Joined: ${formatDate(singleTeacher?.data?.joiningDate)}`}
                     size="small"
                     sx={{
                       bgcolor: "rgba(255, 255, 255, 0.15)",
@@ -631,7 +631,7 @@ export default function TeacherProfile({ params }: PageProps) {
 
       {/* Tab Panels */}
       <TabPanel value={tabValue} index={0}>
-        <TeacherOverview />
+        <TeacherOverview teacher={singleTeacher?.data} />
       </TabPanel>
 
       <TabPanel value={tabValue} index={1}>

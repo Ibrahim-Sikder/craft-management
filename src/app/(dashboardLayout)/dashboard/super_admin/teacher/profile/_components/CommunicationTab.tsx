@@ -34,8 +34,7 @@ import {
   CalendarMonth,
   Email
 } from "@mui/icons-material"
-import { teacherData } from "./TeacherOverview"
-
+import { teacherData } from "./TeacherProfile"
 
 const CommunicationTab = () => {
   const theme = useTheme()

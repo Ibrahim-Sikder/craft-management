@@ -24,7 +24,8 @@ import {
   Download,
 
 } from "@mui/icons-material"
-import { teacherData } from "./TeacherOverview";
+import { teacherData } from "./TeacherProfile";
+
 const TeacherPerformance = () => {
   const theme = useTheme()
   return (

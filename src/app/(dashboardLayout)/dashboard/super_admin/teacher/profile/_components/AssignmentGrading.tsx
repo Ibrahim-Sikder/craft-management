@@ -40,7 +40,8 @@ import {
   CalendarMonth,
   People
 } from "@mui/icons-material"
-import { teacherData } from "./TeacherOverview"
+import { teacherData } from "./TeacherProfile"
+
 
 const AssignmentGrading = () => {
   const theme = useTheme()

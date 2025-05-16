@@ -133,7 +133,7 @@ const classPerformanceData = {
     D: 5,
     F: 0,
   },
-  improvementRate: 65, // percentage of students showing improvement
+  improvementRate: 65, 
 };
 
 const StudentAnalytics = () => {

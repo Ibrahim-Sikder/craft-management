@@ -22,7 +22,7 @@ import {
   Fade,
 } from "@mui/material"
 import { Download, Schedule, Edit, Add, Info, Room, AccessTime } from "@mui/icons-material"
-import { teacherData } from "./TeacherOverview"
+import { teacherData } from "./TeacherProfile"
 
 
 const TeacherSchedule = () => {

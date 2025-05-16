@@ -37,7 +37,7 @@ import {
   Visibility,
   Delete
 } from "@mui/icons-material"
-import { teacherData } from "./TeacherOverview"
+import { teacherData } from "./TeacherProfile"
 
 
 const ClassStudent = () => {
