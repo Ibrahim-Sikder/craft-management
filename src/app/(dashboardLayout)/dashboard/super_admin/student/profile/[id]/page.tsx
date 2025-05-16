@@ -1,6 +1,6 @@
 
 import type { Metadata } from 'next'
-import TeacherProfile from '../_components/TeacherProfile'
+import StudentProfile from '../__components/StudentProfile'
 
 export const metadata: Metadata = {
   title: 'Teacher Profile',
@@ -8,6 +8,6 @@ export const metadata: Metadata = {
 }
 
 export default function TeacherProfilePage({ params }: { params: { id: string } }) {
-  return <TeacherProfile params={params} />
+  return <StudentProfile params={params} />
 }
 

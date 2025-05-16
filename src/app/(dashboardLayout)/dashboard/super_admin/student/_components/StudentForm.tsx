@@ -82,6 +82,8 @@ const StudentForm = ({ id }: StudentFormProps) => {
       refetchOnMountOrArgChange: true,
     },
   )
+
+
   const formRef = useRef<any>(null)
 
   const router = useRouter()
@@ -146,7 +148,7 @@ const StudentForm = ({ id }: StudentFormProps) => {
         presentThana: studentData.presentThana || "",
 
         // Academic Information
-        className: studentData.className || [],
+        className: studentData?.className || [],
         studentClassRoll: studentData.studentClassRoll || "",
         batch: studentData.batch || "",
         section: studentData.section || [],
@@ -205,8 +207,8 @@ const StudentForm = ({ id }: StudentFormProps) => {
   const classOption = useMemo(() => {
     if (!classData?.data?.classes) return []
     return classData?.data?.classes.map((clg: any) => ({
-      label: clg.className,
-      value: clg._id,
+      label: clg?.className,
+      value: clg?._id,
     }))
   }, [classData])
   const sectionOption = useMemo(() => {
@@ -255,16 +257,30 @@ const StudentForm = ({ id }: StudentFormProps) => {
     setActiveStep((prevActiveStep) => prevActiveStep - 1)
   }
 
+
   const handleSubmit = async (data: FieldValues) => {
     if (!data.name) {
-      toast.error("Student name is missing!");
-    }
-    else if (!data.studentType) {
-      toast.error("Student type is missing!");
+      toast.error("Student name is missing!")
+    } else if (!data.studentType) {
+      toast.error("Student type is missing!")
     } else {
-      const classArray = data.className?.map((item: any) => item.label) || [];
-      const sectionArray = data.section?.map((item: any) => item.label) || [];
-      const sessionArray = data.activeSession?.map((item: any) => item.label) || [];
+      const classArray = Array.isArray(data.className)
+        ? data.className.map((item: any) => (typeof item === "object" ? item.label : item))
+        : data.className
+          ? [data.className]
+          : []
+
+      const sectionArray = Array.isArray(data.section)
+        ? data.section.map((item: any) => (typeof item === "object" ? item.label : item))
+        : data.section
+          ? [data.section]
+          : []
+
+      const sessionArray = Array.isArray(data.activeSession)
+        ? data.activeSession.map((item: any) => (typeof item === "object" ? item.label : item))
+        : data.activeSession
+          ? [data.activeSession]
+          : []
 
       const submissionData = {
         ...data,
@@ -284,45 +300,43 @@ const StudentForm = ({ id }: StudentFormProps) => {
         className: classArray,
         section: sectionArray,
         activeSession: sessionArray,
-      };
+      }
 
-
+      console.log("submission data", submissionData)
 
       try {
         if (id) {
-          const res = await updateStudent({ id, data: submissionData }).unwrap();
+          const res = await updateStudent({ id, data: submissionData }).unwrap()
           if (res.success) {
-            setSuccess(true);
+            setSuccess(true)
             setSnackbar({
               open: true,
               message: "Student updated successfully!",
               severity: "success",
-            });
+            })
             setTimeout(() => {
-              router.push("/dashboard/super_admin/student/list");
-            }, 2000);
+              router.push("/dashboard/super_admin/student/list")
+            }, 2000)
           }
         } else {
-          const res = await createStudents(submissionData).unwrap();
+          const res = await createStudents(submissionData).unwrap()
           if (res.success) {
-            setSuccess(true);
+            setSuccess(true)
             setSnackbar({
               open: true,
               message: "Student registered successfully!",
               severity: "success",
-            });
+            })
             setTimeout(() => {
-              router.push("/dashboard/super_admin/student/list");
-            }, 2000);
+              router.push("/dashboard/super_admin/student/list")
+            }, 2000)
           }
         }
       } catch (error: any) {
-        console.error("❌ Submission error:", error);
-
+        console.error("❌ Submission error:", error)
       }
     }
-  };
-
+  }
 
 
   const handleCloseSnackbar = () => {

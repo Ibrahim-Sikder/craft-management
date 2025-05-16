@@ -47,7 +47,7 @@ import {
 import CraftForm from "@/components/Forms/Form"
 import CraftDatePicker from "@/components/Forms/DatePicker"
 import CraftSelect from "@/components/Forms/Select"
-import { attendance, classHour, handWritting, lessonEvaluation, subjectName } from "@/options"
+import { classHour, handWritting, lessonEvaluation, subjectName } from "@/options"
 import CraftIntAutoComplete from "@/components/Forms/CruftAutocomplete"
 import { customTheme } from "@/data"
 import { getFromLocalStorage } from "@/utils/local.storage"
@@ -180,21 +180,20 @@ export default function ClassReportForm({ id }: any) {
     return studentData?.data || []
   }, [id, isEditMode, reportStudents, studentData?.data])
 
-
   // Extract students from class report when editing
   useEffect(() => {
     if (id && singleClassReport?.data?.studentEvaluations) {
       setIsEditMode(true)
 
       // Extract student data from the report
-      const studentsFromReport = singleClassReport.data.studentEvaluations.map((studentEval: any) => {
-        const student = studentEval.studentId
+      const studentsFromReport = singleClassReport.data.studentEvaluations?.map((studentEval: any) => {
+        const student = studentEval?.studentId
         return {
-          _id: student._id,
-          name: student.name,
-          studentId: student.studentId,
-          className: student.className,
-          section: student.section || "",
+          _id: student?._id,
+          name: student?.name,
+          studentId: student?.studentId,
+          className: student?.className,
+          section: student?.section || "",
           // Add other student fields as needed
         }
       })
@@ -262,7 +261,7 @@ export default function ClassReportForm({ id }: any) {
   }, [singleClassReport])
 
   const handleSubmit = async (data: FieldValues) => {
-    console.log('raw data', data)
+    console.log("raw data", data)
     try {
       // if (!data.classes) {
       //   toast.error("শ্রেণী নির্বাচন করুন")
@@ -276,7 +275,7 @@ export default function ClassReportForm({ id }: any) {
 
       const classValue = typeof data.classes === "object" ? data.classes.label : data.classes
       const subjectValue = typeof data.subjects === "object" ? data.subjects.label : data.subjects
-      const teacherValue = typeof data.teachers === "object" ? data.teachers.label : data.teachers;
+      const teacherValue = typeof data.teachers === "object" ? data.teachers.label : data.teachers
 
       const formattedData = {
         teachers: teacherValue,
@@ -311,7 +310,7 @@ export default function ClassReportForm({ id }: any) {
         todayLesson: todayLessonId,
         homeTask: homeTaskId,
       }
-      console.log('formated data', formattedData)
+      console.log("formated data", formattedData)
 
       // Rest of your submit logic remains the same
       if (!id) {
@@ -536,11 +535,9 @@ export default function ClassReportForm({ id }: any) {
 
   // Get evaluation for a specific student
   const getStudentEvaluation = (studentId: string) => {
-
     const evaluation = studentEvaluations.find((evaluation) => evaluation.studentId === studentId)
 
     if (!evaluation) {
-
       // If no evaluation exists, create a default one and add it to the array
       const defaultEvaluation = {
         studentId,
@@ -556,7 +553,6 @@ export default function ClassReportForm({ id }: any) {
 
       return defaultEvaluation
     }
-
 
     return evaluation
   }
@@ -671,7 +667,6 @@ export default function ClassReportForm({ id }: any) {
                             <Grid container spacing={2}>
                               {/* Teacher Name */}
                               <Grid item xs={12} md={4}>
-
                                 <CraftIntAutoComplete
                                   name="teachers"
                                   placeholder="শিক্ষকের নাম লিখুন"
@@ -680,7 +675,6 @@ export default function ClassReportForm({ id }: any) {
                                   freeSolo
                                   multiple={false}
                                   options={teacherOption}
-
                                 />
                               </Grid>
 
@@ -742,11 +736,9 @@ export default function ClassReportForm({ id }: any) {
                                     <TableCell>ছাত্রের নাম</TableCell>
                                     <TableCell>পাঠ মূল্যায়ন</TableCell>
                                     <TableCell>হাতের লিখা</TableCell>
-                                    {storedUser.role === "class_teacher" && <TableCell>উপস্থিতি</TableCell>}
+                                    <TableCell>উপস্থিতি</TableCell>
 
-                                    {storedUser.role === "class_teacher" && (
-                                      <TableCell align="center">অভিভাবকের স্বাক্ষর</TableCell>
-                                    )}
+                                    <TableCell align="center">অভিভাবকের স্বাক্ষর</TableCell>
                                     <TableCell align="center">মন্তব্য</TableCell>
                                   </TableRow>
                                 </TableHead>
@@ -777,7 +769,7 @@ export default function ClassReportForm({ id }: any) {
                                               {student.name}
                                             </Typography>
                                             <Typography variant="caption" color="text.secondary">
-                                              {student.studentId} • {student.className} {student.section}
+                                              {student.studentId} • {student.className}, {student.section}
                                             </Typography>
                                           </TableCell>
 
@@ -822,39 +814,28 @@ export default function ClassReportForm({ id }: any) {
                                               </Select>
                                             </FormControl>
                                           </TableCell>
-                                          {storedUser.role === "class_teacher" && (
-                                            <TableCell align="center">
-                                              <FormControl fullWidth sx={{ minWidth: 160 }}>
-                                                <InputLabel id={`attendance-label-${student._id}`}>
-                                                  Attendance
-                                                </InputLabel>
-                                                <Select
-                                                  labelId={`attendance-label-${student._id}`}
-                                                  value={evaluation.attendance || "উপস্থিত"}
-                                                  label="Attendance"
-                                                  onChange={(e) => handleAttendanceChange(student._id, e.target.value)}
-                                                >
-                                                  {attendance.map((item) => (
-                                                    <MenuItem key={item} value={item}>
-                                                      {item}
-                                                    </MenuItem>
-                                                  ))}
-                                                </Select>
-                                              </FormControl>
-                                            </TableCell>
-                                          )}
+                                          <TableCell align="center">
+                                            <Checkbox
+                                              color="primary"
+                                              checked={evaluation.attendance === "উপস্থিত"}
+                                              onChange={(e) =>
+                                                handleAttendanceChange(
+                                                  student._id,
+                                                  e.target.checked ? "উপস্থিত" : "অনুপস্থিত",
+                                                )
+                                              }
+                                            />
+                                          </TableCell>
 
-                                          {storedUser.role === "class_teacher" && (
-                                            <TableCell align="center">
-                                              <Checkbox
-                                                color="primary"
-                                                checked={evaluation.parentSignature}
-                                                onChange={(e) =>
-                                                  handleParentSignatureChange(student._id, e.target.checked)
-                                                }
-                                              />
-                                            </TableCell>
-                                          )}
+                                          <TableCell align="center">
+                                            <Checkbox
+                                              color="primary"
+                                              checked={evaluation.parentSignature}
+                                              onChange={(e) =>
+                                                handleParentSignatureChange(student._id, e.target.checked)
+                                              }
+                                            />
+                                          </TableCell>
                                           <TableCell>
                                             <TextField
                                               fullWidth
