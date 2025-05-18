@@ -82,6 +82,8 @@ export default function ClassReportForm({ id }: any) {
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(10)
   const [searchTerm, setSearchTerm] = useState("")
+  const limit = 90000000
+  const theme = customTheme
   const [filters, setFilters] = useState({
     class: "",
     batch: "",
@@ -107,17 +109,17 @@ export default function ClassReportForm({ id }: any) {
   const { data: singleClassReport, isLoading: singleClassReportLoading } = useGetSingleClassReportQuery({ id })
 
   const { data: classData } = useGetAllClassesQuery({
-    limit: rowsPerPage,
+    limit: limit,
     page: page + 1,
     searchTerm: searchTerm,
   })
   const { data: teacherData } = useGetAllTeachersQuery({
-    limit: rowsPerPage,
+    limit: limit,
     page: page + 1,
     searchTerm: searchTerm,
   })
   const { data: subjectData } = useGetAllSubjectsQuery({
-    limit: rowsPerPage,
+    limit: limit,
     page: page + 1,
     searchTerm: searchTerm,
   })
@@ -144,23 +146,20 @@ export default function ClassReportForm({ id }: any) {
       value: sub._id,
     }))
   }, [teacherData])
-
   // New state for dialog controls
   const [todayLessonDialogOpen, setTodayLessonDialogOpen] = useState(false)
   const [todayTaskDialogOpen, setTodayTaskDialogOpen] = useState(false)
 
   const storedUser = JSON.parse(getFromLocalStorage("user-info") || "{}")
 
-  const theme = customTheme
 
-  // Fetch students from API
   const {
     data: studentData,
     isLoading,
     refetch,
   } = useGetAllStudentsQuery(
     {
-      limit: 1000000,
+      limit: limit,
       page: page + 1,
       searchTerm: searchTerm,
       className: filters.class ? filters.class : undefined,
@@ -180,12 +179,9 @@ export default function ClassReportForm({ id }: any) {
     return studentData?.data || []
   }, [id, isEditMode, reportStudents, studentData?.data])
 
-  // Extract students from class report when editing
   useEffect(() => {
     if (id && singleClassReport?.data?.studentEvaluations) {
       setIsEditMode(true)
-
-      // Extract student data from the report
       const studentsFromReport = singleClassReport.data.studentEvaluations?.map((studentEval: any) => {
         const student = studentEval?.studentId
         return {
@@ -194,18 +190,14 @@ export default function ClassReportForm({ id }: any) {
           studentId: student?.studentId,
           className: student?.className,
           section: student?.section || "",
-          // Add other student fields as needed
         }
       })
 
       setReportStudents(studentsFromReport)
     }
   }, [id, singleClassReport])
-
-  // Initialize student evaluations when students data is loaded or when editing
   useEffect(() => {
     if (singleClassReport?.data?.studentEvaluations?.length > 0) {
-      // Use evaluations from the report when editing
       const evaluations = singleClassReport?.data?.studentEvaluations?.map((studentEval: any) => ({
         studentId: studentEval?.studentId?._id,
         lessonEvaluation: studentEval.lessonEvaluation,
@@ -216,7 +208,6 @@ export default function ClassReportForm({ id }: any) {
       }))
       setStudentEvaluations(evaluations)
     } else if (students.length > 0 && studentEvaluations.length === 0) {
-      // Initialize new evaluations for new report
       const initialEvaluations = students.map((student: any) => ({
         studentId: student._id,
         lessonEvaluation: "পড়া শিখেছে",
@@ -234,7 +225,6 @@ export default function ClassReportForm({ id }: any) {
 
     const report = singleClassReport.data
 
-    // Set today's lesson and home task IDs
     if (report.todayLesson?._id) {
       setTodayLessonId(report.todayLesson._id)
     }
@@ -242,8 +232,6 @@ export default function ClassReportForm({ id }: any) {
     if (report.homeTask?._id) {
       setHomeTaskId(report.homeTask._id)
     }
-
-    // Set class filter for student loading
     if (report.classes?._id) {
       setFilters((prev) => ({
         ...prev,
@@ -383,7 +371,7 @@ export default function ClassReportForm({ id }: any) {
         lessonEvaluation: "পড়া শিখেছে",
         handwriting: "লিখেছে",
         attendance: "উপস্থিত",
-        parentSignature: false,
+        parentSignature: true,
         comments: "",
       })
     }
@@ -409,7 +397,7 @@ export default function ClassReportForm({ id }: any) {
         lessonEvaluation: "পড়া শিখেছে",
         handwriting: value,
         attendance: "উপস্থিত",
-        parentSignature: false,
+        parentSignature: true,
         comments: "",
       })
     }
@@ -435,7 +423,7 @@ export default function ClassReportForm({ id }: any) {
         lessonEvaluation: "পড়া শিখেছে",
         handwriting: value,
         attendance: value,
-        parentSignature: false,
+        parentSignature: true,
         comments: "",
       })
     }
@@ -485,7 +473,7 @@ export default function ClassReportForm({ id }: any) {
         lessonEvaluation: "পড়া শিখেছে",
         handwriting: "লিখেছে",
         attendance: "উপস্থিত",
-        parentSignature: false,
+        parentSignature: true,
         comments: value,
       })
     }
@@ -544,7 +532,7 @@ export default function ClassReportForm({ id }: any) {
         lessonEvaluation: "পড়া শিখেছে",
         handwriting: "লিখেছে",
         attendance: "উপস্থিত",
-        parentSignature: false,
+        parentSignature: true,
         comments: "",
       }
 
@@ -831,7 +819,7 @@ export default function ClassReportForm({ id }: any) {
                                           <TableCell align="center">
                                             <Checkbox
                                               color="primary"
-                                              checked={evaluation.parentSignature}
+                                               checked={evaluation.parentSignature === true}
                                               onChange={(e) =>
                                                 handleParentSignatureChange(student._id, e.target.checked)
                                               }
