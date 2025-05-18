@@ -107,14 +107,13 @@ export default function ClassReportList() {
       limit: rowsPerPage,
       page: page + 1,
       searchTerm: searchTerm,
-      className: filters.class, // Changed from class to className to match API
+      className: filters.class, 
       subject: filters.subject,
       teacher: filters.teacher,
       date: filters.date,
       hour: filters.hour,
     },
     {
-      // Re-fetch when filters or search term changes
       refetchOnMountOrArgChange: true,
     },
   )

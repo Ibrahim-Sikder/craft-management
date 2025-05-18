@@ -160,7 +160,7 @@ export default function ClassReportForm({ id }: any) {
     refetch,
   } = useGetAllStudentsQuery(
     {
-      limit: rowsPerPage,
+      limit: 1000000,
       page: page + 1,
       searchTerm: searchTerm,
       className: filters.class ? filters.class : undefined,
