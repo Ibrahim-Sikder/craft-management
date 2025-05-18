@@ -650,54 +650,66 @@ export default function ClassReportForm({ id }: any) {
                       </Box>
 
                       <Paper elevation={0} sx={{ mb: 4, overflow: "hidden" }}>
-                        <Box sx={{ p: 3, borderBottom: "1px solid rgba(0, 0, 0, 0.06)" }}>
-                          <Grid container spacing={2} alignItems="center" gap={3}>
-                            <Grid container spacing={2}>
-                              {/* Teacher Name */}
-                              <Grid item xs={12} md={4}>
-                                <CraftIntAutoComplete
-                                  name="teachers"
-                                  placeholder="শিক্ষকের নাম লিখুন"
-                                  label="শিক্ষকের নাম"
-                                  fullWidth
-                                  freeSolo
-                                  multiple={false}
-                                  options={teacherOption}
-                                />
-                              </Grid>
+                        <Box sx={{ p:{sm:1, md:2, lg:3}, borderBottom: "1px solid rgba(0, 0, 0, 0.06)" }}>
+  <Grid container spacing={2} alignItems="center">
+    
+    {/* Teacher Name */}
+    <Grid item xs={12} sm={6} md={3} lg={3}>
+      <CraftIntAutoComplete
+        name="teachers"
+        placeholder="শিক্ষকের নাম লিখুন"
+        label="শিক্ষকের নাম"
+        fullWidth
+        freeSolo
+        multiple={false}
+        options={teacherOption}
+      />
+    </Grid>
 
-                              <Grid item xs={12} md={2}>
-                                <CraftIntAutoComplete
-                                  name="classes"
-                                  label="শ্রেণীর নাম লিখুন"
-                                  fullWidth
-                                  freeSolo
-                                  multiple={false}
-                                  options={classOption}
-                                  onChange={handleClassChange}
-                                // disabled={id ? true : false}
-                                />
-                              </Grid>
-                              <Grid item xs={12} md={3}>
-                                <CraftIntAutoComplete
-                                  name="subjects"
-                                  label="বিষয়ের নাম লিখুন"
-                                  fullWidth
-                                  freeSolo
-                                  multiple={false}
-                                  options={subjectOption}
-                                />
-                              </Grid>
-                              <Grid item xs={12} md={1}>
-                                <CraftSelect name="hour" label="ঘন্টা" items={classHour} sx={{ minWidth: 100 }} />
-                              </Grid>
-                              {/* Date */}
-                              <Grid item xs={12} md={2}>
-                                <CraftDatePicker name="date" label="তারিখ" />
-                              </Grid>
-                            </Grid>
-                          </Grid>
-                        </Box>
+    {/* Class Name */}
+    <Grid item xs={12} sm={6} md={2} lg={3}>
+      <CraftIntAutoComplete
+        name="classes"
+        label="শ্রেণীর নাম লিখুন"
+        fullWidth
+        freeSolo
+        multiple={false}
+        options={classOption}
+        onChange={handleClassChange}
+      />
+    </Grid>
+
+    {/* Subject Name */}
+    <Grid item xs={12} sm={6} md={3} lg={3}>
+      <CraftIntAutoComplete
+        name="subjects"
+        label="বিষয়ের নাম লিখুন"
+        fullWidth
+        freeSolo
+        multiple={false}
+        options={subjectOption}
+      />
+    </Grid>
+
+    {/* Hour */}
+    <Grid item xs={6} sm={6} md={1.5} lg={1.5}>
+      <CraftSelect
+        name="hour"
+        label="ঘন্টা"
+        items={classHour}
+        sx={{ minWidth: {sm:40, md:30} }}
+
+      />
+    </Grid>
+
+    {/* Date */}
+    <Grid item xs={12} sm={6} md={2.4} lg={2}>
+      <CraftDatePicker name="date" label="তারিখ" />
+    </Grid>
+
+  </Grid>
+</Box>
+
 
                         {isLoading ? (
                           <Box sx={{ p: 2 }}>
@@ -722,10 +734,9 @@ export default function ClassReportForm({ id }: any) {
                                 <TableHead>
                                   <TableRow>
                                     <TableCell>ছাত্রের নাম</TableCell>
-                                    <TableCell>উপস্থিতি</TableCell>
-                                    <TableCell>পাঠ মূল্যায়ন</TableCell>
-                                    <TableCell>হাতের লিখা</TableCell>
-
+                                    <TableCell align="center">উপস্থিতি</TableCell>
+                                    <TableCell align="center">পাঠ মূল্যায়ন</TableCell>
+                                    <TableCell align="center">হাতের লিখা</TableCell>
                                     <TableCell align="center">অভিভাবকের স্বাক্ষর</TableCell>
                                     <TableCell align="center">মন্তব্য</TableCell>
                                   </TableRow>
