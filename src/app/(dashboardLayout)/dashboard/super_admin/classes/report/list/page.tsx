@@ -72,7 +72,14 @@ import { useDeleteClassReportMutation, useGetAllClassReportsQuery } from "@/redu
 import { useGetAllClassesQuery } from "@/redux/api/classApi"
 import { useGetAllSubjectsQuery } from "@/redux/api/subjectApi"
 import { useGetAllTeachersQuery } from "@/redux/api/teacherApi"
-import type { Filters } from "@/interface"
+type Filters = {
+  classes: string
+  subjects: string
+  teachers: string
+  date: string
+  hour: string
+}
+// import type { Filters } from "@/interface"
 
 export default function ClassReportList() {
   // State
@@ -80,12 +87,13 @@ export default function ClassReportList() {
   const [rowsPerPage, setRowsPerPage] = useState(10)
   const [searchTerm, setSearchTerm] = useState("")
   const [filters, setFilters] = useState({
-    class: "",
-    subject: "",
-    teacher: "",
+    classes: "",
+    subjects: "",
+    teachers: "",
     date: "",
     hour: "",
   })
+  console.log("Current filters:", filters)
   const [orderBy, setOrderBy] = useState<string>("createdAt")
   const [order, setOrder] = useState<"asc" | "desc">("desc")
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
@@ -107,9 +115,9 @@ export default function ClassReportList() {
       limit: rowsPerPage,
       page: page + 1,
       searchTerm: searchTerm,
-      className: filters.class, 
-      subject: filters.subject,
-      teacher: filters.teacher,
+      className: filters.classes,
+      subject: filters.subjects,
+      teacher: filters.teachers, 
       date: filters.date,
       hour: filters.hour,
     },
@@ -119,24 +127,23 @@ export default function ClassReportList() {
   )
 
   const { data: classData } = useGetAllClassesQuery({
-    limit: 100, // Increased to fetch more classes
+    limit: 100,
     page: 1,
     searchTerm: "",
   })
 
   const { data: subjectData } = useGetAllSubjectsQuery({
-    limit: 100, // Increased to fetch more subjects
+    limit: 100,
     page: 1,
     searchTerm: "",
   })
 
   const { data: teacherData } = useGetAllTeachersQuery({
-    limit: 100, // Increased to fetch more teachers
+    limit: 100,
     page: 1,
     searchTerm: "",
   })
 
-  // Effect to refetch data when filters change
   useEffect(() => {
     refetch()
   }, [filters, searchTerm, page, rowsPerPage, refetch])
@@ -149,15 +156,13 @@ export default function ClassReportList() {
     return classReport?.data?.reports || []
   }, [classReport])
 
-  // Total count for pagination
   const totalCount = classReport?.data?.meta?.total || 0
 
-  // Update your filter options to use proper IDs
   const classOptions = useMemo(() => {
     return (
       classData?.data?.classes?.map((cls: any) => ({
         label: cls.className,
-        value: cls._id,
+        value: cls.className, // Changed from cls._id to cls.className to match string type in database
       })) || []
     )
   }, [classData])
@@ -166,7 +171,7 @@ export default function ClassReportList() {
     if (!subjectData?.data?.subjects) return []
     return subjectData.data.subjects.map((sub: any) => ({
       label: sub.name,
-      value: sub._id,
+      value: sub.name, // Changed from sub._id to sub.name to match string type in database
     }))
   }, [subjectData])
 
@@ -174,7 +179,7 @@ export default function ClassReportList() {
     if (!teacherData?.data) return []
     return teacherData.data?.map((teacher: any) => ({
       label: teacher.name,
-      value: teacher._id,
+      value: teacher.name, // Changed from teacher._id to teacher.name to match string type in database
     }))
   }, [teacherData])
 
@@ -205,6 +210,7 @@ export default function ClassReportList() {
 
   // Handle filter changes
   const handleFilterChange = (filterName: keyof Filters, value: string) => {
+    console.log(`Setting filter ${filterName} to:`, value)
     setFilters((prev) => ({
       ...prev,
       [filterName]: value,
@@ -262,9 +268,9 @@ export default function ClassReportList() {
   // Clear all filters
   const handleClearFilters = () => {
     setFilters({
-      class: "",
-      subject: "",
-      teacher: "",
+      classes: "",
+      subjects: "",
+      teachers: "",
       date: "",
       hour: "",
     })
@@ -418,9 +424,9 @@ export default function ClassReportList() {
                           <Select
                             labelId="class-filter-label"
                             id="class-filter"
-                            value={filters.class}
+                            value={filters.classes}
                             label="Select Class"
-                            onChange={(e: SelectChangeEvent) => handleFilterChange("class", e.target.value)}
+                            onChange={(e: SelectChangeEvent) => handleFilterChange("classes", e.target.value)}
                           >
                             <MenuItem value="">All Classes</MenuItem>
                             {classOptions?.length > 0 &&
@@ -429,12 +435,6 @@ export default function ClassReportList() {
                                   {option.label}
                                 </MenuItem>
                               ))}
-
-                            {/* {classOptions.map((option: any) => (
-                              <MenuItem key={option.value} value={option.value}>
-                                {option.label}
-                              </MenuItem>
-                            ))} */}
                           </Select>
                         </FormControl>
                       </CardContent>
@@ -456,9 +456,9 @@ export default function ClassReportList() {
                           <Select
                             labelId="subject-filter-label"
                             id="subject-filter"
-                            value={filters.subject}
+                            value={filters.subjects}
                             label="Select Subject"
-                            onChange={(e: SelectChangeEvent) => handleFilterChange("subject", e.target.value)}
+                            onChange={(e: SelectChangeEvent) => handleFilterChange("subjects", e.target.value)}
                           >
                             <MenuItem value="">All Subjects</MenuItem>
                             {subjectOptions?.length > 0 &&
@@ -467,12 +467,6 @@ export default function ClassReportList() {
                                   {option.label}
                                 </MenuItem>
                               ))}
-
-                            {/* {subjectOptions.map((option: any) => (
-                              <MenuItem key={option.value} value={option.value}>
-                                {option.label}
-                              </MenuItem>
-                            ))} */}
                           </Select>
                         </FormControl>
                       </CardContent>
@@ -494,9 +488,9 @@ export default function ClassReportList() {
                           <Select
                             labelId="teacher-filter-label"
                             id="teacher-filter"
-                            value={filters.teacher}
+                            value={filters.teachers}
                             label="Select Teacher"
-                            onChange={(e: SelectChangeEvent) => handleFilterChange("teacher", e.target.value)}
+                            onChange={(e: SelectChangeEvent) => handleFilterChange("teachers", e.target.value)}
                           >
                             <MenuItem value="">All Teachers</MenuItem>
                             {teacherOptions?.length > 0 &&
@@ -505,11 +499,6 @@ export default function ClassReportList() {
                                   {option.label}
                                 </MenuItem>
                               ))}
-                            {/* {teacherOptions.map((option: any) => (
-                              <MenuItem key={option.value} value={option.value}>
-                                {option.label}
-                              </MenuItem>
-                            ))} */}
                           </Select>
                         </FormControl>
                       </CardContent>
