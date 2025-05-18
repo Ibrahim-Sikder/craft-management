@@ -5,4 +5,4 @@ const page = () => {
   return <ClassReportForm/>
 };
 
-export default page;
+export default page; 
