@@ -152,7 +152,6 @@ export default function ClassReportForm({ id }: any) {
 
   const storedUser = JSON.parse(getFromLocalStorage("user-info") || "{}")
 
-
   const {
     data: studentData,
     isLoading,
@@ -582,8 +581,10 @@ export default function ClassReportForm({ id }: any) {
         <>
           <ThemeProvider theme={theme}>
             <CraftForm onSubmit={handleSubmit} defaultValues={defaultValues || {}}>
-              <Box sx={{ flexGrow: 1, bgcolor: "background.default", minHeight: "100vh", borderRadius: 2 }}>
-                <Container maxWidth="xl" sx={{ mt: 0, mb: 8, borderRadius: 2 }}>
+              <Box
+                sx={{ flexGrow: 1, bgcolor: "background.default", minHeight: "100vh", borderRadius: 2, width: "100%" }}
+              >
+                <Container maxWidth={false} sx={{ mt: 0, mb: 8, borderRadius: 2, px: { xs: 2, sm: 3, md: 4, lg: 5 } }}>
                   <Fade in={true} timeout={800}>
                     <Box>
                       <Box
@@ -597,7 +598,15 @@ export default function ClassReportForm({ id }: any) {
                           paddingTop: 2,
                         }}
                       >
-                        <Typography variant="h4" component="h1" sx={{ fontWeight: 700, color: "text.primary" }}>
+                        <Typography
+                          variant="h4"
+                          component="h1"
+                          sx={{
+                            fontWeight: 700,
+                            color: "text.primary",
+                            fontSize: { xs: "1.5rem", sm: "1.75rem", md: "2rem" },
+                          }}
+                        >
                           {id ? "Edit Report" : "+ Add New Report"}
                           {isEditMode && (
                             <Typography component="span" variant="subtitle1" sx={{ ml: 2, color: "text.secondary" }}>
@@ -605,7 +614,7 @@ export default function ClassReportForm({ id }: any) {
                             </Typography>
                           )}
                         </Typography>
-                        <Box sx={{ display: "flex", gap: 2 }}>
+                        <Box sx={{ display: "flex", gap: { xs: 1, sm: 2 }, flexWrap: "wrap" }}>
                           <Button
                             variant="contained"
                             color="primary"
@@ -615,6 +624,8 @@ export default function ClassReportForm({ id }: any) {
                               bgcolor: todayLessonId ? "success.main" : "",
                               borderRadius: 2,
                               boxShadow: "0px 4px 10px rgba(99, 102, 241, 0.2)",
+                              fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                              px: { xs: 1, sm: 2 },
                             }}
                           >
                             {todayLessonId ? " আজকের পাঠে দেখুন" : "আজকের পাঠ"}
@@ -628,6 +639,8 @@ export default function ClassReportForm({ id }: any) {
                               bgcolor: homeTaskId ? "success.main" : "#3792de",
                               borderRadius: 2,
                               boxShadow: "0px 4px 10px rgba(99, 102, 241, 0.2)",
+                              fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                              px: { xs: 1, sm: 2 },
                             }}
                           >
                             {homeTaskId ? "বাড়ির কাজ দেখুন" : "বাড়ির কাজ"}
@@ -642,6 +655,8 @@ export default function ClassReportForm({ id }: any) {
                               bgcolor: "#4F0187",
                               borderRadius: 2,
                               boxShadow: "0px 4px 10px rgba(99, 102, 241, 0.2)",
+                              fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                              px: { xs: 1, sm: 2 },
                             }}
                           >
                             {isSubmitting ? "Saving..." : "Save"}
@@ -649,67 +664,63 @@ export default function ClassReportForm({ id }: any) {
                         </Box>
                       </Box>
 
-                      <Paper elevation={0} sx={{ mb: 4, overflow: "hidden" }}>
-                        <Box sx={{ p:{sm:1, md:2, lg:3}, borderBottom: "1px solid rgba(0, 0, 0, 0.06)" }}>
-  <Grid container spacing={2} alignItems="center">
-    
-    {/* Teacher Name */}
-    <Grid item xs={12} sm={6} md={3} lg={3}>
-      <CraftIntAutoComplete
-        name="teachers"
-        placeholder="শিক্ষকের নাম লিখুন"
-        label="শিক্ষকের নাম"
-        fullWidth
-        freeSolo
-        multiple={false}
-        options={teacherOption}
-      />
-    </Grid>
+                      <Paper elevation={0} sx={{ mb: 4, overflow: "hidden", width: "100%" }}>
+                        <Box sx={{ p: { xs: 1, sm: 1, md: 2, lg: 3 }, borderBottom: "1px solid rgba(0, 0, 0, 0.06)" }}>
+                          <Grid container spacing={2} alignItems="center">
+                            {/* Teacher Name */}
+                            <Grid item xs={12} sm={6} md={3} lg={3}>
+                              <CraftIntAutoComplete
+                                name="teachers"
+                                placeholder="শিক্ষকের নাম লিখুন"
+                                label="শিক্ষকের নাম"
+                                fullWidth
+                                freeSolo
+                                multiple={false}
+                                options={teacherOption}
+                              />
+                            </Grid>
 
-    {/* Class Name */}
-    <Grid item xs={12} sm={6} md={2} lg={3}>
-      <CraftIntAutoComplete
-        name="classes"
-        label="শ্রেণীর নাম লিখুন"
-        fullWidth
-        freeSolo
-        multiple={false}
-        options={classOption}
-        onChange={handleClassChange}
-      />
-    </Grid>
+                            {/* Class Name */}
+                            <Grid item xs={12} sm={6} md={2} lg={3}>
+                              <CraftIntAutoComplete
+                                name="classes"
+                                label="শ্রেণীর নাম লিখুন"
+                                fullWidth
+                                freeSolo
+                                multiple={false}
+                                options={classOption}
+                                onChange={handleClassChange}
+                              />
+                            </Grid>
 
-    {/* Subject Name */}
-    <Grid item xs={12} sm={6} md={3} lg={3}>
-      <CraftIntAutoComplete
-        name="subjects"
-        label="বিষয়ের নাম লিখুন"
-        fullWidth
-        freeSolo
-        multiple={false}
-        options={subjectOption}
-      />
-    </Grid>
+                            {/* Subject Name */}
+                            <Grid item xs={12} sm={6} md={3} lg={3}>
+                              <CraftIntAutoComplete
+                                name="subjects"
+                                label="বিষয়ের নাম লিখুন"
+                                fullWidth
+                                freeSolo
+                                multiple={false}
+                                options={subjectOption}
+                              />
+                            </Grid>
 
-    {/* Hour */}
-    <Grid item xs={6} sm={6} md={1.5} lg={1.5}>
-      <CraftSelect
-        name="hour"
-        label="ঘন্টা"
-        items={classHour}
-        sx={{ minWidth: {sm:40, md:30} }}
+                            {/* Hour */}
+                            <Grid item xs={6} sm={6} md={2} lg={1.5}>
+                              <CraftSelect
+                                name="hour"
+                                label="ঘন্টা"
+                                items={classHour}
+                                sx={{ minWidth: { xs: 100, sm: 120, md: 130 } }}
+                              />
+                            </Grid>
 
-      />
-    </Grid>
-
-    {/* Date */}
-    <Grid item xs={12} sm={6} md={2.4} lg={2}>
-      <CraftDatePicker name="date" label="তারিখ" />
-    </Grid>
-
-  </Grid>
-</Box>
-
+                            {/* Date */}
+                            <Grid item xs={6} sm={6} md={2} lg={1.5}>
+                              <CraftDatePicker name="date" label="তারিখ" />
+                            </Grid>
+                          </Grid>
+                        </Box>
 
                         {isLoading ? (
                           <Box sx={{ p: 2 }}>
@@ -729,20 +740,44 @@ export default function ClassReportForm({ id }: any) {
                           </Box>
                         ) : (
                           <>
-                            <TableContainer sx={{
-            overflowX: "auto",  
-            WebkitOverflowScrolling: "touch",  
-            maxWidth: "100vw"  
-          }}>
-                              <Table sx={{ minWidth: 650 }}>
+                            <TableContainer
+                              sx={{
+                                overflowX: "auto",
+                                WebkitOverflowScrolling: "touch",
+                                width: "100%",
+                                "&::-webkit-scrollbar": {
+                                  height: "8px",
+                                },
+                                "&::-webkit-scrollbar-thumb": {
+                                  backgroundColor: "rgba(0,0,0,0.2)",
+                                  borderRadius: "4px",
+                                },
+                              }}
+                            >
+                              <Table sx={{ width: "100%", tableLayout: "fixed" }}>
                                 <TableHead>
                                   <TableRow>
-                                    <TableCell>ছাত্রের নাম</TableCell>
-                                    <TableCell align="center">উপস্থিতি</TableCell>
-                                    <TableCell align="center">পাঠ মূল্যায়ন</TableCell>
-                                    <TableCell align="center">হাতের লিখা</TableCell>
-                                    <TableCell align="center">অভিভাবকের স্বাক্ষর</TableCell>
-                                    <TableCell align="center">মন্তব্য</TableCell>
+                                    <TableCell width="20%">ছাত্রের নাম</TableCell>
+                                    <TableCell align="center" width="10%">
+                                      উপস্থিতি
+                                    </TableCell>
+                                    <TableCell align="center">
+                                      পাঠ মূল্যায়ন
+                                      <Checkbox color="primary" />
+                                    </TableCell>
+                                    {/* <TableCell align="center" width="20%">
+                                      পাঠ মূল্যায়ন
+                                    </TableCell> */}
+                                    <TableCell align="center" width="20%">
+                                      হাতের লিখা
+                                      <Checkbox color="primary" />
+                                    </TableCell>
+                                    <TableCell align="center" width="10%">
+                                      অভিভাবকের স্বাক্ষর
+                                    </TableCell>
+                                    <TableCell align="center" width="20%">
+                                      মন্তব্য
+                                    </TableCell>
                                   </TableRow>
                                 </TableHead>
                                 <TableBody>
@@ -789,7 +824,11 @@ export default function ClassReportForm({ id }: any) {
                                             />
                                           </TableCell>
                                           <TableCell align="center">
-                                            <FormControl fullWidth sx={{ minWidth: 160 }} disabled={isAbsent}>
+                                            <FormControl
+                                              fullWidth
+                                              sx={{ minWidth: { xs: 120, sm: 140, md: 160 } }}
+                                              disabled={isAbsent}
+                                            >
                                               <InputLabel id={`lesson-label-${student._id}`}>
                                                 Lesson Evaluation
                                               </InputLabel>
@@ -811,7 +850,11 @@ export default function ClassReportForm({ id }: any) {
                                           </TableCell>
 
                                           <TableCell align="center">
-                                            <FormControl fullWidth sx={{ minWidth: 160 }} disabled={isAbsent}>
+                                            <FormControl
+                                              fullWidth
+                                              sx={{ minWidth: { xs: 120, sm: 140, md: 160 } }}
+                                              disabled={isAbsent}
+                                            >
                                               <InputLabel id={`handwriting-label-${student._id}`}>
                                                 Handwriting
                                               </InputLabel>
@@ -830,11 +873,10 @@ export default function ClassReportForm({ id }: any) {
                                             </FormControl>
                                           </TableCell>
 
-
                                           <TableCell align="center">
                                             <Checkbox
                                               color="primary"
-                                               checked={evaluation.parentSignature === true}
+                                              checked={evaluation.parentSignature === true}
                                               onChange={(e) =>
                                                 handleParentSignatureChange(student._id, e.target.checked)
                                               }
