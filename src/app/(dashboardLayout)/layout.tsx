@@ -196,7 +196,11 @@ const CustomSidebar: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         <List sx={{ padding: '8px' }}>{renderNavigationItems(roleBasedItems)}</List>
       </Drawer>
       {/*Main content page  */}
-      <Box component="main" sx={{ flexGrow: 1, p: { xs: 1, sm: 3 }, marginTop: { xs: 7, sm: 7 }, background: "white" }}>{children}</Box>
+      <div className="flex flex-grow pt-1 md:pt-7 px-2 md:px-3 mt-14 bg-white">
+        {children}
+      </div>
+
+      {/* <Box component="main" sx={{ flexGrow: 1, paddingTop: { xs: 1, sm: 2 }, marginTop: { xs: 7, sm: 7 }, background: "white" }}>{children}</Box> */}
     </Box>
   );
 };

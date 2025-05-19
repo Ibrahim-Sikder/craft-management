@@ -72,7 +72,14 @@ import { useDeleteClassReportMutation, useGetAllClassReportsQuery } from "@/redu
 import { useGetAllClassesQuery } from "@/redux/api/classApi"
 import { useGetAllSubjectsQuery } from "@/redux/api/subjectApi"
 import { useGetAllTeachersQuery } from "@/redux/api/teacherApi"
-import type { Filters } from "@/interface"
+type Filters = {
+  classes: string
+  subjects: string
+  teachers: string
+  date: string
+  hour: string
+}
+// import type { Filters } from "@/interface"
 
 export default function ClassReportList() {
   // State
@@ -80,12 +87,13 @@ export default function ClassReportList() {
   const [rowsPerPage, setRowsPerPage] = useState(10)
   const [searchTerm, setSearchTerm] = useState("")
   const [filters, setFilters] = useState({
-    class: "",
-    subject: "",
-    teacher: "",
+    classes: "",
+    subjects: "",
+    teachers: "",
     date: "",
     hour: "",
   })
+  console.log("Current filters:", filters)
   const [orderBy, setOrderBy] = useState<string>("createdAt")
   const [order, setOrder] = useState<"asc" | "desc">("desc")
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
@@ -107,37 +115,35 @@ export default function ClassReportList() {
       limit: rowsPerPage,
       page: page + 1,
       searchTerm: searchTerm,
-      className: filters.class, // Changed from class to className to match API
-      subject: filters.subject,
-      teacher: filters.teacher,
+      className: filters.classes,
+      subject: filters.subjects,
+      teacher: filters.teachers,
       date: filters.date,
       hour: filters.hour,
     },
     {
-      // Re-fetch when filters or search term changes
       refetchOnMountOrArgChange: true,
     },
   )
 
   const { data: classData } = useGetAllClassesQuery({
-    limit: 100, // Increased to fetch more classes
+    limit: 100,
     page: 1,
     searchTerm: "",
   })
 
   const { data: subjectData } = useGetAllSubjectsQuery({
-    limit: 100, // Increased to fetch more subjects
+    limit: 100,
     page: 1,
     searchTerm: "",
   })
 
   const { data: teacherData } = useGetAllTeachersQuery({
-    limit: 100, // Increased to fetch more teachers
+    limit: 100,
     page: 1,
     searchTerm: "",
   })
 
-  // Effect to refetch data when filters change
   useEffect(() => {
     refetch()
   }, [filters, searchTerm, page, rowsPerPage, refetch])
@@ -150,15 +156,13 @@ export default function ClassReportList() {
     return classReport?.data?.reports || []
   }, [classReport])
 
-  // Total count for pagination
   const totalCount = classReport?.data?.meta?.total || 0
 
-  // Update your filter options to use proper IDs
   const classOptions = useMemo(() => {
     return (
       classData?.data?.classes?.map((cls: any) => ({
         label: cls.className,
-        value: cls._id,
+        value: cls.className, // Changed from cls._id to cls.className to match string type in database
       })) || []
     )
   }, [classData])
@@ -167,15 +171,15 @@ export default function ClassReportList() {
     if (!subjectData?.data?.subjects) return []
     return subjectData.data.subjects.map((sub: any) => ({
       label: sub.name,
-      value: sub._id,
+      value: sub.name, // Changed from sub._id to sub.name to match string type in database
     }))
   }, [subjectData])
 
   const teacherOptions = useMemo(() => {
     if (!teacherData?.data) return []
-    return teacherData.data?.data?.map((teacher: any) => ({
+    return teacherData.data?.map((teacher: any) => ({
       label: teacher.name,
-      value: teacher._id,
+      value: teacher.name, // Changed from teacher._id to teacher.name to match string type in database
     }))
   }, [teacherData])
 
@@ -206,6 +210,7 @@ export default function ClassReportList() {
 
   // Handle filter changes
   const handleFilterChange = (filterName: keyof Filters, value: string) => {
+    console.log(`Setting filter ${filterName} to:`, value)
     setFilters((prev) => ({
       ...prev,
       [filterName]: value,
@@ -263,9 +268,9 @@ export default function ClassReportList() {
   // Clear all filters
   const handleClearFilters = () => {
     setFilters({
-      class: "",
-      subject: "",
-      teacher: "",
+      classes: "",
+      subjects: "",
+      teachers: "",
       date: "",
       hour: "",
     })
@@ -405,7 +410,7 @@ export default function ClassReportList() {
               <Box sx={{ mb: 4 }}>
                 <Grid container spacing={2}>
                   {/* Class Filter */}
-                  <Grid item xs={12} sm={6} md={2.4}>
+                  <Grid item xs={12} sm={6} md={2}>
                     <Card variant="outlined" sx={{ borderRadius: 2 }}>
                       <CardContent>
                         <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
@@ -419,16 +424,17 @@ export default function ClassReportList() {
                           <Select
                             labelId="class-filter-label"
                             id="class-filter"
-                            value={filters.class}
+                            value={filters.classes}
                             label="Select Class"
-                            onChange={(e: SelectChangeEvent) => handleFilterChange("class", e.target.value)}
+                            onChange={(e: SelectChangeEvent) => handleFilterChange("classes", e.target.value)}
                           >
                             <MenuItem value="">All Classes</MenuItem>
-                            {classOptions.map((option: any) => (
-                              <MenuItem key={option.value} value={option.label}>
-                                {option.label}
-                              </MenuItem>
-                            ))}
+                            {classOptions?.length > 0 &&
+                              classOptions.map((option: any) => (
+                                <MenuItem key={option.value} value={option.value}>
+                                  {option.label}
+                                </MenuItem>
+                              ))}
                           </Select>
                         </FormControl>
                       </CardContent>
@@ -436,7 +442,7 @@ export default function ClassReportList() {
                   </Grid>
 
                   {/* Subject Filter */}
-                  <Grid item xs={12} sm={6} md={2.4}>
+                  <Grid item xs={12} sm={6} md={2}>
                     <Card variant="outlined" sx={{ borderRadius: 2 }}>
                       <CardContent>
                         <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
@@ -450,16 +456,17 @@ export default function ClassReportList() {
                           <Select
                             labelId="subject-filter-label"
                             id="subject-filter"
-                            value={filters.subject}
+                            value={filters.subjects}
                             label="Select Subject"
-                            onChange={(e: SelectChangeEvent) => handleFilterChange("subject", e.target.value)}
+                            onChange={(e: SelectChangeEvent) => handleFilterChange("subjects", e.target.value)}
                           >
                             <MenuItem value="">All Subjects</MenuItem>
-                            {subjectOptions.map((option: any) => (
-                              <MenuItem key={option.value} value={option.label}>
-                                {option.label}
-                              </MenuItem>
-                            ))}
+                            {subjectOptions?.length > 0 &&
+                              subjectOptions.map((option: any) => (
+                                <MenuItem key={option.value} value={option.value}>
+                                  {option.label}
+                                </MenuItem>
+                              ))}
                           </Select>
                         </FormControl>
                       </CardContent>
@@ -467,7 +474,7 @@ export default function ClassReportList() {
                   </Grid>
 
                   {/* Teacher Filter */}
-                  <Grid item xs={12} sm={6} md={2.4}>
+                  <Grid item xs={12} sm={6} md={2}>
                     <Card variant="outlined" sx={{ borderRadius: 2 }}>
                       <CardContent>
                         <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
@@ -481,14 +488,46 @@ export default function ClassReportList() {
                           <Select
                             labelId="teacher-filter-label"
                             id="teacher-filter"
-                            value={filters.teacher}
+                            value={filters.teachers}
                             label="Select Teacher"
-                            onChange={(e: SelectChangeEvent) => handleFilterChange("teacher", e.target.value)}
+                            onChange={(e: SelectChangeEvent) => handleFilterChange("teachers", e.target.value)}
                           >
                             <MenuItem value="">All Teachers</MenuItem>
-                            {teacherOptions.map((option: any) => (
-                              <MenuItem key={option.value} value={option.label}>
-                                {option.label}
+                            {teacherOptions?.length > 0 &&
+                              teacherOptions.map((option: any) => (
+                                <MenuItem key={option.value} value={option.value}>
+                                  {option.label}
+                                </MenuItem>
+                              ))}
+                          </Select>
+                        </FormControl>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+
+                  {/* Hour Filter */}
+                  <Grid item xs={12} sm={6} md={1.5}>
+                    <Card variant="outlined" sx={{ borderRadius: 2 }}>
+                      <CardContent>
+                        <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                          <AccessTimeIcon sx={{ color: "primary.main", mr: 1 }} />
+                          <Typography variant="subtitle1" fontWeight={600}>
+                            Hour
+                          </Typography>
+                        </Box>
+                        <FormControl fullWidth size="small">
+                          <InputLabel id="hour-filter-label">Select Hour</InputLabel>
+                          <Select
+                            labelId="hour-filter-label"
+                            id="hour-filter"
+                            value={filters.hour}
+                            label="Select Hour"
+                            onChange={(e: SelectChangeEvent) => handleFilterChange("hour", e.target.value)}
+                          >
+                            <MenuItem value="">All Hours</MenuItem>
+                            {hourOptions.map((hour) => (
+                              <MenuItem key={hour} value={hour}>
+                                {hour}
                               </MenuItem>
                             ))}
                           </Select>
@@ -497,14 +536,14 @@ export default function ClassReportList() {
                     </Card>
                   </Grid>
 
-                  {/* Hour Filter */}
-                  <Grid item xs={12} sm={6} md={2.4}>
+                  {/* Lesson Filter */}
+                  <Grid item xs={12} sm={6} md={2}>
                     <Card variant="outlined" sx={{ borderRadius: 2 }}>
                       <CardContent>
                         <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
                           <AccessTimeIcon sx={{ color: "primary.main", mr: 1 }} />
                           <Typography variant="subtitle1" fontWeight={600}>
-                            Hour
+                            Lesson
                           </Typography>
                         </Box>
                         <FormControl fullWidth size="small">
@@ -558,7 +597,7 @@ export default function ClassReportList() {
                 {/* Search and Actions */}
                 <Box sx={{ mt: 2, display: "flex", gap: 2, flexWrap: "wrap" }}>
                   <TextField
-                    placeholder="Search by class, subject, teacher..."
+                    placeholder="Search by Student Name..."
                     variant="outlined"
                     value={searchTerm}
                     onChange={handleSearchChange}
@@ -634,7 +673,11 @@ export default function ClassReportList() {
                   </Box>
                 ) : (
                   <>
-                    <TableContainer>
+                    <TableContainer sx={{
+                      overflowX: "auto",
+                      WebkitOverflowScrolling: "touch",
+                      maxWidth: "100vw"
+                    }}>
                       <Table sx={{ minWidth: 650 }}>
                         <TableHead>
                           <TableRow>
@@ -770,6 +813,27 @@ export default function ClassReportList() {
                                         <TableCell>
                                           <Chip
                                             icon={
+                                              evaluation?.lessonEvaluation ? (
+                                                <CheckCircleIcon sx={{ color: "#651FFF" }} />
+                                              ) : (
+                                                <CancelIcon sx={{ color: "#FF1744" }} />
+                                              )
+                                            }
+                                            label={evaluation?.lessonEvaluation || "Not Done"}
+                                            size="small"
+                                            sx={{
+                                              fontWeight: 500,
+                                              color: evaluation?.lessonEvaluation ? "#651FFF" : "#FF1744",
+                                              bgcolor: evaluation?.lessonEvaluation ? "#EDE7F6" : "#FFEBEE",
+                                              border: `1px solid ${evaluation?.lessonEvaluation ? "#651FFF" : "#FF1744"}`,
+                                            }}
+                                          />
+                                        </TableCell>
+
+                                        
+                                        <TableCell>
+                                          <Chip
+                                            icon={
                                               evaluation?.handwriting ? (
                                                 <DrawIcon sx={{ color: "#00BFA6" }} />
                                               ) : (
@@ -787,25 +851,7 @@ export default function ClassReportList() {
                                           />
                                         </TableCell>
 
-                                        <TableCell>
-                                          <Chip
-                                            icon={
-                                              evaluation?.lessonEvaluation ? (
-                                                <CheckCircleIcon sx={{ color: "#651FFF" }} />
-                                              ) : (
-                                                <CancelIcon sx={{ color: "#FF1744" }} />
-                                              )
-                                            }
-                                            label={evaluation?.lessonEvaluation || "Not Done"}
-                                            size="small"
-                                            sx={{
-                                              fontWeight: 500,
-                                              color: evaluation?.lessonEvaluation ? "#651FFF" : "#FF1744",
-                                              bgcolor: evaluation?.lessonEvaluation ? "#EDE7F6" : "#FFEBEE",
-                                              border: `1px solid ${evaluation?.lessonEvaluation ? "#651FFF" : "#FF1744"}`,
-                                            }}
-                                          />
-                                        </TableCell>
+                                        
 
                                         <TableCell>
                                           <Box sx={{ display: "flex", justifyContent: "flex-end" }}>

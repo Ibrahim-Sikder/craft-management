@@ -19,4 +19,5 @@ const UserFormWrapper = () => {
   return <ClassForm id={id} />;
 };
 
+
 export default Page;

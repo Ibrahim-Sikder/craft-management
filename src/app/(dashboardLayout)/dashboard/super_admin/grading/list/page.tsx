@@ -873,7 +873,11 @@ const getStatusColor = (status: string) => {
               <>
                 {/* Table View */}
                 {viewMode === "table" && (
-                  <TableContainer>
+                  <TableContainer sx={{
+            overflowX: "auto",  
+            WebkitOverflowScrolling: "touch",  
+            maxWidth: "100vw"  
+          }}>
                     <Table sx={{ minWidth: 750 }}>
                       <TableHead>
                         <TableRow>

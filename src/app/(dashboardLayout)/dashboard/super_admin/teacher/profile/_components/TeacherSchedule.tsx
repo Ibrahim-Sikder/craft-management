@@ -22,7 +22,7 @@ import {
   Fade,
 } from "@mui/material"
 import { Download, Schedule, Edit, Add, Info, Room, AccessTime } from "@mui/icons-material"
-import { teacherData } from "./TeacherOverview"
+import { teacherData } from "./TeacherProfile"
 
 
 const TeacherSchedule = () => {
@@ -90,7 +90,11 @@ const TeacherSchedule = () => {
           }
         />
         <CardContent sx={{ p: 0 }}>
-          <TableContainer>
+          <TableContainer sx={{
+            overflowX: "auto",  
+            WebkitOverflowScrolling: "touch",  
+            maxWidth: "100vw"  
+          }}>
             <Table>
               <TableHead>
                 <TableRow

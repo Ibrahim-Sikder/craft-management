@@ -23,8 +23,8 @@ import {
   TimelineConnector,
   TimelineContent
 } from '@mui/lab';
+import { teacherData } from './TeacherProfile';
 
-import { teacherData } from './TeacherOverview';
 const TeacherAchivement = () => {
     return (
         <Grid container spacing={4}>

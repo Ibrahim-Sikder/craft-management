@@ -383,7 +383,7 @@ export default function BatchListPage() {
           boxShadow: "0 4px 20px rgba(106, 27, 154, 0.4)",
         }}
       >
-        <Container maxWidth="xl">
+        <Container maxWidth="xl" sx={{p:{xs:"4px"}}}>
           <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
             <SchoolIcon sx={{ fontSize: 40, mr: 2 }} />
             <Typography variant="h4" component="h1" sx={{ fontWeight: 700 }}>
@@ -396,7 +396,7 @@ export default function BatchListPage() {
         </Container>
       </Box>
 
-      <Container maxWidth="xl">
+      <Container maxWidth="xl" sx={{p:{xs:"4px"}}}>
         {/* Search and Actions */}
         <Box
           sx={{
@@ -510,7 +510,11 @@ export default function BatchListPage() {
           )}
 
           <Fade in={fadeIn} timeout={800}>
-            <TableContainer>
+            <TableContainer sx={{
+            overflowX: "auto",  
+            WebkitOverflowScrolling: "touch",  
+            maxWidth: "100vw"  
+          }}>
               <Table>
                 <TableHead sx={{ bgcolor: "#f5f5f5" }}>
                   <TableRow>

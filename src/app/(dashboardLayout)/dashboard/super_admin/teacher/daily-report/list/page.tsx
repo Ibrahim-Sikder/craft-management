@@ -758,7 +758,11 @@ export default function DailyClassReportPage() {
                       </Box>
                     ) : (
                       <>
-                        <TableContainer>
+                        <TableContainer sx={{
+            overflowX: "auto",  
+            WebkitOverflowScrolling: "touch",  
+            maxWidth: "100vw"  
+          }}>
                           <Table sx={{ minWidth: 650 }}>
                             <TableHead>
                               <TableRow sx={{ backgroundColor: "#f8fafc" }}>

@@ -43,12 +43,11 @@ import {
   Visibility as VisibilityIcon,
   Add,
   Save,
-  Person,
 } from "@mui/icons-material"
 import CraftForm from "@/components/Forms/Form"
 import CraftDatePicker from "@/components/Forms/DatePicker"
 import CraftSelect from "@/components/Forms/Select"
-import { attendance, classHour, handWritting, lessonEvaluation, subjectName } from "@/options"
+import { classHour, handWritting, lessonEvaluation, subjectName } from "@/options"
 import CraftIntAutoComplete from "@/components/Forms/CruftAutocomplete"
 import { customTheme } from "@/data"
 import { getFromLocalStorage } from "@/utils/local.storage"
@@ -63,10 +62,10 @@ import {
 } from "@/redux/api/classReportApi"
 import { useGetAllClassesQuery } from "@/redux/api/classApi"
 import { useGetAllSubjectsQuery } from "@/redux/api/subjectApi"
-import CraftInputWithIcon from "@/components/Forms/inputWithIcon"
 import TodayLesson from "./TodayLesson"
 import TodayTask from "./TodayTask"
 import { format } from "date-fns"
+import { useGetAllTeachersQuery } from "@/redux/api/teacherApi"
 
 // Define a type for student evaluation
 type StudentEvaluation = {
@@ -83,6 +82,8 @@ export default function ClassReportForm({ id }: any) {
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(10)
   const [searchTerm, setSearchTerm] = useState("")
+  const limit = 90000000
+  const theme = customTheme
   const [filters, setFilters] = useState({
     class: "",
     batch: "",
@@ -108,12 +109,17 @@ export default function ClassReportForm({ id }: any) {
   const { data: singleClassReport, isLoading: singleClassReportLoading } = useGetSingleClassReportQuery({ id })
 
   const { data: classData } = useGetAllClassesQuery({
-    limit: rowsPerPage,
+    limit: limit,
+    page: page + 1,
+    searchTerm: searchTerm,
+  })
+  const { data: teacherData } = useGetAllTeachersQuery({
+    limit: limit,
     page: page + 1,
     searchTerm: searchTerm,
   })
   const { data: subjectData } = useGetAllSubjectsQuery({
-    limit: rowsPerPage,
+    limit: limit,
     page: page + 1,
     searchTerm: searchTerm,
   })
@@ -133,36 +139,38 @@ export default function ClassReportForm({ id }: any) {
       value: sub._id,
     }))
   }, [subjectData])
-
+  const teacherOption = useMemo(() => {
+    if (!teacherData?.data) return []
+    return teacherData?.data?.map((sub: any) => ({
+      label: sub.name,
+      value: sub._id,
+    }))
+  }, [teacherData])
   // New state for dialog controls
   const [todayLessonDialogOpen, setTodayLessonDialogOpen] = useState(false)
   const [todayTaskDialogOpen, setTodayTaskDialogOpen] = useState(false)
 
   const storedUser = JSON.parse(getFromLocalStorage("user-info") || "{}")
 
-  const theme = customTheme
-
-  // Fetch students from API
   const {
     data: studentData,
     isLoading,
     refetch,
   } = useGetAllStudentsQuery(
     {
-      limit: rowsPerPage,
+      limit: limit,
       page: page + 1,
       searchTerm: searchTerm,
       className: filters.class ? filters.class : undefined,
     },
     {
-      skip: id && isEditMode, // Skip this query when in edit mode with an ID
+      skip: id && isEditMode,
     },
   )
 
   const [createClassReport, { isLoading: isSubmitting }] = useCreateClassReportMutation()
   const [updateClassReport, { isLoading: isUpdating }] = useUpdateClassReportMutation()
 
-  // Get students from API response or use report students in edit mode
   const students = useMemo(() => {
     if (id && isEditMode) {
       return reportStudents
@@ -170,32 +178,25 @@ export default function ClassReportForm({ id }: any) {
     return studentData?.data || []
   }, [id, isEditMode, reportStudents, studentData?.data])
 
-  // Extract students from class report when editing
   useEffect(() => {
     if (id && singleClassReport?.data?.studentEvaluations) {
       setIsEditMode(true)
-
-      // Extract student data from the report
-      const studentsFromReport = singleClassReport.data.studentEvaluations.map((studentEval: any) => {
-        const student = studentEval.studentId
+      const studentsFromReport = singleClassReport.data.studentEvaluations?.map((studentEval: any) => {
+        const student = studentEval?.studentId
         return {
-          _id: student._id,
-          name: student.name,
-          studentId: student.studentId,
-          className: student.className,
-          section: student.section || "",
-          // Add other student fields as needed
+          _id: student?._id,
+          name: student?.name,
+          studentId: student?.studentId,
+          className: student?.className,
+          section: student?.section || "",
         }
       })
 
       setReportStudents(studentsFromReport)
     }
   }, [id, singleClassReport])
-
-  // Initialize student evaluations when students data is loaded or when editing
   useEffect(() => {
     if (singleClassReport?.data?.studentEvaluations?.length > 0) {
-      // Use evaluations from the report when editing
       const evaluations = singleClassReport?.data?.studentEvaluations?.map((studentEval: any) => ({
         studentId: studentEval?.studentId?._id,
         lessonEvaluation: studentEval.lessonEvaluation,
@@ -206,7 +207,6 @@ export default function ClassReportForm({ id }: any) {
       }))
       setStudentEvaluations(evaluations)
     } else if (students.length > 0 && studentEvaluations.length === 0) {
-      // Initialize new evaluations for new report
       const initialEvaluations = students.map((student: any) => ({
         studentId: student._id,
         lessonEvaluation: "পড়া শিখেছে",
@@ -224,7 +224,6 @@ export default function ClassReportForm({ id }: any) {
 
     const report = singleClassReport.data
 
-    // Set today's lesson and home task IDs
     if (report.todayLesson?._id) {
       setTodayLessonId(report.todayLesson._id)
     }
@@ -232,8 +231,6 @@ export default function ClassReportForm({ id }: any) {
     if (report.homeTask?._id) {
       setHomeTaskId(report.homeTask._id)
     }
-
-    // Set class filter for student loading
     if (report.classes?._id) {
       setFilters((prev) => ({
         ...prev,
@@ -246,44 +243,31 @@ export default function ClassReportForm({ id }: any) {
       subjects: report.subjects,
       hour: report.hour || "",
       date: report.date ? format(new Date(report.date), "yyyy-MM-dd") : "",
-      teachers: storedUser?.name || "",
+      teachers: report.teachers || "",
     }
   }, [singleClassReport])
 
   const handleSubmit = async (data: FieldValues) => {
-    let classValue = null
-    if (data.classes) {
-      if (typeof data.classes === "object" && data.classes !== null) {
-        classValue = data.classes.value || null
-      } else {
-        classValue = data.classes
-      }
-    }
-
-    let subjectValue = null
-    if (data.subjects) {
-      if (typeof data.subjects === "object" && data.subjects !== null) {
-        subjectValue = data.subjects.value || null
-      } else {
-        subjectValue = data.subjects
-      }
-    }
-
+    console.log("raw data", data)
     try {
-      if (!classValue) {
-        toast.error("শ্রেণী নির্বাচন করুন")
-        return
-      }
+      // if (!data.classes) {
+      //   toast.error("শ্রেণী নির্বাচন করুন")
+      //   return
+      // }
 
-      if (!subjectValue) {
-        toast.error("বিষয় নির্বাচন করুন")
-        return
-      }
+      // if (!data.subjects) {
+      //   toast.error("বিষয় নির্বাচন করুন")
+      //   return
+      // }
+
+      const classValue = typeof data.classes === "object" ? data.classes.label : data.classes
+      const subjectValue = typeof data.subjects === "object" ? data.subjects.label : data.subjects
+      const teacherValue = typeof data.teachers === "object" ? data.teachers.label : data.teachers
 
       const formattedData = {
-        teachers: storedUser.name,
-        subjects: data.classes.label,
-        classes: data.subjects.label,
+        teachers: teacherValue,
+        subjects: subjectValue,
+        classes: classValue,
         hour: data.hour,
         date: data.date,
 
@@ -313,7 +297,9 @@ export default function ClassReportForm({ id }: any) {
         todayLesson: todayLessonId,
         homeTask: homeTaskId,
       }
+      console.log("formated data", formattedData)
 
+      // Rest of your submit logic remains the same
       if (!id) {
         const response = await createClassReport(formattedData).unwrap()
 
@@ -384,7 +370,7 @@ export default function ClassReportForm({ id }: any) {
         lessonEvaluation: "পড়া শিখেছে",
         handwriting: "লিখেছে",
         attendance: "উপস্থিত",
-        parentSignature: false,
+        parentSignature: true,
         comments: "",
       })
     }
@@ -410,7 +396,7 @@ export default function ClassReportForm({ id }: any) {
         lessonEvaluation: "পড়া শিখেছে",
         handwriting: value,
         attendance: "উপস্থিত",
-        parentSignature: false,
+        parentSignature: true,
         comments: "",
       })
     }
@@ -436,7 +422,7 @@ export default function ClassReportForm({ id }: any) {
         lessonEvaluation: "পড়া শিখেছে",
         handwriting: value,
         attendance: value,
-        parentSignature: false,
+        parentSignature: true,
         comments: "",
       })
     }
@@ -486,7 +472,7 @@ export default function ClassReportForm({ id }: any) {
         lessonEvaluation: "পড়া শিখেছে",
         handwriting: "লিখেছে",
         attendance: "উপস্থিত",
-        parentSignature: false,
+        parentSignature: true,
         comments: value,
       })
     }
@@ -545,7 +531,7 @@ export default function ClassReportForm({ id }: any) {
         lessonEvaluation: "পড়া শিখেছে",
         handwriting: "লিখেছে",
         attendance: "উপস্থিত",
-        parentSignature: false,
+        parentSignature: true,
         comments: "",
       }
 
@@ -595,8 +581,10 @@ export default function ClassReportForm({ id }: any) {
         <>
           <ThemeProvider theme={theme}>
             <CraftForm onSubmit={handleSubmit} defaultValues={defaultValues || {}}>
-              <Box sx={{ flexGrow: 1, bgcolor: "background.default", minHeight: "100vh", borderRadius: 2 }}>
-                <Container maxWidth="xl" sx={{ mt: 0, mb: 8, borderRadius: 2 }}>
+              <Box
+                sx={{ flexGrow: 1, bgcolor: "background.default", minHeight: "100vh", borderRadius: 2, width: "100%" }}
+              >
+                <Container maxWidth={false} sx={{ mt: 0, mb: 8, borderRadius: 2, px: { xs: 2, sm: 3, md: 4, lg: 5 } }}>
                   <Fade in={true} timeout={800}>
                     <Box>
                       <Box
@@ -610,7 +598,15 @@ export default function ClassReportForm({ id }: any) {
                           paddingTop: 2,
                         }}
                       >
-                        <Typography variant="h4" component="h1" sx={{ fontWeight: 700, color: "text.primary" }}>
+                        <Typography
+                          variant="h4"
+                          component="h1"
+                          sx={{
+                            fontWeight: 700,
+                            color: "text.primary",
+                            fontSize: { xs: "1.5rem", sm: "1.75rem", md: "2rem" },
+                          }}
+                        >
                           {id ? "Edit Report" : "+ Add New Report"}
                           {isEditMode && (
                             <Typography component="span" variant="subtitle1" sx={{ ml: 2, color: "text.secondary" }}>
@@ -618,7 +614,7 @@ export default function ClassReportForm({ id }: any) {
                             </Typography>
                           )}
                         </Typography>
-                        <Box sx={{ display: "flex", gap: 2 }}>
+                        <Box sx={{ display: "flex", gap: { xs: 1, sm: 2 }, flexWrap: "wrap" }}>
                           <Button
                             variant="contained"
                             color="primary"
@@ -628,6 +624,8 @@ export default function ClassReportForm({ id }: any) {
                               bgcolor: todayLessonId ? "success.main" : "",
                               borderRadius: 2,
                               boxShadow: "0px 4px 10px rgba(99, 102, 241, 0.2)",
+                              fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                              px: { xs: 1, sm: 2 },
                             }}
                           >
                             {todayLessonId ? " আজকের পাঠে দেখুন" : "আজকের পাঠ"}
@@ -641,6 +639,8 @@ export default function ClassReportForm({ id }: any) {
                               bgcolor: homeTaskId ? "success.main" : "#3792de",
                               borderRadius: 2,
                               boxShadow: "0px 4px 10px rgba(99, 102, 241, 0.2)",
+                              fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                              px: { xs: 1, sm: 2 },
                             }}
                           >
                             {homeTaskId ? "বাড়ির কাজ দেখুন" : "বাড়ির কাজ"}
@@ -655,6 +655,8 @@ export default function ClassReportForm({ id }: any) {
                               bgcolor: "#4F0187",
                               borderRadius: 2,
                               boxShadow: "0px 4px 10px rgba(99, 102, 241, 0.2)",
+                              fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                              px: { xs: 1, sm: 2 },
                             }}
                           >
                             {isSubmitting ? "Saving..." : "Save"}
@@ -662,58 +664,60 @@ export default function ClassReportForm({ id }: any) {
                         </Box>
                       </Box>
 
-                      <Paper elevation={0} sx={{ mb: 4, overflow: "hidden" }}>
-                        <Box sx={{ p: 3, borderBottom: "1px solid rgba(0, 0, 0, 0.06)" }}>
-                          <Grid container spacing={2} alignItems="center" gap={3}>
-                            <Grid container spacing={2}>
-                              {/* Teacher Name */}
-                              <Grid item xs={12} md={4}>
-                                <CraftInputWithIcon
-                                  name="teachers"
-                                  label="শিক্ষকের নাম"
-                                  placeholder="শিক্ষকের নাম লিখুন"
-                                  defaultValue={
-                                    storedUser.role === "class_teacher" || storedUser.role === "teacher"
-                                      ? storedUser?.name
-                                      : ""
-                                  }
-                                  required
-                                  fullWidth
-                                  InputProps={{
-                                    startAdornment: <Person sx={{ color: "primary.main", mr: 1 }} />,
-                                  }}
-                                />
-                              </Grid>
+                      <Paper elevation={0} sx={{ mb: 4, overflow: "hidden", width: "100%" }}>
+                        <Box sx={{ p: { xs: 1, sm: 1, md: 2, lg: 3 }, borderBottom: "1px solid rgba(0, 0, 0, 0.06)" }}>
+                          <Grid container spacing={2} alignItems="center">
+                            {/* Teacher Name */}
+                            <Grid item xs={12} sm={6} md={3} lg={3}>
+                              <CraftIntAutoComplete
+                                name="teachers"
+                                placeholder="শিক্ষকের নাম লিখুন"
+                                label="শিক্ষকের নাম"
+                                fullWidth
+                                freeSolo
+                                multiple={false}
+                                options={teacherOption}
+                              />
+                            </Grid>
 
-                              <Grid item xs={12} md={2}>
-                                <CraftIntAutoComplete
-                                  name="classes"
-                                  label="শ্রেণীর নাম লিখুন"
-                                  fullWidth
-                                  freeSolo
-                                  multiple={false}
-                                  options={classOption}
-                                  onChange={handleClassChange}
-                                  disabled={id ? true : false}
-                                />
-                              </Grid>
-                              <Grid item xs={12} md={3}>
-                                <CraftIntAutoComplete
-                                  name="subjects"
-                                  label="বিষয়ের নাম লিখুন"
-                                  fullWidth
-                                  freeSolo
-                                  multiple={false}
-                                  options={subjectOption}
-                                />
-                              </Grid>
-                              <Grid item xs={12} md={1}>
-                                <CraftSelect name="hour" label="ঘন্টা" items={classHour} sx={{ minWidth: 100 }} />
-                              </Grid>
-                              {/* Date */}
-                              <Grid item xs={12} md={2}>
-                                <CraftDatePicker name="date" label="তারিখ" />
-                              </Grid>
+                            {/* Class Name */}
+                            <Grid item xs={12} sm={6} md={2} lg={3}>
+                              <CraftIntAutoComplete
+                                name="classes"
+                                label="শ্রেণীর নাম লিখুন"
+                                fullWidth
+                                freeSolo
+                                multiple={false}
+                                options={classOption}
+                                onChange={handleClassChange}
+                              />
+                            </Grid>
+
+                            {/* Subject Name */}
+                            <Grid item xs={12} sm={6} md={3} lg={3}>
+                              <CraftIntAutoComplete
+                                name="subjects"
+                                label="বিষয়ের নাম লিখুন"
+                                fullWidth
+                                freeSolo
+                                multiple={false}
+                                options={subjectOption}
+                              />
+                            </Grid>
+
+                            {/* Hour */}
+                            <Grid item xs={6} sm={6} md={2} lg={1.5}>
+                              <CraftSelect
+                                name="hour"
+                                label="ঘন্টা"
+                                items={classHour}
+                                sx={{ minWidth: { xs: 100, sm: 120, md: 130 } }}
+                              />
+                            </Grid>
+
+                            {/* Date */}
+                            <Grid item xs={6} sm={6} md={2} lg={1.5}>
+                              <CraftDatePicker name="date" label="তারিখ" />
                             </Grid>
                           </Grid>
                         </Box>
@@ -736,19 +740,44 @@ export default function ClassReportForm({ id }: any) {
                           </Box>
                         ) : (
                           <>
-                            <TableContainer>
-                              <Table sx={{ minWidth: 650 }}>
+                            <TableContainer
+                              sx={{
+                                overflowX: "auto",
+                                WebkitOverflowScrolling: "touch",
+                                width: "100%",
+                                "&::-webkit-scrollbar": {
+                                  height: "8px",
+                                },
+                                "&::-webkit-scrollbar-thumb": {
+                                  backgroundColor: "rgba(0,0,0,0.2)",
+                                  borderRadius: "4px",
+                                },
+                              }}
+                            >
+                              <Table sx={{ width: "100%", tableLayout: "fixed" }}>
                                 <TableHead>
                                   <TableRow>
-                                    <TableCell>ছাত্রের নাম</TableCell>
-                                    <TableCell>পাঠ মূল্যায়ন</TableCell>
-                                    <TableCell>হাতের লিখা</TableCell>
-                                    {storedUser.role === "class_teacher" && <TableCell>উপস্থিতি</TableCell>}
-
-                                    {storedUser.role === "class_teacher" && (
-                                      <TableCell align="center">অভিভাবকের স্বাক্ষর</TableCell>
-                                    )}
-                                    <TableCell align="center">মন্তব্য</TableCell>
+                                    <TableCell width="20%">ছাত্রের নাম</TableCell>
+                                    <TableCell align="center" width="10%">
+                                      উপস্থিতি
+                                    </TableCell>
+                                    <TableCell align="center">
+                                      পাঠ মূল্যায়ন
+                                      <Checkbox color="primary" />
+                                    </TableCell>
+                                    {/* <TableCell align="center" width="20%">
+                                      পাঠ মূল্যায়ন
+                                    </TableCell> */}
+                                    <TableCell align="center" width="20%">
+                                      হাতের লিখা
+                                      <Checkbox color="primary" />
+                                    </TableCell>
+                                    <TableCell align="center" width="10%">
+                                      অভিভাবকের স্বাক্ষর
+                                    </TableCell>
+                                    <TableCell align="center" width="20%">
+                                      মন্তব্য
+                                    </TableCell>
                                   </TableRow>
                                 </TableHead>
                                 <TableBody>
@@ -771,6 +800,7 @@ export default function ClassReportForm({ id }: any) {
                                   {students.length > 0 ? (
                                     students.map((student: any) => {
                                       const evaluation = getStudentEvaluation(student._id)
+                                      const isAbsent = evaluation.attendance !== "উপস্থিত"
                                       return (
                                         <TableRow key={student._id} sx={{ transition: "all 0.2s" }}>
                                           <TableCell component="th" scope="row">
@@ -778,12 +808,27 @@ export default function ClassReportForm({ id }: any) {
                                               {student.name}
                                             </Typography>
                                             <Typography variant="caption" color="text.secondary">
-                                              {student.studentId} • {student.className} {student.section}
+                                              {student.studentId} • {student.className}, {student.section}
                                             </Typography>
                                           </TableCell>
-
                                           <TableCell align="center">
-                                            <FormControl fullWidth sx={{ minWidth: 160 }}>
+                                            <Checkbox
+                                              color="primary"
+                                              checked={evaluation.attendance === "উপস্থিত"}
+                                              onChange={(e) =>
+                                                handleAttendanceChange(
+                                                  student._id,
+                                                  e.target.checked ? "উপস্থিত" : "অনুপস্থিত",
+                                                )
+                                              }
+                                            />
+                                          </TableCell>
+                                          <TableCell align="center">
+                                            <FormControl
+                                              fullWidth
+                                              sx={{ minWidth: { xs: 120, sm: 140, md: 160 } }}
+                                              disabled={isAbsent}
+                                            >
                                               <InputLabel id={`lesson-label-${student._id}`}>
                                                 Lesson Evaluation
                                               </InputLabel>
@@ -805,7 +850,11 @@ export default function ClassReportForm({ id }: any) {
                                           </TableCell>
 
                                           <TableCell align="center">
-                                            <FormControl fullWidth sx={{ minWidth: 160 }}>
+                                            <FormControl
+                                              fullWidth
+                                              sx={{ minWidth: { xs: 120, sm: 140, md: 160 } }}
+                                              disabled={isAbsent}
+                                            >
                                               <InputLabel id={`handwriting-label-${student._id}`}>
                                                 Handwriting
                                               </InputLabel>
@@ -823,39 +872,17 @@ export default function ClassReportForm({ id }: any) {
                                               </Select>
                                             </FormControl>
                                           </TableCell>
-                                          {storedUser.role === "class_teacher" && (
-                                            <TableCell align="center">
-                                              <FormControl fullWidth sx={{ minWidth: 160 }}>
-                                                <InputLabel id={`attendance-label-${student._id}`}>
-                                                  Attendance
-                                                </InputLabel>
-                                                <Select
-                                                  labelId={`attendance-label-${student._id}`}
-                                                  value={evaluation.attendance || "উপস্থিত"}
-                                                  label="Attendance"
-                                                  onChange={(e) => handleAttendanceChange(student._id, e.target.value)}
-                                                >
-                                                  {attendance.map((item) => (
-                                                    <MenuItem key={item} value={item}>
-                                                      {item}
-                                                    </MenuItem>
-                                                  ))}
-                                                </Select>
-                                              </FormControl>
-                                            </TableCell>
-                                          )}
 
-                                          {storedUser.role === "class_teacher" && (
-                                            <TableCell align="center">
-                                              <Checkbox
-                                                color="primary"
-                                                checked={evaluation.parentSignature}
-                                                onChange={(e) =>
-                                                  handleParentSignatureChange(student._id, e.target.checked)
-                                                }
-                                              />
-                                            </TableCell>
-                                          )}
+                                          <TableCell align="center">
+                                            <Checkbox
+                                              color="primary"
+                                              checked={evaluation.parentSignature === true}
+                                              onChange={(e) =>
+                                                handleParentSignatureChange(student._id, e.target.checked)
+                                              }
+                                              disabled={isAbsent}
+                                            />
+                                          </TableCell>
                                           <TableCell>
                                             <TextField
                                               fullWidth
@@ -865,6 +892,7 @@ export default function ClassReportForm({ id }: any) {
                                               placeholder="মন্তব্য"
                                               value={evaluation.comments || ""}
                                               onChange={(e) => handleCommentsChange(student._id, e.target.value)}
+                                              disabled={isAbsent}
                                             />
                                           </TableCell>
                                         </TableRow>
