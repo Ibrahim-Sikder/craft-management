@@ -642,7 +642,11 @@ export default function ClassReportList() {
                   </Box>
                 ) : (
                   <>
-                    <TableContainer>
+                    <TableContainer sx={{
+            overflowX: "auto",  
+            WebkitOverflowScrolling: "touch",  
+            maxWidth: "100vw"  
+          }}>
                       <Table sx={{ minWidth: 650 }}>
                         <TableHead>
                           <TableRow>

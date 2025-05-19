@@ -1094,7 +1094,7 @@ export default function FineListPage() {
           background: "linear-gradient(135deg, #f5f7ff 0%, #f5f5f5 100%)",
         }}
       >
-        <Container maxWidth="xl">
+        <Container maxWidth="xl" sx={{p:{xs:"4px"}}}>
           {/* Page header */}
           <Box sx={{ mb: 4 }}>
             <Grid container spacing={2} alignItems="center">
@@ -1380,7 +1380,11 @@ export default function FineListPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.4 }}
             >
-              <TableContainer>
+              <TableContainer sx={{
+            overflowX: "auto",  
+            WebkitOverflowScrolling: "touch",  
+            maxWidth: "100vw"  
+          }}>
                 <Table>
                   <TableHead>
                     <TableRow>
@@ -1644,7 +1648,7 @@ export default function FineListPage() {
 const LoadingState = () => {
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "#f5f5f5", py: 4 }}>
-      <Container maxWidth="xl">
+      <Container maxWidth="xl" sx={{p:{xs:"4px"}}}>
         <Box sx={{ mb: 4 }}>
           <Skeleton variant="text" width={300} height={40} />
           <Skeleton variant="text" width={500} height={24} />
@@ -1696,7 +1700,11 @@ const LoadingState = () => {
         </Box>
 
         <Card sx={{ mb: 4, overflow: "hidden" }}>
-          <TableContainer>
+          <TableContainer sx={{
+            overflowX: "auto",  
+            WebkitOverflowScrolling: "touch",  
+            maxWidth: "100vw"  
+          }}>
             <Table>
               <TableHead>
                 <TableRow>

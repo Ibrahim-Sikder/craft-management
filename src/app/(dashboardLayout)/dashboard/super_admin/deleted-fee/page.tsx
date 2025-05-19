@@ -583,7 +583,11 @@ export default function DeletedFeePage() {
         {/* Deleted Fees Table */}
         <Paper elevation={1}>
           {loading && <LinearProgress />}
-          <TableContainer>
+          <TableContainer sx={{
+            overflowX: "auto",  
+            WebkitOverflowScrolling: "touch",  
+            maxWidth: "100vw"  
+          }}>
             <Table sx={{ minWidth: 650 }}>
               <TableHead sx={{ bgcolor: "#f5f5f5" }}>
                 <TableRow>

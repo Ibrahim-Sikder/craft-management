@@ -235,7 +235,11 @@ export default function SectionsListPage() {
                 </Box>
               ) : (
                 <>
-                  <TableContainer>
+                  <TableContainer sx={{
+            overflowX: "auto",  
+            WebkitOverflowScrolling: "touch",  
+            maxWidth: "100vw"  
+          }}>
                     <Table>
                       <TableHead>
                         <TableRow>

@@ -289,7 +289,7 @@ export default function TeachersDashboard() {
   return (
     <Box sx={{ minHeight: "100vh", backgroundColor: "#f8fafc" }}>
       <GradientHeader>
-        <Container maxWidth="xl">
+        <Container maxWidth="xl" sx={{p:{xs:"4px"}}}>
           <Grid container spacing={3} alignItems="center">
             <Grid item xs={12} md={6}>
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
@@ -345,7 +345,7 @@ export default function TeachersDashboard() {
         </Container>
       </GradientHeader>
 
-      <Container maxWidth="xl">
+      <Container maxWidth="xl" sx={{p:{xs:"4px"}}}>
         <Grid container spacing={4}>
           <Grid item xs={12}>
             <Paper

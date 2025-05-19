@@ -835,7 +835,11 @@ export default function AssignFinePage() {
                         elevation={0}
                         sx={{ borderRadius: 2, overflow: "hidden", border: "1px solid", borderColor: "divider" }}
                       >
-                        <TableContainer>
+                        <TableContainer sx={{
+            overflowX: "auto",  
+            WebkitOverflowScrolling: "touch",  
+            maxWidth: "100vw"  
+          }}>
                           <Table>
                             <TableHead>
                               <TableRow>

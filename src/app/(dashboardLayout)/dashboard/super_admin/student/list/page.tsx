@@ -220,38 +220,33 @@ const StudentList = () => {
   })
 
   // Calculate statistics
-  const activeStudents = students.filter((s: any) => s.status === "Active").length
-  const inactiveStudents = students.filter((s: any) => s.status !== "Active").length
-  const maleStudents = students.filter((s: any) => s.gender === "Male").length
-  const femaleStudents = students.filter((s: any) => s.gender === "Female").length
+  // const activeStudents = students.filter((s: any) => s.status === "Active").length
+  // const inactiveStudents = students.filter((s: any) => s.status !== "Active").length
+  // const maleStudents = students.filter((s: any) => s.gender === "Male").length
+  // const femaleStudents = students.filter((s: any) => s.gender === "Female").length
 
   // Get unique classes and sections for statistics
   const classes: string[] = [...new Set(students.map((s: any) => s.className as string))] as string[]
   const sections = [...new Set(students.map((s: any) => s.section))]
 
   return (
-    <Container maxWidth="xl">
-      <Paper
-        elevation={3}
-        sx={{
-          mb: 3,
-          background: `linear-gradient(135deg, ${customColors.primary} 0%, ${customColors.accent3} 100%)`,
-          color: "white",
-          py: 3,
-          borderRadius: 2,
-          boxShadow: `0 8px 32px 0 ${alpha(customColors.primary, 0.3)}`,
+    <Container maxWidth="xl" sx={{p:{xs:"4px"}}}>
+      <div
+        className="mb-6 py-6 rounded-lg text-white"
+        style={{
+          background: "linear-gradient(135deg, #6a1b9a 0%, #283593 100%)",
         }}
       >
-        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <School sx={{ mr: 1, fontSize: 40 }} />
-          <Typography variant="h4" component="h1" sx={{ fontWeight: "bold" }}>
-            Student Management System
-          </Typography>
-        </Box>
-        <Typography variant="subtitle1" align="center" sx={{ mt: 1, opacity: 0.9 }}>
-          Comprehensive view of all students with advanced filtering and management options
-        </Typography>
-      </Paper>
+        <div className="flex items-center justify-center">
+          <School sx={{ mr: 1, fontSize: { xs: 20, sm: 12, md: 40 } }} />
+          <div className="text-lg md:text-4xl font-bold">Student Management System</div>
+        </div>
+        <div className="flex justify-center mt-2">
+          <h1 className="text-sm md:text-base">Comprehensive view of all students</h1>
+        </div>
+      </div>
+
+
 
       <Card
         sx={{
@@ -414,23 +409,26 @@ const StudentList = () => {
         )}
 
         <CardContent sx={{ p: 0 }}>
-          <TableContainer>
-            <Table sx={{ minWidth: 650 }}>
+          <TableContainer sx={{
+            overflowX: "auto",  
+            WebkitOverflowScrolling: "touch",  
+            maxWidth: "100vw"  
+          }}>
+            <Table sx={{ minWidth: { xs: 0, md: 650 } }}>
               <TableHead>
                 <TableRow
                   sx={{
                     background: `linear-gradient(90deg, ${alpha(customColors.primary, 0.05)} 0%, ${alpha(customColors.accent3, 0.1)} 100%)`,
                   }}
                 >
-                  <TableCell sx={{ fontWeight: "bold", color: customColors.primary }}>ID</TableCell>
-                  <TableCell sx={{ fontWeight: "bold", color: customColors.primary }}>Student</TableCell>
-                  <TableCell sx={{ fontWeight: "bold", color: customColors.primary }}>Class</TableCell>
-                  <TableCell sx={{ fontWeight: "bold", color: customColors.primary }}>Roll</TableCell>
-                  <TableCell sx={{ fontWeight: "bold", color: customColors.primary }}>Guardian</TableCell>
-                  <TableCell sx={{ fontWeight: "bold", color: customColors.primary }}>Contact</TableCell>
-                  <TableCell sx={{ fontWeight: "bold", color: customColors.primary }}>Type</TableCell>
-                  {/* <TableCell sx={{ fontWeight: "bold", color: customColors.primary }}>Status</TableCell> */}
-                  <TableCell sx={{ fontWeight: "bold", color: customColors.primary }}>Actions</TableCell>
+                  <TableCell sx={{ fontWeight: "bold", color: customColors.primary, width: { xs: 2 }  }}>ID</TableCell>
+                  <TableCell sx={{ fontWeight: "bold", color: customColors.primary, width: { xs: 2 }  }}>Student</TableCell>
+                  <TableCell sx={{ fontWeight: "bold", color: customColors.primary, width: { xs: 2 }  }}>Class</TableCell>
+                  <TableCell sx={{ fontWeight: "bold", color: customColors.primary, display: { xs: "none", md: "table-cell" }, width: { xs: 5 }  }}>Roll</TableCell>
+                  <TableCell sx={{ fontWeight: "bold", color: customColors.primary, display: { xs: "none", md: "table-cell" }, width: { xs: 5 }  }}>Guardian</TableCell>
+                  <TableCell sx={{ fontWeight: "bold", color: customColors.primary, display: { xs: "none", md: "table-cell" }, width: { xs: 5 }  }}>Contact</TableCell>
+                  <TableCell sx={{ fontWeight: "bold", color: customColors.primary, width: { xs: 2 }  }}>Type</TableCell>
+                  <TableCell sx={{ fontWeight: "bold", color: customColors.primary, width: { xs: 2 }  }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -452,7 +450,7 @@ const StudentList = () => {
                         },
                       }}
                     >
-                      <TableCell>
+                      <TableCell sx={{    width: { xs: 2 } }}>
                         <Chip
                           label={student.studentId}
                           size="small"
@@ -463,20 +461,20 @@ const StudentList = () => {
                           }}
                         />
                       </TableCell>
-                      <TableCell>
+                      <TableCell sx={{    }}>
                         <Box sx={{ display: "flex", alignItems: "center" }}>
                           <Avatar
                             src={student.studentPhoto}
-                            sx={{ width: 80, height: 80, border: "4px solid white" }}
+                            sx={{ width: { sm: 10, md: 80 }, height: { sm: 10, md: 80 }, border: "4px solid white" }}
                           />
                           <Box>
-                            <Typography variant="body1" sx={{ fontWeight: "medium", color: customColors.primary }}>
+                            <div className="text-sm md:text-lg">
                               {student.name}
-                            </Typography>
+                            </div>
                             <Typography
                               variant="caption"
                               color="text.secondary"
-                              sx={{ display: "flex", alignItems: "center" }}
+                              sx={{ display: { xs: "none", md: "flex" }, alignItems: "center" }}
                             >
                               <Email fontSize="small" sx={{ mr: 0.5, fontSize: 12 }} />
                               {student.email}
@@ -484,7 +482,7 @@ const StudentList = () => {
                           </Box>
                         </Box>
                       </TableCell>
-                      <TableCell>
+                      <TableCell sx={{    }}>
                         <Typography variant="body2" sx={{ fontWeight: "medium" }}>
                           {student.className}
                         </Typography>
@@ -492,7 +490,7 @@ const StudentList = () => {
                           {student.section}
                         </Typography>
                       </TableCell>
-                      <TableCell>
+                      <TableCell sx={{ display: { xs: "none", md: "table-cell" } }}>
                         <Chip
                           label={student.studentClassRoll}
                           size="small"
@@ -502,13 +500,13 @@ const StudentList = () => {
                           }}
                         />
                       </TableCell>
-                      <TableCell>
+                      <TableCell sx={{ display: { xs: "none", md: "table-cell" } }}>
                         <Typography variant="body2">{student.guardianName}</Typography>
                         <Typography variant="caption" color="text.secondary" display="block">
                           {student.relation}
                         </Typography>
                       </TableCell>
-                      <TableCell>
+                      <TableCell sx={{ display: { xs: "none", md: "table-cell" } }}>
                         <Typography variant="body2" sx={{ display: "flex", alignItems: "center" }}>
                           <Phone fontSize="small" sx={{ mr: 0.5, fontSize: 14 }} />
                           {student.mobile || "N/A"}
@@ -523,7 +521,7 @@ const StudentList = () => {
                           {student.guardianMobile}
                         </Typography>
                       </TableCell>
-                      <TableCell>
+                      <TableCell sx={{    }}>
                         <Chip
                           label={student.studentType}
                           size="small"
@@ -534,15 +532,8 @@ const StudentList = () => {
                           }}
                         />
                       </TableCell>
-                      {/* <TableCell>
-                        <Chip
-                          label={student.status}
-                          size="small"
-                          color={getStatusColor(student.status)}
-                          sx={{ fontWeight: "medium" }}
-                        />
-                      </TableCell> */}
-                      <TableCell>
+
+                      <TableCell sx={{    }}>
                         <Box sx={{ display: "flex" }}>
                           <Tooltip title="View Details">
                             <IconButton
@@ -615,210 +606,6 @@ const StudentList = () => {
           />
         </CardContent>
       </Card>
-
-      {/* <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 3, mb: 3 }}>
-        <Card
-          sx={{
-            width: { xs: "100%", md: "48%" },
-            borderRadius: 2,
-            overflow: "hidden",
-            boxShadow: `0 4px 20px 0 ${alpha(theme.palette.grey[500], 0.2)}`,
-          }}
-        >
-          <Box
-            sx={{
-              p: 2,
-              background: `linear-gradient(90deg, ${alpha(customColors.primary, 0.1)} 0%, ${alpha(customColors.accent2, 0.05)} 100%)`,
-              borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-            }}
-          >
-            <Typography variant="h6" sx={{ color: customColors.primary, fontWeight: "bold" }}>
-              Student Statistics
-            </Typography>
-          </Box>
-          <CardContent>
-            <Grid container spacing={2}>
-              <Grid item xs={6}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 2,
-                    background: `linear-gradient(135deg, ${customColors.success} 0%, ${alpha(customColors.success, 0.8)} 100%)`,
-                    color: "white",
-                    borderRadius: 2,
-                    boxShadow: `0 4px 12px 0 ${alpha(customColors.success, 0.3)}`,
-                  }}
-                >
-                  <Typography variant="h4" sx={{ fontWeight: "bold" }}>
-                    {activeStudents}
-                  </Typography>
-                  <Typography variant="body2" sx={{ display: "flex", alignItems: "center" }}>
-                    <Badge sx={{ mr: 0.5 }} /> Active Students
-                  </Typography>
-                </Paper>
-              </Grid>
-              <Grid item xs={6}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 2,
-                    background: `linear-gradient(135deg, ${customColors.error} 0%, ${alpha(customColors.error, 0.8)} 100%)`,
-                    color: "white",
-                    borderRadius: 2,
-                    boxShadow: `0 4px 12px 0 ${alpha(customColors.error, 0.3)}`,
-                  }}
-                >
-                  <Typography variant="h4" sx={{ fontWeight: "bold" }}>
-                    {inactiveStudents}
-                  </Typography>
-                  <Typography variant="body2" sx={{ display: "flex", alignItems: "center" }}>
-                    <Badge sx={{ mr: 0.5 }} /> Inactive Students
-                  </Typography>
-                </Paper>
-              </Grid>
-              <Grid item xs={6}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 2,
-                    background: `linear-gradient(135deg, ${customColors.accent3} 0%, ${alpha(customColors.accent3, 0.8)} 100%)`,
-                    color: "white",
-                    borderRadius: 2,
-                    boxShadow: `0 4px 12px 0 ${alpha(customColors.accent3, 0.3)}`,
-                  }}
-                >
-                  <Typography variant="h4" sx={{ fontWeight: "bold" }}>
-                    {maleStudents}
-                  </Typography>
-                  <Typography variant="body2" sx={{ display: "flex", alignItems: "center" }}>
-                    <Person sx={{ mr: 0.5 }} /> Male Students
-                  </Typography>
-                </Paper>
-              </Grid>
-              <Grid item xs={6}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 2,
-                    background: `linear-gradient(135deg, ${customColors.accent1} 0%, ${alpha(customColors.accent1, 0.8)} 100%)`,
-                    color: "white",
-                    borderRadius: 2,
-                    boxShadow: `0 4px 12px 0 ${alpha(customColors.accent1, 0.3)}`,
-                  }}
-                >
-                  <Typography variant="h4" sx={{ fontWeight: "bold" }}>
-                    {femaleStudents}
-                  </Typography>
-                  <Typography variant="body2" sx={{ display: "flex", alignItems: "center" }}>
-                    <Person sx={{ mr: 0.5 }} /> Female Students
-                  </Typography>
-                </Paper>
-              </Grid>
-            </Grid>
-          </CardContent>
-        </Card>
-
-        <Card
-          sx={{
-            width: { xs: "100%", md: "48%" },
-            borderRadius: 2,
-            overflow: "hidden",
-            boxShadow: `0 4px 20px 0 ${alpha(theme.palette.grey[500], 0.2)}`,
-          }}
-        >
-          <Box
-            sx={{
-              p: 2,
-              background: `linear-gradient(90deg, ${alpha(customColors.secondary, 0.1)} 0%, ${alpha(customColors.accent4, 0.05)} 100%)`,
-              borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-            }}
-          >
-            <Typography variant="h6" sx={{ color: customColors.secondary, fontWeight: "bold" }}>
-              Financial Overview
-            </Typography>
-          </Box>
-          <CardContent>
-            <Grid container spacing={2}>
-              <Grid item xs={6}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 2,
-                    background: `linear-gradient(135deg, ${customColors.accent4} 0%, ${alpha(customColors.accent4, 0.8)} 100%)`,
-                    color: "white",
-                    borderRadius: 2,
-                    boxShadow: `0 4px 12px 0 ${alpha(customColors.accent4, 0.3)}`,
-                  }}
-                >
-                  <Typography variant="h4" sx={{ fontWeight: "bold" }}>
-                    {students.reduce((sum: number, student: any) => sum + (student.monthlyFee || 0), 0)}
-                  </Typography>
-                  <Typography variant="body2" sx={{ display: "flex", alignItems: "center" }}>
-                    <CurrencyExchange sx={{ mr: 0.5 }} /> Monthly Fees
-                  </Typography>
-                </Paper>
-              </Grid>
-              <Grid item xs={6}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 2,
-                    background: `linear-gradient(135deg, ${customColors.info} 0%, ${alpha(customColors.info, 0.8)} 100%)`,
-                    color: "white",
-                    borderRadius: 2,
-                    boxShadow: `0 4px 12px 0 ${alpha(customColors.info, 0.3)}`,
-                  }}
-                >
-                  <Typography variant="h4" sx={{ fontWeight: "bold" }}>
-                    {students.reduce((sum: number, student: any) => sum + (student.admissionFee || 0), 0)}
-                  </Typography>
-                  <Typography variant="body2" sx={{ display: "flex", alignItems: "center" }}>
-                    <CurrencyExchange sx={{ mr: 0.5 }} /> Admission Fees
-                  </Typography>
-                </Paper>
-              </Grid>
-              <Grid item xs={6}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 2,
-                    background: `linear-gradient(135deg, ${customColors.warning} 0%, ${alpha(customColors.warning, 0.8)} 100%)`,
-                    color: "white",
-                    borderRadius: 2,
-                    boxShadow: `0 4px 12px 0 ${alpha(customColors.warning, 0.3)}`,
-                  }}
-                >
-                  <Typography variant="h4" sx={{ fontWeight: "bold" }}>
-                    {students.reduce((sum: number, student: any) => sum + (student.previousDues || 0), 0)}
-                  </Typography>
-                  <Typography variant="body2" sx={{ display: "flex", alignItems: "center" }}>
-                    <CurrencyExchange sx={{ mr: 0.5 }} /> Previous Dues
-                  </Typography>
-                </Paper>
-              </Grid>
-              <Grid item xs={6}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 2,
-                    background: `linear-gradient(135deg, ${customColors.accent2} 0%, ${alpha(customColors.accent2, 0.8)} 100%)`,
-                    color: "white",
-                    borderRadius: 2,
-                    boxShadow: `0 4px 12px 0 ${alpha(customColors.accent2, 0.3)}`,
-                  }}
-                >
-                  <Typography variant="h4" sx={{ fontWeight: "bold" }}>
-                    {students.reduce((sum: number, student: any) => sum + (student.sessionFee || 0), 0)}
-                  </Typography>
-                  <Typography variant="body2" sx={{ display: "flex", alignItems: "center" }}>
-                    <CurrencyExchange sx={{ mr: 0.5 }} /> Session Fees
-                  </Typography>
-                </Paper>
-              </Grid>
-            </Grid>
-          </CardContent>
-        </Card>
-      </Box> */}
     </Container>
   )
 }

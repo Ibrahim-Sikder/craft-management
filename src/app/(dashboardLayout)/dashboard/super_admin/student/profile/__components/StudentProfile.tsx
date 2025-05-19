@@ -104,7 +104,7 @@ const StudentProfile = ({ params }: PageProps) => {
 
 
     return (
-        <Container maxWidth="xl">
+        <Container maxWidth="xl" sx={{p:{xs:"4px"}}}>
             {/* Header */}
             <Paper elevation={0} sx={{ mb: 3, bgcolor: theme.palette.primary.main, color: "white", py: 2 }}>
                 <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>

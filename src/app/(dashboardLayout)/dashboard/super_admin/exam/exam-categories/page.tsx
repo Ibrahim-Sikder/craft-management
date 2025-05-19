@@ -394,7 +394,7 @@ export default function ExamCategoriesPage() {
         top: 0,
         zIndex: 10,
       }}>
-        <Container maxWidth="xl">
+        <Container maxWidth="xl" sx={{p:{xs:"4px"}}}>
           <Box sx={{
             display: "flex",
             justifyContent: "space-between",

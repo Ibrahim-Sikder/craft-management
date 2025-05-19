@@ -1077,7 +1077,7 @@ export default function DiscountAssignmentListPage() {
           background: "linear-gradient(135deg, #f0f4ff 0%, #f9fafb 100%)",
         }}
       >
-        <Container maxWidth="xl">
+        <Container maxWidth="xl" sx={{p:{xs:"4px"}}}>
           <MotionBox initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
             <Box sx={{ mb: 4 }}>
               <Grid container spacing={2} alignItems="center">
