@@ -52,9 +52,12 @@ import {
   Logout,
 } from "@mui/icons-material"
 import { useRouter } from "next/navigation"
+import { useGetAllMetaQuery } from "@/redux/api/metaApi"
 const StatCard = ({ icon, title, value, trend, trendValue, color }: any) => {
   const theme = useTheme()
   const isPositive = trend === "up"
+const {data} = useGetAllMetaQuery({})
+  console.log(data)
 
   return (
     <Card
