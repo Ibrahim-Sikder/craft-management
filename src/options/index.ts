@@ -175,7 +175,7 @@ export const teacherName = [
   
   export const sectionTypeNames = ['morning', 'evening',];
 
-  export const statusOptions = ["Active", "On Leave", "Suspended", "Terminated"]
+  export const statusOptions = ["Active", "Inactive"]
   export const mockStudents = [
     { id: "1", name: "Abir Rahman", roll: "101" },
     { id: "2", name: "Nusrat Jahan", roll: "102" },

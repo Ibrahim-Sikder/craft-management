@@ -249,22 +249,17 @@ const StudentList = () => {
   const dayCareStudents = students.filter((s: any) => s.studentType === "Day-care").length
 
   return (
-    <Container maxWidth="xl">
+    <Container maxWidth="xl" sx={{p:{xs:"4px"}}}>
       <Paper
-        elevation={3}
-        sx={{
-          mb: 3,
-          background: `linear-gradient(135deg, ${customColors.primary} 0%, ${customColors.accent3} 100%)`,
-          color: "white",
-          py: 3,
-          borderRadius: 2,
-          boxShadow: `0 8px 32px 0 ${alpha(customColors.primary, 0.3)}`,
+        className="mb-6 py-6 rounded-lg text-white"
+        style={{
+          background: "linear-gradient(135deg, #6a1b9a 0%, #283593 100%)",
         }}
       >
         <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column" }}>
           <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
             <School sx={{ mr: 1, fontSize: 40 }} />
-            <Typography variant="h4" component="h1" sx={{ fontWeight: "bold" }}>
+            <Typography variant="h4" component="h1" sx={{ fontWeight: "bold", color:'white' }}>
               Student Management System
             </Typography>
           </Box>
@@ -538,8 +533,12 @@ const StudentList = () => {
         )}
 
         <CardContent sx={{ p: 0 }}>
-          <TableContainer>
-            <Table sx={{ minWidth: 650 }}>
+          <TableContainer sx={{
+            overflowX: "auto",  
+            WebkitOverflowScrolling: "touch",  
+            maxWidth: "100vw"  
+          }}>
+            <Table sx={{ minWidth: { xs: 0, md: 650 } }}>
               <TableHead>
                 <TableRow
                   sx={{
@@ -575,7 +574,7 @@ const StudentList = () => {
                         },
                       }}
                     >
-                      <TableCell>
+                      <TableCell sx={{    width: { xs: 2 } }}>
                         <Chip
                           label={student.studentId}
                           size="small"
@@ -586,20 +585,20 @@ const StudentList = () => {
                           }}
                         />
                       </TableCell>
-                      <TableCell>
+                      <TableCell sx={{    }}>
                         <Box sx={{ display: "flex", alignItems: "center" }}>
                           <Avatar
                             src={student.studentPhoto}
-                            sx={{ width: 80, height: 80, border: "4px solid white" }}
+                            sx={{ width: { sm: 10, md: 80 }, height: { sm: 10, md: 80 }, border: "4px solid white" }}
                           />
                           <Box>
-                            <Typography variant="body1" sx={{ fontWeight: "medium", color: customColors.primary }}>
+                            <div className="text-sm md:text-lg">
                               {student.name}
-                            </Typography>
+                            </div>
                             <Typography
                               variant="caption"
                               color="text.secondary"
-                              sx={{ display: "flex", alignItems: "center" }}
+                              sx={{ display: { xs: "none", md: "flex" }, alignItems: "center" }}
                             >
                               <Email fontSize="small" sx={{ mr: 0.5, fontSize: 12 }} />
                               {student.email}
@@ -607,7 +606,7 @@ const StudentList = () => {
                           </Box>
                         </Box>
                       </TableCell>
-                      <TableCell>
+                      <TableCell sx={{    }}>
                         <Typography variant="body2" sx={{ fontWeight: "medium" }}>
                           {student.className}
                         </Typography>
@@ -615,7 +614,7 @@ const StudentList = () => {
                           {student.section}
                         </Typography>
                       </TableCell>
-                      <TableCell>
+                      <TableCell sx={{ display: { xs: "none", md: "table-cell" } }}>
                         <Chip
                           label={student.studentClassRoll}
                           size="small"
@@ -625,13 +624,13 @@ const StudentList = () => {
                           }}
                         />
                       </TableCell>
-                      <TableCell>
+                      <TableCell sx={{ display: { xs: "none", md: "table-cell" } }}>
                         <Typography variant="body2">{student.guardianName}</Typography>
                         <Typography variant="caption" color="text.secondary" display="block">
                           {student.relation}
                         </Typography>
                       </TableCell>
-                      <TableCell>
+                      <TableCell sx={{ display: { xs: "none", md: "table-cell" } }}>
                         <Typography variant="body2" sx={{ display: "flex", alignItems: "center" }}>
                           <Phone fontSize="small" sx={{ mr: 0.5, fontSize: 14 }} />
                           {student.mobile || "N/A"}
@@ -646,7 +645,7 @@ const StudentList = () => {
                           {student.guardianMobile}
                         </Typography>
                       </TableCell>
-                      <TableCell>
+                      <TableCell sx={{    }}>
                         <Chip
                           label={student.studentType}
                           size="small"

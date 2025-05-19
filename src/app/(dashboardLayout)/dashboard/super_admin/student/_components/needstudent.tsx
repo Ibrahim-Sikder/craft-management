@@ -1075,7 +1075,7 @@
 //           boxShadow: "0 4px 20px rgba(33, 150, 243, 0.4)",
 //         }}
 //       >
-//         <Container maxWidth="xl">
+//         <Container maxWidth="xl" sx={{p:{xs:"4px"}}}>
 //           <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
 //             <Person sx={{ fontSize: 40, mr: 2 }} />
 //             <Typography variant="h4" component="h1" sx={{ fontWeight: 700 }}>
@@ -1090,7 +1090,7 @@
 //         </Container>
 //       </Box>
 
-//       <Container maxWidth="xl">
+//       <Container maxWidth="xl" sx={{p:{xs:"4px"}}}>
 //         <Box sx={{ mb: 3 }}>
 //           <Link href="/dashboard/super_admin/student/list" passHref>
 //             <Button

@@ -252,7 +252,11 @@ export default function CollectFeeStatementPage() {
 
                 <Divider sx={{ mb: 3 }} />
 
-                <TableContainer>
+                <TableContainer sx={{
+            overflowX: "auto",  
+            WebkitOverflowScrolling: "touch",  
+            maxWidth: "100vw"  
+          }}>
                   <Table>
                     <TableHead>
                       <TableRow>

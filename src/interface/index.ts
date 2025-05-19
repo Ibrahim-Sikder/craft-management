@@ -4,6 +4,7 @@ export interface Teacher {
     id:number,
   _id: number
   name: string
+  teacherId:string;
   teacherPhoto: string
   department: string
   status: TeacherStatus

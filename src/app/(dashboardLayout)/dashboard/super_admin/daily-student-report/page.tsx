@@ -1046,7 +1046,11 @@ export default function DailyStudentReport() {
                       </Button>
                     )}
                   </Box>
-                  <TableContainer>
+                  <TableContainer sx={{
+            overflowX: "auto",  
+            WebkitOverflowScrolling: "touch",  
+            maxWidth: "100vw"  
+          }}>
                     <Table sx={{ minWidth: 650 }} size="small">
                       <TableHead>
                         <TableRow>
@@ -1349,7 +1353,11 @@ export default function DailyStudentReport() {
                     </Grid>
                   </Box>
 
-                  <TableContainer>
+                  <TableContainer sx={{
+            overflowX: "auto",  
+            WebkitOverflowScrolling: "touch",  
+            maxWidth: "100vw"  
+          }}>
                     <Table sx={{ minWidth: 650 }} size="small">
                       <TableHead>
                         <TableRow>
@@ -1585,7 +1593,11 @@ export default function DailyStudentReport() {
                     )}
                   </Box>
 
-                  <TableContainer>
+                  <TableContainer sx={{
+            overflowX: "auto",  
+            WebkitOverflowScrolling: "touch",  
+            maxWidth: "100vw"  
+          }}>
                     <Table sx={{ minWidth: 650 }} size="small">
                       <TableHead>
                         <TableRow>

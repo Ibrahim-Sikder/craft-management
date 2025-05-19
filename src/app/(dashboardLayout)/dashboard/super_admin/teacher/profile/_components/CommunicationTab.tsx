@@ -85,7 +85,11 @@ const CommunicationTab = () => {
               }
             />
             <CardContent sx={{ p: 0 }}>
-              <TableContainer>
+              <TableContainer sx={{
+            overflowX: "auto",  
+            WebkitOverflowScrolling: "touch",  
+            maxWidth: "100vw"  
+          }}>
                 <Table>
                   <TableHead>
                     <TableRow sx={{ 

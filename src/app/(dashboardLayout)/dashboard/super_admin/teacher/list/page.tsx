@@ -79,6 +79,7 @@ import { useRouter } from "next/navigation"
 import Swal from "sweetalert2"
 import toast from "react-hot-toast"
 
+// Define department colors for visual distinction
 const departmentColors: Record<string, string> = {
   Languages: "#3a7bd5",
   Mathematics: "#00d2ff",
@@ -91,11 +92,24 @@ const departmentColors: Record<string, string> = {
   "Not Specified": "#888888",
 }
 
+// Fallback departments to use when none is specified
+const departmentsList = [
+  "Languages",
+  "Mathematics",
+  "Science",
+  "History", 
+  "Computer Science", 
+  "Physical Education", 
+  "Art", 
+  "Music",
+  "Not Specified"
+]
+
 export default function TeachersDashboard() {
   const theme = useTheme()
   const router = useRouter()
 
-
+  // State management
   const [teachers, setTeachers] = useState<Teacher[]>([])
   const [viewMode, setViewMode] = useState<"grid" | "list" | "kanban">("grid")
   const [searchQuery, setSearchQuery] = useState("")
@@ -111,7 +125,6 @@ export default function TeachersDashboard() {
   const [rowsPerPage, setRowsPerPage] = useState(30)
   const [searchTerm, setSearchTerm] = useState("")
 
-
   const [snackbar, setSnackbar] = useState<{
     open: boolean
     message: string
@@ -122,6 +135,7 @@ export default function TeachersDashboard() {
     severity: "success",
   })
 
+  // API hooks
   const {
     data: teacherData,
     isLoading,
@@ -134,41 +148,66 @@ export default function TeachersDashboard() {
 
   const [deleteTeacher, { isLoading: isDeleting }] = useDeleteTeacherMutation()
 
-
+  // Process teacher data when it becomes available
   useEffect(() => {
-    if (teacherData && !isLoading) {
-      const formattedTeachers = teacherData?.data.map((teacher: any, index: any) => ({
-        id: index + 1,
-        _id: teacher._id,
-        name: teacher.englishName || teacher.name,
-        teacherPhoto: teacher.teacherPhoto,
-        department: teacher.professionalInfo?.department || "Not Specified",
-        status: teacher.additionalInfo?.status?.toLowerCase() === "active" ? "active" : ("inactive" as TeacherStatus),
-        email: teacher.email || "Not Available",
-        phone: "Not Available",
-        subjects: [],
-        classes: [],
-        experience: calculateExperience(teacher.professionalInfo?.joiningDate),
-        rating: "4.5",
-        performance: 85,
-        students: 120,
-        joinDate: new Date(teacher.professionalInfo?.joiningDate || teacher.createdAt).toLocaleDateString(),
-        qualifications: teacher.professionalInfo?.designation || "Teacher",
-      }))
+    if (teacherData && teacherData.data && !isLoading) {
+      const formattedTeachers = teacherData.data.map((teacher: any, index: number) => {
+        // Extract department information appropriately
+        let department = "Not Specified"
+        if (teacher.department) {
+          department = teacher.department
+        } else if (teacher.professionalInfo?.department) {
+          department = teacher.professionalInfo.department
+        }
+
+        // Use consistent naming strategy
+        const teacherName = teacher.englishName || teacher.name || "Unknown"
+        
+        // Determine status properly
+        const status = (teacher.status?.toLowerCase() === "active" || 
+                      teacher.additionalInfo?.status?.toLowerCase() === "active") 
+                      ? "Active" as TeacherStatus 
+                      : "Inactive" as TeacherStatus
+
+        // Calculate experience safely
+        const experience = calculateExperience(teacher.joiningDate || teacher.professionalInfo?.joiningDate)
+        
+        // Build the teacher object with proper data fallbacks
+        return {
+          id: index + 1,
+          _id: teacher._id,
+          name: teacherName,
+          teacherPhoto: teacher.teacherPhoto || "",
+          department: department,
+          status: status,
+          email: teacher.email || "Not Available",
+          phone: teacher.phone || "Not Available",
+          subjects: [],
+          classes: [],
+          experience: experience,
+          rating: "4.5", // Default rating
+          performance: 85, // Default performance
+          students: 120, // Default student count
+          joinDate: new Date(teacher.joiningDate || teacher.professionalInfo?.joiningDate || teacher.createdAt).toLocaleDateString(),
+          qualifications: teacher.designation || teacher.professionalInfo?.designation || "Teacher",
+          teacherId: teacher.teacherId || "",
+        }
+      })
 
       setTeachers(formattedTeachers)
     }
   }, [teacherData, isLoading])
 
-
+  // Helper function to calculate years of experience
   const calculateExperience = (joiningDate: string | undefined) => {
     if (!joiningDate) return 0
     const joinDate = new Date(joiningDate)
     const now = new Date()
-    return Math.floor((now.getTime() - joinDate.getTime()) / (365 * 24 * 60 * 60 * 1000))
+    const yearsDiff = Math.floor((now.getTime() - joinDate.getTime()) / (365 * 24 * 60 * 60 * 1000))
+    return yearsDiff >= 0 ? yearsDiff : 0 // Ensure non-negative
   }
 
-
+  // Menu handlers
   const handleTeacherMenuOpen = (event: React.MouseEvent<HTMLElement>, teacher: Teacher) => {
     setTeacherMenuAnchorEl(event.currentTarget)
     setSelectedTeacher(teacher)
@@ -186,7 +225,7 @@ export default function TeachersDashboard() {
     setAnchorEl(null)
   }
 
-
+  // Teacher action handlers
   const handleViewTeacher = (teacher: Teacher) => {
     router.push(`/dashboard/super_admin/teacher/profile/${teacher._id}`)
     handleTeacherMenuClose()
@@ -204,45 +243,45 @@ export default function TeachersDashboard() {
   }
 
   const handleDeleteTeacher = async () => {
-    if (!selectedTeacher) return;
-    handleTeacherMenuClose();
-    setDeleteConfirmOpen(false);
+    if (!selectedTeacher) return
+    handleTeacherMenuClose()
+    setDeleteConfirmOpen(false)
 
-    setTimeout(() => {
-      Swal.fire({
+    try {
+      // Use SweetAlert for confirmation
+      const result = await Swal.fire({
         title: "Are you sure?",
-        text: "You want to delete this teacher?",
+        text: `You want to delete ${selectedTeacher.name}?`,
         icon: "warning",
         showCancelButton: true,
         confirmButtonColor: "#3085d6",
         cancelButtonColor: "#d33",
         confirmButtonText: "Yes, delete it!"
-      }).then(async (result) => {
-        if (result.isConfirmed) {
-          try {
-            await deleteTeacher(selectedTeacher._id).unwrap();
+      })
 
-            Swal.fire({
-              title: "Deleted!",
-              text: `${selectedTeacher.name} has been deleted successfully.`,
-              icon: "success"
-            });
-
-
-            refetch();
-          } catch (err: any) {
-
-            Swal.fire({
-              title: "Error!",
-              text: err.data?.message || "Failed to delete teacher",
-              icon: "error"
-            });
-          }
-        }
-      });
-    }, 100);
-  };
-
+      if (result.isConfirmed) {
+        // Execute the delete API call
+        await deleteTeacher(selectedTeacher._id).unwrap()
+        
+        // Show success message
+        Swal.fire({
+          title: "Deleted!",
+          text: `${selectedTeacher.name} has been deleted successfully.`,
+          icon: "success"
+        })
+        
+        // Refresh the teacher list
+        refetch()
+      }
+    } catch (err: any) {
+      // Show error message
+      Swal.fire({
+        title: "Error!",
+        text: err.data?.message || "Failed to delete teacher",
+        icon: "error"
+      })
+    }
+  }
 
   const handleCloseSnackbar = () => {
     setSnackbar({ ...snackbar, open: false })
@@ -260,20 +299,22 @@ export default function TeachersDashboard() {
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue)
-    setFilterDepartment(newValue === 0 ? "all" : Object.keys(departmentColors)[newValue - 1])
+    setFilterDepartment(newValue === 0 ? "all" : departmentsList[newValue - 1])
   }
 
   const handleRefresh = () => {
     refetch()
   }
 
+  // Filter and sort teachers based on current settings
   const filteredTeachers = teachers
     .filter(
       (teacher) =>
         (searchQuery === "" ||
           teacher.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           teacher.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          teacher.department.toLowerCase().includes(searchQuery.toLowerCase())) &&
+          teacher.department.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          (teacher.teacherId && teacher.teacherId.toLowerCase().includes(searchQuery.toLowerCase()))) &&
         (filterDepartment === "all" || teacher.department === filterDepartment),
     )
     .sort((a, b) => {
@@ -289,7 +330,7 @@ export default function TeachersDashboard() {
   return (
     <Box sx={{ minHeight: "100vh", backgroundColor: "#f8fafc" }}>
       <GradientHeader>
-        <Container maxWidth="xl">
+        <Container maxWidth="xl" sx={{ p: { xs: "4px" } }}>
           <Grid container spacing={3} alignItems="center">
             <Grid item xs={12} md={6}>
               <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
@@ -345,7 +386,7 @@ export default function TeachersDashboard() {
         </Container>
       </GradientHeader>
 
-      <Container maxWidth="xl">
+      <Container maxWidth="xl" sx={{ p: { xs: "4px" } }}>
         <Grid container spacing={4}>
           <Grid item xs={12}>
             <Paper
@@ -361,7 +402,7 @@ export default function TeachersDashboard() {
                 <Grid item xs={12} md={6}>
                   <SearchField
                     fullWidth
-                    placeholder="Search teachers by name, email, or department..."
+                    placeholder="Search teachers by name, ID, email, or department..."
                     value={searchQuery}
                     onChange={(e: any) => {
                       setSearchQuery(e.target.value)
@@ -508,7 +549,7 @@ export default function TeachersDashboard() {
                 }}
               >
                 <Tab label="All Departments" />
-                {Object.keys(departmentColors).map((dept, index) => (
+                {departmentsList.map((dept, index) => (
                   <Tab
                     key={dept}
                     label={
@@ -533,7 +574,7 @@ export default function TeachersDashboard() {
           <Grid item xs={12}>
             {isLoading ? (
               <LinearProgress />
-            ) : (
+            ) : filteredTeachers.length > 0 ? (
               <Grid container spacing={3}>
                 {filteredTeachers.map((teacher, index) => (
                   <Grid item xs={12} sm={6} md={4} lg={3} key={teacher.id}>
@@ -548,7 +589,7 @@ export default function TeachersDashboard() {
                             component="div"
                             sx={{
                               height: 100,
-                              backgroundColor: departmentColors[teacher.department],
+                              backgroundColor: departmentColors[teacher.department] || departmentColors["Not Specified"],
                               position: "relative",
                             }}
                           />
@@ -570,13 +611,17 @@ export default function TeachersDashboard() {
                                 <Avatar
                                   src={teacher.teacherPhoto}
                                   sx={{ width: 80, height: 80, border: "4px solid white" }}
-                                />
+                                >
+                                  {teacher.name.charAt(0)}
+                                </Avatar>
                               </StyledBadge>
                             ) : (
                               <Avatar
                                 src={teacher.teacherPhoto}
                                 sx={{ width: 80, height: 80, border: "4px solid white" }}
-                              />
+                              >
+                                {teacher.name.charAt(0)}
+                              </Avatar>
                             )}
                           </Box>
                         </Box>
@@ -585,12 +630,15 @@ export default function TeachersDashboard() {
                             <Typography variant="h6" fontWeight={600} gutterBottom>
                               {teacher.name}
                             </Typography>
+                            <Typography variant="body2" color="text.secondary" gutterBottom>
+                              ID: {teacher.teacherId}
+                            </Typography>
                             <DepartmentChip
                               label={teacher.department}
                               size="small"
                               sx={{
-                                backgroundColor: alpha(departmentColors[teacher.department], 0.1),
-                                color: departmentColors[teacher.department],
+                                backgroundColor: alpha(departmentColors[teacher.department] || departmentColors["Not Specified"], 0.1),
+                                color: departmentColors[teacher.department] || departmentColors["Not Specified"],
                               }}
                             />
                           </Box>
@@ -608,10 +656,16 @@ export default function TeachersDashboard() {
                                 {teacher.experience} years experience
                               </Typography>
                             </Box>
+                            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                              <MailIcon fontSize="small" sx={{ color: "text.secondary", mr: 1 }} />
+                              <Typography variant="body2" color="text.secondary" noWrap>
+                                {teacher.email}
+                              </Typography>
+                            </Box>
                             <Box sx={{ display: "flex", alignItems: "center" }}>
-                              <GroupIcon fontSize="small" sx={{ color: "text.secondary", mr: 1 }} />
+                              <PhoneIcon fontSize="small" sx={{ color: "text.secondary", mr: 1 }} />
                               <Typography variant="body2" color="text.secondary">
-                                {teacher.students} students
+                                {teacher.phone}
                               </Typography>
                             </Box>
                           </Box>
@@ -626,21 +680,6 @@ export default function TeachersDashboard() {
                                 {teacher.performance}%
                               </Typography>
                             </Box>
-                          </Box>
-
-                          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mb: 2 }}>
-                            {teacher.subjects.map((subject) => (
-                              <Chip
-                                key={subject}
-                                label={subject}
-                                size="small"
-                                sx={{
-                                  bgcolor: alpha(theme.palette.primary.main, 0.1),
-                                  color: theme.palette.primary.main,
-                                  fontSize: "0.7rem",
-                                }}
-                              />
-                            ))}
                           </Box>
                         </CardContent>
                         <Divider />
@@ -688,13 +727,19 @@ export default function TeachersDashboard() {
                   </Grid>
                 ))}
               </Grid>
+            ) : (
+              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
+                <Typography variant="h6" color="text.secondary">
+                  No teachers found matching your search criteria
+                </Typography>
+              </Box>
             )}
           </Grid>
         </Grid>
       </Container>
 
       {/* Teacher Action Menu */}
-      <Menu sx={{ zIndex: '0px' }} anchorEl={teacherMenuAnchorEl} open={Boolean(teacherMenuAnchorEl)} onClose={handleTeacherMenuClose}>
+      <Menu anchorEl={teacherMenuAnchorEl} open={Boolean(teacherMenuAnchorEl)} onClose={handleTeacherMenuClose}>
         <MenuItem onClick={() => selectedTeacher && handleViewTeacher(selectedTeacher)}>
           <Visibility fontSize="small" sx={{ mr: 1 }} />
           View Profile
@@ -705,7 +750,7 @@ export default function TeachersDashboard() {
         </MenuItem>
         <Divider />
         <MenuItem
-          onClick={() => handleDeleteTeacher()}
+          onClick={() => selectedTeacher && handleDeleteConfirm(selectedTeacher)}
           sx={{ color: theme.palette.error.main }}
         >
           <Delete fontSize="small" sx={{ mr: 1 }} />
@@ -713,7 +758,24 @@ export default function TeachersDashboard() {
         </MenuItem>
       </Menu>
 
-     
+      {/* Confirm Delete Dialog */}
+      <Dialog
+        open={deleteConfirmOpen}
+        onClose={() => setDeleteConfirmOpen(false)}
+      >
+        <DialogTitle>Delete Teacher</DialogTitle>
+        <DialogContent>
+          <DialogContentText>
+            Are you sure you want to delete {selectedTeacher?.name}? This action cannot be undone.
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setDeleteConfirmOpen(false)}>Cancel</Button>
+          <Button onClick={handleDeleteTeacher} color="error" variant="contained">
+            Delete
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Notification Snackbar */}
       <Snackbar

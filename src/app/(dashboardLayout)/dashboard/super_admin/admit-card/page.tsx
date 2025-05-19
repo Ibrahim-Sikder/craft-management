@@ -352,7 +352,11 @@ export default function AdmitCardPage() {
                 </Button>
               </Box>
             </Box>
-            <TableContainer>
+            <TableContainer sx={{
+                        overflowX: "auto",  
+                        WebkitOverflowScrolling: "touch",  
+                        maxWidth: "100vw"  
+                      }}>
               <Table sx={{ minWidth: 650 }}>
                 <TableHead>
                   <TableRow sx={{ bgcolor: alpha(muiTheme.palette.primary.main, 0.03) }}>

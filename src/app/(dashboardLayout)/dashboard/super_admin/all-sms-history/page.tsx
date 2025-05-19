@@ -507,7 +507,11 @@ export default function SmsHistoryPage() {
 
         {/* SMS Table */}
         <Paper elevation={1}>
-          <TableContainer>
+          <TableContainer sx={{
+            overflowX: "auto",  
+            WebkitOverflowScrolling: "touch",  
+            maxWidth: "100vw"  
+          }}>
             <Table sx={{ minWidth: 650 }}>
               <TableHead sx={{ bgcolor: "#f5f5f5" }}>
                 <TableRow>
