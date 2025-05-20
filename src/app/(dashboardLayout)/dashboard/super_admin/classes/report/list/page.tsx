@@ -78,6 +78,7 @@ type Filters = {
   teachers: string
   date: string
   hour: string
+  lessonEvaluation: string
 }
 // import type { Filters } from "@/interface"
 
@@ -92,8 +93,9 @@ export default function ClassReportList() {
     teachers: "",
     date: "",
     hour: "",
+    lessonEvaluation: "",
   })
-  console.log("Current filters:", filters)
+
   const [orderBy, setOrderBy] = useState<string>("createdAt")
   const [order, setOrder] = useState<"asc" | "desc">("desc")
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
@@ -120,12 +122,14 @@ export default function ClassReportList() {
       teacher: filters.teachers,
       date: filters.date,
       hour: filters.hour,
+      lessonEvaluation: filters.lessonEvaluation,
     },
     {
       refetchOnMountOrArgChange: true,
     },
   )
 
+  console.log(classReport)
   const { data: classData } = useGetAllClassesQuery({
     limit: 100,
     page: 1,
@@ -185,6 +189,9 @@ export default function ClassReportList() {
 
   // Hour options
   const hourOptions = ["১ম", "২য়", "৩য়", "৪র্থ", "৫ম", "৬ষ্ঠ", "৭ম", "৮ম"]
+
+  // Lesson Evaluation options
+  const lessonEvaluationOptions = ["পড়া শিখেছে", "আংশিক শিখেছে", "পড়া শিখেনি", "অনুপস্থিত"]
 
   // Handle refresh
   const handleRefresh = () => {
@@ -273,6 +280,7 @@ export default function ClassReportList() {
       teachers: "",
       date: "",
       hour: "",
+      lessonEvaluation: "",
     })
     setSearchTerm("")
   }
@@ -536,7 +544,7 @@ export default function ClassReportList() {
                     </Card>
                   </Grid>
 
-                  {/* Lesson Filter */}
+                  {/* পাঠ মূল্যায়ন	 Filter */}
                   <Grid item xs={12} sm={6} md={2}>
                     <Card variant="outlined" sx={{ borderRadius: 2 }}>
                       <CardContent>
@@ -547,18 +555,18 @@ export default function ClassReportList() {
                           </Typography>
                         </Box>
                         <FormControl fullWidth size="small">
-                          <InputLabel id="hour-filter-label">Select Hour</InputLabel>
+                          <InputLabel id="lesson-evaluation-filter-label">Select Option</InputLabel>
                           <Select
-                            labelId="hour-filter-label"
-                            id="hour-filter"
-                            value={filters.hour}
-                            label="Select Hour"
-                            onChange={(e: SelectChangeEvent) => handleFilterChange("hour", e.target.value)}
+                            labelId="lesson-evaluation-filter-label"
+                            id="lesson-evaluation-filter"
+                            value={filters.lessonEvaluation}
+                            label="Select Option"
+                            onChange={(e: SelectChangeEvent) => handleFilterChange("lessonEvaluation", e.target.value)}
                           >
-                            <MenuItem value="">All Hours</MenuItem>
-                            {hourOptions.map((hour) => (
-                              <MenuItem key={hour} value={hour}>
-                                {hour}
+                            <MenuItem value="">All Options</MenuItem>
+                            {lessonEvaluationOptions.map((option) => (
+                              <MenuItem key={option} value={option}>
+                                {option}
                               </MenuItem>
                             ))}
                           </Select>
@@ -673,14 +681,28 @@ export default function ClassReportList() {
                   </Box>
                 ) : (
                   <>
-                    <TableContainer sx={{
-                      overflowX: "auto",
-                      WebkitOverflowScrolling: "touch",
-                      maxWidth: "100vw"
-                    }}>
-                      <Table sx={{ minWidth: 650 }}>
+                    <TableContainer
+                      sx={{
+                        overflowX: "auto",
+                        WebkitOverflowScrolling: "touch",
+                        maxWidth: "100%",
+                        borderRadius: 2,
+                        boxShadow: "0 2px 12px rgba(0, 0, 0, 0.05)",
+                      }}
+                    >
+                      <Table sx={{ minWidth: 650, borderCollapse: "separate", borderSpacing: 0 }}>
                         <TableHead>
-                          <TableRow>
+                          <TableRow
+                            sx={{
+                              backgroundColor: alpha(theme.palette.primary.main, 0.05),
+                              "& th": {
+                                fontWeight: 600,
+                                color: theme.palette.primary.main,
+                                borderBottom: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                                py: 2,
+                              },
+                            }}
+                          >
                             <TableCell>
                               <Box
                                 sx={{
@@ -704,7 +726,7 @@ export default function ClassReportList() {
                                 )}
                               </Box>
                             </TableCell>
-                            <TableCell>Roll</TableCell>
+                            {/* <TableCell>Roll</TableCell> */}
                             <TableCell>Student Name</TableCell>
                             <TableCell>
                               <Box
@@ -731,11 +753,12 @@ export default function ClassReportList() {
                             </TableCell>
 
                             <TableCell>Subject</TableCell>
+                            <TableCell>Teacher</TableCell>
                             <TableCell>Hour</TableCell>
                             <TableCell>Attendance</TableCell>
                             <TableCell>Lesson</TableCell>
                             <TableCell>Homework</TableCell>
-
+                            <TableCell>Task Status</TableCell>
                             <TableCell>Actions</TableCell>
                           </TableRow>
                         </TableHead>
@@ -762,30 +785,83 @@ export default function ClassReportList() {
                                           "&:hover": {
                                             bgcolor: alpha(theme.palette.primary.main, 0.05),
                                           },
+                                          borderBottom: `1px solid ${alpha(theme.palette.divider, 0.7)}`,
+                                          "&:last-child": {
+                                            "& td": {
+                                              borderBottom: 0,
+                                            },
+                                          },
                                         }}
                                         onClick={() => handleToggleExpand(report._id)}
                                       >
-                                        <TableCell>{report.date ? formatDate(report.date) : "N/A"}</TableCell>
-                                        <TableCell>{student?.studentClassRoll || "Not"}</TableCell>
-                                        <TableCell>{student?.name || "Note"}</TableCell>
-                                        <TableCell>
-                                          <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                                            {report.classes}
+                                        <TableCell sx={{ py: 1.5 }}>
+                                          <Typography variant="body2" fontWeight={500}>
+                                            {report.date ? formatDate(report.date) : "N/A"}
                                           </Typography>
                                         </TableCell>
-                                        <TableCell>
+                                        {/* <TableCell sx={{ py: 1.5 }}>
+                                          <Typography variant="body2">
+                                            {student?.studentClassRoll || "Not available"}
+                                          </Typography>
+                                        </TableCell> */}
+                                        <TableCell sx={{ py: 1.5 }}>
+                                          <Typography
+                                            variant="body2"
+                                            fontWeight={500}
+                                            sx={{ color: theme.palette.text.primary }}
+                                          >
+                                            {student?.name || "Not available"}
+                                          </Typography>
+                                        </TableCell>
+                                        <TableCell sx={{ py: 1.5 }}>
+                                          <Box
+                                            sx={{
+                                              display: "inline-flex",
+                                              bgcolor: alpha(theme.palette.primary.main, 0.08),
+                                              color: theme.palette.primary.main,
+                                              px: 1.5,
+                                              py: 0.5,
+                                              borderRadius: 1,
+                                              fontWeight: 600,
+                                              fontSize: "0.8125rem",
+                                            }}
+                                          >
+                                            {report.classes}
+                                          </Box>
+                                        </TableCell>
+                                        <TableCell sx={{ py: 1.5 }}>
                                           <Chip
                                             label={report?.subjects}
                                             size="small"
                                             sx={{
-                                              bgcolor: "rgba(99, 102, 241, 0.08)",
-                                              color: "primary.main",
+                                              bgcolor: alpha(theme.palette.secondary.main, 0.08),
+                                              color: theme.palette.secondary.main,
                                               fontWeight: 500,
+                                              borderRadius: 1,
+                                              "& .MuiChip-label": { px: 1 },
                                             }}
                                           />
                                         </TableCell>
-                                        <TableCell>
-                                          <Typography variant="body2">{report.hour || "N/A"}</Typography>
+                                        <TableCell sx={{ py: 1.5 }}>
+                                          <Typography variant="body2" fontWeight={500}>
+                                            {report?.teachers || "Not assigned"}
+                                          </Typography>
+                                        </TableCell>
+                                        <TableCell sx={{ py: 1.5 }}>
+                                          <Box
+                                            sx={{
+                                              display: "inline-flex",
+                                              bgcolor: alpha(theme.palette.info.main, 0.08),
+                                              color: theme.palette.info.main,
+                                              px: 1.5,
+                                              py: 0.5,
+                                              borderRadius: 1,
+                                              fontWeight: 500,
+                                              fontSize: "0.8125rem",
+                                            }}
+                                          >
+                                            {report.hour || "N/A"}
+                                          </Box>
                                         </TableCell>
                                         <TableCell>
                                           <Chip
@@ -830,7 +906,6 @@ export default function ClassReportList() {
                                           />
                                         </TableCell>
 
-                                        
                                         <TableCell>
                                           <Chip
                                             icon={
@@ -850,8 +925,34 @@ export default function ClassReportList() {
                                             }}
                                           />
                                         </TableCell>
+                                        <TableCell>
+                                          {report.noTaskForClass ? (
+                                            <Chip
+                                              icon={<BlockIcon sx={{ color: "#FF9800" }} />}
+                                              label="No Task Assigned"
+                                              size="small"
+                                              sx={{
+                                                fontWeight: 500,
+                                                color: "#FF9800",
+                                                bgcolor: "#FFF3E0",
+                                                border: "1px solid #FF9800",
+                                              }}
+                                            />
+                                          ) : (
+                                            <Chip
+                                              icon={<CheckCircleIcon sx={{ color: "#4CAF50" }} />}
+                                              label="Tasks Assigned"
+                                              size="small"
+                                              sx={{
+                                                fontWeight: 500,
+                                                color: "#4CAF50",
+                                                bgcolor: "#E8F5E9",
+                                                border: "1px solid #4CAF50",
+                                              }}
+                                            />
+                                          )}
 
-                                        
+                                        </TableCell>
 
                                         <TableCell>
                                           <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
@@ -866,7 +967,10 @@ export default function ClassReportList() {
                                                       mr: 1,
                                                       "&:hover": {
                                                         bgcolor: alpha(theme.palette.info.main, 0.2),
+                                                        transform: "translateY(-2px)",
+                                                        boxShadow: `0 4px 8px ${alpha(theme.palette.info.main, 0.2)}`,
                                                       },
+                                                      transition: "all 0.2s",
                                                     }}
                                                     onClick={(e) => handleOpenDetailsModal(e, report)}
                                                   >
@@ -884,7 +988,10 @@ export default function ClassReportList() {
                                                       mr: 1,
                                                       "&:hover": {
                                                         bgcolor: alpha(theme.palette.warning.main, 0.2),
+                                                        transform: "translateY(-2px)",
+                                                        boxShadow: `0 4px 8px ${alpha(theme.palette.warning.main, 0.2)}`,
                                                       },
+                                                      transition: "all 0.2s",
                                                     }}
                                                     onClick={(e) => e.stopPropagation()}
                                                   >
@@ -894,7 +1001,7 @@ export default function ClassReportList() {
                                               </>
                                             )}
 
-                                            <Tooltip title="Delete Subject">
+                                            <Tooltip title="Delete Report">
                                               <IconButton
                                                 size="small"
                                                 sx={{
@@ -902,7 +1009,10 @@ export default function ClassReportList() {
                                                   bgcolor: alpha(theme.palette.error.main, 0.1),
                                                   "&:hover": {
                                                     bgcolor: alpha(theme.palette.error.main, 0.2),
+                                                    transform: "translateY(-2px)",
+                                                    boxShadow: `0 4px 8px ${alpha(theme.palette.error.main, 0.2)}`,
                                                   },
+                                                  transition: "all 0.2s",
                                                 }}
                                                 onClick={(e) => handleDeleteClick(e, report)}
                                               >
@@ -919,15 +1029,42 @@ export default function ClassReportList() {
                             })
                           ) : (
                             <TableRow>
-                              <TableCell colSpan={8} align="center" sx={{ py: 8 }}>
-                                <Box sx={{ textAlign: "center" }}>
-                                  <SearchIcon sx={{ fontSize: 48, color: "text.disabled", mb: 2 }} />
-                                  <Typography variant="h6" gutterBottom>
+                              <TableCell colSpan={11} align="center" sx={{ py: 8 }}>
+                                <Box
+                                  sx={{
+                                    textAlign: "center",
+                                    p: 4,
+                                    borderRadius: 2,
+                                    bgcolor: alpha(theme.palette.primary.main, 0.03),
+                                    border: `1px dashed ${alpha(theme.palette.primary.main, 0.2)}`,
+                                  }}
+                                >
+                                  <SearchIcon
+                                    sx={{ fontSize: 64, color: alpha(theme.palette.primary.main, 0.3), mb: 2 }}
+                                  />
+                                  <Typography
+                                    variant="h6"
+                                    gutterBottom
+                                    sx={{ fontWeight: 600, color: theme.palette.primary.main }}
+                                  >
                                     No class reports found
                                   </Typography>
-                                  <Typography variant="body2" color="text.secondary">
+                                  <Typography
+                                    variant="body2"
+                                    color="text.secondary"
+                                    sx={{ maxWidth: 400, mx: "auto", mb: 2 }}
+                                  >
                                     Try adjusting your search or filter to find what you&apos;re looking for.
                                   </Typography>
+                                  <Button
+                                    variant="outlined"
+                                    color="primary"
+                                    onClick={handleClearFilters}
+                                    startIcon={<RefreshIcon />}
+                                    sx={{ mt: 1 }}
+                                  >
+                                    Clear Filters
+                                  </Button>
                                 </Box>
                               </TableCell>
                             </TableRow>
@@ -944,7 +1081,13 @@ export default function ClassReportList() {
                       onPageChange={handleChangePage}
                       onRowsPerPageChange={handleChangeRowsPerPage}
                       sx={{
-                        borderTop: "1px solid rgba(0, 0, 0, 0.06)",
+                        borderTop: `1px solid ${alpha(theme.palette.divider, 0.7)}`,
+                        "& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows": {
+                          fontWeight: 500,
+                        },
+                        "& .MuiTablePagination-select": {
+                          borderRadius: 1,
+                        },
                       }}
                     />
                   </>
@@ -1046,6 +1189,63 @@ export default function ClassReportList() {
                     <Typography variant="body1" fontWeight={500}>
                       {selectedReportDetails.hour || "N/A"}
                     </Typography>
+                  </Grid>
+                  <Grid item xs={12} sm={6} md={3}>
+                    <Typography variant="subtitle2" color="text.secondary">
+                      Teacher
+                    </Typography>
+                    <Typography variant="body1" fontWeight={500}>
+                      {selectedReportDetails.teachers || "Not assigned"}
+                    </Typography>
+                  </Grid>
+                </Grid>
+              </Box>
+
+              <Box sx={{ mt: 2, mb: 2 }}>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} sm={6}>
+                    <Typography variant="subtitle2" color="text.secondary">
+                      Task Status
+                    </Typography>
+                    <Box sx={{ mt: 1 }}>
+                      {selectedReportDetails.noTaskForClass ? (
+                        <Chip
+                          icon={<BlockIcon sx={{ color: "#FF9800" }} />}
+                          label="No Task Assigned"
+                          size="small"
+                          sx={{
+                            fontWeight: 500,
+                            color: "#FF9800",
+                            bgcolor: "#FFF3E0",
+                            border: "1px solid #FF9800",
+                          }}
+                        />
+                      ) : selectedReportDetails.noHomeworkForClass ? (
+                        <Chip
+                          icon={<BlockIcon sx={{ color: "#2196F3" }} />}
+                          label="No Homework"
+                          size="small"
+                          sx={{
+                            fontWeight: 500,
+                            color: "#2196F3",
+                            bgcolor: "#E3F2FD",
+                            border: "1px solid #2196F3",
+                          }}
+                        />
+                      ) : (
+                        <Chip
+                          icon={<CheckCircleIcon sx={{ color: "#4CAF50" }} />}
+                          label="Tasks Assigned"
+                          size="small"
+                          sx={{
+                            fontWeight: 500,
+                            color: "#4CAF50",
+                            bgcolor: "#E8F5E9",
+                            border: "1px solid #4CAF50",
+                          }}
+                        />
+                      )}
+                    </Box>
                   </Grid>
                 </Grid>
               </Box>

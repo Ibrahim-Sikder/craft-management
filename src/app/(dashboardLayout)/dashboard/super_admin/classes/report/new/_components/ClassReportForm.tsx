@@ -3,6 +3,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
+import type React from "react"
+
 import { useState, useEffect, useMemo } from "react"
 import {
   Box,
@@ -35,6 +37,9 @@ import {
   InputLabel,
   Select,
   TextField,
+  Switch,
+  FormControlLabel,
+  Tooltip,
 } from "@mui/material"
 import {
   Search as SearchIcon,
@@ -105,6 +110,8 @@ export default function ClassReportForm({ id }: any) {
   const [homeTaskId, setHomeTaskId] = useState<string | null>(null)
   const [reportStudents, setReportStudents] = useState<any[]>([])
   const [isEditMode, setIsEditMode] = useState(false)
+  const [noHomeworkForClass, setNoHomeworkForClass] = useState(false)
+  const [noTaskForClass, setNoTaskForClass] = useState(false)
 
   const { data: singleClassReport, isLoading: singleClassReportLoading } = useGetSingleClassReportQuery({ id })
 
@@ -209,15 +216,28 @@ export default function ClassReportForm({ id }: any) {
     } else if (students.length > 0 && studentEvaluations.length === 0) {
       const initialEvaluations = students.map((student: any) => ({
         studentId: student._id,
-        lessonEvaluation: "পড়া শিখেছে",
-        handwriting: "লিখেছে",
+        lessonEvaluation: noTaskForClass ? "পাঠ নেই" : "পড়া শিখেছে",
+        handwriting: noTaskForClass ? "কাজ নেই" : "লিখেছে",
         attendance: "উপস্থিত",
-        parentSignature: false,
+        parentSignature: noTaskForClass ? false : true,
         comments: "",
       }))
       setStudentEvaluations(initialEvaluations)
     }
   }, [students, singleClassReport, studentEvaluations.length])
+
+  // Set the noHomeworkForClass and noTaskForClass states from the report data
+  useEffect(() => {
+    if (singleClassReport?.data) {
+      if (singleClassReport.data.noHomeworkForClass !== undefined) {
+        setNoHomeworkForClass(!!singleClassReport.data.noHomeworkForClass)
+      }
+
+      if (singleClassReport.data.noTaskForClass !== undefined) {
+        setNoTaskForClass(!!singleClassReport.data.noTaskForClass)
+      }
+    }
+  }, [singleClassReport?.data])
 
   const defaultValues = useMemo(() => {
     if (!singleClassReport?.data) return null
@@ -247,6 +267,117 @@ export default function ClassReportForm({ id }: any) {
     }
   }, [singleClassReport])
 
+  // const handleNoTaskChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  //   const checked = event.target.checked
+  //   setNoTaskForClass(checked)
+
+  //   // Update all existing evaluations to reflect the new task status
+  //   if (studentEvaluations.length > 0) {
+  //     const updatedEvaluations = studentEvaluations.map(evaluation => ({
+  //       ...evaluation,
+  //       lessonEvaluation: checked ? "পাঠ নেই" : "পড়া শিখেছে",
+  //       handwriting: checked ? "কাজ নেই" : "লিখেছে",
+  //       parentSignature: checked ? false : evaluation.parentSignature,
+  //     }))
+  //     setStudentEvaluations(updatedEvaluations)
+  //   }
+
+  //   toast.success(checked ? "আজ কোন কাজ/হোমওয়ার্ক নেই!" : "কাজ/হোমওয়ার্ক স্ট্যাটাস আপডেট করা হয়েছে")
+  // }
+
+  // const handleSubmit = async (data: FieldValues) => {
+  //   console.log("raw data", data)
+  //   try {
+  //     // if (!data.classes) {
+  //     //   toast.error("শ্রেণী নির্বাচন করুন")
+  //     //   return
+  //     // }
+
+  //     // if (!data.subjects) {
+  //     //   toast.error("বিষয় নির্বাচন করুন")
+  //     //   return
+  //     // }
+
+  //     const classValue = typeof data.classes === "object" ? data.classes.label : data.classes
+  //     const subjectValue = typeof data.subjects === "object" ? data.subjects.label : data.subjects
+  //     const teacherValue = typeof data.teachers === "object" ? data.teachers.label : data.teachers
+
+  //     const formattedData = {
+  //       teachers: teacherValue,
+  //       subjects: subjectValue,
+  //       classes: classValue,
+  //       hour: data.hour,
+  //       date: data.date,
+  //       noHomeworkForClass: noHomeworkForClass,
+  //       noTaskForClass: noTaskForClass,
+  //       studentEvaluations: students.map((student: any) => {
+  //         const existingEval = studentEvaluations.find((evaluation) => evaluation.studentId === student._id)
+
+  //         if (noTaskForClass) {
+  //           // If no task for class, submit empty values for evaluations
+  //           return {
+  //             studentId: student._id,
+  //             lessonEvaluation: "",
+  //             handwriting: "",
+  //             attendance: existingEval?.attendance || "উপস্থিত", // Keep attendance
+  //             parentSignature: false,
+  //             comments: "",
+  //           }
+  //         } else if (existingEval) {
+  //           return {
+  //             studentId: existingEval.studentId,
+  //             lessonEvaluation: existingEval.lessonEvaluation,
+  //             handwriting: existingEval.handwriting,
+  //             attendance: existingEval.attendance,
+  //             parentSignature: existingEval.parentSignature,
+  //             comments: existingEval.comments || "",
+  //           }
+  //         } else {
+  //           return {
+  //             studentId: student._id,
+  //             lessonEvaluation: "",
+  //             handwriting: "",
+  //             attendance: "",
+  //             parentSignature: false,
+  //             comments: "",
+  //           }
+  //         }
+  //       }),
+  //       todayLesson: todayLessonId,
+  //       homeTask: noHomeworkForClass ? null : homeTaskId,
+  //     }
+  //     console.log("formated data", formattedData)
+
+  //     // Rest of your submit logic remains the same
+  //     if (!id) {
+  //       const response = await createClassReport(formattedData).unwrap()
+
+  //       if (response.success) {
+  //         setSnackbarMessage("Class report saved successfully!")
+  //         setSnackbarSeverity("success")
+  //         setSnackbarOpen(true)
+  //         toast.success("Class report saved successfully!")
+  //         router.push("/dashboard/super_admin/classes/report/list")
+  //       }
+  //     } else {
+  //       const response = await updateClassReport({ id, data: formattedData }).unwrap()
+
+  //       if (response.success) {
+  //         setSnackbarMessage("Class report update successfully!")
+  //         setSnackbarSeverity("success")
+  //         setSnackbarOpen(true)
+  //         toast.success("Class report update successfully!")
+  //         router.push("/dashboard/super_admin/classes/report/list")
+  //       }
+  //     }
+  //   } catch (error: any) {
+  //     console.error("Error saving class report:", error)
+  //     setSnackbarMessage(error?.data?.message || "Failed to save class report")
+  //     setSnackbarSeverity("error")
+  //     setSnackbarOpen(true)
+  //     toast.error(error?.data?.message || "Failed to save class report")
+  //   }
+  // }
   const handleSubmit = async (data: FieldValues) => {
     console.log("raw data", data)
     try {
@@ -260,11 +391,22 @@ export default function ClassReportForm({ id }: any) {
         classes: classValue,
         hour: data.hour,
         date: data.date,
-
+        noHomeworkForClass: noHomeworkForClass,
+        noTaskForClass: noTaskForClass,
         studentEvaluations: students.map((student: any) => {
           const existingEval = studentEvaluations.find((evaluation) => evaluation.studentId === student._id)
 
-          if (existingEval) {
+          if (noTaskForClass) {
+            // If no task for class, submit with specified default values instead of empty strings
+            return {
+              studentId: student._id,
+              lessonEvaluation: "পাঠ নেই",  // Changed from empty string to "পাঠ নেই"
+              handwriting: "কাজ নেই",       // Changed from empty string to "কাজ নেই"
+              attendance: existingEval?.attendance || "উপস্থিত", // Keep attendance
+              parentSignature: false,        // Changed from existing value to false
+              comments: "",
+            }
+          } else if (existingEval) {
             return {
               studentId: existingEval.studentId,
               lessonEvaluation: existingEval.lessonEvaluation,
@@ -276,16 +418,16 @@ export default function ClassReportForm({ id }: any) {
           } else {
             return {
               studentId: student._id,
-              lessonEvaluation: "পড়া শিখেছে",
-              handwriting: "লিখেছে",
-              attendance: "উপস্থিত",
+              lessonEvaluation: "",
+              handwriting: "",
+              attendance: "",
               parentSignature: false,
               comments: "",
             }
           }
         }),
         todayLesson: todayLessonId,
-        homeTask: homeTaskId,
+        homeTask: noHomeworkForClass ? null : homeTaskId,
       }
       console.log("formated data", formattedData)
 
@@ -318,7 +460,6 @@ export default function ClassReportForm({ id }: any) {
       toast.error(error?.data?.message || "Failed to save class report")
     }
   }
-
   const handleMenuClose = () => {
     setAnchorEl(null)
   }
@@ -496,19 +637,30 @@ export default function ClassReportForm({ id }: any) {
     if (!evaluation) {
       const defaultEvaluation = {
         studentId,
-        lessonEvaluation: "পড়া শিখেছে",
-        handwriting: "লিখেছে",
+        lessonEvaluation: noTaskForClass ? "পাঠ নেই" : "পড়া শিখেছে",
+        handwriting: noTaskForClass ? "কাজ নেই" : "লিখেছে",
         attendance: "উপস্থিত",
-        parentSignature: true,
+        parentSignature: noTaskForClass ? false : true,
         comments: "",
       }
       setStudentEvaluations((prev) => [...prev, defaultEvaluation])
       return defaultEvaluation
     }
 
+    // If noTaskForClass is enabled and we're showing an existing evaluation,
+    // we should display the no-task values in the UI
+    if (noTaskForClass) {
+      return {
+        ...evaluation,
+        lessonEvaluation: "পাঠ নেই",
+        handwriting: "কাজ নেই",
+        parentSignature: false,
+      }
+    }
+
     return evaluation
   }
-
+  // Handle Today's Lesson dialog
   const handleOpenTodayLessonDialog = () => {
     setTodayLessonDialogOpen(true)
   }
@@ -535,6 +687,24 @@ export default function ClassReportForm({ id }: any) {
     toast.success("বাড়ির কাজ যোগ করা হয়েছে!")
   }
 
+  const handleNoTaskChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const checked = event.target.checked
+    setNoTaskForClass(checked)
+    toast.success(checked ? "আজ কোন কাজ/হোমওয়ার্ক নেই!" : "কাজ/হোমওয়ার্ক স্ট্যাটাস আপডেট করা হয়েছে")
+  }
+
+  const handleNoHomeworkChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const checked = event.target.checked
+    setNoHomeworkForClass(checked)
+
+    // If checked, clear the home task ID since we're indicating no homework
+    if (checked) {
+      setHomeTaskId(null)
+    }
+
+    toast.success(checked ? "আজ কোন বাড়ির কাজ নেই!" : "বাড়ির কাজ স্ট্যাটাস আপডেট করা হয়েছে")
+  }
+
   return (
     <>
       {singleClassReportLoading ? (
@@ -543,8 +713,10 @@ export default function ClassReportForm({ id }: any) {
         <>
           <ThemeProvider theme={theme}>
             <CraftForm onSubmit={handleSubmit} defaultValues={defaultValues || {}}>
-              <Box sx={{ flexGrow: 1, bgcolor: "background.default", minHeight: "100vh", borderRadius: 2, width: "100%" }}>
-                <Container maxWidth={false} sx={{ mt: 0, mb: 8, borderRadius: 2, px: { xs: 0, sm: 3, md: 4, lg: 5 } }}>
+              <Box
+                sx={{ flexGrow: 1, bgcolor: "background.default", minHeight: "100vh", borderRadius: 2, width: "100%" }}
+              >
+                <Container maxWidth={false} sx={{ mt: 0, mb: 8, borderRadius: 2, px: { xs: 0, sm: 0, md: 4, lg: 5 } }}>
                   <Fade in={true} timeout={800}>
                     <Box>
                       <Box sx={{
@@ -593,6 +765,7 @@ export default function ClassReportForm({ id }: any) {
                             color="primary"
                             startIcon={<Add />}
                             onClick={handleOpenTodayTaskDialog}
+                            disabled={noHomeworkForClass}
                             sx={{
                               bgcolor: homeTaskId ? "success.main" : "#3792de",
                               borderRadius: 2,
@@ -603,6 +776,24 @@ export default function ClassReportForm({ id }: any) {
                           >
                             {homeTaskId ? "বাড়ির কাজ দেখুন" : "বাড়ির কাজ"}
                           </Button>
+                          {/* <Box sx={{ display: "flex", alignItems: "center", ml: 2 }}>
+                            <Checkbox
+                              checked={noHomeworkForClass}
+                              onChange={handleNoHomeworkChange}
+                              color="primary"
+                              id="no-homework-checkbox"
+                            />
+                            <Typography
+                              component="label"
+                              htmlFor="no-homework-checkbox"
+                              sx={{
+                                fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                                cursor: "pointer",
+                              }}
+                            >
+                              আজ কোন বাড়ির কাজ নেই
+                            </Typography>
+                          </Box> */}
                           <Button
                             type="submit"
                             variant="contained"
@@ -688,165 +879,255 @@ export default function ClassReportForm({ id }: any) {
                             ))}
                           </Box>
                         ) : (
-                          <Box sx={{ 
-  width: '100%',
-  overflowX: 'auto',
-  // Small device styles (unchanged)
-  '@media (max-width: 900px)': {
-    border: '1px solid #ddd',
-    borderRadius: '4px',
-    display: 'block',
-    maxWidth: '100vw',
-    position: 'relative',
-    overflowX: 'auto',
-    whiteSpace: 'nowrap',
-    WebkitOverflowScrolling: 'touch',
-  },
-  // Large device styles
-  '@media (min-width: 900px)': {
-    width: '100%',
-    overflowX: 'visible',
-    display: 'table'
-  }
-}}>
-  <Table sx={{ 
-    // Small devices
-    minWidth: 900,
-    // Large devices
-    '@media (min-width: 900px)': {
-      width: '100%',
-      minWidth: '100%',
-      tableLayout: 'auto'
-    }
-  }}>
-                              <TableHead>
-                                <TableRow>
-                                  <TableCell sx={{ minWidth: 200 }}>ছাত্রের নাম</TableCell>
-                                  <TableCell align="center" sx={{ minWidth: 120 }}>উপস্থিতি</TableCell>
-                                  <TableCell align="center" sx={{ minWidth: 180 }}>পাঠ মূল্যায়ন</TableCell>
-                                  <TableCell align="center" sx={{ minWidth: 180 }}>হাতের লিখা</TableCell>
-                                  <TableCell align="center" sx={{ minWidth: 150 }}>অভিভাবকের স্বাক্ষর</TableCell>
-                                  <TableCell align="center" sx={{ minWidth: 200 }}>মন্তব্য</TableCell>
-                                </TableRow>
-                              </TableHead>
-                              <TableBody>
-                                {students.length === 0 && (
+                          <>
+                            <Box sx={{
+                              width: '100%',
+                              overflowX: 'auto',
+                              // Small device styles (unchanged)
+                              '@media (max-width: 800px)': {
+                                border: '1px solid #ddd',
+                                borderRadius: '4px',
+                                display: 'block',
+                                maxWidth: '100vw',
+                                position: 'relative',
+                                overflowX: 'auto',
+                                whiteSpace: 'nowrap',
+                                WebkitOverflowScrolling: 'touch',
+                              },
+                              // Large device styles
+                              '@media (min-width: 900px)': {
+                                width: '100%',
+                                overflowX: 'visible',
+                                display: 'table'
+                              }
+                            }}>
+                              <Table sx={{
+                                minWidth: 900,
+                                '@media (min-width: 900px)': {
+                                  width: '100%',
+                                  minWidth: '100%',
+                                  tableLayout: { sm: 'auto', md: "fixed", lg: "fixed" }
+                                }
+                              }}>
+                                <TableHead>
                                   <TableRow>
-                                    <TableCell colSpan={6} align="center" sx={{ py: 8 }}>
-                                      <Box sx={{ textAlign: "center" }}>
-                                        <SearchIcon sx={{ fontSize: 48, color: "text.disabled", mb: 2 }} />
-                                        <Typography variant="h6" gutterBottom>
-                                          No students found
-                                        </Typography>
-                                        <Typography variant="body2" color="text.secondary">
-                                          Try adjusting your search or filter to find what you&apos;re looking for.
-                                        </Typography>
-                                      </Box>
+                                    <TableCell width="20%">ছাত্রের নাম</TableCell>
+                                    <TableCell align="center" width="10%">
+                                      উপস্থিতি
                                     </TableCell>
-                                  </TableRow>
-                                )}
-
-                                {students.length > 0 && students.map((student: any) => {
-                                  const evaluation = getStudentEvaluation(student._id)
-                                  const isAbsent = evaluation.attendance !== "উপস্থিত"
-                                  return (
-                                    <TableRow key={student._id} sx={{ transition: "all 0.2s" }}>
-                                      <TableCell component="th" scope="row">
-                                        <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                                          {student.name}
-                                        </Typography>
-                                        <Typography variant="caption" color="text.secondary">
-                                          {student.studentId} • {student.className}, {student.section}
-                                        </Typography>
-                                      </TableCell>
-                                      <TableCell align="center">
-                                        <Checkbox
-                                          color="primary"
-                                          checked={evaluation.attendance === "উপস্থিত"}
-                                          onChange={(e) =>
-                                            handleAttendanceChange(
-                                              student._id,
-                                              e.target.checked ? "উপস্থিত" : "অনুপস্থিত",
-                                            )
-                                          }
-                                        />
-                                      </TableCell>
-                                      <TableCell align="center">
-                                        <FormControl
-                                          fullWidth
-                                          sx={{ minWidth: { xs: 120, sm: 140, md: 160 } }}
-                                          disabled={isAbsent}
-                                        >
-                                          <InputLabel id={`lesson-label-${student._id}`}>
-                                            Lesson Evaluation
-                                          </InputLabel>
-                                          <Select
-                                            labelId={`lesson-label-${student._id}`}
-                                            value={evaluation.lessonEvaluation}
-                                            label="Lesson Evaluation"
-                                            onChange={(e) =>
-                                              handleLessonEvaluationChange(student._id, e.target.value)
+                                    <TableCell align="center" width="20%">
+                                      <div className="flex gap-2 justify-center">
+                                        <Tooltip title="আজ কোন কাজ/হোমওয়ার্ক নেই">
+                                          <FormControlLabel
+                                            control={
+                                              <Switch
+                                                checked={noTaskForClass}
+                                                onChange={handleNoTaskChange}
+                                                color="primary"
+                                              />
                                             }
-                                          >
-                                            {lessonEvaluation.map((item) => (
-                                              <MenuItem key={item} value={item}>
-                                                {item}
-                                              </MenuItem>
-                                            ))}
-                                          </Select>
-                                        </FormControl>
-                                      </TableCell>
-                                      <TableCell align="center">
-                                        <FormControl
-                                          fullWidth
-                                          sx={{ minWidth: { xs: 120, sm: 140, md: 160 } }}
-                                          disabled={isAbsent}
-                                        >
-                                          <InputLabel id={`handwriting-label-${student._id}`}>
-                                            Handwriting
-                                          </InputLabel>
-                                          <Select
-                                            labelId={`handwriting-label-${student._id}`}
-                                            value={evaluation.handwriting || "লিখেছে"}
-                                            label="Handwriting"
-                                            onChange={(e) => handleHandwritingChange(student._id, e.target.value)}
-                                          >
-                                            {handWritting.map((item) => (
-                                              <MenuItem key={item} value={item}>
-                                                {item}
-                                              </MenuItem>
-                                            ))}
-                                          </Select>
-                                        </FormControl>
-                                      </TableCell>
-                                      <TableCell align="center">
-                                        <Checkbox
-                                          color="primary"
-                                          checked={evaluation.parentSignature === true}
-                                          onChange={(e) =>
-                                            handleParentSignatureChange(student._id, e.target.checked)
-                                          }
-                                          disabled={isAbsent}
-                                        />
-                                      </TableCell>
-                                      <TableCell>
-                                        <TextField
-                                          fullWidth
-                                          multiline
-                                          minRows={1}
-                                          label="মন্তব্য"
-                                          placeholder="মন্তব্য"
-                                          value={evaluation.comments || ""}
-                                          onChange={(e) => handleCommentsChange(student._id, e.target.value)}
-                                          disabled={isAbsent}
-                                        />
+                                            label={<Typography variant="caption" sx={{ fontSize: 15 }}>পাঠ মূল্যায়ন</Typography>}
+                                            labelPlacement="start"
+                                          />
+                                        </Tooltip>
+                                      </div>
+                                    </TableCell>
+                                  
+                                    <TableCell align="center" width="20%">
+                                      <div className="flex gap-2 justify-center">
+                                        <Tooltip title="আজ কোন কাজ/হোমওয়ার্ক নেই">
+                                          <FormControlLabel
+                                            control={
+                                              <Switch
+                                                checked={noTaskForClass}
+                                                onChange={handleNoTaskChange}
+                                                color="primary"
+                                              />
+                                            }
+                                            label={<Typography variant="caption" sx={{ fontSize: 15 }}>হাতের লিখা</Typography>}
+                                            labelPlacement="start"
+                                          />
+                                        </Tooltip>
+                                      </div>
+                                    </TableCell>
+
+                                    {/* <TableCell align="center" colSpan={2}>
+                                      <Box
+                                        sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
+                                      >
+                                        <Typography variant="subtitle2" sx={{ fontWeight: 500 }}>
+                                          পাঠ মূল্যায়ন
+                                        </Typography>
+                                        <Tooltip title="আজ কোন কাজ/হোমওয়ার্ক নেই">
+                                          <FormControlLabel
+                                            control={
+                                              <Switch
+                                                checked={noTaskForClass}
+                                                onChange={handleNoTaskChange}
+                                                color="primary"
+                                              />
+                                            }
+                                            label={<Typography variant="caption">আজ কোন কাজ নেই</Typography>}
+                                            labelPlacement="start"
+                                          />
+                                        </Tooltip>
+                                      </Box>
+                                    </TableCell> */}
+                                    <TableCell align="center" width="10%">
+                                      অভিভাবকের স্বাক্ষর
+                                    </TableCell>
+                                    <TableCell align="center" sx={{ minWidth: 200 }}>মন্তব্য</TableCell>
+                                  </TableRow>
+                                  {/* <TableRow>
+                                    <TableCell width="20%"></TableCell>
+                                    <TableCell align="center" width="10%"></TableCell>
+                                    <TableCell align="center" width="20%">
+                                      পাঠ মূল্যায়ন
+                                    </TableCell>
+                                    <TableCell align="center" width="20%">
+                                      হাতের লিখা
+                                    </TableCell>
+                                    <TableCell align="center" width="10%"></TableCell>
+                                    <TableCell align="center" width="20%"></TableCell>
+                                  </TableRow> */}
+                                </TableHead>
+                                <TableBody>
+                                  {students.length === 0 && (
+                                    <TableRow>
+                                      <TableCell colSpan={6} align="center" sx={{ py: 8 }}>
+                                        <Box sx={{ textAlign: "center" }}>
+                                          <SearchIcon sx={{ fontSize: 48, color: "text.disabled", mb: 2 }} />
+                                          <Typography variant="h6" gutterBottom>
+                                            No students found
+                                          </Typography>
+                                          <Typography variant="body2" color="text.secondary">
+                                            Try adjusting your search or filter to find what you&apos;re looking for.
+                                          </Typography>
+                                        </Box>
                                       </TableCell>
                                     </TableRow>
-                                  )
-                                })}
-                              </TableBody>
-                            </Table>
-                          </Box>
+                                  )}
+
+                                  {students.length > 0 ? (
+                                    students.map((student: any) => {
+                                      const evaluation = getStudentEvaluation(student._id)
+                                      const isAbsent = evaluation.attendance !== "উপস্থিত"
+                                      return (
+                                        <TableRow key={student._id} sx={{ transition: "all 0.2s" }}>
+                                          <TableCell component="th" scope="row">
+                                            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                                              {student.name}
+                                            </Typography>
+                                            <Typography variant="caption" color="text.secondary">
+                                              {student.studentId} • {student.className}, {student.section}
+                                            </Typography>
+                                          </TableCell>
+                                          <TableCell align="center">
+                                            <Checkbox
+                                              color="primary"
+                                              checked={evaluation.attendance === "উপস্থিত"}
+                                              onChange={(e) =>
+                                                handleAttendanceChange(
+                                                  student._id,
+                                                  e.target.checked ? "উপস্থিত" : "অনুপস্থিত",
+                                                )
+                                              }
+                                            />
+                                          </TableCell>
+                                          <TableCell align="center">
+                                            <FormControl
+                                              fullWidth
+                                              sx={{ minWidth: { xs: 120, sm: 140, md: 160 } }}
+                                              disabled={isAbsent || noTaskForClass}
+                                            >
+                                              <InputLabel id={`lesson-label-${student._id}`}>
+                                                Lesson Evaluation
+                                              </InputLabel>
+                                              <Select
+                                                labelId={`lesson-label-${student._id}`}
+                                                value={evaluation.lessonEvaluation}
+                                                label="Lesson Evaluation"
+                                                onChange={(e) =>
+                                                  handleLessonEvaluationChange(student._id, e.target.value)
+                                                }
+                                              >
+                                                {lessonEvaluation.map((item) => (
+                                                  <MenuItem key={item} value={item}>
+                                                    {item}
+                                                  </MenuItem>
+                                                ))}
+                                              </Select>
+                                            </FormControl>
+                                          </TableCell>
+
+                                          <TableCell align="center">
+                                            <FormControl
+                                              fullWidth
+                                              sx={{ minWidth: { xs: 120, sm: 140, md: 160 } }}
+                                              disabled={isAbsent || noTaskForClass}
+                                            >
+                                              <InputLabel id={`handwriting-label-${student._id}`}>
+                                                Handwriting
+                                              </InputLabel>
+                                              <Select
+                                                labelId={`handwriting-label-${student._id}`}
+                                                value={evaluation.handwriting || "লিখেছে"}
+                                                label="Handwriting"
+                                                onChange={(e) => handleHandwritingChange(student._id, e.target.value)}
+                                              >
+                                                {handWritting.map((item) => (
+                                                  <MenuItem key={item} value={item}>
+                                                    {item}
+                                                  </MenuItem>
+                                                ))}
+                                              </Select>
+                                            </FormControl>
+                                          </TableCell>
+
+                                          <TableCell align="center">
+                                            <Checkbox
+                                              color="primary"
+                                              checked={evaluation.parentSignature === true}
+                                              onChange={(e) =>
+                                                handleParentSignatureChange(student._id, e.target.checked)
+                                              }
+                                              disabled={isAbsent || noTaskForClass}
+                                            />
+                                          </TableCell>
+                                          <TableCell>
+                                            <TextField
+                                              fullWidth
+                                              multiline
+                                              minRows={1}
+                                              label="মন্তব্য"
+                                              placeholder="মন্তব্য"
+                                              value={evaluation.comments || ""}
+                                              onChange={(e) => handleCommentsChange(student._id, e.target.value)}
+                                              disabled={isAbsent || noTaskForClass}
+                                            />
+                                          </TableCell>
+                                        </TableRow>
+                                      )
+                                    })
+                                  ) : (
+                                    <TableRow>
+                                      <TableCell colSpan={8} align="center" sx={{ py: 8 }}>
+                                        <Box sx={{ textAlign: "center" }}>
+                                          <SearchIcon sx={{ fontSize: 48, color: "text.disabled", mb: 2 }} />
+                                          <Typography variant="h6" gutterBottom>
+                                            No students found
+                                          </Typography>
+                                          <Typography variant="body2" color="text.secondary">
+                                            Try adjusting your search or filter to find what you&apos;re looking for.
+                                          </Typography>
+                                        </Box>
+                                      </TableCell>
+                                    </TableRow>
+                                  )}
+                                </TableBody>
+                              </Table>
+                            </Box>
+                          </>
                         )}
                       </Paper>
                     </Box>

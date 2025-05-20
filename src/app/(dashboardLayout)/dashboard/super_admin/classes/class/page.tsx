@@ -3,7 +3,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import {
   Box,
@@ -38,7 +37,6 @@ import {
 import {
   Add as AddIcon,
   Search as SearchIcon,
-
   Edit as EditIcon,
   Delete as DeleteIcon,
   Visibility as VisibilityIcon,
@@ -88,17 +86,11 @@ export default function ClassesListPage() {
     setPage(0)
   }
 
-
-
-
-
   const handleSort = (property: string) => {
     const isAsc = orderBy === property && order === "asc"
     setOrder(isAsc ? "desc" : "asc")
     setOrderBy(property)
   }
-
-
 
   const handleMenuClose = () => {
     setAnchorEl(null)
@@ -129,6 +121,7 @@ export default function ClassesListPage() {
   const classes = classData?.data?.classes || []
   const totalCount = classData?.data?.meta?.total || 0
   console.log("classes data ", classes)
+
   return (
     <>
       <Box sx={{ flexGrow: 1, bgcolor: "background.default", minHeight: "100vh", borderRadius: 2 }}>
@@ -200,7 +193,6 @@ export default function ClassesListPage() {
                         }}
                       />
                     </Grid>
-                  
                   </Grid>
                 </Box>
 
@@ -223,10 +215,10 @@ export default function ClassesListPage() {
                 ) : (
                   <>
                     <TableContainer sx={{
-            overflowX: "auto",  
-            WebkitOverflowScrolling: "touch",  
-            maxWidth: "100vw"  
-          }}>
+                      overflowX: "auto",
+                      WebkitOverflowScrolling: "touch",
+                      maxWidth: "100vw"
+                    }}>
                       <Table sx={{ minWidth: 650 }}>
                         <TableHead>
                           <TableRow>
@@ -276,7 +268,6 @@ export default function ClassesListPage() {
                                 classItem.sections && classItem.sections.length > 0
                                   ? classItem.sections[0].name
                                   : "No Section"
-
                               return (
                                 <TableRow key={classItem._id} sx={{ transition: "all 0.2s" }}>
                                   <TableCell component="th" scope="row">

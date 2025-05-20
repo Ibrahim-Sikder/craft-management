@@ -11,7 +11,7 @@ export const classReportApi = baseApi.injectEndpoints({
       invalidatesTags: ["class-report"],
     }),
 
-    getAllClassReports: build.query({
+ getAllClassReports: build.query({
       query: ({
         limit,
         page,
@@ -21,6 +21,7 @@ export const classReportApi = baseApi.injectEndpoints({
         teacher,
         date,
         hour,
+        lessonEvaluation, // Add this parameter
       }) => ({
         url: "/class-report",
         method: "GET",
@@ -33,6 +34,7 @@ export const classReportApi = baseApi.injectEndpoints({
           teacher,
           date,
           hour,
+          lessonEvaluation, // Add this parameter to the request
         },
       }),
       providesTags: ["class-report"],
