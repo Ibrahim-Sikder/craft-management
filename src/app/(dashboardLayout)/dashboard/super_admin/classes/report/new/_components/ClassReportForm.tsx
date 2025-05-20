@@ -250,16 +250,6 @@ export default function ClassReportForm({ id }: any) {
   const handleSubmit = async (data: FieldValues) => {
     console.log("raw data", data)
     try {
-      // if (!data.classes) {
-      //   toast.error("শ্রেণী নির্বাচন করুন")
-      //   return
-      // }
-
-      // if (!data.subjects) {
-      //   toast.error("বিষয় নির্বাচন করুন")
-      //   return
-      // }
-
       const classValue = typeof data.classes === "object" ? data.classes.label : data.classes
       const subjectValue = typeof data.subjects === "object" ? data.subjects.label : data.subjects
       const teacherValue = typeof data.teachers === "object" ? data.teachers.label : data.teachers
@@ -299,7 +289,6 @@ export default function ClassReportForm({ id }: any) {
       }
       console.log("formated data", formattedData)
 
-      // Rest of your submit logic remains the same
       if (!id) {
         const response = await createClassReport(formattedData).unwrap()
 
@@ -352,19 +341,16 @@ export default function ClassReportForm({ id }: any) {
     setSnackbarOpen(false)
   }
 
-  // Update student evaluation fields
   const handleLessonEvaluationChange = (studentId: string, value: string) => {
     const updatedEvaluations = [...studentEvaluations]
     const index = updatedEvaluations.findIndex((evaluation) => evaluation.studentId === studentId)
 
     if (index !== -1) {
-      // Update existing evaluation
       updatedEvaluations[index] = {
         ...updatedEvaluations[index],
         lessonEvaluation: value,
       }
     } else {
-      // Create new evaluation if it doesn't exist
       updatedEvaluations.push({
         studentId,
         lessonEvaluation: "পড়া শিখেছে",
@@ -378,19 +364,16 @@ export default function ClassReportForm({ id }: any) {
     setStudentEvaluations(updatedEvaluations)
   }
 
-  // Update the handleHandwritingChange function
   const handleHandwritingChange = (studentId: string, value: string) => {
     const updatedEvaluations = [...studentEvaluations]
     const index = updatedEvaluations.findIndex((evaluation) => evaluation.studentId === studentId)
 
     if (index !== -1) {
-      // Update existing evaluation
       updatedEvaluations[index] = {
         ...updatedEvaluations[index],
         handwriting: value,
       }
     } else {
-      // Create new evaluation if it doesn't exist
       updatedEvaluations.push({
         studentId,
         lessonEvaluation: "পড়া শিখেছে",
@@ -404,19 +387,16 @@ export default function ClassReportForm({ id }: any) {
     setStudentEvaluations(updatedEvaluations)
   }
 
-  // Update the handleAttendanceChange function
   const handleAttendanceChange = (studentId: string, value: string) => {
     const updatedEvaluations = [...studentEvaluations]
     const index = updatedEvaluations.findIndex((evaluation) => evaluation.studentId === studentId)
 
     if (index !== -1) {
-      // Update existing evaluation
       updatedEvaluations[index] = {
         ...updatedEvaluations[index],
         attendance: value,
       }
     } else {
-      // Create new evaluation if it doesn't exist
       updatedEvaluations.push({
         studentId,
         lessonEvaluation: "পড়া শিখেছে",
@@ -435,13 +415,11 @@ export default function ClassReportForm({ id }: any) {
     const index = updatedEvaluations.findIndex((evaluation) => evaluation.studentId === studentId)
 
     if (index !== -1) {
-      // Update existing evaluation
       updatedEvaluations[index] = {
         ...updatedEvaluations[index],
         parentSignature: checked,
       }
     } else {
-      // Create new evaluation if it doesn't exist
       updatedEvaluations.push({
         studentId,
         lessonEvaluation: "পড়া শিখেছে",
@@ -460,13 +438,11 @@ export default function ClassReportForm({ id }: any) {
     const index = updatedEvaluations.findIndex((evaluation) => evaluation.studentId === studentId)
 
     if (index !== -1) {
-      // Update existing evaluation
       updatedEvaluations[index] = {
         ...updatedEvaluations[index],
         comments: value,
       }
     } else {
-      // Create new evaluation if it doesn't exist
       updatedEvaluations.push({
         studentId,
         lessonEvaluation: "পড়া শিখেছে",
@@ -488,17 +464,13 @@ export default function ClassReportForm({ id }: any) {
 
   const handleClassName = (event: any, newValue: any) => {
     setSelectedBrand(newValue)
-
-    // Filter and sort the vehicles
     const filtered = sortedVehicleName
       ?.filter((vehicle: any) => vehicle.label?.toLowerCase().includes(newValue?.toLowerCase()))
       .sort((a: any, b: any) => a.label.localeCompare(b.label))
-
     setFilteredVehicles(filtered)
   }
 
   const handleClassChange = (event: any, newValue: any) => {
-    // Only allow class changes in create mode, not edit mode
     if (id && isEditMode) {
       toast("Cannot change class in edit mode")
       return
@@ -509,8 +481,6 @@ export default function ClassReportForm({ id }: any) {
         ...prev,
         class: newValue.label,
       }))
-
-      // Refetch students with the new class filter
       refetch()
     } else {
       setFilters((prev) => ({
@@ -520,12 +490,10 @@ export default function ClassReportForm({ id }: any) {
     }
   }
 
-  // Get evaluation for a specific student
   const getStudentEvaluation = (studentId: string) => {
     const evaluation = studentEvaluations.find((evaluation) => evaluation.studentId === studentId)
 
     if (!evaluation) {
-      // If no evaluation exists, create a default one and add it to the array
       const defaultEvaluation = {
         studentId,
         lessonEvaluation: "পড়া শিখেছে",
@@ -534,17 +502,13 @@ export default function ClassReportForm({ id }: any) {
         parentSignature: true,
         comments: "",
       }
-
-      // Add this default evaluation to the state
       setStudentEvaluations((prev) => [...prev, defaultEvaluation])
-
       return defaultEvaluation
     }
 
     return evaluation
   }
 
-  // Handle Today's Lesson dialog
   const handleOpenTodayLessonDialog = () => {
     setTodayLessonDialogOpen(true)
   }
@@ -555,11 +519,9 @@ export default function ClassReportForm({ id }: any) {
 
   const handleSaveTodayLesson = (lessonId: string) => {
     setTodayLessonId(lessonId)
-
     toast.success("আজকের পাঠ যোগ করা হয়েছে!")
   }
 
-  // Handle Home Task dialog
   const handleOpenTodayTaskDialog = () => {
     setTodayTaskDialogOpen(true)
   }
@@ -581,23 +543,19 @@ export default function ClassReportForm({ id }: any) {
         <>
           <ThemeProvider theme={theme}>
             <CraftForm onSubmit={handleSubmit} defaultValues={defaultValues || {}}>
-              <Box
-                sx={{ flexGrow: 1, bgcolor: "background.default", minHeight: "100vh", borderRadius: 2, width: "100%" }}
-              >
-                <Container maxWidth={false} sx={{ mt: 0, mb: 8, borderRadius: 2, px: { xs: 2, sm: 3, md: 4, lg: 5 } }}>
+              <Box sx={{ flexGrow: 1, bgcolor: "background.default", minHeight: "100vh", borderRadius: 2, width: "100%" }}>
+                <Container maxWidth={false} sx={{ mt: 0, mb: 8, borderRadius: 2, px: { xs: 0, sm: 3, md: 4, lg: 5 } }}>
                   <Fade in={true} timeout={800}>
                     <Box>
-                      <Box
-                        sx={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          mb: 3,
-                          flexWrap: "wrap",
-                          gap: 2,
-                          paddingTop: 2,
-                        }}
-                      >
+                      <Box sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        mb: 3,
+                        flexWrap: "wrap",
+                        gap: 2,
+                        paddingTop: 2,
+                      }}>
                         <Typography
                           variant="h4"
                           component="h1"
@@ -614,7 +572,7 @@ export default function ClassReportForm({ id }: any) {
                             </Typography>
                           )}
                         </Typography>
-                        <Box sx={{ display: "flex", gap: { xs: 1, sm: 2 }, flexWrap: "wrap" }}>
+                        <Box sx={{ display: "flex", gap: { xs: 0.5, sm: 2 }, flexWrap: "wrap" }}>
                           <Button
                             variant="contained"
                             color="primary"
@@ -664,11 +622,10 @@ export default function ClassReportForm({ id }: any) {
                         </Box>
                       </Box>
 
-                      <Paper elevation={0} sx={{ mb: 4, overflow: "hidden", width: "100%" }}>
+                      <Paper elevation={0} sx={{ mb: 4, width: '100%', overflow: 'hidden' }}>
                         <Box sx={{ p: { xs: 1, sm: 1, md: 2, lg: 3 }, borderBottom: "1px solid rgba(0, 0, 0, 0.06)" }}>
                           <Grid container spacing={2} alignItems="center">
-                            {/* Teacher Name */}
-                            <Grid item xs={12} sm={6} md={3} lg={3}>
+                            <Grid item xs={6} sm={6} md={3} lg={3}>
                               <CraftIntAutoComplete
                                 name="teachers"
                                 placeholder="শিক্ষকের নাম লিখুন"
@@ -679,9 +636,7 @@ export default function ClassReportForm({ id }: any) {
                                 options={teacherOption}
                               />
                             </Grid>
-
-                            {/* Class Name */}
-                            <Grid item xs={12} sm={6} md={2} lg={3}>
+                            <Grid item xs={6} sm={6} md={2} lg={3}>
                               <CraftIntAutoComplete
                                 name="classes"
                                 label="শ্রেণীর নাম লিখুন"
@@ -692,9 +647,7 @@ export default function ClassReportForm({ id }: any) {
                                 onChange={handleClassChange}
                               />
                             </Grid>
-
-                            {/* Subject Name */}
-                            <Grid item xs={12} sm={6} md={3} lg={3}>
+                            <Grid item xs={6} sm={6} md={3} lg={3}>
                               <CraftIntAutoComplete
                                 name="subjects"
                                 label="বিষয়ের নাম লিখুন"
@@ -704,8 +657,6 @@ export default function ClassReportForm({ id }: any) {
                                 options={subjectOption}
                               />
                             </Grid>
-
-                            {/* Hour */}
                             <Grid item xs={6} sm={6} md={2} lg={1.5}>
                               <CraftSelect
                                 name="hour"
@@ -714,8 +665,6 @@ export default function ClassReportForm({ id }: any) {
                                 sx={{ minWidth: { xs: 100, sm: 120, md: 130 } }}
                               />
                             </Grid>
-
-                            {/* Date */}
                             <Grid item xs={6} sm={6} md={2} lg={1.5}>
                               <CraftDatePicker name="date" label="তারিখ" />
                             </Grid>
@@ -739,184 +688,165 @@ export default function ClassReportForm({ id }: any) {
                             ))}
                           </Box>
                         ) : (
-                          <>
-                            <TableContainer
-                              sx={{
-                                overflowX: "auto",
-                                WebkitOverflowScrolling: "touch",
-                                width: "100%",
-                                "&::-webkit-scrollbar": {
-                                  height: "8px",
-                                },
-                                "&::-webkit-scrollbar-thumb": {
-                                  backgroundColor: "rgba(0,0,0,0.2)",
-                                  borderRadius: "4px",
-                                },
-                              }}
-                            >
-                              <Table sx={{ width: "100%", tableLayout: "fixed" }}>
-                                <TableHead>
+                          <Box sx={{ 
+  width: '100%',
+  overflowX: 'auto',
+  // Small device styles (unchanged)
+  '@media (max-width: 900px)': {
+    border: '1px solid #ddd',
+    borderRadius: '4px',
+    display: 'block',
+    maxWidth: '100vw',
+    position: 'relative',
+    overflowX: 'auto',
+    whiteSpace: 'nowrap',
+    WebkitOverflowScrolling: 'touch',
+  },
+  // Large device styles
+  '@media (min-width: 900px)': {
+    width: '100%',
+    overflowX: 'visible',
+    display: 'table'
+  }
+}}>
+  <Table sx={{ 
+    // Small devices
+    minWidth: 900,
+    // Large devices
+    '@media (min-width: 900px)': {
+      width: '100%',
+      minWidth: '100%',
+      tableLayout: 'auto'
+    }
+  }}>
+                              <TableHead>
+                                <TableRow>
+                                  <TableCell sx={{ minWidth: 200 }}>ছাত্রের নাম</TableCell>
+                                  <TableCell align="center" sx={{ minWidth: 120 }}>উপস্থিতি</TableCell>
+                                  <TableCell align="center" sx={{ minWidth: 180 }}>পাঠ মূল্যায়ন</TableCell>
+                                  <TableCell align="center" sx={{ minWidth: 180 }}>হাতের লিখা</TableCell>
+                                  <TableCell align="center" sx={{ minWidth: 150 }}>অভিভাবকের স্বাক্ষর</TableCell>
+                                  <TableCell align="center" sx={{ minWidth: 200 }}>মন্তব্য</TableCell>
+                                </TableRow>
+                              </TableHead>
+                              <TableBody>
+                                {students.length === 0 && (
                                   <TableRow>
-                                    <TableCell width="20%">ছাত্রের নাম</TableCell>
-                                    <TableCell align="center" width="10%">
-                                      উপস্থিতি
-                                    </TableCell>
-                                    <TableCell align="center">
-                                      পাঠ মূল্যায়ন
-                                      <Checkbox color="primary" />
-                                    </TableCell>
-                                    {/* <TableCell align="center" width="20%">
-                                      পাঠ মূল্যায়ন
-                                    </TableCell> */}
-                                    <TableCell align="center" width="20%">
-                                      হাতের লিখা
-                                      <Checkbox color="primary" />
-                                    </TableCell>
-                                    <TableCell align="center" width="10%">
-                                      অভিভাবকের স্বাক্ষর
-                                    </TableCell>
-                                    <TableCell align="center" width="20%">
-                                      মন্তব্য
+                                    <TableCell colSpan={6} align="center" sx={{ py: 8 }}>
+                                      <Box sx={{ textAlign: "center" }}>
+                                        <SearchIcon sx={{ fontSize: 48, color: "text.disabled", mb: 2 }} />
+                                        <Typography variant="h6" gutterBottom>
+                                          No students found
+                                        </Typography>
+                                        <Typography variant="body2" color="text.secondary">
+                                          Try adjusting your search or filter to find what you&apos;re looking for.
+                                        </Typography>
+                                      </Box>
                                     </TableCell>
                                   </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                  {students.length === 0 && (
-                                    <TableRow>
-                                      <TableCell colSpan={6} align="center" sx={{ py: 8 }}>
-                                        <Box sx={{ textAlign: "center" }}>
-                                          <SearchIcon sx={{ fontSize: 48, color: "text.disabled", mb: 2 }} />
-                                          <Typography variant="h6" gutterBottom>
-                                            No students found
-                                          </Typography>
-                                          <Typography variant="body2" color="text.secondary">
-                                            Try adjusting your search or filter to find what you&apos;re looking for.
-                                          </Typography>
-                                        </Box>
+                                )}
+
+                                {students.length > 0 && students.map((student: any) => {
+                                  const evaluation = getStudentEvaluation(student._id)
+                                  const isAbsent = evaluation.attendance !== "উপস্থিত"
+                                  return (
+                                    <TableRow key={student._id} sx={{ transition: "all 0.2s" }}>
+                                      <TableCell component="th" scope="row">
+                                        <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                                          {student.name}
+                                        </Typography>
+                                        <Typography variant="caption" color="text.secondary">
+                                          {student.studentId} • {student.className}, {student.section}
+                                        </Typography>
+                                      </TableCell>
+                                      <TableCell align="center">
+                                        <Checkbox
+                                          color="primary"
+                                          checked={evaluation.attendance === "উপস্থিত"}
+                                          onChange={(e) =>
+                                            handleAttendanceChange(
+                                              student._id,
+                                              e.target.checked ? "উপস্থিত" : "অনুপস্থিত",
+                                            )
+                                          }
+                                        />
+                                      </TableCell>
+                                      <TableCell align="center">
+                                        <FormControl
+                                          fullWidth
+                                          sx={{ minWidth: { xs: 120, sm: 140, md: 160 } }}
+                                          disabled={isAbsent}
+                                        >
+                                          <InputLabel id={`lesson-label-${student._id}`}>
+                                            Lesson Evaluation
+                                          </InputLabel>
+                                          <Select
+                                            labelId={`lesson-label-${student._id}`}
+                                            value={evaluation.lessonEvaluation}
+                                            label="Lesson Evaluation"
+                                            onChange={(e) =>
+                                              handleLessonEvaluationChange(student._id, e.target.value)
+                                            }
+                                          >
+                                            {lessonEvaluation.map((item) => (
+                                              <MenuItem key={item} value={item}>
+                                                {item}
+                                              </MenuItem>
+                                            ))}
+                                          </Select>
+                                        </FormControl>
+                                      </TableCell>
+                                      <TableCell align="center">
+                                        <FormControl
+                                          fullWidth
+                                          sx={{ minWidth: { xs: 120, sm: 140, md: 160 } }}
+                                          disabled={isAbsent}
+                                        >
+                                          <InputLabel id={`handwriting-label-${student._id}`}>
+                                            Handwriting
+                                          </InputLabel>
+                                          <Select
+                                            labelId={`handwriting-label-${student._id}`}
+                                            value={evaluation.handwriting || "লিখেছে"}
+                                            label="Handwriting"
+                                            onChange={(e) => handleHandwritingChange(student._id, e.target.value)}
+                                          >
+                                            {handWritting.map((item) => (
+                                              <MenuItem key={item} value={item}>
+                                                {item}
+                                              </MenuItem>
+                                            ))}
+                                          </Select>
+                                        </FormControl>
+                                      </TableCell>
+                                      <TableCell align="center">
+                                        <Checkbox
+                                          color="primary"
+                                          checked={evaluation.parentSignature === true}
+                                          onChange={(e) =>
+                                            handleParentSignatureChange(student._id, e.target.checked)
+                                          }
+                                          disabled={isAbsent}
+                                        />
+                                      </TableCell>
+                                      <TableCell>
+                                        <TextField
+                                          fullWidth
+                                          multiline
+                                          minRows={1}
+                                          label="মন্তব্য"
+                                          placeholder="মন্তব্য"
+                                          value={evaluation.comments || ""}
+                                          onChange={(e) => handleCommentsChange(student._id, e.target.value)}
+                                          disabled={isAbsent}
+                                        />
                                       </TableCell>
                                     </TableRow>
-                                  )}
-
-                                  {students.length > 0 ? (
-                                    students.map((student: any) => {
-                                      const evaluation = getStudentEvaluation(student._id)
-                                      const isAbsent = evaluation.attendance !== "উপস্থিত"
-                                      return (
-                                        <TableRow key={student._id} sx={{ transition: "all 0.2s" }}>
-                                          <TableCell component="th" scope="row">
-                                            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                                              {student.name}
-                                            </Typography>
-                                            <Typography variant="caption" color="text.secondary">
-                                              {student.studentId} • {student.className}, {student.section}
-                                            </Typography>
-                                          </TableCell>
-                                          <TableCell align="center">
-                                            <Checkbox
-                                              color="primary"
-                                              checked={evaluation.attendance === "উপস্থিত"}
-                                              onChange={(e) =>
-                                                handleAttendanceChange(
-                                                  student._id,
-                                                  e.target.checked ? "উপস্থিত" : "অনুপস্থিত",
-                                                )
-                                              }
-                                            />
-                                          </TableCell>
-                                          <TableCell align="center">
-                                            <FormControl
-                                              fullWidth
-                                              sx={{ minWidth: { xs: 120, sm: 140, md: 160 } }}
-                                              disabled={isAbsent}
-                                            >
-                                              <InputLabel id={`lesson-label-${student._id}`}>
-                                                Lesson Evaluation
-                                              </InputLabel>
-                                              <Select
-                                                labelId={`lesson-label-${student._id}`}
-                                                value={evaluation.lessonEvaluation}
-                                                label="Lesson Evaluation"
-                                                onChange={(e) =>
-                                                  handleLessonEvaluationChange(student._id, e.target.value)
-                                                }
-                                              >
-                                                {lessonEvaluation.map((item) => (
-                                                  <MenuItem key={item} value={item}>
-                                                    {item}
-                                                  </MenuItem>
-                                                ))}
-                                              </Select>
-                                            </FormControl>
-                                          </TableCell>
-
-                                          <TableCell align="center">
-                                            <FormControl
-                                              fullWidth
-                                              sx={{ minWidth: { xs: 120, sm: 140, md: 160 } }}
-                                              disabled={isAbsent}
-                                            >
-                                              <InputLabel id={`handwriting-label-${student._id}`}>
-                                                Handwriting
-                                              </InputLabel>
-                                              <Select
-                                                labelId={`handwriting-label-${student._id}`}
-                                                value={evaluation.handwriting || "লিখেছে"}
-                                                label="Handwriting"
-                                                onChange={(e) => handleHandwritingChange(student._id, e.target.value)}
-                                              >
-                                                {handWritting.map((item) => (
-                                                  <MenuItem key={item} value={item}>
-                                                    {item}
-                                                  </MenuItem>
-                                                ))}
-                                              </Select>
-                                            </FormControl>
-                                          </TableCell>
-
-                                          <TableCell align="center">
-                                            <Checkbox
-                                              color="primary"
-                                              checked={evaluation.parentSignature === true}
-                                              onChange={(e) =>
-                                                handleParentSignatureChange(student._id, e.target.checked)
-                                              }
-                                              disabled={isAbsent}
-                                            />
-                                          </TableCell>
-                                          <TableCell>
-                                            <TextField
-                                              fullWidth
-                                              multiline
-                                              minRows={1}
-                                              label="মন্তব্য"
-                                              placeholder="মন্তব্য"
-                                              value={evaluation.comments || ""}
-                                              onChange={(e) => handleCommentsChange(student._id, e.target.value)}
-                                              disabled={isAbsent}
-                                            />
-                                          </TableCell>
-                                        </TableRow>
-                                      )
-                                    })
-                                  ) : (
-                                    <TableRow>
-                                      <TableCell colSpan={8} align="center" sx={{ py: 8 }}>
-                                        <Box sx={{ textAlign: "center" }}>
-                                          <SearchIcon sx={{ fontSize: 48, color: "text.disabled", mb: 2 }} />
-                                          <Typography variant="h6" gutterBottom>
-                                            No students found
-                                          </Typography>
-                                          <Typography variant="body2" color="text.secondary">
-                                            Try adjusting your search or filter to find what you&apos;re looking for.
-                                          </Typography>
-                                        </Box>
-                                      </TableCell>
-                                    </TableRow>
-                                  )}
-                                </TableBody>
-                              </Table>
-                            </TableContainer>
-                          </>
+                                  )
+                                })}
+                              </TableBody>
+                            </Table>
+                          </Box>
                         )}
                       </Paper>
                     </Box>
@@ -924,7 +854,6 @@ export default function ClassReportForm({ id }: any) {
                 </Container>
               </Box>
 
-              {/* Context Menu */}
               <Menu
                 anchorEl={anchorEl}
                 open={Boolean(anchorEl)}
@@ -935,7 +864,7 @@ export default function ClassReportForm({ id }: any) {
                     mt: 1,
                     minWidth: 180,
                     borderRadius: 2,
-                    overflow: "hidden",
+                    overflow: "auto",
                   },
                 }}
               >
@@ -954,7 +883,6 @@ export default function ClassReportForm({ id }: any) {
                 </MenuItem>
               </Menu>
 
-              {/* Delete Confirmation Dialog */}
               <Dialog
                 open={deleteDialogOpen}
                 onClose={handleDeleteCancel}
@@ -992,7 +920,6 @@ export default function ClassReportForm({ id }: any) {
                 </DialogActions>
               </Dialog>
 
-              {/* Snackbar for notifications */}
               <Snackbar
                 open={snackbarOpen}
                 autoHideDuration={6000}
@@ -1011,7 +938,6 @@ export default function ClassReportForm({ id }: any) {
             </CraftForm>
           </ThemeProvider>
 
-          {/* Today's Lesson Dialog */}
           <TodayLesson
             id={todayLessonId}
             open={todayLessonDialogOpen}
@@ -1019,7 +945,6 @@ export default function ClassReportForm({ id }: any) {
             onSave={handleSaveTodayLesson}
           />
 
-          {/* Home Task Dialog */}
           <TodayTask
             id={homeTaskId}
             open={todayTaskDialogOpen}

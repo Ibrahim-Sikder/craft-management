@@ -249,29 +249,28 @@ const StudentList = () => {
   const dayCareStudents = students.filter((s: any) => s.studentType === "Day-care").length
 
   return (
-    <Container maxWidth="xl" sx={{p:{xs:"4px"}}}>
+    <Container maxWidth="xl" sx={{ p: { xs: "4px" } }}>
       <Paper
         className="mb-6 py-6 rounded-lg text-white"
         style={{
           background: "linear-gradient(135deg, #6a1b9a 0%, #283593 100%)",
         }}
       >
-        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center", flexDirection: "column" }}>
-          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <School sx={{ mr: 1, fontSize: 40 }} />
-            <Typography variant="h4" component="h1" sx={{ fontWeight: "bold", color:'white' }}>
-              Student Management System
-            </Typography>
-          </Box>
 
-          {/* Statistics Row */}
-          <Box sx={{ mt: 2 }}>
-            {/* Main Stats - Total Students */}
-            <Box sx={{
-              display: "flex",
-              justifyContent: "center",
-              mb: 2
-            }}>
+
+        <div className="flex flex-col items-center justify-center content-center">
+          
+          <div className="flex flex-row justify-center items-center content-center text-white">
+            <School sx={{ mr: 1, fontSize: {sm:25, md:40} }} />
+            <div className="text-lg md:text-4xl font-bold">Student Management System</div>
+          </div>
+         
+
+
+
+          <div className="mt-2">
+
+            <div className="flex justify-center mb-2">
               <Chip
                 label={`Total Students: ${totalStudents}`}
                 sx={{
@@ -283,22 +282,15 @@ const StudentList = () => {
                   fontSize: "1rem"
                 }}
               />
-            </Box>
+            </div>
+
 
             {/* Secondary Stats - 2 rows of statistics */}
-            <Box sx={{
-              display: "flex",
-              justifyContent: "center",
-              flexDirection: "column",
-              gap: 1
-            }}>
+
+            <div className="flex flex-col justify-center gap-1">
               {/* First row - Student Types */}
-              <Box sx={{
-                display: "flex",
-                justifyContent: "center",
-                gap: 1,
-                flexWrap: "wrap"
-              }}>
+
+              <div className="grid grid-cols-2 md:grid-cols-3  justify-center gap-1">
                 <Chip
                   label={`Residential: ${residentialStudents}`}
                   sx={{
@@ -323,31 +315,6 @@ const StudentList = () => {
                     fontWeight: 500
                   }}
                 />
-              </Box>
-
-              {/* Second row - Status and Gender */}
-              <Box sx={{
-                display: "flex",
-                justifyContent: "center",
-                gap: 1,
-                flexWrap: "wrap"
-              }}>
-                <Chip
-                  label={`Active: ${activeStudents}`}
-                  sx={{
-                    bgcolor: alpha(customColors.success, 0.7),
-                    color: "white",
-                    fontWeight: 500
-                  }}
-                />
-                <Chip
-                  label={`Inactive: ${inactiveStudents}`}
-                  sx={{
-                    bgcolor: alpha(customColors.error, 0.7),
-                    color: "white",
-                    fontWeight: 500
-                  }}
-                />
                 <Chip
                   label={`Male: ${maleStudents}`}
                   sx={{
@@ -364,10 +331,11 @@ const StudentList = () => {
                     fontWeight: 500
                   }}
                 />
-              </Box>
-            </Box>
-          </Box>
-        </Box>
+              </div>
+            </div>
+          </div>
+        </div>
+
       </Paper>
 
 
@@ -534,9 +502,9 @@ const StudentList = () => {
 
         <CardContent sx={{ p: 0 }}>
           <TableContainer sx={{
-            overflowX: "auto",  
-            WebkitOverflowScrolling: "touch",  
-            maxWidth: "100vw"  
+            overflowX: "auto",
+            WebkitOverflowScrolling: "touch",
+            maxWidth: "100vw"
           }}>
             <Table sx={{ minWidth: { xs: 0, md: 650 } }}>
               <TableHead>
@@ -574,7 +542,7 @@ const StudentList = () => {
                         },
                       }}
                     >
-                      <TableCell sx={{    width: { xs: 2 } }}>
+                      <TableCell sx={{ width: { xs: 2 } }}>
                         <Chip
                           label={student.studentId}
                           size="small"
@@ -585,7 +553,7 @@ const StudentList = () => {
                           }}
                         />
                       </TableCell>
-                      <TableCell sx={{    }}>
+                      <TableCell sx={{}}>
                         <Box sx={{ display: "flex", alignItems: "center" }}>
                           <Avatar
                             src={student.studentPhoto}
@@ -606,7 +574,7 @@ const StudentList = () => {
                           </Box>
                         </Box>
                       </TableCell>
-                      <TableCell sx={{    }}>
+                      <TableCell sx={{}}>
                         <Typography variant="body2" sx={{ fontWeight: "medium" }}>
                           {student.className}
                         </Typography>
@@ -614,7 +582,7 @@ const StudentList = () => {
                           {student.section}
                         </Typography>
                       </TableCell>
-                      <TableCell sx={{ display: { xs: "none", md: "table-cell" } }}>
+                      <TableCell >
                         <Chip
                           label={student.studentClassRoll}
                           size="small"
@@ -624,13 +592,13 @@ const StudentList = () => {
                           }}
                         />
                       </TableCell>
-                      <TableCell sx={{ display: { xs: "none", md: "table-cell" } }}>
+                      <TableCell >
                         <Typography variant="body2">{student.guardianName}</Typography>
                         <Typography variant="caption" color="text.secondary" display="block">
                           {student.relation}
                         </Typography>
                       </TableCell>
-                      <TableCell sx={{ display: { xs: "none", md: "table-cell" } }}>
+                      <TableCell >
                         <Typography variant="body2" sx={{ display: "flex", alignItems: "center" }}>
                           <Phone fontSize="small" sx={{ mr: 0.5, fontSize: 14 }} />
                           {student.mobile || "N/A"}
@@ -645,7 +613,7 @@ const StudentList = () => {
                           {student.guardianMobile}
                         </Typography>
                       </TableCell>
-                      <TableCell sx={{    }}>
+                      <TableCell sx={{}}>
                         <Chip
                           label={student.studentType}
                           size="small"
@@ -714,7 +682,7 @@ const StudentList = () => {
             </Table>
           </TableContainer>
           <TablePagination
-            rowsPerPageOptions={[5, 10, 25, 50]}
+            rowsPerPageOptions={[10, 25, 50]}
             component="div"
             count={totalStudents}
             rowsPerPage={rowsPerPage}
