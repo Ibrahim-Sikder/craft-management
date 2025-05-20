@@ -17,6 +17,7 @@ import {
   styled,
   keyframes,
   Chip,
+  ThemeProvider,
 } from "@mui/material"
 import {
   Save as SaveIcon,
@@ -183,224 +184,178 @@ export default function ClassForm({ id }: ClassProps) {
       {isLoading ? (
         <h3>Loading........</h3>
       ) : (
-        <CraftForm onSubmit={handleSubmit} defaultValues={defaultValue}>
-          <Box
-            sx={{
-              flexGrow: 1,
-              minHeight: "100vh",
-              background: "linear-gradient(to bottom, #f5f7fa, #e4e7eb)",
-              pt: 4,
-              pb: 8,
-            }}
-          >
-            <Container maxWidth="lg">
-              <Fade in={true} timeout={800}>
-                <Box>
-                  <Box
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      mb: 4,
-                    }}
-                  >
-                    <SchoolIcon
+        <ThemeProvider theme={theme}>
+          <CraftForm onSubmit={handleSubmit} defaultValues={defaultValue}>
+            <div className="min-h-screen md:min-w-screen lg:min-w-fit md:bg-gradient-to-b md:from-[#f5f7fa] md:to-[#e4e7eb] pt-1 md:pt-4 pb-1 md:pb-8 rounded-xl w-full px-0 md:px-4">     
+              <Container sx={{  p: { xs: 0, sm: 0, md: "auto" } }}>
+                <Fade in={true} timeout={800}>
+                  <div>
+                    {/* Rest of your existing code remains exactly the same */}
+                    <Paper
+                      elevation={0}
                       sx={{
-                        fontSize: 40,
-                        color: "primary.main",
-                        mr: 2,
-                        p: 1,
-                        borderRadius: "50%",
-                        bgcolor: alpha(theme.palette.primary.main, 0.1),
-                      }}
-                    />
-                    <Typography
-                      variant="h4"
-                      component="h1"
-                      sx={{
-                        background: "linear-gradient(45deg, #3f51b5, #5c6bc0)",
-                        backgroundClip: "text",
-                        textFillColor: "transparent",
-                        mb: 0,
+                        p: 0,
+                        mb: 4,
+                        overflow: "hidden",
+                        position: "relative",
+                        borderRadius: 3,
+                        boxShadow: "0 10px 30px rgba(0, 0, 0, 0.08)",
                       }}
                     >
-                      Class Management
-                    </Typography>
-                  </Box>
-
-                  <Paper
-                    elevation={0}
-                    sx={{
-                      p: 0,
-                      mb: 4,
-                      overflow: "hidden",
-                      position: "relative",
-                      borderRadius: 3,
-                      boxShadow: "0 10px 30px rgba(0, 0, 0, 0.08)",
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        p: 3,
-                        background: "linear-gradient(45deg, #3f51b5, #5c6bc0)",
-                        color: "white",
-                        borderTopLeftRadius: 16,
-                        borderTopRightRadius: 16,
-                      }}
-                    >
-                      <Typography variant="h5" fontWeight="bold">
-                        {id ? "Update Class" : "Create New Class"}
-                      </Typography>
-                      <Typography variant="body2" sx={{ opacity: 0.8, mt: 0.5 }}>
-                        Fill in the details below to {id ? "update" : "create a new"} class in your school management
-                        system
-                      </Typography>
-                    </Box>
-
-                    <Box sx={{ p: 3 }}>
-                      <Zoom in={true}>
-                        <Card
-                          sx={{
-                            mb: 4,
-                            position: "relative",
-                            border: "1px solid rgba(0,0,0,0.08)",
-                            overflow: "visible",
-                            borderRadius: 3,
-                            boxShadow: "0 5px 20px rgba(0, 0, 0, 0.05)",
-                          }}
-                        >
-                          <Box
+                      <div className="p-3 md:p-4 bg-gradient-to-r from-[#3f51b5] to-[#5c6bc0] text-white   rounded-t-2xl flex flex-col items-center">
+                        <div className="flex items-center content-center gap-2">
+                          <SchoolIcon
                             sx={{
-                              position: "absolute",
-                              top: -15,
-                              left: 20,
-                              bgcolor: "primary.main",
+                              fontSize: 40,
                               color: "white",
-                              py: 0.5,
-                              px: 2,
-                              borderRadius: 4,
-                              zIndex: 1,
-                              boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                              mr: 0,
+                              p: 1,
+                              borderRadius: "50%",
+                              bgcolor: alpha(theme.palette.primary.main, 0.1),
+                            }}
+                          />
+                          <h1 className="text-xl md:text-2xl font-bold">
+                            {id ? "Update Class" : "Create New Class"}
+                          </h1>
+
+                        </div>
+                        <p className="text-sm leading-normal opacity-80 mt-1 text-center">
+                          Fill in the details below to {id ? "update" : "create a new"} class.
+                        </p>
+                      </div>
+
+                      <div className="py-5 px-1 md:px-3">
+                        <Zoom in={true}>
+                          <Card
+                            sx={{
+                              mb: 4,
+                              position: "relative",
+                              border: "1px solid rgba(0,0,0,0.08)",
+                              overflow: "visible",
+                              borderRadius: 3,
+                              boxShadow: "0 5px 20px rgba(0, 0, 0, 0.05)",
                             }}
                           >
-                            <Typography variant="subtitle2" fontWeight="bold">
-                              Class Details
-                            </Typography>
-                          </Box>
+                            <Box
+                              sx={{
+                                position: "absolute",
+                                top: -15,
+                                left: 20,
+                                bgcolor: "primary.main",
+                                color: "white",
+                                py: 0.5,
+                                px: 2,
+                                borderRadius: 4,
+                                zIndex: 1,
+                                boxShadow: "0 4px 12px rgba(0,0,0,0.15)",
+                              }}
+                            >
+                              <Typography variant="subtitle2" fontWeight="bold">
+                                Class Details
+                              </Typography>
+                            </Box>
 
-                          <CardContent sx={{ p: 3, pt: 4 }}>
-                            <Grid container spacing={3}>
-                              <Grid item xs={12} md={6}>
-                                <CraftInputWithIcon
-                                  name="className"
-                                  fullWidth
-                                  label="Class Name"
-                                  variant="outlined"
-                                  placeholder="Enter class name"
-                                  required
-                                  InputProps={{
-                                    startAdornment: (
-                                      <ClassIcon
-                                        sx={{ color: "text.secondary", mr: 1, alignSelf: "flex-start", mt: 1.5 }}
-                                      />
-                                    ),
-                                  }}
-                                />
-                              </Grid>
-
-                              <Grid item xs={12} md={6}>
-                                <Grid container >
-                                  <Grid item md={8} >
-                                    <CraftIntAutoCompleteWithIcon
-                                      name="sections"
-                                      label="Select Section"
-                                      options={sectionOption}
-                                      fullWidth
-                                      icon={<ClassIcon color="secondary" />}
-                                    />
-
-                                  </Grid>
-                                  <Grid item md={4} >
-                                    <Box sx={{ display: "flex", alignItems: "center", justifyContent: 'center', mt: 1 }}>
-                                      <AddSectionButton
-                                        variant="contained"
-                                        startIcon={<AddCircleIcon />}
-                                        onClick={handleOpenAddModal}
-                                        disableElevation
-                                      >
-                                        New Section
-                                      </AddSectionButton>
-
-                                      {showAddSectionHint && sectionOption.length < 3 && (
-                                        <Chip
-                                          label="Create sections for your class!"
-                                          color="info"
-                                          size="small"
-                                          sx={{
-                                            ml: 2,
-                                            animation: `${pulseAnimation} 2s infinite`,
-                                            fontWeight: 500,
-                                          }}
+                            <CardContent sx={{ p: { xs: 1, sm: 1, md: 3 }, pt: 6 }}>
+                              <Grid container spacing={2}>
+                                <Grid item xs={12} md={6} sx={{ mt: { xs: 1, sm: 1, md: 0 } }}>
+                                  <CraftInputWithIcon
+                                    name="className"
+                                    fullWidth
+                                    label="Class Name"
+                                    variant="outlined"
+                                    placeholder="Enter class name"
+                                    required
+                                    InputProps={{
+                                      startAdornment: (
+                                        <ClassIcon
+                                          sx={{ color: "text.secondary", mr: 1, alignSelf: "flex-start", mt: 1.5 }}
                                         />
-                                      )}
-                                    </Box>
-                                  </Grid>
+                                      ),
+                                    }}
+                                  />
                                 </Grid>
 
-                              </Grid>
-                            </Grid>
-                          </CardContent>
-                        </Card>
-                      </Zoom>
-                    </Box>
-                  </Paper>
+                                <Grid item xs={12} md={6}>
+                                  <Grid container >
+                                    <Grid item xs={12} md={8} >
+                                      <CraftIntAutoCompleteWithIcon
+                                        name="sections"
+                                        label="Select Section"
+                                        options={sectionOption}
+                                        fullWidth
+                                        icon={<ClassIcon color="secondary" />}
+                                      />
 
-                  <Box sx={{ display: "flex", justifyContent: "center" }}>
-                    <Button
-                      variant="contained"
-                      color="primary"
-                      size="large"
-                      startIcon={isSuccess ? <CheckCircleOutlineIcon /> : <SaveIcon />}
-                      type="submit"
-                      sx={{
-                        px: 6,
-                        py: 1.5,
-                        fontSize: "1rem",
-                        minWidth: 200,
-                        position: "relative",
-                        overflow: "hidden",
-                        borderRadius: 3,
-                        boxShadow: "0 8px 20px rgba(63, 81, 181, 0.3)",
-                        "&:hover": {
-                          boxShadow: "0 10px 25px rgba(63, 81, 181, 0.4)",
-                          transform: "translateY(-2px)",
-                        },
-                        transition: "all 0.3s ease",
-                        "&::after": isSuccess
-                          ? {
-                            content: '""',
-                            position: "absolute",
-                            top: 0,
-                            left: 0,
-                            width: "100%",
-                            height: "100%",
-                            background: `linear-gradient(45deg, ${alpha(
-                              theme.palette.success.main,
-                              0.2,
-                            )} 30%, ${alpha(theme.palette.success.light, 0.2)} 90%)`,
-                            zIndex: -1,
-                          }
-                          : {},
-                      }}
-                    >
-                      {id ? "Update Class" : "Save Class"}
-                    </Button>
-                  </Box>
-                </Box>
-              </Fade>
-            </Container>
-          </Box>
-          <SectionModal open={addModalOpen} onClose={handleCloseAddModal} />
-        </CraftForm>
+                                    </Grid>
+                                    <Grid item md={4} >
+                                      <Box sx={{ display: "flex", alignItems: "center", justifyContent: 'center', mt: 1 }}>
+                                        <AddSectionButton
+                                          variant="contained"
+                                          startIcon={<AddCircleIcon />}
+                                          onClick={handleOpenAddModal}
+                                          disableElevation
+                                        >
+                                          New Section
+                                        </AddSectionButton>
+
+                                        {showAddSectionHint && sectionOption.length < 3 && (
+                                          <Chip
+                                            label="Create sections for your class!"
+                                            color="info"
+                                            size="small"
+                                            sx={{
+                                              ml: 2,
+                                              animation: `${pulseAnimation} 2s infinite`,
+                                              fontWeight: 500,
+                                            }}
+                                          />
+                                        )}
+                                      </Box>
+                                    </Grid>
+                                  </Grid>
+
+                                </Grid>
+                              </Grid>
+                            </CardContent>
+                          </Card>
+                        </Zoom>
+                        <Box sx={{ display: "flex", justifyContent: "end" }}>
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            size="large"
+                            startIcon={isSuccess ? <CheckCircleOutlineIcon /> : <SaveIcon />}
+                            type="submit"
+                            sx={{
+                              px: 6,
+                              py: 1.5,
+                              fontSize: "1rem",
+                              minWidth: 200,
+                              position: "relative",
+                              overflow: "hidden",
+                              borderRadius: 3,
+                              boxShadow: "0 8px 20px rgba(63, 81, 181, 0.3)",
+                              "&:hover": {                                
+                                transform: "translateY(-2px)",
+                              },
+                              transition: "all 0.3s ease",
+                            }}
+                          >
+                            {id ? "Update Class" : "Save Class"}
+                          </Button>
+                        </Box>
+                      </div>
+
+                    </Paper>
+
+
+                  </div>
+                </Fade>
+              </Container>
+              <SectionModal open={addModalOpen} onClose={handleCloseAddModal} />
+            </div>
+          </CraftForm>
+        </ThemeProvider>
       )}
     </>
   )

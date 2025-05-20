@@ -94,7 +94,7 @@ export const navigationItems: NavigationItem[] = [
         roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
       },
       {
-        title: "Classes",
+        title: "Class",
         icon: (
           <ColorfulIcon color="#0F9D58">
             <Class />
@@ -106,7 +106,6 @@ export const navigationItems: NavigationItem[] = [
 
       {
         title: "Subject",
-
         icon: (
           <ColorfulIcon color="#0F9D58">
             <Book />
