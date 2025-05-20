@@ -1,3 +1,16 @@
+import React from 'react';
+
+const page = () => {
+    return (
+        <div>
+            page
+        </div>
+    );
+};
+
+export default page;
+
+
 // /* eslint-disable @typescript-eslint/no-unused-vars */
 // /* eslint-disable @typescript-eslint/no-explicit-any */
 // "use client"
