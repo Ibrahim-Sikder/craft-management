@@ -112,11 +112,13 @@ export default function ClassReportForm({ id }: any) {
     page: page + 1,
     searchTerm: searchTerm,
   })
+
   const { data: teacherData } = useGetAllTeachersQuery({
     limit: limit,
     page: page + 1,
     searchTerm: searchTerm,
   })
+
   const { data: subjectData } = useGetAllSubjectsQuery({
     limit: limit,
     page: page + 1,
@@ -138,6 +140,7 @@ export default function ClassReportForm({ id }: any) {
       value: sub._id,
     }))
   }, [subjectData])
+
   const teacherOption = useMemo(() => {
     if (!teacherData?.data) return []
     return teacherData?.data?.map((sub: any) => ({
@@ -145,12 +148,12 @@ export default function ClassReportForm({ id }: any) {
       value: sub._id,
     }))
   }, [teacherData])
+
   // New state for dialog controls
   const [todayLessonDialogOpen, setTodayLessonDialogOpen] = useState(false)
   const [todayTaskDialogOpen, setTodayTaskDialogOpen] = useState(false)
 
   // const storedUser = JSON.parse(getFromLocalStorage("user-info") || "{}")
-
 
   const {
     data: studentData,
@@ -195,6 +198,8 @@ export default function ClassReportForm({ id }: any) {
       setReportStudents(studentsFromReport)
     }
   }, [id, singleClassReport])
+
+
   useEffect(() => {
     if (singleClassReport?.data?.studentEvaluations?.length > 0) {
       const evaluations = singleClassReport?.data?.studentEvaluations?.map((studentEval: any) => ({
@@ -581,8 +586,10 @@ export default function ClassReportForm({ id }: any) {
         <>
           <ThemeProvider theme={theme}>
             <CraftForm onSubmit={handleSubmit} defaultValues={defaultValues || {}}>
-              <Box sx={{ flexGrow: 1, bgcolor: "background.default", minHeight: "100vh", minWidth:{sm:"auto", md:800}, borderRadius: 2 }}>
-                <Container  sx={{ mt: 0, mb: 8, borderRadius: 2}}>
+              <Box
+                sx={{ flexGrow: 1, bgcolor: "background.default", minHeight: "100vh", borderRadius: 2, width: "100%" }}
+              >
+                <Container maxWidth={false} sx={{ mt: 0, mb: 8, borderRadius: 2, px: { xs: 0, sm: 0, md: 4, lg: 5 } }}>
                   <Fade in={true} timeout={800}>
                     <Box>
                       <Box
@@ -596,7 +603,15 @@ export default function ClassReportForm({ id }: any) {
                           paddingTop: 2,
                         }}
                       >
-                        <Typography variant="h4" component="h1" sx={{ fontWeight: 700, color: "text.primary" }}>
+                        <Typography
+                          variant="h4"
+                          component="h1"
+                          sx={{
+                            fontWeight: 700,
+                            color: "text.primary",
+                            fontSize: { xs: "1.5rem", sm: "1.75rem", md: "2rem" },
+                          }}
+                        >
                           {id ? "Edit Report" : "+ Add New Report"}
                           {isEditMode && (
                             <Typography component="span" variant="subtitle1" sx={{ ml: 2, color: "text.secondary" }}>
@@ -604,7 +619,7 @@ export default function ClassReportForm({ id }: any) {
                             </Typography>
                           )}
                         </Typography>
-                        <Box sx={{ display: "flex", gap: 2 }}>
+                        <Box sx={{ display: "flex", gap: { xs: 1, sm: 2 }, flexWrap: "wrap" }}>
                           <Button
                             variant="contained"
                             color="primary"
@@ -614,6 +629,8 @@ export default function ClassReportForm({ id }: any) {
                               bgcolor: todayLessonId ? "success.main" : "",
                               borderRadius: 2,
                               boxShadow: "0px 4px 10px rgba(99, 102, 241, 0.2)",
+                              fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                              px: { xs: 1, sm: 2 },
                             }}
                           >
                             {todayLessonId ? " আজকের পাঠে দেখুন" : "আজকের পাঠ"}
@@ -627,6 +644,8 @@ export default function ClassReportForm({ id }: any) {
                               bgcolor: homeTaskId ? "success.main" : "#3792de",
                               borderRadius: 2,
                               boxShadow: "0px 4px 10px rgba(99, 102, 241, 0.2)",
+                              fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                              px: { xs: 1, sm: 2 },
                             }}
                           >
                             {homeTaskId ? "বাড়ির কাজ দেখুন" : "বাড়ির কাজ"}
@@ -641,6 +660,8 @@ export default function ClassReportForm({ id }: any) {
                               bgcolor: "#4F0187",
                               borderRadius: 2,
                               boxShadow: "0px 4px 10px rgba(99, 102, 241, 0.2)",
+                              fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                              px: { xs: 1, sm: 2 },
                             }}
                           >
                             {isSubmitting ? "Saving..." : "Save"}
@@ -648,12 +669,11 @@ export default function ClassReportForm({ id }: any) {
                         </Box>
                       </Box>
 
-                      <Paper elevation={0} sx={{ mb: 4, overflow: "hidden" }}>
-                        <Box sx={{ p: { sm: 1, md: 2, lg: 3 }, borderBottom: "1px solid rgba(0, 0, 0, 0.06)" }}>
+                      <Paper elevation={0} sx={{ mb: 4, overflow: "hidden", width: "100%" }}>
+                        <Box sx={{ p: { xs: 1, sm: 1, md: 2, lg: 3 }, borderBottom: "1px solid rgba(0, 0, 0, 0.06)" }}>
                           <Grid container spacing={2} alignItems="center">
-
                             {/* Teacher Name */}
-                            <Grid item xs={12} sm={6} md={3} lg={3}>
+                            <Grid item xs={11} sm={6} md={3} lg={3}>
                               <CraftIntAutoComplete
                                 name="teachers"
                                 placeholder="শিক্ষকের নাম লিখুন"
@@ -666,7 +686,7 @@ export default function ClassReportForm({ id }: any) {
                             </Grid>
 
                             {/* Class Name */}
-                            <Grid item xs={12} sm={6} md={2} lg={2}>
+                            <Grid item xs={11} sm={6} md={2} lg={3}>
                               <CraftIntAutoComplete
                                 name="classes"
                                 label="শ্রেণীর নাম লিখুন"
@@ -679,7 +699,7 @@ export default function ClassReportForm({ id }: any) {
                             </Grid>
 
                             {/* Subject Name */}
-                            <Grid item xs={12} sm={6} md={3} lg={3}>
+                            <Grid item xs={11} sm={6} md={3} lg={3}>
                               <CraftIntAutoComplete
                                 name="subjects"
                                 label="বিষয়ের নাম লিখুন"
@@ -691,24 +711,21 @@ export default function ClassReportForm({ id }: any) {
                             </Grid>
 
                             {/* Hour */}
-                            <Grid item xs={6} sm={6} md={1.5} lg={1.5}>
+                            <Grid item xs={5.5} sm={6} md={2} lg={1.5}>
                               <CraftSelect
                                 name="hour"
                                 label="ঘন্টা"
                                 items={classHour}
-                                sx={{ minWidth: { sm: 40, md: 30 } }}
-
+                                sx={{ minWidth: { xs: 80, sm: 100, md: 130 } }}
                               />
                             </Grid>
 
                             {/* Date */}
-                            <Grid item xs={12} sm={6} md={2.4} lg={2}>
+                            <Grid item xs={5.5} sm={6} md={2} lg={1.5}>
                               <CraftDatePicker name="date" label="তারিখ" />
                             </Grid>
-
                           </Grid>
                         </Box>
-
 
                         {isLoading ? (
                           <Box sx={{ p: 2 }}>
@@ -728,20 +745,44 @@ export default function ClassReportForm({ id }: any) {
                           </Box>
                         ) : (
                           <>
-                            <TableContainer sx={{
-                              overflowX: "auto",
-                              WebkitOverflowScrolling: "touch",
-                              maxWidth: "100vw"
+                            <Box sx={{
+                              width: '100%',
+                              overflowX: 'auto',
+                              // Small device styles (unchanged)
+                              '@media (max-width: 800px)': {
+                                border: '1px solid #ddd',
+                                borderRadius: '4px',
+                                display: 'block',
+                                maxWidth: '100vw',
+                                position: 'relative',
+                                overflowX: 'auto',
+                                whiteSpace: 'nowrap',
+                                WebkitOverflowScrolling: 'touch',
+                              },
+                              // Large device styles
+                              '@media (min-width: 900px)': {
+                                width: '100%',
+                                overflowX: 'visible',
+                                display: 'table'
+                              }
                             }}>
-                              <Table sx={{ minWidth: 650 }}>
+                              <Table sx={{
+                                minWidth: 900,
+                                '@media (min-width: 900px)': {
+                                  width: '100%',
+                                  minWidth: '100%',
+                                  tableLayout: { sm: 'auto', md: "fixed", lg: "fixed" }
+                                }
+                              }}>
+                                {/* <Table sx={{ width: "100%", tableLayout: { xs:"inherit", sm: 'auto', md: "fixed", lg: "fixed" } }}> */}
                                 <TableHead>
                                   <TableRow>
-                                    <TableCell>ছাত্রের নাম</TableCell>
-                                    <TableCell align="center">উপস্থিতি</TableCell>
-                                    <TableCell align="center">পাঠ মূল্যায়ন</TableCell>
-                                    <TableCell align="center">হাতের লিখা</TableCell>
-                                    <TableCell align="center">অভিভাবকের স্বাক্ষর</TableCell>
-                                    <TableCell align="center">মন্তব্য</TableCell>
+                                    <TableCell sx={{ minWidth: 200 }}>ছাত্রের নাম</TableCell>
+                                    <TableCell align="center" sx={{ minWidth: 120 }}>উপস্থিতি</TableCell>
+                                    <TableCell align="center" sx={{ minWidth: 180 }}>পাঠ মূল্যায়ন</TableCell>
+                                    <TableCell align="center" sx={{ minWidth: 180 }}>হাতের লিখা</TableCell>
+                                    <TableCell align="center" sx={{ minWidth: 150 }}>অভিভাবকের স্বাক্ষর</TableCell>
+                                    <TableCell align="center" sx={{ minWidth: 200 }}>মন্তব্য</TableCell>
                                   </TableRow>
                                 </TableHead>
                                 <TableBody>
@@ -788,7 +829,11 @@ export default function ClassReportForm({ id }: any) {
                                             />
                                           </TableCell>
                                           <TableCell align="center">
-                                            <FormControl fullWidth sx={{ minWidth: 160 }} disabled={isAbsent}>
+                                            <FormControl
+                                              fullWidth
+                                              sx={{ minWidth: { xs: 120, sm: 140, md: 160 } }}
+                                              disabled={isAbsent}
+                                            >
                                               <InputLabel id={`lesson-label-${student._id}`}>
                                                 Lesson Evaluation
                                               </InputLabel>
@@ -810,7 +855,11 @@ export default function ClassReportForm({ id }: any) {
                                           </TableCell>
 
                                           <TableCell align="center">
-                                            <FormControl fullWidth sx={{ minWidth: 160 }} disabled={isAbsent}>
+                                            <FormControl
+                                              fullWidth
+                                              sx={{ minWidth: { xs: 120, sm: 140, md: 160 } }}
+                                              disabled={isAbsent}
+                                            >
                                               <InputLabel id={`handwriting-label-${student._id}`}>
                                                 Handwriting
                                               </InputLabel>
@@ -828,7 +877,6 @@ export default function ClassReportForm({ id }: any) {
                                               </Select>
                                             </FormControl>
                                           </TableCell>
-
 
                                           <TableCell align="center">
                                             <Checkbox
@@ -872,7 +920,7 @@ export default function ClassReportForm({ id }: any) {
                                   )}
                                 </TableBody>
                               </Table>
-                            </TableContainer>
+                            </Box>
                           </>
                         )}
                       </Paper>

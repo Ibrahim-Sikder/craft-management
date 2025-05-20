@@ -117,7 +117,7 @@ export default function ClassReportList() {
       searchTerm: searchTerm,
       className: filters.classes,
       subject: filters.subjects,
-      teacher: filters.teachers, 
+      teacher: filters.teachers,
       date: filters.date,
       hour: filters.hour,
     },
@@ -410,7 +410,7 @@ export default function ClassReportList() {
               <Box sx={{ mb: 4 }}>
                 <Grid container spacing={2}>
                   {/* Class Filter */}
-                  <Grid item xs={12} sm={6} md={2.4}>
+                  <Grid item xs={12} sm={6} md={2}>
                     <Card variant="outlined" sx={{ borderRadius: 2 }}>
                       <CardContent>
                         <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
@@ -442,7 +442,7 @@ export default function ClassReportList() {
                   </Grid>
 
                   {/* Subject Filter */}
-                  <Grid item xs={12} sm={6} md={2.4}>
+                  <Grid item xs={12} sm={6} md={2}>
                     <Card variant="outlined" sx={{ borderRadius: 2 }}>
                       <CardContent>
                         <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
@@ -474,7 +474,7 @@ export default function ClassReportList() {
                   </Grid>
 
                   {/* Teacher Filter */}
-                  <Grid item xs={12} sm={6} md={2.4}>
+                  <Grid item xs={12} sm={6} md={2}>
                     <Card variant="outlined" sx={{ borderRadius: 2 }}>
                       <CardContent>
                         <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
@@ -506,13 +506,44 @@ export default function ClassReportList() {
                   </Grid>
 
                   {/* Hour Filter */}
-                  <Grid item xs={12} sm={6} md={2.4}>
+                  <Grid item xs={12} sm={6} md={1.5}>
                     <Card variant="outlined" sx={{ borderRadius: 2 }}>
                       <CardContent>
                         <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
                           <AccessTimeIcon sx={{ color: "primary.main", mr: 1 }} />
                           <Typography variant="subtitle1" fontWeight={600}>
                             Hour
+                          </Typography>
+                        </Box>
+                        <FormControl fullWidth size="small">
+                          <InputLabel id="hour-filter-label">Select Hour</InputLabel>
+                          <Select
+                            labelId="hour-filter-label"
+                            id="hour-filter"
+                            value={filters.hour}
+                            label="Select Hour"
+                            onChange={(e: SelectChangeEvent) => handleFilterChange("hour", e.target.value)}
+                          >
+                            <MenuItem value="">All Hours</MenuItem>
+                            {hourOptions.map((hour) => (
+                              <MenuItem key={hour} value={hour}>
+                                {hour}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        </FormControl>
+                      </CardContent>
+                    </Card>
+                  </Grid>
+
+                  {/* Lesson Filter */}
+                  <Grid item xs={12} sm={6} md={2}>
+                    <Card variant="outlined" sx={{ borderRadius: 2 }}>
+                      <CardContent>
+                        <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                          <AccessTimeIcon sx={{ color: "primary.main", mr: 1 }} />
+                          <Typography variant="subtitle1" fontWeight={600}>
+                            Lesson
                           </Typography>
                         </Box>
                         <FormControl fullWidth size="small">
@@ -566,7 +597,7 @@ export default function ClassReportList() {
                 {/* Search and Actions */}
                 <Box sx={{ mt: 2, display: "flex", gap: 2, flexWrap: "wrap" }}>
                   <TextField
-                    placeholder="Search by class, subject, teacher..."
+                    placeholder="Search by Student Name..."
                     variant="outlined"
                     value={searchTerm}
                     onChange={handleSearchChange}
@@ -643,10 +674,10 @@ export default function ClassReportList() {
                 ) : (
                   <>
                     <TableContainer sx={{
-            overflowX: "auto",  
-            WebkitOverflowScrolling: "touch",  
-            maxWidth: "100vw"  
-          }}>
+                      overflowX: "auto",
+                      WebkitOverflowScrolling: "touch",
+                      maxWidth: "100vw"
+                    }}>
                       <Table sx={{ minWidth: 650 }}>
                         <TableHead>
                           <TableRow>
@@ -782,6 +813,27 @@ export default function ClassReportList() {
                                         <TableCell>
                                           <Chip
                                             icon={
+                                              evaluation?.lessonEvaluation ? (
+                                                <CheckCircleIcon sx={{ color: "#651FFF" }} />
+                                              ) : (
+                                                <CancelIcon sx={{ color: "#FF1744" }} />
+                                              )
+                                            }
+                                            label={evaluation?.lessonEvaluation || "Not Done"}
+                                            size="small"
+                                            sx={{
+                                              fontWeight: 500,
+                                              color: evaluation?.lessonEvaluation ? "#651FFF" : "#FF1744",
+                                              bgcolor: evaluation?.lessonEvaluation ? "#EDE7F6" : "#FFEBEE",
+                                              border: `1px solid ${evaluation?.lessonEvaluation ? "#651FFF" : "#FF1744"}`,
+                                            }}
+                                          />
+                                        </TableCell>
+
+                                        
+                                        <TableCell>
+                                          <Chip
+                                            icon={
                                               evaluation?.handwriting ? (
                                                 <DrawIcon sx={{ color: "#00BFA6" }} />
                                               ) : (
@@ -799,25 +851,7 @@ export default function ClassReportList() {
                                           />
                                         </TableCell>
 
-                                        <TableCell>
-                                          <Chip
-                                            icon={
-                                              evaluation?.lessonEvaluation ? (
-                                                <CheckCircleIcon sx={{ color: "#651FFF" }} />
-                                              ) : (
-                                                <CancelIcon sx={{ color: "#FF1744" }} />
-                                              )
-                                            }
-                                            label={evaluation?.lessonEvaluation || "Not Done"}
-                                            size="small"
-                                            sx={{
-                                              fontWeight: 500,
-                                              color: evaluation?.lessonEvaluation ? "#651FFF" : "#FF1744",
-                                              bgcolor: evaluation?.lessonEvaluation ? "#EDE7F6" : "#FFEBEE",
-                                              border: `1px solid ${evaluation?.lessonEvaluation ? "#651FFF" : "#FF1744"}`,
-                                            }}
-                                          />
-                                        </TableCell>
+                                        
 
                                         <TableCell>
                                           <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
