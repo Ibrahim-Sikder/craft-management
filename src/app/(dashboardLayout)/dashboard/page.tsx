@@ -384,7 +384,7 @@ const DashboardHome = () => {
       <div className="md:flex justify-between items-center mb-4 gap-2">
         <div>
           <h1 className="text-center md:text-left md:mb-2 text-[#4F0187] font-[1000] text-4xl md:text-5xl">
-            Craft Dashboard
+            Craft Dashboard 
           </h1>
 
           <h3 className="text-center md:text-left text-[#9AA6B2] md:font-medium mb-2">
