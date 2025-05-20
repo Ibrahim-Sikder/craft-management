@@ -47,7 +47,6 @@ import {
 } from "@mui/icons-material"
 import Link from "next/link"
 import { useDeleteStudentMutation, useGetAllStudentsQuery } from "@/redux/api/studentApi"
-
 import Swal from "sweetalert2"
 import { useGetAllClassesQuery } from "@/redux/api/classApi"
 import { useGetAllSectionsQuery } from "@/redux/api/sectionApi"

@@ -1,4 +1,3 @@
-/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
@@ -150,7 +149,7 @@ export default function ClassReportForm({ id }: any) {
   const [todayLessonDialogOpen, setTodayLessonDialogOpen] = useState(false)
   const [todayTaskDialogOpen, setTodayTaskDialogOpen] = useState(false)
 
-  const storedUser = JSON.parse(getFromLocalStorage("user-info") || "{}")
+  // const storedUser = JSON.parse(getFromLocalStorage("user-info") || "{}")
 
 
   const {
@@ -582,8 +581,8 @@ export default function ClassReportForm({ id }: any) {
         <>
           <ThemeProvider theme={theme}>
             <CraftForm onSubmit={handleSubmit} defaultValues={defaultValues || {}}>
-              <Box sx={{ flexGrow: 1, bgcolor: "background.default", minHeight: "100vh", borderRadius: 2 }}>
-                <Container maxWidth="xl" sx={{ mt: 0, mb: 8, borderRadius: 2 }}>
+              <Box sx={{ flexGrow: 1, bgcolor: "background.default", minHeight: "100vh", minWidth:{sm:"auto", md:800}, borderRadius: 2 }}>
+                <Container  sx={{ mt: 0, mb: 8, borderRadius: 2}}>
                   <Fade in={true} timeout={800}>
                     <Box>
                       <Box
@@ -650,65 +649,65 @@ export default function ClassReportForm({ id }: any) {
                       </Box>
 
                       <Paper elevation={0} sx={{ mb: 4, overflow: "hidden" }}>
-                        <Box sx={{ p:{sm:1, md:2, lg:3}, borderBottom: "1px solid rgba(0, 0, 0, 0.06)" }}>
-  <Grid container spacing={2} alignItems="center">
-    
-    {/* Teacher Name */}
-    <Grid item xs={12} sm={6} md={3} lg={3}>
-      <CraftIntAutoComplete
-        name="teachers"
-        placeholder="শিক্ষকের নাম লিখুন"
-        label="শিক্ষকের নাম"
-        fullWidth
-        freeSolo
-        multiple={false}
-        options={teacherOption}
-      />
-    </Grid>
+                        <Box sx={{ p: { sm: 1, md: 2, lg: 3 }, borderBottom: "1px solid rgba(0, 0, 0, 0.06)" }}>
+                          <Grid container spacing={2} alignItems="center">
 
-    {/* Class Name */}
-    <Grid item xs={12} sm={6} md={2} lg={3}>
-      <CraftIntAutoComplete
-        name="classes"
-        label="শ্রেণীর নাম লিখুন"
-        fullWidth
-        freeSolo
-        multiple={false}
-        options={classOption}
-        onChange={handleClassChange}
-      />
-    </Grid>
+                            {/* Teacher Name */}
+                            <Grid item xs={12} sm={6} md={3} lg={3}>
+                              <CraftIntAutoComplete
+                                name="teachers"
+                                placeholder="শিক্ষকের নাম লিখুন"
+                                label="শিক্ষকের নাম"
+                                fullWidth
+                                freeSolo
+                                multiple={false}
+                                options={teacherOption}
+                              />
+                            </Grid>
 
-    {/* Subject Name */}
-    <Grid item xs={12} sm={6} md={3} lg={3}>
-      <CraftIntAutoComplete
-        name="subjects"
-        label="বিষয়ের নাম লিখুন"
-        fullWidth
-        freeSolo
-        multiple={false}
-        options={subjectOption}
-      />
-    </Grid>
+                            {/* Class Name */}
+                            <Grid item xs={12} sm={6} md={2} lg={2}>
+                              <CraftIntAutoComplete
+                                name="classes"
+                                label="শ্রেণীর নাম লিখুন"
+                                fullWidth
+                                freeSolo
+                                multiple={false}
+                                options={classOption}
+                                onChange={handleClassChange}
+                              />
+                            </Grid>
 
-    {/* Hour */}
-    <Grid item xs={6} sm={6} md={1.5} lg={1.5}>
-      <CraftSelect
-        name="hour"
-        label="ঘন্টা"
-        items={classHour}
-        sx={{ minWidth: {sm:40, md:30} }}
+                            {/* Subject Name */}
+                            <Grid item xs={12} sm={6} md={3} lg={3}>
+                              <CraftIntAutoComplete
+                                name="subjects"
+                                label="বিষয়ের নাম লিখুন"
+                                fullWidth
+                                freeSolo
+                                multiple={false}
+                                options={subjectOption}
+                              />
+                            </Grid>
 
-      />
-    </Grid>
+                            {/* Hour */}
+                            <Grid item xs={6} sm={6} md={1.5} lg={1.5}>
+                              <CraftSelect
+                                name="hour"
+                                label="ঘন্টা"
+                                items={classHour}
+                                sx={{ minWidth: { sm: 40, md: 30 } }}
 
-    {/* Date */}
-    <Grid item xs={12} sm={6} md={2.4} lg={2}>
-      <CraftDatePicker name="date" label="তারিখ" />
-    </Grid>
+                              />
+                            </Grid>
 
-  </Grid>
-</Box>
+                            {/* Date */}
+                            <Grid item xs={12} sm={6} md={2.4} lg={2}>
+                              <CraftDatePicker name="date" label="তারিখ" />
+                            </Grid>
+
+                          </Grid>
+                        </Box>
 
 
                         {isLoading ? (
@@ -730,10 +729,10 @@ export default function ClassReportForm({ id }: any) {
                         ) : (
                           <>
                             <TableContainer sx={{
-            overflowX: "auto",  
-            WebkitOverflowScrolling: "touch",  
-            maxWidth: "100vw"  
-          }}>
+                              overflowX: "auto",
+                              WebkitOverflowScrolling: "touch",
+                              maxWidth: "100vw"
+                            }}>
                               <Table sx={{ minWidth: 650 }}>
                                 <TableHead>
                                   <TableRow>
@@ -834,7 +833,7 @@ export default function ClassReportForm({ id }: any) {
                                           <TableCell align="center">
                                             <Checkbox
                                               color="primary"
-                                               checked={evaluation.parentSignature === true}
+                                              checked={evaluation.parentSignature === true}
                                               onChange={(e) =>
                                                 handleParentSignatureChange(student._id, e.target.checked)
                                               }
