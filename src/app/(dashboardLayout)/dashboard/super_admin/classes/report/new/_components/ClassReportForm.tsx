@@ -743,7 +743,7 @@ export default function ClassReportForm({ id }: any) {
               <Box
                 sx={{ flexGrow: 1, bgcolor: "background.default", minHeight: "100vh", borderRadius: 2, width: "100%" }}
               >
-                <Container maxWidth={false} sx={{ mt: 0, mb: 8, borderRadius: 2, px: { xs: 2, sm: 3, md: 4, lg: 5 } }}>
+                <Container maxWidth={false} sx={{ mt: 0, mb: 8, borderRadius: 2, px: { xs: 0, sm: 0, md: 4, lg: 5 } }}>
                   <Fade in={true} timeout={800}>
                     <Box>
                       <Box
@@ -805,7 +805,7 @@ export default function ClassReportForm({ id }: any) {
                           >
                             {homeTaskId ? "বাড়ির কাজ দেখুন" : "বাড়ির কাজ"}
                           </Button>
-                          <Box sx={{ display: "flex", alignItems: "center", ml: 2 }}>
+                          {/* <Box sx={{ display: "flex", alignItems: "center", ml: 2 }}>
                             <Checkbox
                               checked={noHomeworkForClass}
                               onChange={handleNoHomeworkChange}
@@ -822,7 +822,7 @@ export default function ClassReportForm({ id }: any) {
                             >
                               আজ কোন বাড়ির কাজ নেই
                             </Typography>
-                          </Box>
+                          </Box> */}
                           <Button
                             type="submit"
                             variant="contained"
@@ -918,33 +918,83 @@ export default function ClassReportForm({ id }: any) {
                           </Box>
                         ) : (
                           <>
-                            <TableContainer
-                              sx={{
-                                overflowX: "auto",
-                                WebkitOverflowScrolling: "touch",
-                                width: "100%",
-                                "&::-webkit-scrollbar": {
-                                  height: "8px",
-                                },
-                                "&::-webkit-scrollbar-thumb": {
-                                  backgroundColor: "rgba(0,0,0,0.2)",
-                                  borderRadius: "4px",
-                                },
-                              }}
-                            >
-                              <Table sx={{ width: "100%", tableLayout: "fixed" }}>
+                            <Box sx={{
+                              width: '100%',
+                              overflowX: 'auto',
+                              // Small device styles (unchanged)
+                              '@media (max-width: 800px)': {
+                                border: '1px solid #ddd',
+                                borderRadius: '4px',
+                                display: 'block',
+                                maxWidth: '100vw',
+                                position: 'relative',
+                                overflowX: 'auto',
+                                whiteSpace: 'nowrap',
+                                WebkitOverflowScrolling: 'touch',
+                              },
+                              // Large device styles
+                              '@media (min-width: 900px)': {
+                                width: '100%',
+                                overflowX: 'visible',
+                                display: 'table'
+                              }
+                            }}>
+                              <Table sx={{
+                                minWidth: 900,
+                                '@media (min-width: 900px)': {
+                                  width: '100%',
+                                  minWidth: '100%',
+                                  tableLayout: { sm: 'auto', md: "fixed", lg: "fixed" }
+                                }
+                              }}>
                                 <TableHead>
                                   <TableRow>
                                     <TableCell width="20%">ছাত্রের নাম</TableCell>
                                     <TableCell align="center" width="10%">
                                       উপস্থিতি
                                     </TableCell>
-                                    <TableCell align="center" colSpan={2}>
+                                    <TableCell align="center" width="20%">
+                                      <div className="flex gap-2 justify-center">
+                                        <Tooltip title="আজ কোন কাজ/হোমওয়ার্ক নেই">
+                                          <FormControlLabel
+                                            control={
+                                              <Switch
+                                                checked={noTaskForClass}
+                                                onChange={handleNoTaskChange}
+                                                color="primary"
+                                              />
+                                            }
+                                            label={<Typography variant="caption" sx={{ fontSize: 15 }}>পাঠ মূল্যায়ন</Typography>}
+                                            labelPlacement="start"
+                                          />
+                                        </Tooltip>
+                                      </div>
+                                    </TableCell>
+                                  
+                                    <TableCell align="center" width="20%">
+                                      <div className="flex gap-2 justify-center">
+                                        <Tooltip title="আজ কোন কাজ/হোমওয়ার্ক নেই">
+                                          <FormControlLabel
+                                            control={
+                                              <Switch
+                                                checked={noTaskForClass}
+                                                onChange={handleNoTaskChange}
+                                                color="primary"
+                                              />
+                                            }
+                                            label={<Typography variant="caption" sx={{ fontSize: 15 }}>হাতের লিখা</Typography>}
+                                            labelPlacement="start"
+                                          />
+                                        </Tooltip>
+                                      </div>
+                                    </TableCell>
+
+                                    {/* <TableCell align="center" colSpan={2}>
                                       <Box
                                         sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}
                                       >
                                         <Typography variant="subtitle2" sx={{ fontWeight: 500 }}>
-                                          মূল্যায়ন
+                                          পাঠ মূল্যায়ন
                                         </Typography>
                                         <Tooltip title="আজ কোন কাজ/হোমওয়ার্ক নেই">
                                           <FormControlLabel
@@ -960,15 +1010,13 @@ export default function ClassReportForm({ id }: any) {
                                           />
                                         </Tooltip>
                                       </Box>
-                                    </TableCell>
+                                    </TableCell> */}
                                     <TableCell align="center" width="10%">
                                       অভিভাবকের স্বাক্ষর
                                     </TableCell>
-                                    <TableCell align="center" width="20%">
-                                      মন্তব্য
-                                    </TableCell>
+                                    <TableCell align="center" sx={{ minWidth: 200 }}>মন্তব্য</TableCell>
                                   </TableRow>
-                                  <TableRow>
+                                  {/* <TableRow>
                                     <TableCell width="20%"></TableCell>
                                     <TableCell align="center" width="10%"></TableCell>
                                     <TableCell align="center" width="20%">
@@ -979,7 +1027,7 @@ export default function ClassReportForm({ id }: any) {
                                     </TableCell>
                                     <TableCell align="center" width="10%"></TableCell>
                                     <TableCell align="center" width="20%"></TableCell>
-                                  </TableRow>
+                                  </TableRow> */}
                                 </TableHead>
                                 <TableBody>
                                   {students.length === 0 && (
@@ -1116,7 +1164,7 @@ export default function ClassReportForm({ id }: any) {
                                   )}
                                 </TableBody>
                               </Table>
-                            </TableContainer>
+                            </Box>
                           </>
                         )}
                       </Paper>
