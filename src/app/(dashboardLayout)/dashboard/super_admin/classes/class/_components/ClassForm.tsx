@@ -347,8 +347,6 @@ export default function ClassForm({ id }: ClassProps) {
                       </div>
 
                     </Paper>
-
-
                   </div>
                 </Fade>
               </Container>
