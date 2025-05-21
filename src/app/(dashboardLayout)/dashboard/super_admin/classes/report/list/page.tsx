@@ -80,7 +80,6 @@ type Filters = {
   hour: string
   lessonEvaluation: string
 }
-// import type { Filters } from "@/interface"
 
 export default function ClassReportList() {
   // State
@@ -129,7 +128,6 @@ export default function ClassReportList() {
     },
   )
 
-  console.log(classReport)
   const { data: classData } = useGetAllClassesQuery({
     limit: 100,
     page: 1,
@@ -154,8 +152,6 @@ export default function ClassReportList() {
 
   const theme = customTheme
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"))
-
-  // Extract reports from API response
   const reports = useMemo(() => {
     return classReport?.data?.reports || []
   }, [classReport])
@@ -166,7 +162,7 @@ export default function ClassReportList() {
     return (
       classData?.data?.classes?.map((cls: any) => ({
         label: cls.className,
-        value: cls.className, // Changed from cls._id to cls.className to match string type in database
+        value: cls.className,
       })) || []
     )
   }, [classData])
@@ -175,7 +171,7 @@ export default function ClassReportList() {
     if (!subjectData?.data?.subjects) return []
     return subjectData.data.subjects.map((sub: any) => ({
       label: sub.name,
-      value: sub.name, // Changed from sub._id to sub.name to match string type in database
+      value: sub.name,
     }))
   }, [subjectData])
 
@@ -183,23 +179,17 @@ export default function ClassReportList() {
     if (!teacherData?.data) return []
     return teacherData.data?.map((teacher: any) => ({
       label: teacher.name,
-      value: teacher.name, // Changed from teacher._id to teacher.name to match string type in database
+      value: teacher.name,
     }))
   }, [teacherData])
 
-  // Hour options
+
   const hourOptions = ["১ম", "২য়", "৩য়", "৪র্থ", "৫ম", "৬ষ্ঠ", "৭ম", "৮ম"]
-
-  // Lesson Evaluation options
   const lessonEvaluationOptions = ["পড়া শিখেছে", "আংশিক শিখেছে", "পড়া শিখেনি", "অনুপস্থিত"]
-
-  // Handle refresh
   const handleRefresh = () => {
     setRefreshKey((prev) => prev + 1)
     refetch()
   }
-
-  // Handle pagination
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage)
   }
@@ -209,13 +199,11 @@ export default function ClassReportList() {
     setPage(0)
   }
 
-  // Handle search
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value)
     setPage(0)
   }
 
-  // Handle filter changes
   const handleFilterChange = (filterName: keyof Filters, value: string) => {
     console.log(`Setting filter ${filterName} to:`, value)
     setFilters((prev) => ({
@@ -223,18 +211,15 @@ export default function ClassReportList() {
       [filterName]: value,
     }))
     setPage(0)
-    // Trigger refetch when filters change
     refetch()
   }
 
-  // Handle sorting
   const handleSort = (property: string) => {
     const isAsc = orderBy === property && order === "asc"
     setOrder(isAsc ? "desc" : "asc")
     setOrderBy(property)
   }
 
-  // Handle context menu
   const handleMenuClick = (event: React.MouseEvent<HTMLButtonElement>, report: any) => {
     setAnchorEl(event.currentTarget)
     setSelectedReport(report)
@@ -244,7 +229,6 @@ export default function ClassReportList() {
     setAnchorEl(null)
   }
 
-  // Handle delete
   const handleDeleteClick = (event: React.MouseEvent<HTMLButtonElement>, report: any) => {
     event.stopPropagation()
     setSelectedReport(report)
@@ -256,13 +240,12 @@ export default function ClassReportList() {
     if (selectedReport) {
       try {
         await deleteClassReport(selectedReport._id).unwrap()
-        // Show success message or notification here if needed
+
         setDeleteDialogOpen(false)
         setSelectedReport(null)
-        refetch() // Refresh the data after deletion
+        refetch()
       } catch (error) {
         console.error("Error deleting class report:", error)
-        // Show error message or notification here if needed
       }
     }
     setDeleteDialogOpen(false)
@@ -272,7 +255,6 @@ export default function ClassReportList() {
     setDeleteDialogOpen(false)
   }
 
-  // Clear all filters
   const handleClearFilters = () => {
     setFilters({
       classes: "",
@@ -285,7 +267,6 @@ export default function ClassReportList() {
     setSearchTerm("")
   }
 
-  // Toggle expanded report
   const handleToggleExpand = (reportId: string) => {
     if (expandedReport === reportId) {
       setExpandedReport(null)
@@ -305,7 +286,6 @@ export default function ClassReportList() {
     setSelectedReportDetails(null)
   }
 
-  // Format date for display
   const formatDate = (dateString: string) => {
     try {
       return format(new Date(dateString), "dd/MM/yyyy")
@@ -314,17 +294,12 @@ export default function ClassReportList() {
     }
   }
 
-  // Get filtered reports based on all filters
   const filteredReports = useMemo(() => {
     const filtered = [...reports]
-
-    // We only need to filter client-side for any filters that aren't properly handled by the API
-    // Most filtering should now be handled by the API
 
     return filtered
   }, [reports])
 
-  // Sort reports
   const sortedReports = useMemo(() => {
     return [...filteredReports].sort((a, b) => {
       if (orderBy === "date") {
@@ -340,7 +315,7 @@ export default function ClassReportList() {
         const subjectB = b.subjects || ""
         return order === "asc" ? subjectA.localeCompare(subjectB) : subjectB.localeCompare(subjectA)
       } else {
-        // Default sort by createdAt
+
         return order === "asc"
           ? new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
           : new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -348,7 +323,6 @@ export default function ClassReportList() {
     })
   }, [filteredReports, orderBy, order])
 
-  // Prepare student data for display
   const getStudentRows = (report: any) => {
     if (!report.studentEvaluations || report.studentEvaluations.length === 0) {
       return []
@@ -758,7 +732,7 @@ export default function ClassReportList() {
                             <TableCell>Attendance</TableCell>
                             <TableCell>Lesson</TableCell>
                             <TableCell>Homework</TableCell>
-                            <TableCell>Task Status</TableCell>
+                            {/* <TableCell>Task Status</TableCell> */}
                             <TableCell>Actions</TableCell>
                           </TableRow>
                         </TableHead>
@@ -925,7 +899,7 @@ export default function ClassReportList() {
                                             }}
                                           />
                                         </TableCell>
-                                        <TableCell>
+                                        {/* <TableCell>
                                           {report.noTaskForClass ? (
                                             <Chip
                                               icon={<BlockIcon sx={{ color: "#FF9800" }} />}
@@ -952,7 +926,7 @@ export default function ClassReportList() {
                                             />
                                           )}
 
-                                        </TableCell>
+                                        </TableCell> */}
 
                                         <TableCell>
                                           <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
