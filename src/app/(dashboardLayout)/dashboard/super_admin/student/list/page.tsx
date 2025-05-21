@@ -237,16 +237,6 @@ const StudentList = () => {
     return true;
   });
 
-  // Calculate statistics
-  const activeStudents = students.filter((s: any) => s.status === "Active").length
-  const inactiveStudents = students.filter((s: any) => s.status !== "Active").length
-  const maleStudents = students.filter((s: any) => s.gender === "Male").length
-  const femaleStudents = students.filter((s: any) => s.gender === "Female").length
-
-  // Calculate student types count
-  const residentialStudents = students.filter((s: any) => s.studentType === "Residential").length
-  const nonResidentialStudents = students.filter((s: any) => s.studentType === "Non-residential").length
-  const dayCareStudents = students.filter((s: any) => s.studentType === "Day-care").length
 
   return (
     <Container maxWidth="xl" sx={{ p: { xs: "4px" } }}>

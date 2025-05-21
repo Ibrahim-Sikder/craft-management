@@ -153,7 +153,6 @@ export default function ClassReportForm({ id }: any) {
       value: sub._id,
     }))
   }, [teacherData])
-  // New state for dialog controls
   const [todayLessonDialogOpen, setTodayLessonDialogOpen] = useState(false)
   const [todayTaskDialogOpen, setTodayTaskDialogOpen] = useState(false)
 
@@ -226,7 +225,6 @@ export default function ClassReportForm({ id }: any) {
     }
   }, [students, singleClassReport, studentEvaluations.length])
 
-  // Set the noTaskForClass state from the report data
   useEffect(() => {
     if (singleClassReport?.data) {
       if (singleClassReport.data.noTaskForClass !== undefined) {
@@ -301,7 +299,7 @@ export default function ClassReportForm({ id }: any) {
           const existingEval = studentEvaluations.find((evaluation) => evaluation.studentId === student._id)
 
           if (noTaskForClass) {
-            // If no task for class, submit with specified default values
+
             return {
               studentId: student._id,
               lessonEvaluation: "পাঠ নেই",
@@ -311,18 +309,44 @@ export default function ClassReportForm({ id }: any) {
               comments: "",
             }
           } else {
-            // Handle individual field disabling
-            return {
-              studentId: existingEval ? existingEval.studentId : student._id,
-              lessonEvaluation: lessonEvaluationTask ? "পাঠ নেই" : existingEval?.lessonEvaluation || "",
-              handwriting: handwrittenTask ? "কাজ নেই" : existingEval?.handwriting || "",
-              attendance: existingEval?.attendance || "উপস্থিত",
-              parentSignature:
-                noTaskForClass || (lessonEvaluationTask && handwrittenTask)
-                  ? false
-                  : existingEval?.parentSignature || false,
-              comments: existingEval?.comments || "",
-            }
+       
+          return (() => {
+  const attendanceValue = existingEval?.attendance || "উপস্থিত"
+
+  if (attendanceValue === "অনুপস্থিত") {
+    return {
+      studentId: existingEval ? existingEval.studentId : student._id,
+      attendance: "অনুপস্থিত",
+      lessonEvaluation: "অনুপস্থিত",
+      handwriting: "অনুপস্থিত",
+      parentSignature: false,
+      comments: "",
+    }
+  }
+
+  if (noTaskForClass) {
+    return {
+      studentId: student._id,
+      lessonEvaluation: "পাঠ নেই",
+      handwriting: "কাজ নেই",
+      attendance: attendanceValue,
+      parentSignature: false,
+      comments: "",
+    }
+  }
+  return {
+    studentId: existingEval ? existingEval.studentId : student._id,
+    lessonEvaluation: lessonEvaluationTask ? "পাঠ নেই" : existingEval?.lessonEvaluation || "",
+    handwriting: handwrittenTask ? "কাজ নেই" : existingEval?.handwriting || "",
+    attendance: attendanceValue,
+    parentSignature:
+      noTaskForClass || (lessonEvaluationTask && handwrittenTask)
+        ? false
+        : existingEval?.parentSignature || false,
+    comments: existingEval?.comments || "",
+  }
+})()
+
           }
         }),
         todayLesson: todayLessonId,
