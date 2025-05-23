@@ -16,22 +16,14 @@ import {
   Class,
   Group,
   Subject,
-  Assessment,
   BarChart,
   CloudUpload,
-  AttachMoney,
   Category,
-  LocalOffer,
-  MoneyOff,
   Receipt,
   ReceiptLong,
-  NotificationsActive,
-  Delete,
-
   Score,
   TableChart,
   MonetizationOn,
-
   HomeWork,
   Download,
   Grade,
@@ -48,20 +40,14 @@ import {
   ListAlt,
   AddCircle,
   ClassOutlined,
-
   Storage,
   Folder,
   Image as Photos,
   Logout,
   Book,
 } from "@mui/icons-material"
-
-
 import { ColorfulIcon } from "./ColorfulIcon"
 import { NavigationItem } from "@/types/common"
-
-
-
 export const navigationItems: NavigationItem[] = [
   {
     title: "Dashboard",
@@ -82,6 +68,7 @@ export const navigationItems: NavigationItem[] = [
     ),
     roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
     children: [
+
 
       {
         title: "Sections",
@@ -332,16 +319,7 @@ export const navigationItems: NavigationItem[] = [
     ),
     roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
     children: [
-      {
-        path: "/dashboard/super_admin/fine-type/list",
-        title: "Fine Types  ",
-        icon: (
-          <ColorfulIcon color="#F4B400">
-            <AttachMoney />
-          </ColorfulIcon>
-        ),
-        roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
-      },
+
       {
         path: "/dashboard/super_admin/fee-type/list",
         title: "Fees Types ",
@@ -352,56 +330,11 @@ export const navigationItems: NavigationItem[] = [
         ),
         roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
       },
-      {
-        path: "/dashboard/super_admin/discount-type/list",
-        title: "Discount",
-        icon: (
-          <ColorfulIcon color="#F4B400">
-            <LocalOffer />
-          </ColorfulIcon>
-        ),
-        roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
-      },
-      {
-        path: "/dashboard/super_admin/fee-type/list",
-        title: "Assign Fees ",
-        icon: (
-          <ColorfulIcon color="#F4B400">
-            <Payments />
-          </ColorfulIcon>
-        ),
-        roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
-      },
-      {
-        path: "/dashboard/super_admin/assign-discount/list",
-        title: "Assign Discount ",
-        icon: (
-          <ColorfulIcon color="#F4B400">
-            <MoneyOff />
-          </ColorfulIcon>
-        ),
-        roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
-      },
-      {
-        path: "/dashboard/super_admin/assign-fine/list",
-        title: "Assign Fines ",
-        icon: (
-          <ColorfulIcon color="#F4B400">
-            <AttachMoney />
-          </ColorfulIcon>
-        ),
-        roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
-      },
-      {
-        path: "/dashboard/super_admin/collect-fee-setting",
-        title: "Collect Fee Setting ",
-        icon: (
-          <ColorfulIcon color="#F4B400">
-            <Settings />
-          </ColorfulIcon>
-        ),
-        roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
-      },
+
+
+
+
+
       {
         path: "/dashboard/super_admin/collect-fee/list",
         title: "Collect Fees ",
@@ -412,201 +345,12 @@ export const navigationItems: NavigationItem[] = [
         ),
         roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
       },
-      {
-        path: "/dashboard/super_admin/collect-fee-statement",
-        title: "Collected Fees Statement",
-        icon: (
-          <ColorfulIcon color="#F4B400">
-            <ReceiptLong />
-          </ColorfulIcon>
-        ),
-        roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
-      },
-      {
-        path: "/dashboard/super_admin/all-sms-history",
-        title: "Send Late Fee SMS ",
-        icon: (
-          <ColorfulIcon color="#F4B400">
-            <NotificationsActive />
-          </ColorfulIcon>
-        ),
-        roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
-      },
-      {
-        path: "/dashboard/super_admin/deleted-fee",
-        title: "Deleted Fees ",
-        icon: (
-          <ColorfulIcon color="#F4B400">
-            <Delete />
-          </ColorfulIcon>
-        ),
-        roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
-      },
+
+
+
     ],
   },
-  // {
-  //   segment: "super_admin/blog",
-  //   title: "Print",
-  //   icon: (
-  //     <ColorfulIcon color="#4285F4">
-  //       <Print />
-  //     </ColorfulIcon>
-  //   ),
-  //   roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
-  //   children: [
-  //     {
-  //       path: "/dashboard/super_admin/blog/add",
-  //       title: "ID Cards ",
-  //       icon: (
-  //         <ColorfulIcon color="#4285F4">
-  //           <Badge />
-  //         </ColorfulIcon>
-  //       ),
-  //       roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
-  //     },
-  //     {
-  //       path: "/dashboard/super_admin/blog/list",
-  //       title: "Teacher ID Cards ",
-  //       icon: (
-  //         <ColorfulIcon color="#4285F4">
-  //           <CardMembership />
-  //         </ColorfulIcon>
-  //       ),
-  //       roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
-  //     },
-  //     {
-  //       path: "/dashboard/super_admin/blog/list",
-  //       title: "Admission Token  ",
-  //       icon: (
-  //         <ColorfulIcon color="#4285F4">
-  //           <ConfirmationNumber />
-  //         </ColorfulIcon>
-  //       ),
-  //       roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
-  //     },
-  //     {
-  //       path: "/dashboard/super_admin/blog/list",
-  //       title: "Admit Cards ",
-  //       icon: (
-  //         <ColorfulIcon color="#4285F4">
-  //           <CardMembership />
-  //         </ColorfulIcon>
-  //       ),
-  //       roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
-  //     },
-  //     {
-  //       path: "/dashboard/super_admin/blog/list",
-  //       title: "Tabular Result",
-  //       icon: (
-  //         <ColorfulIcon color="#4285F4">
-  //           <Score />
-  //         </ColorfulIcon>
-  //       ),
-  //       roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
-  //     },
-  //     {
-  //       path: "/dashboard/super_admin/blog/list",
-  //       title: "Income Statement ",
-  //       icon: (
-  //         <ColorfulIcon color="#4285F4">
-  //           <TableChart />
-  //         </ColorfulIcon>
-  //       ),
-  //       roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
-  //     },
-  //     {
-  //       path: "/dashboard/super_admin/blog/list",
-  //       title: "Summary Income Statement ",
-  //       icon: (
-  //         <ColorfulIcon color="#4285F4">
-  //           <MonetizationOn />
-  //         </ColorfulIcon>
-  //       ),
-  //       roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
-  //     },
-  //     {
-  //       path: "/dashboard/super_admin/blog/list",
-  //       title: "Monthly Income Statement ",
-  //       icon: (
-  //         <ColorfulIcon color="#4285F4">
-  //           <PieChart />
-  //         </ColorfulIcon>
-  //       ),
-  //       roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
-  //     },
-  //     {
-  //       path: "/dashboard/super_admin/student",
-  //       title: "students",
-  //       icon: (
-  //         <ColorfulIcon color="#4285F4">
-  //           <FormatListNumbered />
-  //         </ColorfulIcon>
-  //       ),
-  //       roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
-  //     },
-  //     {
-  //       path: "/dashboard/super_admin/blog/list",
-  //       title: "Salary Sheet ",
-  //       icon: (
-  //         <ColorfulIcon color="#4285F4">
-  //           <RequestPage />
-  //         </ColorfulIcon>
-  //       ),
-  //       roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
-  //     },
-  //     {
-  //       path: "/dashboard/super_admin/blog/list",
-  //       title: "Teacher Salary Repo ",
-  //       icon: (
-  //         <ColorfulIcon color="#4285F4">
-  //           <Paid />
-  //         </ColorfulIcon>
-  //       ),
-  //       roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
-  //     },
-  //     {
-  //       path: "/dashboard/super_admin/blog/list",
-  //       title: "Employee Salary Repo ",
-  //       icon: (
-  //         <ColorfulIcon color="#4285F4">
-  //           <FactCheck />
-  //         </ColorfulIcon>
-  //       ),
-  //       roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
-  //     },
-  //     {
-  //       path: "/dashboard/super_admin/blog/list",
-  //       title: "Forms & Certificate ",
-  //       icon: (
-  //         <ColorfulIcon color="#4285F4">
-  //           <Description />
-  //         </ColorfulIcon>
-  //       ),
-  //       roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
-  //     },
-  //   ],
-  // },
-  // {
-  //   title: "Forms & Certificates ",
-  //   icon: (
-  //     <ColorfulIcon color="#0F9D58">
-  //       <Description />
-  //     </ColorfulIcon>
-  //   ),
-  //   roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
-  //   children: [
-  //     {
-  //       path: "/dashboard/super_admin/topbar/list",
-  //       title: "List Top Bar",
-  //       icon: (
-  //         <ColorfulIcon color="#0F9D58">
-  //           <FormatListNumbered />
-  //         </ColorfulIcon>
-  //       ),
-  //       roles:["admin", "teacher", "student", "super_admin",'class_teacher'],
-  //     },
-  //   ],
-  // },
+
 
   {
     title: "Accounting",
@@ -670,26 +414,8 @@ export const navigationItems: NavigationItem[] = [
     ),
     roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
     children: [
-      {
-        path: "/dashboard/super_admin/stock/allimg",
-        title: "Setup ",
-        icon: (
-          <ColorfulIcon color="#4285F4">
-            <Settings />
-          </ColorfulIcon>
-        ),
-        roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
-      },
-      {
-        path: "/dashboard/super_admin/stock/folder",
-        title: "Attendance Report ",
-        icon: (
-          <ColorfulIcon color="#4285F4">
-            <Assessment />
-          </ColorfulIcon>
-        ),
-        roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
-      },
+
+
       {
         path: "/dashboard/super_admin/stock/folder",
         title: "Leave ",
@@ -857,7 +583,7 @@ export const navigationItems: NavigationItem[] = [
         ),
         roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
       },
-      
+
     ],
   },
 
