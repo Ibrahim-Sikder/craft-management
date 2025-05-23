@@ -629,7 +629,7 @@ export default function ClassReportForm({ id }: any) {
           <ThemeProvider theme={theme}>
             <CraftForm onSubmit={handleSubmit} defaultValues={defaultValues || {}}>
               <Box
-                sx={{ flexGrow: 1, bgcolor: "background.default", minHeight: "100vh", borderRadius: 2, width: "100%" }}
+                sx={{ flexGrow: 1, bgcolor: "background.default", minHeight: "100vh", borderRadius: 2 }}
               >
                 <Container maxWidth={false} sx={{ mt: 0, mb: 8, borderRadius: 2, px: { xs: 0, sm: 0, md: 4, lg: 5 } }}>
                   <Fade in={true} timeout={800}>
@@ -703,7 +703,7 @@ export default function ClassReportForm({ id }: any) {
                               borderRadius: 2,
                               boxShadow: "0px 4px 10px rgba(99, 102, 241, 0.2)",
                               fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                              px: { xs: 1, sm: 2 },
+                              px: { xs: 2, sm: 2 },
                             }}
                           >
                             {isSubmitting ? "Saving..." : "Save"}
@@ -797,29 +797,7 @@ export default function ClassReportForm({ id }: any) {
                                 />
                               </Tooltip>
                             </div>
-                            <Box
-                              sx={{
-                                width: "100%",
-                                overflowX: "auto",
-                                // Small device styles (unchanged)
-                                "@media (max-width: 800px)": {
-                                  border: "1px solid #ddd",
-                                  borderRadius: "4px",
-                                  display: "block",
-                                  maxWidth: "100vw",
-                                  position: "relative",
-                                  overflowX: "auto",
-                                  whiteSpace: "nowrap",
-                                  WebkitOverflowScrolling: "touch",
-                                },
-                                // Large device styles
-                                "@media (min-width: 900px)": {
-                                  width: "100%",
-                                  overflowX: "visible",
-                                  display: "table",
-                                },
-                              }}
-                            >
+                            <div className="w-full overflow-x-auto max-[800px]:border max-[800px]:border-gray-300   max-[800px]:rounded   max-[800px]:block   max-[800px]:max-w-[100vw]   max-[800px]:relative   max-[800px]:whitespace-nowrap   max-[800px]:overflow-x-auto   max-[800px]:scrolling-touch   min-[900px]:overflow-x-visible min-[900px]:table">
                               <Table
                                 sx={{
                                   minWidth: 900,
@@ -1027,7 +1005,7 @@ export default function ClassReportForm({ id }: any) {
                                   )}
                                 </TableBody>
                               </Table>
-                            </Box>
+                            </div>
                           </>
                         )}
                       </Paper>
