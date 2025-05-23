@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 'use client'
 
@@ -51,6 +52,7 @@ import { useDeleteStudentMutation, useGetAllStudentsQuery } from "@/redux/api/st
 import Swal from "sweetalert2"
 import { useGetAllClassesQuery } from "@/redux/api/classApi"
 import { useGetAllSectionsQuery } from "@/redux/api/sectionApi"
+import { useGetAllMetaQuery } from "@/redux/api/metaApi"
 
 const StudentList = () => {
   const theme = useTheme()
@@ -80,7 +82,8 @@ const StudentList = () => {
     gender: "",
     studentType: "",
   })
-
+  const { data: metaData } = useGetAllMetaQuery({})
+  console.log(metaData)
   // Fetch real data from backend
   const {
     data: studentData,
@@ -208,12 +211,9 @@ const StudentList = () => {
     }, 100);
   };
 
-  // Apply filters to students
   const filteredStudents = students.filter((student: any) => {
-    // Check if student has the necessary properties
     if (!student) return false;
 
-    // Match each filter criterion
     if (filters.className && String(filters.className) !== String(student.className)) {
       return false;
     }
@@ -237,16 +237,6 @@ const StudentList = () => {
     return true;
   });
 
-  // Calculate statistics
-  const activeStudents = students.filter((s: any) => s.status === "Active").length
-  const inactiveStudents = students.filter((s: any) => s.status !== "Active").length
-  const maleStudents = students.filter((s: any) => s.gender === "Male").length
-  const femaleStudents = students.filter((s: any) => s.gender === "Female").length
-
-  // Calculate student types count
-  const residentialStudents = students.filter((s: any) => s.studentType === "Residential").length
-  const nonResidentialStudents = students.filter((s: any) => s.studentType === "Non-residential").length
-  const dayCareStudents = students.filter((s: any) => s.studentType === "Day-care").length
 
   return (
     <Container maxWidth="xl" sx={{ p: { xs: "4px" } }}>
@@ -259,12 +249,12 @@ const StudentList = () => {
 
 
         <div className="flex flex-col items-center justify-center content-center">
-          
+
           <div className="flex flex-row justify-center items-center content-center text-white">
-            <School sx={{ mr: 1, fontSize: {sm:25, md:40} }} />
+            <School sx={{ mr: 1, fontSize: { sm: 25, md: 40 } }} />
             <div className="text-lg md:text-4xl font-bold">Student Management System</div>
           </div>
-         
+
 
 
 
@@ -272,7 +262,7 @@ const StudentList = () => {
 
             <div className="flex justify-center mb-2">
               <Chip
-                label={`Total Students: ${totalStudents}`}
+                label={`Total Students: ${metaData?.data?.totalStudents}`}
                 sx={{
                   bgcolor: alpha("#ffffff", 0.2),
                   color: "white",
@@ -292,7 +282,7 @@ const StudentList = () => {
 
               <div className="grid grid-cols-2 md:grid-cols-3  justify-center gap-1">
                 <Chip
-                  label={`Residential: ${residentialStudents}`}
+                  label={`Residential: ${metaData?.data?.totalResidentialStudents}`}
                   sx={{
                     bgcolor: alpha(customColors.accent1, 0.7),
                     color: "white",
@@ -300,7 +290,7 @@ const StudentList = () => {
                   }}
                 />
                 <Chip
-                  label={`Non-residential: ${nonResidentialStudents}`}
+                  label={`Non-residential: ${metaData?.data?.totalNonResidentialStudents}`}
                   sx={{
                     bgcolor: alpha(customColors.accent3, 0.7),
                     color: "white",
@@ -308,7 +298,7 @@ const StudentList = () => {
                   }}
                 />
                 <Chip
-                  label={`Day-care: ${dayCareStudents}`}
+                  label={`Day-care: ${metaData?.data?.totalDayCareStudents}`}
                   sx={{
                     bgcolor: alpha(customColors.accent4, 0.7),
                     color: "white",
@@ -316,7 +306,7 @@ const StudentList = () => {
                   }}
                 />
                 <Chip
-                  label={`Male: ${maleStudents}`}
+                  label={`Male: ${metaData?.data?.totalMaleStudents}`}
                   sx={{
                     bgcolor: alpha(customColors.info, 0.7),
                     color: "white",
@@ -324,7 +314,7 @@ const StudentList = () => {
                   }}
                 />
                 <Chip
-                  label={`Female: ${femaleStudents}`}
+                  label={`Female: ${metaData?.data?.totalFemaleStudents}`}
                   sx={{
                     bgcolor: alpha(customColors.secondary, 0.7),
                     color: "white",
