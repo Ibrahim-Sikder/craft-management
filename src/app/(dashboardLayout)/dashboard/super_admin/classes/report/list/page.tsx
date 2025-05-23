@@ -706,16 +706,17 @@ export default function ClassReportList() {
                   </Box>
                 ) : (
                   <>
-                    <TableContainer
-                      sx={{
-                        overflowX: "auto",
-                        WebkitOverflowScrolling: "touch",
-                        maxWidth: "100%",
-                        borderRadius: 2,
-                        boxShadow: "0 2px 12px rgba(0, 0, 0, 0.05)",
-                      }}
-                    >
-                      <Table sx={{ minWidth: 650, borderCollapse: "separate", borderSpacing: 0 }}>
+                    <div className="w-full overflow-x-auto max-[800px]:border max-[800px]:border-gray-300   max-[800px]:rounded   max-[800px]:block   max-[800px]:max-w-[100vw]   max-[800px]:relative   max-[800px]:whitespace-nowrap   max-[800px]:overflow-x-auto   max-[800px]:scrolling-touch   min-[900px]:overflow-x-visible min-[900px]:table">
+                      <Table
+                        sx={{
+                          minWidth: 900,
+                          "@media (min-width: 900px)": {
+                            width: "100%",
+                            minWidth: "100%",
+                            tableLayout: { sm: "auto", md: "fixed", lg: "fixed" },
+                          },
+                        }}
+                      >
                         <TableHead>
                           <TableRow
                             sx={{
@@ -1079,7 +1080,7 @@ export default function ClassReportList() {
                           )}
                         </TableBody>
                       </Table>
-                    </TableContainer>
+                    </div>
                     <TablePagination
                       rowsPerPageOptions={[5, 10, 25, 50]}
                       component="div"
