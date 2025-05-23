@@ -374,8 +374,34 @@ export default function ClassReportList() {
       <Box sx={{ flexGrow: 1, bgcolor: "background.default", minHeight: "100vh", borderRadius: 2 }}>
         <Container maxWidth="xl" sx={{ mt: 0, mb: 8, borderRadius: 2 }}>
           <Fade in={true} timeout={800}>
-            <Box>
-              <Box
+            <div>
+              <div className="flex justify-between items-center mb-6 flex-wrap gap-4 pt-4">
+                <h1 className="text-2xl font-bold text-gray-900">Class Reports</h1>
+                <div className="flex gap-4">
+                  <Button
+                    variant="outlined"
+                    startIcon={<RefreshIcon />}
+                    onClick={handleRefresh}
+                    sx={{ borderRadius: 2 }}
+                  >
+                    Refresh
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    startIcon={<AddIcon />}
+                    component={Link}
+                    href="/dashboard/super_admin/classes/report/new"
+                    sx={{
+                      borderRadius: 2,
+                      boxShadow: "0px 4px 10px rgba(99, 102, 241, 0.2)",
+                    }}
+                  >
+                    Add New Report
+                  </Button>
+                </div>
+              </div>
+              {/* <Box
                 sx={{
                   display: "flex",
                   justifyContent: "space-between",
@@ -412,7 +438,7 @@ export default function ClassReportList() {
                     Add New Report
                   </Button>
                 </Box>
-              </Box>
+              </Box> */}
 
               {/* Filter Cards */}
               <Box sx={{ mb: 4 }}>
@@ -1093,7 +1119,7 @@ export default function ClassReportList() {
                   </>
                 )}
               </Paper>
-            </Box>
+            </div>
           </Fade>
         </Container>
       </Box>
