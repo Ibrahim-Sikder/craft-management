@@ -340,7 +340,7 @@ export default function ClassReportList() {
 
   return (
     <ThemeProvider theme={theme}>
-      <Box sx={{ flexGrow: 1, bgcolor: "background.default", minHeight: "100vh", borderRadius: 2 }}>
+      <Box sx={{ flexGrow: 1, bgcolor: "background.default",  minHeight: "100vh", borderRadius: 2 }}>
         <Container maxWidth="xl" sx={{ mt: 0, mb: 8, borderRadius: 2 }}>
           <Fade in={true} timeout={800}>
             <div>
