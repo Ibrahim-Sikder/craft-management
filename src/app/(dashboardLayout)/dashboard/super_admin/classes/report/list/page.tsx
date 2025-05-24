@@ -340,8 +340,8 @@ export default function ClassReportList() {
 
   return (
     <ThemeProvider theme={theme}>
-      <Box sx={{ flexGrow: 1, bgcolor: "background.default", minHeight: "100vh", borderRadius: 2 }}>
-        <Container maxWidth="xl" sx={{ mt: 0, mb: 8, borderRadius: 2 }}>
+      <Box sx={{ flexGrow: 1, bgcolor: "background.default",  minHeight: "100vh", borderRadius: 2 }}>
+        <Container maxWidth="xl" sx={{ mt: 0, mb: 8, borderRadius: 2, p:{xs:1, md:"8px"} }}>
           <Fade in={true} timeout={800}>
             <div>
               <div className="flex justify-between items-center mb-6 flex-wrap gap-4 pt-4">
@@ -370,44 +370,7 @@ export default function ClassReportList() {
                   </Button>
                 </div>
               </div>
-              {/* <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  mb: 3,
-                  flexWrap: "wrap",
-                  gap: 2,
-                  paddingTop: 2,
-                }}
-              >
-                <Typography variant="h4" component="h1" sx={{ fontWeight: 700, color: "text.primary" }}>
-                  Class Reports
-                </Typography>
-                <Box sx={{ display: "flex", gap: 2 }}>
-                  <Button
-                    variant="outlined"
-                    startIcon={<RefreshIcon />}
-                    onClick={handleRefresh}
-                    sx={{ borderRadius: 2 }}
-                  >
-                    Refresh
-                  </Button>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    startIcon={<AddIcon />}
-                    component={Link}
-                    href="/dashboard/super_admin/classes/report/new"
-                    sx={{
-                      borderRadius: 2,
-                      boxShadow: "0px 4px 10px rgba(99, 102, 241, 0.2)",
-                    }}
-                  >
-                    Add New Report
-                  </Button>
-                </Box>
-              </Box> */}
+             
 
               {/* Filter Cards */}
               <Box sx={{ mb: 4 }}>
@@ -706,7 +669,7 @@ export default function ClassReportList() {
                   </Box>
                 ) : (
                   <>
-                    <div className="w-full overflow-x-auto max-[800px]:border max-[800px]:border-gray-300   max-[800px]:rounded   max-[800px]:block   max-[800px]:max-w-[100vw]   max-[800px]:relative   max-[800px]:whitespace-nowrap   max-[800px]:overflow-x-auto   max-[800px]:scrolling-touch   min-[900px]:overflow-x-visible min-[900px]:table">
+                    <div className="w-[285px] md:w-full overflow-x-auto max-[800px]:border max-[800px]:border-gray-300   max-[800px]:rounded   max-[800px]:block   max-[800px]:max-w-[100vw]   max-[800px]:relative   max-[800px]:whitespace-nowrap   max-[800px]:overflow-x-auto   max-[800px]:scrolling-touch   min-[900px]:overflow-x-visible min-[900px]:table">
                       <Table
                         sx={{
                           minWidth: 900,

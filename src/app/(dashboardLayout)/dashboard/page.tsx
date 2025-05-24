@@ -60,50 +60,85 @@ const StatCard = ({ icon, title, value, trend, trendValue, color }: any) => {
   const isPositive = trend === "up"
 
   return (
-    <Card
-      elevation={0}
-      sx={{
-        borderRadius: 3,
-        overflow: "hidden",
-        height: "100%",
-        border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-        background: alpha(theme.palette.background.paper, 0.8),
-        backdropFilter: "blur(10px)",
-        transition: "all 0.3s ease",
-        "&:hover": {
-          boxShadow: `0 8px 32px 0 ${alpha(color, 0.2)}`,
-          transform: "translateY(-5px)",
-        },
-      }}
-    >
-      <CardContent sx={{ p: 2.5 }}>
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 2 }}>
-          <Avatar
-            sx={{
-              bgcolor: alpha(color, 0.1),
-              color: color,
-              width: 48,
-              height: 48,
-            }}
-          >
-            {icon}
-          </Avatar>
-          <Chip
-            icon={isPositive ? <TrendingUp fontSize="small" /> : <TrendingDown fontSize="small" />}
-            label={`${trendValue}%`}
-            size="small"
-            color={isPositive ? "success" : "error"}
-            sx={{ height: 24 }}
-          />
-        </Box>
-        <Typography variant="h4" component="div" sx={{ fontWeight: 700, mb: 0.5 }}>
-          {value}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          {title}
-        </Typography>
-      </CardContent>
-    </Card>
+    <>
+      <div className="rounded-xl overflow-hidden  border border-gray-200/10 bg-white/80 backdrop-blur-md transition-all duration-300 ease-in-out hover:shadow-xl hover:translate-y-[-5px]">
+        <div className="p-[10px] md:p-[20px]">
+          <div className="flex justify-between items-start md:mb-4">
+            <Avatar
+              sx={{
+                bgcolor: alpha(color, 0.1),
+                color: color,
+                width: { xs: 60, md: 48 },
+                height: { xs: 60, md: 48 }
+              }}
+            >
+              {icon}
+            </Avatar>
+            <div>
+              <div className="md:hidden text-2xl font-bold mb-1">{value}</div>
+              <div className="md:hidden text-sm text-gray-500">{title}</div>
+            </div>
+            <Chip
+              icon={isPositive ? <TrendingUp fontSize="small" /> : <TrendingDown fontSize="small" />}
+              label={`${trendValue}%`}
+              size="small"
+              color={isPositive ? "success" : "error"}
+              sx={{ height: 24 }}
+            />
+
+          </div>
+          <div className="hidden md:block text-4xl font-bold mb-1">{value}</div>
+          <div className="hidden md:block text-sm text-gray-500">{title}</div>
+        </div>
+      </div>
+
+
+      {/* <Card
+        elevation={0}
+        sx={{
+          borderRadius: 3,
+          overflow: "hidden",
+          height: "100%",
+          border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+          background: alpha(theme.palette.background.paper, 0.8),
+          backdropFilter: "blur(10px)",
+          transition: "all 0.3s ease",
+          "&:hover": {
+            boxShadow: `0 8px 32px 0 ${alpha(color, 0.2)}`,
+            transform: "translateY(-5px)",
+          },
+        }}
+      >
+        <CardContent sx={{ p: 2.5 }}>
+          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 2 }}>
+            <Avatar
+              sx={{
+                bgcolor: alpha(color, 0.1),
+                color: color,
+                width: 48,
+                height: 48,
+              }}
+            >
+              {icon}
+            </Avatar>
+            <Chip
+              icon={isPositive ? <TrendingUp fontSize="small" /> : <TrendingDown fontSize="small" />}
+              label={`${trendValue}%`}
+              size="small"
+              color={isPositive ? "success" : "error"}
+              sx={{ height: 24 }}
+            />
+          </Box>
+          <Typography variant="h4" component="div" sx={{ fontWeight: 700, mb: 0.5 }}>
+            {value}
+          </Typography>
+          <Typography variant="body2" color="text.secondary">
+            {title}
+          </Typography>
+        </CardContent>
+      </Card> */}
+
+    </>
   )
 }
 
@@ -383,8 +418,8 @@ const DashboardHome = () => {
       {/* Header */}
       <div className="md:flex justify-between items-center mb-4 gap-2">
         <div>
-          <h1 className="text-center md:text-left md:mb-2 text-[#4F0187] font-[1000] text-4xl md:text-5xl">
-            Craft Dashboard 
+          <h1 className="text-center md:text-left md:mb-2 text-[#4F0187] font-[1000] text-3xl md:text-5xl">
+            Craft Dashboard
           </h1>
 
           <h3 className="text-center md:text-left text-[#9AA6B2] md:font-medium mb-2">
@@ -515,7 +550,7 @@ const DashboardHome = () => {
             color="#FF5722"
           />
         </Grid>
-       
+
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             icon={<Person />}
@@ -526,7 +561,7 @@ const DashboardHome = () => {
             color="#3F51B5"
           />
         </Grid>
-         <Grid item xs={12} sm={6} md={3}>
+        <Grid item xs={12} sm={6} md={3}>
           <StatCard
             icon={<Class />}
             title="Total Classes"
