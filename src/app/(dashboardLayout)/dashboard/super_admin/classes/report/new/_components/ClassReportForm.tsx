@@ -626,7 +626,7 @@ export default function ClassReportForm({ id }: any) {
         <div>Loading.....</div>
       ) : (
         <>
-          <ThemeProvider theme={theme}>
+        
             <CraftForm onSubmit={handleSubmit} defaultValues={defaultValues || {}}>
               <Box
                 sx={{ flexGrow: 1, bgcolor: "background.default", minHeight: "100vh", borderRadius: 2 }}
@@ -1096,7 +1096,7 @@ export default function ClassReportForm({ id }: any) {
                 </Alert>
               </Snackbar>
             </CraftForm>
-          </ThemeProvider>
+        
 
           <TodayLesson
             id={todayLessonId}

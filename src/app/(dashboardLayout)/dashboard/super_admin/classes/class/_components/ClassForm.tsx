@@ -550,13 +550,13 @@ export default function ClassForm({ id }: ClassProps) {
           width: '100vw',
           minHeight: '100vh',
           display: 'flex',
-      
+
           backgroundColor: { md: '#f5f7fa' },
           py: 4,
         }}>
           <Box sx={{
             width: '100%',
-            maxWidth: '1500px', // You can adjust this as needed
+            maxWidth: '1500px',
             px: { xs: 2, sm: 3, md: 4 },
           }}>
             <Fade in={true} timeout={800}>
@@ -573,26 +573,26 @@ export default function ClassForm({ id }: ClassProps) {
                   }}
                 >
                   <div className="p-3 md:p-4 bg-gradient-to-r from-[#3f51b5] to-[#5c6bc0] text-white   rounded-t-2xl flex flex-col items-center">
-                       <div className="flex items-center content-center gap-2">
-                           <SchoolIcon
-                            sx={{
-                              fontSize: 40,
-                              color: "white",
-                              mr: 0,
-                              p: 1,
-                              borderRadius: "50%",
-                              bgcolor: alpha(theme.palette.primary.main, 0.1),
-                            }}
-                          />
-                          <h1 className="text-xl md:text-2xl font-bold">
-                            {id ? "Update Class" : "Create New Class"}
-                          </h1>
+                    <div className="flex items-center content-center gap-2">
+                      <SchoolIcon
+                        sx={{
+                          fontSize: 40,
+                          color: "white",
+                          mr: 0,
+                          p: 1,
+                          borderRadius: "50%",
+                          bgcolor: alpha(theme.palette.primary.main, 0.1),
+                        }}
+                      />
+                      <h1 className="text-xl md:text-2xl font-bold">
+                        {id ? "Update Class" : "Create New Class"}
+                      </h1>
 
-                        </div>
-                        <p className="text-sm leading-normal opacity-80 mt-1 text-center">
-                          Fill in the details below to {id ? "update" : "create a new"} class.
-                        </p>
-                      </div>
+                    </div>
+                    <p className="text-sm leading-normal opacity-80 mt-1 text-center">
+                      Fill in the details below to {id ? "update" : "create a new"} class.
+                    </p>
+                  </div>
 
                   <Box sx={{ py: 5, px: { xs: 2, md: 4 } }}>
                     <Zoom in={true}>
@@ -657,12 +657,12 @@ export default function ClassForm({ id }: ClassProps) {
                                   />
                                 </Grid>
                                 <Grid item xs={12} md={4}>
-                                  <Box sx={{ 
-                                    display: "flex", 
-                                    alignItems: "center", 
-                                    justifyContent: 'center', 
+                                  <Box sx={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: 'center',
                                     height: '100%',
-                                    pt: { xs: 0, md: 1 } 
+                                    pt: { xs: 0, md: 1 }
                                   }}>
                                     <AddSectionButton
                                       variant="contained"
@@ -709,7 +709,7 @@ export default function ClassForm({ id }: ClassProps) {
                           overflow: "hidden",
                           borderRadius: 3,
                           boxShadow: "0 8px 20px rgba(63, 81, 181, 0.3)",
-                          "&:hover": {                                
+                          "&:hover": {
                             transform: "translateY(-2px)",
                           },
                           transition: "all 0.3s ease",
@@ -930,13 +930,13 @@ export default function ClassForm({ id }: ClassProps) {
 //               m: 0,
 //               overflow: 'hidden'
 //             }}>
-//               <Container 
-//                 maxWidth={false} 
-//                 disableGutters 
-//                 sx={{ 
-//                   width: '100%', 
+//               <Container
+//                 maxWidth={false}
+//                 disableGutters
+//                 sx={{
+//                   width: '100%',
 //                   maxWidth: '100%',
-//                   px: { xs: 2, sm: 3, md: 4, lg: 5 } 
+//                   px: { xs: 2, sm: 3, md: 4, lg: 5 }
 //                 }}
 //               >
 //                 <Fade in={true} timeout={800}>
@@ -1050,9 +1050,9 @@ export default function ClassForm({ id }: ClassProps) {
 //                                       />
 //                                     </Grid>
 //                                     <Grid item xs={12} md={4}>
-//                                       <Box sx={{ 
-//                                         display: "flex", 
-//                                         alignItems: { xs: "flex-start", md: "center" }, 
+//                                       <Box sx={{
+//                                         display: "flex",
+//                                         alignItems: { xs: "flex-start", md: "center" },
 //                                         mt: { xs: 0, md: 1 }
 //                                       }}>
 //                                         <AddSectionButton
@@ -1100,7 +1100,7 @@ export default function ClassForm({ id }: ClassProps) {
 //                               overflow: "hidden",
 //                               borderRadius: 3,
 //                               boxShadow: "0 8px 20px rgba(63, 81, 181, 0.3)",
-//                               "&:hover": {                                
+//                               "&:hover": {
 //                                 transform: "translateY(-2px)",
 //                               },
 //                               transition: "all 0.3s ease",
