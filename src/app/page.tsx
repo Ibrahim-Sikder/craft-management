@@ -48,18 +48,13 @@ interface LoginResponse {
   message: string;
 }
 
-// const defualtValues = {
-//   email: '',
-//   password: '',
-// }
 
 const LoginDashboard = () => {
   const [login, { error, isLoading, isSuccess }] = useLoginMutation() as any;
   const router = useRouter()
   const handleSubmit = async (data: FieldValues) => {
     try {
-      const res = await login(data).unwrap() as LoginResponse;
-     
+      const res = await login(data).unwrap() as LoginResponse;    
 
       // Store accessToken to cookie
       setCookie('craft-token', res?.data?.accessToken, { expires: 7 });
@@ -103,9 +98,9 @@ const LoginDashboard = () => {
 
 
       <CraftForm onSubmit={handleSubmit} resolver={zodResolver(loginSchema)}>
-        <div className="relative z-10 w-full max-w-lg p-3 md:p-4 lg:p-8 m-2 bg-white rounded-xl shadow-lg">
+        <div className="relative z-10 md:w-full md:max-w-lg p-3 md:p-4 lg:p-8 m-2 bg-white rounded-xl shadow-lg">
           <div className="text-center mb-8 flex flex-col items-center">
-            <Image src={logo} alt='Craft International Institute' className='h-20 w-[220px]' />
+            <Image src={logo} alt='Craft International Institute' className='h-20 w-auto md:w-[220px]' />
             {/* <h1 className="text-3xl font-bold text-[#9A5AE3]">লগইন
           </h1> */}
             <p className="text-gray-600 mt-2">
