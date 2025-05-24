@@ -34,6 +34,7 @@ import {
 } from "@mui/icons-material";
 import { ThemeProvider, createTheme } from "@mui/material/styles";
 import { useRouter, usePathname } from "next/navigation";
+import Cookies from "js-cookie";
 
 import { navigationItems } from "@/components/Sidebar/DrawerItem";
 import { UserRole } from "@/types/common";
@@ -90,6 +91,25 @@ const CustomSidebar: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
   const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
   const handleProfileMenuClose = () => setAnchorEl(null);
+  const handleLogout = () => {
+    // Remove specific token cookie
+    Cookies.remove('craft-token', { path: '/' });
+
+    // Clear all cookies
+    const cookies = document.cookie.split(";");
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i];
+      const eqPos = cookie.indexOf("=");
+      const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
+      document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
+    }
+
+    // Clear local storage
+    localStorage.clear();
+
+    // Redirect to home page
+    router.push('/');
+  };
 
   const renderNavigationItems = (items: any, nested = false) =>
     items.map((item: any) => (
@@ -174,7 +194,8 @@ const CustomSidebar: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         <MenuItem onClick={handleProfileMenuClose}><Person /> Profile</MenuItem>
         <MenuItem onClick={handleProfileMenuClose}><Settings /> Settings</MenuItem>
         <Divider />
-        <MenuItem onClick={handleProfileMenuClose}><Logout /> Logout</MenuItem>
+        <MenuItem onClick={handleLogout}><Logout /> Logout</MenuItem>
+
       </Menu>
 
       {/* drawer */}
