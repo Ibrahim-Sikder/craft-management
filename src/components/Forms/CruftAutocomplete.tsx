@@ -53,7 +53,10 @@ const CraftIntAutoComplete = ({
   placeholder = "Select options",
   onInputChange,
   onChange,
-  disabled
+  disabled,
+  disableClearable = false, 
+  blurOnSelect = false,
+  clearOnBlur = false,
 }: TStateProps) => {
   const { control } = useFormContext()
 
@@ -80,12 +83,24 @@ const CraftIntAutoComplete = ({
           options={options}
           getOptionLabel={getOptionLabel}
           value={field.value || defaultValue}
+          disableClearable={disableClearable} 
+          blurOnSelect={blurOnSelect} 
+          clearOnBlur={clearOnBlur}
           renderTags={(value: readonly any[], getTagProps) =>
-            (Array.isArray(value) ? value : []).map((option: any, index: number) => {
-              const tagProps = getTagProps({ index })
-              const { key, ...restTagProps } = tagProps
-              return <Chip key={key || index} variant="outlined" label={getOptionLabel(option)} {...restTagProps} />
-            })
+            (Array.isArray(value) ? value : []).map(
+              (option: any, index: number) => {
+                const tagProps = getTagProps({ index })
+                const { key, ...restTagProps } = tagProps
+                return (
+                  <Chip
+                    key={key || index}
+                    variant="outlined"
+                    label={getOptionLabel(option)}
+                    {...restTagProps}
+                  />
+                )
+              },
+            )
           }
           onChange={(event, newValue) => {
             // Handle custom onChange if provided
@@ -96,12 +111,12 @@ const CraftIntAutoComplete = ({
             // Process the value for React Hook Form
             const processedValue = Array.isArray(newValue)
               ? newValue.map((item) => {
-                if (typeof item === "string") return item
-                if (item && typeof item === "object") {
-                  return item.title || item.value || item
-                }
-                return item
-              })
+                  if (typeof item === "string") return item
+                  if (item && typeof item === "object") {
+                    return item.title || item.value || item
+                  }
+                  return item
+                })
               : newValue
 
             field.onChange(processedValue)
@@ -129,3 +144,4 @@ const CraftIntAutoComplete = ({
 }
 
 export default CraftIntAutoComplete
+
