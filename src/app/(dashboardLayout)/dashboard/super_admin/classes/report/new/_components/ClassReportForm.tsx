@@ -39,8 +39,7 @@ import {
   Switch,
   FormControlLabel,
   Tooltip,
-  Chip,
-  IconButton,
+  CircularProgress,
 } from "@mui/material"
 import {
   Search as SearchIcon,
@@ -49,9 +48,6 @@ import {
   Visibility as VisibilityIcon,
   Add,
   Save,
-  CalendarToday,
-  Clear,
-  DateRange,
 } from "@mui/icons-material"
 import CraftForm from "@/components/Forms/Form"
 import CraftDatePicker from "@/components/Forms/DatePicker"
@@ -75,7 +71,6 @@ import TodayLesson from "./TodayLesson"
 import TodayTask from "./TodayTask"
 import { format } from "date-fns"
 import { useGetAllTeachersQuery } from "@/redux/api/teacherApi"
-import DateRangePicker from "./DateRangePicker"
 
 // Define a type for student evaluation
 type StudentEvaluation = {
@@ -125,6 +120,7 @@ export default function ClassReportForm({ id }: any) {
   const [noTaskForClass, setNoTaskForClass] = useState(false)
   const [lessonEvaluationTask, setLessonEvaluationTask] = useState(false)
   const [handwrittenTask, setHandwrittenTask] = useState(false)
+  const [isSubmittingForm, setIsSubmittingForm] = useState(false)
 
   const { data: singleClassReport, isLoading: singleClassReportLoading } = useGetSingleClassReportQuery({ id })
 
@@ -216,6 +212,7 @@ export default function ClassReportForm({ id }: any) {
       setReportStudents(studentsFromReport)
     }
   }, [id, singleClassReport])
+
   useEffect(() => {
     if (singleClassReport?.data?.studentEvaluations?.length > 0) {
       const evaluations = singleClassReport?.data?.studentEvaluations?.map((studentEval: any) => ({
@@ -300,124 +297,146 @@ export default function ClassReportForm({ id }: any) {
     toast.success(checked ? "হাতের লিখা অক্ষম করা হয়েছে!" : "হাতের লিখা সক্ষম করা হয়েছে!")
   }
 
+  // Utility function to safely extract values from form data
+  const safeExtractValue = (data: any, options: any[], fallback = "") => {
+    if (!data) return fallback
 
+    if (typeof data === "string") {
+      const match = options.find((opt: any) => opt.label === data || opt.value === data)
+      return match ? match.label : data
+    }
 
+    if (typeof data === "object" && data.label) {
+      return data.label
+    }
 
+    return fallback
+  }
 
-
-
-
-
-  // Enhanced mobile handling in handleSubmit
+  // Enhanced mobile handling in handleSubmit with comprehensive error handling
   const handleSubmit = async (data: FieldValues) => {
-    console.log("raw data", data)
-
-    // Enhanced mobile detection
-    const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
-                     window.innerWidth <= 768 || 
-                     'ontouchstart' in window
-
-    // Enhanced mobile data processing with better error handling
-    if (isMobile) {
-      try {
-        // Add longer delay for mobile processing
-        await new Promise((resolve) => setTimeout(resolve, 300))
-
-        // More robust autocomplete data format fixes for mobile
-        if (data.classes) {
-          if (typeof data.classes === "string") {
-            const match = classOption.find((opt: any) => 
-              opt.label === data.classes || opt.value === data.classes
-            )
-            if (match) {
-              data.classes = match
-            } else {
-              // Fallback: create object if string doesn't match any option
-              data.classes = { label: data.classes, value: data.classes }
-            }
-          } else if (!data.classes.label || !data.classes.value) {
-            // Ensure object has required properties
-            data.classes = { 
-              label: data.classes.label || data.classes.value || data.classes, 
-              value: data.classes.value || data.classes.label || data.classes 
-            }
-          }
-        }
-
-        if (data.subjects) {
-          if (typeof data.subjects === "string") {
-            const match = subjectOption.find((opt: any) => 
-              opt.label === data.subjects || opt.value === data.subjects
-            )
-            if (match) {
-              data.subjects = match
-            } else {
-              data.subjects = { label: data.subjects, value: data.subjects }
-            }
-          } else if (!data.subjects.label || !data.subjects.value) {
-            data.subjects = { 
-              label: data.subjects.label || data.subjects.value || data.subjects, 
-              value: data.subjects.value || data.subjects.label || data.subjects 
-            }
-          }
-        }
-
-        if (data.teachers) {
-          if (typeof data.teachers === "string") {
-            const match = teacherOption.find((opt: any) => 
-              opt.label === data.teachers || opt.value === data.teachers
-            )
-            if (match) {
-              data.teachers = match
-            } else {
-              data.teachers = { label: data.teachers, value: data.teachers }
-            }
-          } else if (!data.teachers.label || !data.teachers.value) {
-            data.teachers = { 
-              label: data.teachers.label || data.teachers.value || data.teachers, 
-              value: data.teachers.value || data.teachers.label || data.teachers 
-            }
-          }
-        }
-
-        console.log("Mobile processed data:", data)
-      } catch (error) {
-        console.error("Mobile data processing error:", error)
-        toast.error("Mobile data processing failed. Please try again.")
-        return
-      }
-    }
-
-    // Enhanced validation with better error messages
-    if (!data.classes || (typeof data.classes === 'object' && !data.classes.label)) {
-      toast.error("শ্রেণী নির্বাচন করুন")
+    // Prevent multiple submissions
+    if (isSubmittingForm) {
+      toast.error("অনুগ্রহ করে অপেক্ষা করুন...")
       return
     }
 
-    if (!data.subjects || (typeof data.subjects === 'object' && !data.subjects.label)) {
-      toast.error("বিষয় নির্বাচন করুন")
-      return
-    }
-
-    if (!data.teachers || (typeof data.teachers === 'object' && !data.teachers.label)) {
-      toast.error("শিক্ষক নির্বাচন করুন")
-      return
-    }
-
-    if (!data.hour) {
-      toast.error("ঘন্টা নির্বাচন করুন")
-      return
-    }
-
-    if (!data.date) {
-      toast.error("তারিখ নির্বাচন করুন")
-      return
-    }
+    setIsSubmittingForm(true)
 
     try {
-      const classValue = typeof data.classes === "object" ? data.classes.label : data.classes
-      const subjectValue = typeof data.subjects === "object" ? data.subjects.label : data.subjects
-      const teacherValue = typeof data.teachers === "object" ? data.teachers.label : data.teachers
+    
+
+      // Enhanced mobile detection
+      const isMobile =
+        /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+        window.innerWidth <= 768 ||
+        "ontouchstart" in window
+
+      // Check network connectivity
+      if (!navigator.onLine) {
+        throw new Error("No internet connection. Please check your network and try again.")
+      }
+
+      // Enhanced mobile data processing with better error handling
+      if (isMobile) {
+        try {
+          // Add longer delay for mobile processing
+          await new Promise((resolve) => setTimeout(resolve, 500))
+
+          // More robust autocomplete data format fixes for mobile
+          if (data.classes) {
+            if (typeof data.classes === "string") {
+              const match = classOption.find((opt: any) => opt.label === data.classes || opt.value === data.classes)
+              if (match) {
+                data.classes = match
+              } else {
+                // Fallback: create object if string doesn't match any option
+                data.classes = { label: data.classes, value: data.classes }
+              }
+            } else if (data.classes && (!data.classes.label || !data.classes.value)) {
+              // Ensure object has required properties
+              data.classes = {
+                label: data.classes.label || data.classes.value || data.classes,
+                value: data.classes.value || data.classes.label || data.classes,
+              }
+            }
+          }
+
+          if (data.subjects) {
+            if (typeof data.subjects === "string") {
+              const match = subjectOption.find((opt: any) => opt.label === data.subjects || opt.value === data.subjects)
+              if (match) {
+                data.subjects = match
+              } else {
+                data.subjects = { label: data.subjects, value: data.subjects }
+              }
+            } else if (data.subjects && (!data.subjects.label || !data.subjects.value)) {
+              data.subjects = {
+                label: data.subjects.label || data.subjects.value || data.subjects,
+                value: data.subjects.value || data.subjects.label || data.subjects,
+              }
+            }
+          }
+
+          if (data.teachers) {
+            if (typeof data.teachers === "string") {
+              const match = teacherOption.find((opt: any) => opt.label === data.teachers || opt.value === data.teachers)
+              if (match) {
+                data.teachers = match
+              } else {
+                data.teachers = { label: data.teachers, value: data.teachers }
+              }
+            } else if (data.teachers && (!data.teachers.label || !data.teachers.value)) {
+              data.teachers = {
+                label: data.teachers.label || data.teachers.value || data.teachers,
+                value: data.teachers.value || data.teachers.label || data.teachers,
+              }
+            }
+          }
+
+          console.log("Mobile processed data:", data)
+        } catch (error) {
+          console.error("Mobile data processing error:", error)
+          throw new Error("Mobile data processing failed. Please try again.")
+        }
+      }
+
+      // Enhanced validation with better error messages
+      if (!data.classes || (typeof data.classes === "object" && !data.classes.label)) {
+        throw new Error("শ্রেণী নির্বাচন করুন")
+      }
+
+      if (!data.subjects || (typeof data.subjects === "object" && !data.subjects.label)) {
+        throw new Error("বিষয় নির্বাচন করুন")
+      }
+
+      if (!data.teachers || (typeof data.teachers === "object" && !data.teachers.label)) {
+        throw new Error("শিক্ষক নির্বাচন করুন")
+      }
+
+      if (!data.hour) {
+        throw new Error("ঘন্টা নির্বাচন করুন")
+      }
+
+      if (!data.date) {
+        throw new Error("তারিখ নির্বাচন করুন")
+      }
+
+      // Safely extract values using utility function
+      const classValue = safeExtractValue(data.classes, classOption)
+      const subjectValue = safeExtractValue(data.subjects, subjectOption)
+      const teacherValue = safeExtractValue(data.teachers, teacherOption)
+
+      // Validate extracted values
+      if (!classValue) {
+        throw new Error("শ্রেণীর তথ্য সঠিক নয়")
+      }
+      if (!subjectValue) {
+        throw new Error("বিষয়ের তথ্য সঠিক নয়")
+      }
+      if (!teacherValue) {
+        throw new Error("শিক্ষকের তথ্য সঠিক নয়")
+      }
 
       const formattedData = {
         teachers: teacherValue,
@@ -482,56 +501,95 @@ export default function ClassReportForm({ id }: any) {
         todayLesson: todayLessonId,
         homeTask: homeTaskId,
       }
-      console.log("formated data", formattedData)
 
-      if (!id) {
-        const response = await createClassReport(formattedData).unwrap()
+      console.log("Formatted data for submission:", formattedData)
 
-        if (response.success) {
-          setSnackbarMessage("Class report saved successfully!")
-          setSnackbarSeverity("success")
-          setSnackbarOpen(true)
-          toast.success("Class report saved successfully!")
-          router.push("/dashboard/super_admin/classes/report/list")
+      let response: any = null
+      let apiError: any = null
+
+      try {
+        if (!id) {
+          response = await createClassReport(formattedData).unwrap()
+        } else {
+          response = await updateClassReport({ id, data: formattedData }).unwrap()
         }
-      } else {
-        const response = await updateClassReport({ id, data: formattedData }).unwrap()
+      } catch (error: any) {
+        apiError = error
+        console.error("API call failed:", error)
+      }
 
-        if (response.success) {
-          setSnackbarMessage("Class report update successfully!")
-          setSnackbarSeverity("success")
-          setSnackbarOpen(true)
-          toast.success("Class report update successfully!")
+      // Enhanced response handling with comprehensive checks
+      if (response && typeof response === "object") {
+        // Check for success in various possible response structures
+        const isSuccess =
+          response.success === true ||
+          response.status === "success" ||
+          response.statusCode === 200 ||
+          response.statusCode === 201 ||
+          (response.data && response.data.success === true)
+
+        if (isSuccess) {
+          const successMessage = id ? "Class report updated successfully!" : "Class report saved successfully!"
+          const successMessageBn = id ? "ক্লাস রিপোর্ট সফলভাবে আপডেট হয়েছে!" : "ক্লাস রিপোর্ট সফলভাবে সংরক্ষিত হয়েছে!"
+
+       
+          toast.success(successMessageBn)
+
+          // Add delay before navigation for mobile
+          if (isMobile) {
+            await new Promise((resolve) => setTimeout(resolve, 1000))
+          }
+
           router.push("/dashboard/super_admin/classes/report/list")
+          return
         }
       }
+
+      // If we reach here, the response was not successful or was undefined
+      const errorMessage =
+        response?.message ||
+        response?.error ||
+        apiError?.data?.message ||
+        apiError?.message ||
+        "Failed to save class report"
+
+      throw new Error(errorMessage)
     } catch (error: any) {
-      console.error("Error saving class report:", error)
-      
-      // Enhanced error handling for mobile
-      const errorMessage = error?.data?.message || error?.message || "Failed to save class report"
-      
+      console.error("Error in handleSubmit:", error)
+
+      // Enhanced error handling
+      let errorMessage = "Failed to save class report"
+
+      if (error.message) {
+        errorMessage = error.message
+      } else if (error.data?.message) {
+        errorMessage = error.data.message
+      } else if (typeof error === "string") {
+        errorMessage = error
+      }
+
       // Log additional debug info for mobile
-      if (/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+      const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+      if (isMobile) {
         console.log("Mobile error debug:", {
           error,
           formData: data,
           studentEvaluations: studentEvaluations.length,
-          networkStatus: navigator.onLine ? 'online' : 'offline'
+          networkStatus: navigator.onLine ? "online" : "offline",
+          userAgent: navigator.userAgent,
         })
       }
-      
-      setSnackbarMessage(errorMessage)
-      setSnackbarSeverity("error")
-      setSnackbarOpen(true)
       toast.error(errorMessage)
-      
+
       // Additional mobile-specific error handling
-      if (errorMessage.includes('network') || !navigator.onLine) {
+      if (!navigator.onLine) {
         toast.error("নেটওয়ার্ক সমস্যা। অনুগ্রহ করে আপনার ইন্টারনেট সংযোগ পরীক্ষা করুন।")
       }
+    } finally {
+      setIsSubmittingForm(false)
     }
   }
+
   const handleMenuClose = () => {
     setAnchorEl(null)
   }
@@ -550,9 +608,7 @@ export default function ClassReportForm({ id }: any) {
     setDeleteDialogOpen(false)
   }
 
-  const handleSnackbarClose = () => {
-    setSnackbarOpen(false)
-  }
+
 
   const handleLessonEvaluationChange = (studentId: string, value: string) => {
     const updatedEvaluations = [...studentEvaluations]
@@ -736,6 +792,7 @@ export default function ClassReportForm({ id }: any) {
       }
     }
   }
+
   // Handle Today's Lesson dialog
   const handleOpenTodayLessonDialog = () => {
     setTodayLessonDialogOpen(true)
@@ -771,17 +828,17 @@ export default function ClassReportForm({ id }: any) {
 
   useEffect(() => {
     // Mobile-specific optimizations
-    const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-    
+    const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera|Realme Mini/i.test(navigator.userAgent)
+
     if (isMobile) {
       // Prevent zoom on input focus for iOS
       const viewport = document.querySelector('meta[name="viewport"]')
       if (viewport) {
-        viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no')
+        viewport.setAttribute("content", "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no")
       }
-      
+
       // Add mobile-specific styles
-      const style = document.createElement('style')
+      const style = document.createElement("style")
       style.textContent = `
         .MuiAutocomplete-popper {
           z-index: 9999 !important;
@@ -794,11 +851,11 @@ export default function ClassReportForm({ id }: any) {
         }
       `
       document.head.appendChild(style)
-      
+
       return () => {
         document.head.removeChild(style)
         if (viewport) {
-          viewport.setAttribute('content', 'width=device-width, initial-scale=1.0')
+          viewport.setAttribute("content", "width=device-width, initial-scale=1.0")
         }
       }
     }
@@ -806,12 +863,12 @@ export default function ClassReportForm({ id }: any) {
 
   return (
     <>
-      {singleClassReportLoading && isLoading ? (
+      {singleClassReportLoading ? (
         <div>Loading.....</div>
       ) : (
         <>
-          <ThemeProvider theme={theme}>
-            <CraftForm onSubmit={handleSubmit} defaultValues={defaultValues || {}}>
+    
+            <CraftForm onSubmit={handleSubmit} defaultValues={defaultValues || undefined}>
               <Box sx={{ flexGrow: 1, bgcolor: "background.default", minHeight: "100vh", borderRadius: 2 }}>
                 <Container maxWidth={false} sx={{ mt: 0, mb: 8, borderRadius: 2, px: { xs: 0, sm: 0, md: 4, lg: 5 } }}>
                   <Fade in={true} timeout={800}>
@@ -878,8 +935,8 @@ export default function ClassReportForm({ id }: any) {
                             type="submit"
                             variant="contained"
                             color="primary"
-                            startIcon={<Save />}
-                            disabled={isSubmitting}
+                            startIcon={isSubmittingForm ? <CircularProgress size={16} color="inherit" /> : <Save />}
+                            disabled={isSubmittingForm || isSubmitting || isUpdating}
                             sx={{
                               bgcolor: "#4F0187",
                               borderRadius: 2,
@@ -888,7 +945,7 @@ export default function ClassReportForm({ id }: any) {
                               px: { xs: 2, sm: 2 },
                             }}
                           >
-                            {isSubmitting ? "Saving..." : "Save"}
+                            {isSubmittingForm || isSubmitting || isUpdating ? "Saving..." : "Save"}
                           </Button>
                         </Box>
                       </Box>
@@ -905,7 +962,6 @@ export default function ClassReportForm({ id }: any) {
                                 freeSolo
                                 multiple={false}
                                 options={teacherOption}
-                                // Add these mobile-optimized props
                                 forcePopupIcon={false}
                                 clearOnBlur={false}
                                 selectOnFocus={true}
@@ -921,7 +977,6 @@ export default function ClassReportForm({ id }: any) {
                                 multiple={false}
                                 options={classOption}
                                 onChange={handleClassChange}
-                                // Add these mobile-optimized props
                                 forcePopupIcon={false}
                                 clearOnBlur={false}
                                 selectOnFocus={true}
@@ -936,7 +991,6 @@ export default function ClassReportForm({ id }: any) {
                                 freeSolo
                                 multiple={false}
                                 options={subjectOption}
-                                // Add these mobile-optimized props
                                 forcePopupIcon={false}
                                 clearOnBlur={false}
                                 selectOnFocus={true}
@@ -954,7 +1008,6 @@ export default function ClassReportForm({ id }: any) {
                             <Grid item xs={6} sm={6} md={2} lg={2.5}>
                               <CraftDatePicker name="date" label="তারিখ" />
                             </Grid>
-
                           </Grid>
                         </Box>
 
@@ -1273,25 +1326,9 @@ export default function ClassReportForm({ id }: any) {
                 </DialogActions>
               </Dialog>
 
-              <Snackbar
-                open={snackbarOpen}
-                autoHideDuration={6000}
-                onClose={handleSnackbarClose}
-                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-              >
-                <Alert
-                  onClose={handleSnackbarClose}
-                  severity={snackbarSeverity}
-                  variant="filled"
-                  sx={{ width: "100%" }}
-                >
-                  {snackbarMessage}
-                </Alert>
-              </Snackbar>
+              
             </CraftForm>
-          </ThemeProvider>
-
-
+    
 
           <TodayLesson
             id={todayLessonId}
