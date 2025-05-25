@@ -568,13 +568,13 @@ export default function ClassReportForm({ id }: any) {
     return 0
   })
 
-  const handleClassName = (event: any, newValue: any) => {
-    setSelectedBrand(newValue)
-    const filtered = sortedVehicleName
-      ?.filter((vehicle: any) => vehicle.label?.toLowerCase().includes(newValue?.toLowerCase()))
-      .sort((a: any, b: any) => a.label.localeCompare(b.label))
-    setFilteredVehicles(filtered)
-  }
+  // const handleClassName = (event: any, newValue: any) => {
+  //   setSelectedBrand(newValue)
+  //   const filtered = sortedVehicleName
+  //     ?.filter((vehicle: any) => vehicle.label?.toLowerCase().includes(newValue?.toLowerCase()))
+  //     .sort((a: any, b: any) => a.label.localeCompare(b.label))
+  //   setFilteredVehicles(filtered)
+  // }
 
   const handleClassChange = (event: any, newValue: any) => {
     if (id && isEditMode) {
@@ -845,7 +845,7 @@ export default function ClassReportForm({ id }: any) {
                               />
                             </Tooltip>
                           </div>
-                          <div className="w-[285px] md:w-full overflow-x-auto max-[800px]:border max-[800px]:border-gray-300   max-[800px]:rounded   max-[800px]:block   max-[800px]:max-w-[100vw]   max-[800px]:relative   max-[800px]:whitespace-nowrap   max-[800px]:overflow-x-auto   max-[800px]:scrolling-touch   min-[900px]:overflow-x-visible min-[900px]:table">
+                          <div className="w-[300px] md:w-full overflow-x-auto max-[800px]:border max-[800px]:border-gray-300   max-[800px]:rounded   max-[800px]:block   max-[800px]:max-w-[100vw]   max-[800px]:relative   max-[800px]:whitespace-nowrap   max-[800px]:overflow-x-auto   max-[800px]:scrolling-touch   min-[900px]:overflow-x-visible min-[900px]:table">
                             <Table
                               sx={{
                                 minWidth: 900,
