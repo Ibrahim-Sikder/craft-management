@@ -533,12 +533,7 @@ const NotificationsPage = () => {
         onClose={() => setDetailsOpen(false)}
         maxWidth="md"
         fullWidth
-        PaperProps={{
-          sx: {
-            borderRadius: 3,
-            background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.02)} 0%, ${alpha(theme.palette.secondary.main, 0.02)} 100%)`,
-          },
-        }}
+       
       >
         {selectedNotification && (
           <>
@@ -594,13 +589,7 @@ const NotificationsPage = () => {
         open={newNotificationOpen}
         onClose={() => setNewNotificationOpen(false)}
         maxWidth="md"
-        fullWidth
-        PaperProps={{
-          sx: {
-            borderRadius: 3,
-            background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.02)} 0%, ${alpha(theme.palette.secondary.main, 0.02)} 100%)`,
-          },
-        }}
+       
       >
         <DialogTitle>
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>

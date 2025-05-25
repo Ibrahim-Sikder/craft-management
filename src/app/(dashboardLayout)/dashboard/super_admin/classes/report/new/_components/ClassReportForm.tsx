@@ -324,7 +324,7 @@ export default function ClassReportForm({ id }: any) {
     setIsSubmittingForm(true)
 
     try {
-    
+
 
       // Enhanced mobile detection
       const isMobile =
@@ -532,7 +532,7 @@ export default function ClassReportForm({ id }: any) {
           const successMessage = id ? "Class report updated successfully!" : "Class report saved successfully!"
           const successMessageBn = id ? "ক্লাস রিপোর্ট সফলভাবে আপডেট হয়েছে!" : "ক্লাস রিপোর্ট সফলভাবে সংরক্ষিত হয়েছে!"
 
-       
+
           toast.success(successMessageBn)
 
           // Add delay before navigation for mobile
@@ -862,473 +862,473 @@ export default function ClassReportForm({ id }: any) {
   }, [])
 
   return (
-    <>
+    <ThemeProvider theme={theme}>
       {singleClassReportLoading ? (
         <div>Loading.....</div>
       ) : (
         <>
-    
-            <CraftForm onSubmit={handleSubmit} defaultValues={defaultValues || undefined}>
-              <Box sx={{ flexGrow: 1, bgcolor: "background.default", minHeight: "100vh", borderRadius: 2 }}>
-                <Container maxWidth={false} sx={{ mt: 0, mb: 8, borderRadius: 2, px: { xs: 0, sm: 0, md: 4, lg: 5 } }}>
-                  <Fade in={true} timeout={800}>
-                    <Box>
-                      <Box
+
+          <CraftForm onSubmit={handleSubmit} defaultValues={defaultValues || undefined}>
+            <Box sx={{ flexGrow: 1, bgcolor: "background.default", minHeight: "100vh", borderRadius: 2 }}>
+              <Container maxWidth={false} sx={{ mt: 0, mb: 8, borderRadius: 2, px: { xs: 0, sm: 0, md: 4, lg: 5 } }}>
+                <Fade in={true} timeout={800}>
+                  <Box>
+                    <Box
+                      sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        mb: 3,
+                        flexWrap: "wrap",
+                        gap: 2,
+                        paddingTop: 2,
+                      }}
+                    >
+                      <Typography
+                        variant="h4"
+                        component="h1"
                         sx={{
-                          display: "flex",
-                          justifyContent: "space-between",
-                          alignItems: "center",
-                          mb: 3,
-                          flexWrap: "wrap",
-                          gap: 2,
-                          paddingTop: 2,
+                          fontWeight: 700,
+                          color: "text.primary",
+                          fontSize: { xs: "1.5rem", sm: "1.75rem", md: "2rem" },
                         }}
                       >
-                        <Typography
-                          variant="h4"
-                          component="h1"
+                        {id ? "Edit Report" : "+ Add New Report"}
+                        {isEditMode && (
+                          <Typography component="span" variant="subtitle1" sx={{ ml: 2, color: "text.secondary" }}>
+                            (Editing existing report)
+                          </Typography>
+                        )}
+                      </Typography>
+                      <Box sx={{ display: "flex", gap: { xs: 0.5, sm: 2 }, flexWrap: "wrap" }}>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          startIcon={<Add />}
+                          onClick={handleOpenTodayLessonDialog}
                           sx={{
-                            fontWeight: 700,
-                            color: "text.primary",
-                            fontSize: { xs: "1.5rem", sm: "1.75rem", md: "2rem" },
+                            bgcolor: todayLessonId ? "success.main" : "",
+                            borderRadius: 2,
+                            boxShadow: "0px 4px 10px rgba(99, 102, 241, 0.2)",
+                            fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                            px: { xs: 1, sm: 2 },
                           }}
                         >
-                          {id ? "Edit Report" : "+ Add New Report"}
-                          {isEditMode && (
-                            <Typography component="span" variant="subtitle1" sx={{ ml: 2, color: "text.secondary" }}>
-                              (Editing existing report)
-                            </Typography>
-                          )}
-                        </Typography>
-                        <Box sx={{ display: "flex", gap: { xs: 0.5, sm: 2 }, flexWrap: "wrap" }}>
-                          <Button
-                            variant="contained"
-                            color="primary"
-                            startIcon={<Add />}
-                            onClick={handleOpenTodayLessonDialog}
-                            sx={{
-                              bgcolor: todayLessonId ? "success.main" : "",
-                              borderRadius: 2,
-                              boxShadow: "0px 4px 10px rgba(99, 102, 241, 0.2)",
-                              fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                              px: { xs: 1, sm: 2 },
-                            }}
-                          >
-                            {todayLessonId ? " আজকের পাঠে দেখুন" : "আজকের পাঠ"}
-                          </Button>
-                          <Button
-                            variant="contained"
-                            color="primary"
-                            startIcon={<Add />}
-                            onClick={handleOpenTodayTaskDialog}
-                            sx={{
-                              bgcolor: homeTaskId ? "success.main" : "#3792de",
-                              borderRadius: 2,
-                              boxShadow: "0px 4px 10px rgba(99, 102, 241, 0.2)",
-                              fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                              px: { xs: 1, sm: 2 },
-                            }}
-                          >
-                            {homeTaskId ? "বাড়ির কাজ দেখুন" : "বাড়ির কাজ"}
-                          </Button>
-                          <Button
-                            type="submit"
-                            variant="contained"
-                            color="primary"
-                            startIcon={isSubmittingForm ? <CircularProgress size={16} color="inherit" /> : <Save />}
-                            disabled={isSubmittingForm || isSubmitting || isUpdating}
-                            sx={{
-                              bgcolor: "#4F0187",
-                              borderRadius: 2,
-                              boxShadow: "0px 4px 10px rgba(99, 102, 241, 0.2)",
-                              fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                              px: { xs: 2, sm: 2 },
-                            }}
-                          >
-                            {isSubmittingForm || isSubmitting || isUpdating ? "Saving..." : "Save"}
-                          </Button>
-                        </Box>
+                          {todayLessonId ? " আজকের পাঠে দেখুন" : "আজকের পাঠ"}
+                        </Button>
+                        <Button
+                          variant="contained"
+                          color="primary"
+                          startIcon={<Add />}
+                          onClick={handleOpenTodayTaskDialog}
+                          sx={{
+                            bgcolor: homeTaskId ? "success.main" : "#3792de",
+                            borderRadius: 2,
+                            boxShadow: "0px 4px 10px rgba(99, 102, 241, 0.2)",
+                            fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                            px: { xs: 1, sm: 2 },
+                          }}
+                        >
+                          {homeTaskId ? "বাড়ির কাজ দেখুন" : "বাড়ির কাজ"}
+                        </Button>
+                        <Button
+                          type="submit"
+                          variant="contained"
+                          color="primary"
+                          startIcon={isSubmittingForm ? <CircularProgress size={16} color="inherit" /> : <Save />}
+                          disabled={isSubmittingForm || isSubmitting || isUpdating}
+                          sx={{
+                            bgcolor: "#4F0187",
+                            borderRadius: 2,
+                            boxShadow: "0px 4px 10px rgba(99, 102, 241, 0.2)",
+                            fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                            px: { xs: 2, sm: 2 },
+                          }}
+                        >
+                          {isSubmittingForm || isSubmitting || isUpdating ? "Saving..." : "Save"}
+                        </Button>
+                      </Box>
+                    </Box>
+
+                    <Paper elevation={0} sx={{ mb: 4, width: "100%", overflow: "hidden" }}>
+                      <Box sx={{ p: { xs: 1, sm: 1, md: 2, lg: 3 }, borderBottom: "1px solid rgba(0, 0, 0, 0.06)" }}>
+                        <Grid container spacing={2} alignItems="center">
+                          <Grid item xs={6} sm={6} md={3} lg={2.5}>
+                            <CraftIntAutoComplete
+                              name="teachers"
+                              placeholder="শিক্ষকের নাম লিখুন"
+                              label="শিক্ষকের নাম"
+                              fullWidth
+                              freeSolo
+                              multiple={false}
+                              options={teacherOption}
+                              forcePopupIcon={false}
+                              clearOnBlur={false}
+                              selectOnFocus={true}
+                              handleHomeEndKeys={true}
+                            />
+                          </Grid>
+                          <Grid item xs={6} sm={6} md={2} lg={2.5}>
+                            <CraftIntAutoComplete
+                              name="classes"
+                              label="শ্রেণীর নাম লিখুন"
+                              fullWidth
+                              freeSolo
+                              multiple={false}
+                              options={classOption}
+                              onChange={handleClassChange}
+                              forcePopupIcon={false}
+                              clearOnBlur={false}
+                              selectOnFocus={true}
+                              handleHomeEndKeys={true}
+                            />
+                          </Grid>
+                          <Grid item xs={6} sm={6} md={3} lg={2.5}>
+                            <CraftIntAutoComplete
+                              name="subjects"
+                              label="বিষয়ের নাম লিখুন"
+                              fullWidth
+                              freeSolo
+                              multiple={false}
+                              options={subjectOption}
+                              forcePopupIcon={false}
+                              clearOnBlur={false}
+                              selectOnFocus={true}
+                              handleHomeEndKeys={true}
+                            />
+                          </Grid>
+                          <Grid item xs={6} sm={6} md={2} lg={1.5}>
+                            <CraftSelect
+                              name="hour"
+                              label="ঘন্টা"
+                              items={classHour}
+                              sx={{ minWidth: { xs: 100, sm: 120, md: 130 } }}
+                            />
+                          </Grid>
+                          <Grid item xs={6} sm={6} md={2} lg={2.5}>
+                            <CraftDatePicker name="date" label="তারিখ" />
+                          </Grid>
+                        </Grid>
                       </Box>
 
-                      <Paper elevation={0} sx={{ mb: 4, width: "100%", overflow: "hidden" }}>
-                        <Box sx={{ p: { xs: 1, sm: 1, md: 2, lg: 3 }, borderBottom: "1px solid rgba(0, 0, 0, 0.06)" }}>
-                          <Grid container spacing={2} alignItems="center">
-                            <Grid item xs={6} sm={6} md={3} lg={2.5}>
-                              <CraftIntAutoComplete
-                                name="teachers"
-                                placeholder="শিক্ষকের নাম লিখুন"
-                                label="শিক্ষকের নাম"
-                                fullWidth
-                                freeSolo
-                                multiple={false}
-                                options={teacherOption}
-                                forcePopupIcon={false}
-                                clearOnBlur={false}
-                                selectOnFocus={true}
-                                handleHomeEndKeys={true}
-                              />
-                            </Grid>
-                            <Grid item xs={6} sm={6} md={2} lg={2.5}>
-                              <CraftIntAutoComplete
-                                name="classes"
-                                label="শ্রেণীর নাম লিখুন"
-                                fullWidth
-                                freeSolo
-                                multiple={false}
-                                options={classOption}
-                                onChange={handleClassChange}
-                                forcePopupIcon={false}
-                                clearOnBlur={false}
-                                selectOnFocus={true}
-                                handleHomeEndKeys={true}
-                              />
-                            </Grid>
-                            <Grid item xs={6} sm={6} md={3} lg={2.5}>
-                              <CraftIntAutoComplete
-                                name="subjects"
-                                label="বিষয়ের নাম লিখুন"
-                                fullWidth
-                                freeSolo
-                                multiple={false}
-                                options={subjectOption}
-                                forcePopupIcon={false}
-                                clearOnBlur={false}
-                                selectOnFocus={true}
-                                handleHomeEndKeys={true}
-                              />
-                            </Grid>
-                            <Grid item xs={6} sm={6} md={2} lg={1.5}>
-                              <CraftSelect
-                                name="hour"
-                                label="ঘন্টা"
-                                items={classHour}
-                                sx={{ minWidth: { xs: 100, sm: 120, md: 130 } }}
-                              />
-                            </Grid>
-                            <Grid item xs={6} sm={6} md={2} lg={2.5}>
-                              <CraftDatePicker name="date" label="তারিখ" />
-                            </Grid>
-                          </Grid>
-                        </Box>
-
-                        {isLoading ? (
-                          <Box sx={{ p: 2 }}>
-                            {Array.from(new Array(5)).map((_, index) => (
-                              <Box key={index} sx={{ display: "flex", py: 2, px: 2, alignItems: "center" }}>
-                                <Skeleton variant="circular" width={40} height={40} sx={{ mr: 2 }} />
-                                <Box sx={{ width: "100%" }}>
-                                  <Skeleton variant="text" width="40%" height={30} />
-                                  <Box sx={{ display: "flex", mt: 1 }}>
-                                    <Skeleton variant="text" width="20%" sx={{ mr: 2 }} />
-                                    <Skeleton variant="text" width="30%" />
-                                  </Box>
+                      {isLoading ? (
+                        <Box sx={{ p: 2 }}>
+                          {Array.from(new Array(5)).map((_, index) => (
+                            <Box key={index} sx={{ display: "flex", py: 2, px: 2, alignItems: "center" }}>
+                              <Skeleton variant="circular" width={40} height={40} sx={{ mr: 2 }} />
+                              <Box sx={{ width: "100%" }}>
+                                <Skeleton variant="text" width="40%" height={30} />
+                                <Box sx={{ display: "flex", mt: 1 }}>
+                                  <Skeleton variant="text" width="20%" sx={{ mr: 2 }} />
+                                  <Skeleton variant="text" width="30%" />
                                 </Box>
-                                <Skeleton variant="rectangular" width={100} height={36} sx={{ borderRadius: 1 }} />
                               </Box>
-                            ))}
-                          </Box>
-                        ) : (
-                          <>
-                            <div className="flex gap-2 justify-center">
-                              <Tooltip title="Disable all tasks">
-                                <FormControlLabel
-                                  control={
-                                    <Switch checked={noTaskForClass} onChange={handleNoTaskChange} color="primary" />
-                                  }
-                                  label={
-                                    <Typography variant="caption" sx={{ fontSize: 15 }}>
-                                      আজকে কোন পাঠ নেই
-                                    </Typography>
-                                  }
-                                  labelPlacement="start"
-                                />
-                              </Tooltip>
-                            </div>
-                            <div className="w-[285px] md:w-full overflow-x-auto max-[800px]:border max-[800px]:border-gray-300   max-[800px]:rounded   max-[800px]:block   max-[800px]:max-w-[100vw]   max-[800px]:relative   max-[800px]:whitespace-nowrap   max-[800px]:overflow-x-auto   max-[800px]:scrolling-touch   min-[900px]:overflow-x-visible min-[900px]:table">
-                              <Table
-                                sx={{
-                                  minWidth: 900,
-                                  "@media (min-width: 900px)": {
-                                    width: "100%",
-                                    minWidth: "100%",
-                                    tableLayout: { sm: "auto", md: "fixed", lg: "fixed" },
-                                  },
-                                }}
-                              >
-                                <TableHead>
-                                  <TableRow>
-                                    <TableCell width="20%">ছাত্রের নাম</TableCell>
-                                    <TableCell align="center" width="10%">
-                                      উপস্থিতি
-                                    </TableCell>
-                                    <TableCell align="center" width="20%">
-                                      <div className="flex gap-2 justify-center">
-                                        <Tooltip title="Disable lesson evaluation">
-                                          <FormControlLabel
-                                            control={
-                                              <Switch
-                                                checked={lessonEvaluationTask}
-                                                onChange={handleLessonEvaluationTaskChange}
-                                                color="primary"
-                                                disabled={noTaskForClass}
-                                              />
-                                            }
-                                            label={
-                                              <Typography variant="caption" sx={{ fontSize: 15 }}>
-                                                পাঠ মূল্যায়ন
-                                              </Typography>
-                                            }
-                                            labelPlacement="start"
-                                          />
-                                        </Tooltip>
-                                      </div>
-                                    </TableCell>
+                              <Skeleton variant="rectangular" width={100} height={36} sx={{ borderRadius: 1 }} />
+                            </Box>
+                          ))}
+                        </Box>
+                      ) : (
+                        <>
+                          <div className="flex gap-2 justify-center">
+                            <Tooltip title="Disable all tasks">
+                              <FormControlLabel
+                                control={
+                                  <Switch checked={noTaskForClass} onChange={handleNoTaskChange} color="primary" />
+                                }
+                                label={
+                                  <Typography variant="caption" sx={{ fontSize: 15 }}>
+                                    আজকে কোন পাঠ নেই
+                                  </Typography>
+                                }
+                                labelPlacement="start"
+                              />
+                            </Tooltip>
+                          </div>
+                          <div className="w-[285px] md:w-full overflow-x-auto max-[800px]:border max-[800px]:border-gray-300   max-[800px]:rounded   max-[800px]:block   max-[800px]:max-w-[100vw]   max-[800px]:relative   max-[800px]:whitespace-nowrap   max-[800px]:overflow-x-auto   max-[800px]:scrolling-touch   min-[900px]:overflow-x-visible min-[900px]:table">
+                            <Table
+                              sx={{
+                                minWidth: 900,
+                                "@media (min-width: 900px)": {
+                                  width: "100%",
+                                  minWidth: "100%",
+                                  tableLayout: { sm: "auto", md: "fixed", lg: "fixed" },
+                                },
+                              }}
+                            >
+                              <TableHead>
+                                <TableRow>
+                                  <TableCell width="20%">ছাত্রের নাম</TableCell>
+                                  <TableCell align="center" width="10%">
+                                    উপস্থিতি
+                                  </TableCell>
+                                  <TableCell align="center" width="20%">
+                                    <div className="flex gap-2 justify-center">
+                                      <Tooltip title="Disable lesson evaluation">
+                                        <FormControlLabel
+                                          control={
+                                            <Switch
+                                              checked={lessonEvaluationTask}
+                                              onChange={handleLessonEvaluationTaskChange}
+                                              color="primary"
+                                              disabled={noTaskForClass}
+                                            />
+                                          }
+                                          label={
+                                            <Typography variant="caption" sx={{ fontSize: 15 }}>
+                                              পাঠ মূল্যায়ন
+                                            </Typography>
+                                          }
+                                          labelPlacement="start"
+                                        />
+                                      </Tooltip>
+                                    </div>
+                                  </TableCell>
 
-                                    <TableCell align="center" width="20%">
-                                      <div className="flex gap-2 justify-center">
-                                        <Tooltip title="Disable handwritten task">
-                                          <FormControlLabel
-                                            control={
-                                              <Switch
-                                                checked={handwrittenTask}
-                                                onChange={handleHandwrittenTaskChange}
-                                                color="primary"
-                                                disabled={noTaskForClass}
-                                              />
-                                            }
-                                            label={
-                                              <Typography variant="caption" sx={{ fontSize: 15 }}>
-                                                হাতের লিখা
-                                              </Typography>
-                                            }
-                                            labelPlacement="start"
-                                          />
-                                        </Tooltip>
-                                      </div>
-                                    </TableCell>
-                                    <TableCell align="center" width="10%">
-                                      অভিভাবকের স্বাক্ষর
-                                    </TableCell>
-                                    <TableCell align="center" sx={{ minWidth: 200 }}>
-                                      মন্তব্য
+                                  <TableCell align="center" width="20%">
+                                    <div className="flex gap-2 justify-center">
+                                      <Tooltip title="Disable handwritten task">
+                                        <FormControlLabel
+                                          control={
+                                            <Switch
+                                              checked={handwrittenTask}
+                                              onChange={handleHandwrittenTaskChange}
+                                              color="primary"
+                                              disabled={noTaskForClass}
+                                            />
+                                          }
+                                          label={
+                                            <Typography variant="caption" sx={{ fontSize: 15 }}>
+                                              হাতের লিখা
+                                            </Typography>
+                                          }
+                                          labelPlacement="start"
+                                        />
+                                      </Tooltip>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell align="center" width="10%">
+                                    অভিভাবকের স্বাক্ষর
+                                  </TableCell>
+                                  <TableCell align="center" sx={{ minWidth: 200 }}>
+                                    মন্তব্য
+                                  </TableCell>
+                                </TableRow>
+                              </TableHead>
+                              <TableBody>
+                                {students.length === 0 && (
+                                  <TableRow>
+                                    <TableCell colSpan={6} align="center" sx={{ py: 8 }}>
+                                      <Box sx={{ textAlign: "center" }}>
+                                        <SearchIcon sx={{ fontSize: 48, color: "text.disabled", mb: 2 }} />
+                                        <Typography variant="h6" gutterBottom>
+                                          No students found
+                                        </Typography>
+                                        <Typography variant="body2" color="text.secondary">
+                                          Try adjusting your search or filter to find what you&apos;re looking for.
+                                        </Typography>
+                                      </Box>
                                     </TableCell>
                                   </TableRow>
-                                </TableHead>
-                                <TableBody>
-                                  {students.length === 0 && (
-                                    <TableRow>
-                                      <TableCell colSpan={6} align="center" sx={{ py: 8 }}>
-                                        <Box sx={{ textAlign: "center" }}>
-                                          <SearchIcon sx={{ fontSize: 48, color: "text.disabled", mb: 2 }} />
-                                          <Typography variant="h6" gutterBottom>
-                                            No students found
-                                          </Typography>
-                                          <Typography variant="body2" color="text.secondary">
-                                            Try adjusting your search or filter to find what you&apos;re looking for.
-                                          </Typography>
-                                        </Box>
-                                      </TableCell>
-                                    </TableRow>
-                                  )}
+                                )}
 
-                                  {students.length > 0 ? (
-                                    students.map((student: any) => {
-                                      const evaluation = getStudentEvaluation(student._id)
-                                      const isAbsent = evaluation.attendance !== "উপস্থিত"
-                                      return (
-                                        <TableRow key={student._id} sx={{ transition: "all 0.2s" }}>
-                                          <TableCell component="th" scope="row">
-                                            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                                              {student.name}
-                                            </Typography>
-                                            <Typography variant="caption" color="text.secondary">
-                                              {student.studentId} • {student.className}, {student.section}
-                                            </Typography>
-                                          </TableCell>
-                                          <TableCell align="center">
-                                            <Checkbox
-                                              color="primary"
-                                              checked={evaluation.attendance === "উপস্থিত"}
+                                {students.length > 0 ? (
+                                  students.map((student: any) => {
+                                    const evaluation = getStudentEvaluation(student._id)
+                                    const isAbsent = evaluation.attendance !== "উপস্থিত"
+                                    return (
+                                      <TableRow key={student._id} sx={{ transition: "all 0.2s" }}>
+                                        <TableCell component="th" scope="row">
+                                          <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                                            {student.name}
+                                          </Typography>
+                                          <Typography variant="caption" color="text.secondary">
+                                            {student.studentId} • {student.className}, {student.section}
+                                          </Typography>
+                                        </TableCell>
+                                        <TableCell align="center">
+                                          <Checkbox
+                                            color="primary"
+                                            checked={evaluation.attendance === "উপস্থিত"}
+                                            onChange={(e) =>
+                                              handleAttendanceChange(
+                                                student._id,
+                                                e.target.checked ? "উপস্থিত" : "অনুপস্থিত",
+                                              )
+                                            }
+                                          />
+                                        </TableCell>
+                                        <TableCell align="center">
+                                          <FormControl
+                                            fullWidth
+                                            sx={{ minWidth: { xs: 120, sm: 140, md: 160 } }}
+                                            disabled={isAbsent || noTaskForClass || lessonEvaluationTask}
+                                          >
+                                            <InputLabel id={`lesson-label-${student._id}`}>
+                                              Lesson Evaluation
+                                            </InputLabel>
+                                            <Select
+                                              labelId={`lesson-label-${student._id}`}
+                                              value={evaluation.lessonEvaluation}
+                                              label="Lesson Evaluation"
                                               onChange={(e) =>
-                                                handleAttendanceChange(
-                                                  student._id,
-                                                  e.target.checked ? "উপস্থিত" : "অনুপস্থিত",
-                                                )
+                                                handleLessonEvaluationChange(student._id, e.target.value)
                                               }
-                                            />
-                                          </TableCell>
-                                          <TableCell align="center">
-                                            <FormControl
-                                              fullWidth
-                                              sx={{ minWidth: { xs: 120, sm: 140, md: 160 } }}
-                                              disabled={isAbsent || noTaskForClass || lessonEvaluationTask}
                                             >
-                                              <InputLabel id={`lesson-label-${student._id}`}>
-                                                Lesson Evaluation
-                                              </InputLabel>
-                                              <Select
-                                                labelId={`lesson-label-${student._id}`}
-                                                value={evaluation.lessonEvaluation}
-                                                label="Lesson Evaluation"
-                                                onChange={(e) =>
-                                                  handleLessonEvaluationChange(student._id, e.target.value)
-                                                }
-                                              >
-                                                {lessonEvaluation.map((item) => (
-                                                  <MenuItem key={item} value={item}>
-                                                    {item}
-                                                  </MenuItem>
-                                                ))}
-                                              </Select>
-                                            </FormControl>
-                                          </TableCell>
+                                              {lessonEvaluation.map((item) => (
+                                                <MenuItem key={item} value={item}>
+                                                  {item}
+                                                </MenuItem>
+                                              ))}
+                                            </Select>
+                                          </FormControl>
+                                        </TableCell>
 
-                                          <TableCell align="center">
-                                            <FormControl
-                                              fullWidth
-                                              sx={{ minWidth: { xs: 120, sm: 140, md: 160 } }}
-                                              disabled={isAbsent || noTaskForClass || handwrittenTask}
+                                        <TableCell align="center">
+                                          <FormControl
+                                            fullWidth
+                                            sx={{ minWidth: { xs: 120, sm: 140, md: 160 } }}
+                                            disabled={isAbsent || noTaskForClass || handwrittenTask}
+                                          >
+                                            <InputLabel id={`handwriting-label-${student._id}`}>
+                                              Handwriting
+                                            </InputLabel>
+                                            <Select
+                                              labelId={`handwriting-label-${student._id}`}
+                                              value={evaluation.handwriting || "লিখেছে"}
+                                              label="Handwriting"
+                                              onChange={(e) => handleHandwritingChange(student._id, e.target.value)}
                                             >
-                                              <InputLabel id={`handwriting-label-${student._id}`}>
-                                                Handwriting
-                                              </InputLabel>
-                                              <Select
-                                                labelId={`handwriting-label-${student._id}`}
-                                                value={evaluation.handwriting || "লিখেছে"}
-                                                label="Handwriting"
-                                                onChange={(e) => handleHandwritingChange(student._id, e.target.value)}
-                                              >
-                                                {handWritting.map((item) => (
-                                                  <MenuItem key={item} value={item}>
-                                                    {item}
-                                                  </MenuItem>
-                                                ))}
-                                              </Select>
-                                            </FormControl>
-                                          </TableCell>
+                                              {handWritting.map((item) => (
+                                                <MenuItem key={item} value={item}>
+                                                  {item}
+                                                </MenuItem>
+                                              ))}
+                                            </Select>
+                                          </FormControl>
+                                        </TableCell>
 
-                                          <TableCell align="center">
-                                            <Checkbox
-                                              color="primary"
-                                              checked={evaluation.parentSignature === true}
-                                              onChange={(e) =>
-                                                handleParentSignatureChange(student._id, e.target.checked)
-                                              }
-                                              disabled={
-                                                isAbsent || noTaskForClass || (lessonEvaluationTask && handwrittenTask)
-                                              }
-                                            />
-                                          </TableCell>
-                                          <TableCell>
-                                            <TextField
-                                              fullWidth
-                                              multiline
-                                              minRows={1}
-                                              label="মন্তব্য"
-                                              placeholder="মন্তব্য"
-                                              value={evaluation.comments || ""}
-                                              onChange={(e) => handleCommentsChange(student._id, e.target.value)}
-                                              disabled={isAbsent || noTaskForClass}
-                                            />
-                                          </TableCell>
-                                        </TableRow>
-                                      )
-                                    })
-                                  ) : (
-                                    <TableRow>
-                                      <TableCell colSpan={8} align="center" sx={{ py: 8 }}>
-                                        <Box sx={{ textAlign: "center" }}>
-                                          <SearchIcon sx={{ fontSize: 48, color: "text.disabled", mb: 2 }} />
-                                          <Typography variant="h6" gutterBottom>
-                                            No students found
-                                          </Typography>
-                                          <Typography variant="body2" color="text.secondary">
-                                            Try adjusting your search or filter to find what you&apos;re looking for.
-                                          </Typography>
-                                        </Box>
-                                      </TableCell>
-                                    </TableRow>
-                                  )}
-                                </TableBody>
-                              </Table>
-                            </div>
-                          </>
-                        )}
-                      </Paper>
-                    </Box>
-                  </Fade>
-                </Container>
-              </Box>
+                                        <TableCell align="center">
+                                          <Checkbox
+                                            color="primary"
+                                            checked={evaluation.parentSignature === true}
+                                            onChange={(e) =>
+                                              handleParentSignatureChange(student._id, e.target.checked)
+                                            }
+                                            disabled={
+                                              isAbsent || noTaskForClass || (lessonEvaluationTask && handwrittenTask)
+                                            }
+                                          />
+                                        </TableCell>
+                                        <TableCell>
+                                          <TextField
+                                            fullWidth
+                                            multiline
+                                            minRows={1}
+                                            label="মন্তব্য"
+                                            placeholder="মন্তব্য"
+                                            value={evaluation.comments || ""}
+                                            onChange={(e) => handleCommentsChange(student._id, e.target.value)}
+                                            disabled={isAbsent || noTaskForClass}
+                                          />
+                                        </TableCell>
+                                      </TableRow>
+                                    )
+                                  })
+                                ) : (
+                                  <TableRow>
+                                    <TableCell colSpan={8} align="center" sx={{ py: 8 }}>
+                                      <Box sx={{ textAlign: "center" }}>
+                                        <SearchIcon sx={{ fontSize: 48, color: "text.disabled", mb: 2 }} />
+                                        <Typography variant="h6" gutterBottom>
+                                          No students found
+                                        </Typography>
+                                        <Typography variant="body2" color="text.secondary">
+                                          Try adjusting your search or filter to find what you&apos;re looking for.
+                                        </Typography>
+                                      </Box>
+                                    </TableCell>
+                                  </TableRow>
+                                )}
+                              </TableBody>
+                            </Table>
+                          </div>
+                        </>
+                      )}
+                    </Paper>
+                  </Box>
+                </Fade>
+              </Container>
+            </Box>
 
-              <Menu
-                anchorEl={anchorEl}
-                open={Boolean(anchorEl)}
-                onClose={handleMenuClose}
-                PaperProps={{
-                  elevation: 3,
-                  sx: {
-                    mt: 1,
-                    minWidth: 180,
-                    borderRadius: 2,
-                    overflow: "auto",
-                  },
-                }}
-              >
-                <MenuItem onClick={handleMenuClose} sx={{ py: 1.5 }}>
-                  <VisibilityIcon fontSize="small" sx={{ mr: 2, color: "info.main" }} />
-                  View Details
-                </MenuItem>
-                <MenuItem onClick={handleMenuClose} sx={{ py: 1.5 }}>
-                  <EditIcon fontSize="small" sx={{ mr: 2, color: "warning.main" }} />
-                  Edit
-                </MenuItem>
-                <Divider />
-                <MenuItem onClick={handleDeleteClick} sx={{ py: 1.5, color: "error.main" }}>
-                  <DeleteIcon fontSize="small" sx={{ mr: 2 }} />
+            <Menu
+              anchorEl={anchorEl}
+              open={Boolean(anchorEl)}
+              onClose={handleMenuClose}
+              PaperProps={{
+                elevation: 3,
+                sx: {
+                  mt: 1,
+                  minWidth: 180,
+                  borderRadius: 2,
+                  overflow: "auto",
+                },
+              }}
+            >
+              <MenuItem onClick={handleMenuClose} sx={{ py: 1.5 }}>
+                <VisibilityIcon fontSize="small" sx={{ mr: 2, color: "info.main" }} />
+                View Details
+              </MenuItem>
+              <MenuItem onClick={handleMenuClose} sx={{ py: 1.5 }}>
+                <EditIcon fontSize="small" sx={{ mr: 2, color: "warning.main" }} />
+                Edit
+              </MenuItem>
+              <Divider />
+              <MenuItem onClick={handleDeleteClick} sx={{ py: 1.5, color: "error.main" }}>
+                <DeleteIcon fontSize="small" sx={{ mr: 2 }} />
+                Delete
+              </MenuItem>
+            </Menu>
+
+            <Dialog
+              open={deleteDialogOpen}
+              onClose={handleDeleteCancel}
+              PaperProps={{
+                sx: {
+                  borderRadius: 3,
+                  width: "100%",
+                  maxWidth: 480,
+                },
+              }}
+            >
+              <DialogTitle sx={{ pb: 1 }}>
+                <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
+                  Delete Student
+                </Typography>
+              </DialogTitle>
+              <DialogContent>
+                <DialogContentText>
+                  Are you sure you want to delete the student &#34;{selectedStudent?.name}&#34;? This action cannot be
+                  undone.
+                </DialogContentText>
+              </DialogContent>
+              <DialogActions sx={{ px: 3, pb: 3 }}>
+                <Button
+                  onClick={handleDeleteCancel}
+                  variant="outlined"
+                  color="inherit"
+                  sx={{ borderColor: "rgba(0, 0, 0, 0.12)" }}
+                >
+                  Cancel
+                </Button>
+                <Button onClick={handleDeleteConfirm} variant="contained" color="error" sx={{ ml: 2 }}>
                   Delete
-                </MenuItem>
-              </Menu>
+                </Button>
+              </DialogActions>
+            </Dialog>
 
-              <Dialog
-                open={deleteDialogOpen}
-                onClose={handleDeleteCancel}
-                PaperProps={{
-                  sx: {
-                    borderRadius: 3,
-                    width: "100%",
-                    maxWidth: 480,
-                  },
-                }}
-              >
-                <DialogTitle sx={{ pb: 1 }}>
-                  <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
-                    Delete Student
-                  </Typography>
-                </DialogTitle>
-                <DialogContent>
-                  <DialogContentText>
-                    Are you sure you want to delete the student &#34;{selectedStudent?.name}&#34;? This action cannot be
-                    undone.
-                  </DialogContentText>
-                </DialogContent>
-                <DialogActions sx={{ px: 3, pb: 3 }}>
-                  <Button
-                    onClick={handleDeleteCancel}
-                    variant="outlined"
-                    color="inherit"
-                    sx={{ borderColor: "rgba(0, 0, 0, 0.12)" }}
-                  >
-                    Cancel
-                  </Button>
-                  <Button onClick={handleDeleteConfirm} variant="contained" color="error" sx={{ ml: 2 }}>
-                    Delete
-                  </Button>
-                </DialogActions>
-              </Dialog>
 
-              
-            </CraftForm>
-    
+          </CraftForm>
+
 
           <TodayLesson
             id={todayLessonId}
@@ -1345,6 +1345,6 @@ export default function ClassReportForm({ id }: any) {
           />
         </>
       )}
-    </>
+    </ThemeProvider>
   )
 }

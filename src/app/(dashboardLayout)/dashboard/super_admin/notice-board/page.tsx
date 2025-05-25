@@ -222,7 +222,7 @@ const NoticeBoardPage = () => {
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
-      {/* Header Section */}
+   
       <Box sx={{ mb: 4 }}>
         <Fade in timeout={800}>
           <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 3 }}>
@@ -341,7 +341,6 @@ const NoticeBoardPage = () => {
         </Slide>
       </Box>
 
-      {/* Notices Grid */}
       <Grid container spacing={3}>
         {filteredNotices.map((notice, index) => (
           <Grid item xs={12} md={6} lg={4} key={notice.id}>
@@ -533,7 +532,7 @@ const NoticeBoardPage = () => {
         ))}
       </Grid>
 
-      {/* Empty State */}
+ 
       {filteredNotices.length === 0 && (
         <Fade in timeout={1000}>
           <Box
@@ -568,7 +567,7 @@ const NoticeBoardPage = () => {
         </Fade>
       )}
 
-      {/* Action Menu */}
+
       <Menu
         anchorEl={anchorEl}
         open={Boolean(anchorEl)}
@@ -614,18 +613,12 @@ const NoticeBoardPage = () => {
         </MenuItem>
       </Menu>
 
-      {/* Notice Details Dialog */}
       <Dialog
         open={detailsOpen}
         onClose={() => setDetailsOpen(false)}
         maxWidth="md"
         fullWidth
-        PaperProps={{
-          sx: {
-            borderRadius: 3,
-            background: `linear-gradient(135deg, ${alpha(theme.palette.warning.main, 0.02)} 0%, ${alpha(theme.palette.error.main, 0.02)} 100%)`,
-          },
-        }}
+      
       >
         {selectedNotice && (
           <>
@@ -704,18 +697,13 @@ const NoticeBoardPage = () => {
         )}
       </Dialog>
 
-      {/* New Notice Dialog */}
+
       <Dialog
         open={newNoticeOpen}
         onClose={() => setNewNoticeOpen(false)}
         maxWidth="md"
         fullWidth
-        PaperProps={{
-          sx: {
-            borderRadius: 3,
-            background: `linear-gradient(135deg, ${alpha(theme.palette.warning.main, 0.02)} 0%, ${alpha(theme.palette.error.main, 0.02)} 100%)`,
-          },
-        }}
+        // 
       >
         <DialogTitle>
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>

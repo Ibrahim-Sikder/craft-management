@@ -341,13 +341,7 @@ export default function ClassReportList() {
     refetch()
   }
 
-  const handleToggleExpand = (reportId: string) => {
-    if (expandedReport === reportId) {
-      setExpandedReport(null)
-    } else {
-      setExpandedReport(reportId)
-    }
-  }
+
 
   const handleOpenDetailsModal = (e: React.MouseEvent, report: any, evaluation: any) => {
     e.stopPropagation()
@@ -644,7 +638,7 @@ export default function ClassReportList() {
                   </Grid>
 
                   {/* Enhanced Date Range Filter */}
-                  <Grid item xs={12} sm={6} md={2.5}>
+                  <Grid item xs={12} sm={6} md={2} lg={2.5}>
                     <Card
                       variant="outlined"
                       sx={{

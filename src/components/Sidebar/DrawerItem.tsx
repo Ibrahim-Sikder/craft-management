@@ -43,8 +43,10 @@ import {
   Storage,
   Folder,
   Image as Photos,
-  Logout,
   Book,
+  NotificationAdd,
+  DeveloperBoard,
+  FactCheck,
 } from "@mui/icons-material"
 import { ColorfulIcon } from "./ColorfulIcon"
 import { NavigationItem } from "@/types/common"
@@ -277,6 +279,48 @@ export const navigationItems: NavigationItem[] = [
       //   roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
       // },
     ],
+  },
+  {
+    title: "Class Routine ",
+    path: "/dashboard/super_admin/class-routine",
+    icon: (
+      <ColorfulIcon color="#F4B400">
+        <Group />
+      </ColorfulIcon>
+    ),
+    roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
+  },
+  {
+    title: "Notice Board",
+    path: "/dashboard/super_admin/notice-board",
+    icon: (
+      <ColorfulIcon color="#F4B400">
+        <DeveloperBoard />
+      </ColorfulIcon>
+    ),
+    roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
+  },
+
+
+  {
+    title: "Notification",
+    path: "/dashboard/super_admin/notification",
+    icon: (
+      <ColorfulIcon color="#F4B400">
+        <NotificationAdd />
+      </ColorfulIcon>
+    ),
+    roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
+  },
+  {
+    title: "Complaints",
+    path: "/dashboard/super_admin/complaints",
+    icon: (
+      <ColorfulIcon color="#F4B400">
+        <FactCheck />
+      </ColorfulIcon>
+    ),
+    roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
   },
   {
     title: "Meal Report",
@@ -702,14 +746,5 @@ export const navigationItems: NavigationItem[] = [
     ),
     roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
   },
-  {
-    title: "Log Out",
-    path: "#",
-    icon: (
-      <ColorfulIcon color="#DB4437">
-        <Logout />
-      </ColorfulIcon>
-    ),
-    roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
-  },
+  
 ]
