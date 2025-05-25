@@ -568,13 +568,6 @@ export default function ClassReportForm({ id }: any) {
     return 0
   })
 
-  const handleClassName = (event: any, newValue: any) => {
-    setSelectedBrand(newValue)
-    const filtered = sortedVehicleName
-      ?.filter((vehicle: any) => vehicle.label?.toLowerCase().includes(newValue?.toLowerCase()))
-      .sort((a: any, b: any) => a.label.localeCompare(b.label))
-    setFilteredVehicles(filtered)
-  }
 
   const handleClassChange = (event: any, newValue: any) => {
     if (id && isEditMode) {
@@ -664,7 +657,7 @@ export default function ClassReportForm({ id }: any) {
 
   return (
     <>
-      {singleClassReportLoading && isLoading ? (
+      {singleClassReportLoading ? (
         <div>Loading.....</div>
       ) : (
         <>
@@ -769,7 +762,7 @@ export default function ClassReportForm({ id }: any) {
                           </Grid>
                           <Grid item xs={6} sm={6} md={2} lg={3}>
                             <CraftIntAutoComplete
-                              
+
                               name="classes"
                               label="শ্রেণীর নাম লিখুন"
                               fullWidth

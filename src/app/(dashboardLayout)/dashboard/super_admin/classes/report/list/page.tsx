@@ -61,6 +61,8 @@ import {
   Download as DownloadIcon,
   Print as PrintIcon,
   Refresh as RefreshIcon,
+  DateRange,
+  Clear,
 } from "@mui/icons-material"
 import DrawIcon from "@mui/icons-material/Draw"
 import BlockIcon from "@mui/icons-material/Block"
@@ -72,7 +74,8 @@ import { useGetAllClassesQuery } from "@/redux/api/classApi"
 import { useGetAllSubjectsQuery } from "@/redux/api/subjectApi"
 import { useGetAllTeachersQuery } from "@/redux/api/teacherApi"
 import ClassReportDetailsModal from "../_components/ClassReportDetailsModal"
-
+import toast from "react-hot-toast"
+import DateRangePicker from "../new/_components/DateRangePicker"
 type Filters = {
   classes: string
   subjects: string
@@ -83,6 +86,11 @@ type Filters = {
   handwriting: string
   startDate: string
   endDate: string
+}
+
+interface IDateRange {
+  startDate: Date | null
+  endDate: Date | null
 }
 
 export default function ClassReportList() {
@@ -111,6 +119,13 @@ export default function ClassReportList() {
   const [expandedReport, setExpandedReport] = useState<string | null>(null)
   const [detailsModalOpen, setDetailsModalOpen] = useState(false)
   const [selectedReportDetails, setSelectedReportDetails] = useState<any | null>(null)
+
+  // Date Range Picker State
+  const [dateRangePickerOpen, setDateRangePickerOpen] = useState(false)
+  const [selectedDateRange, setSelectedDateRange] = useState<IDateRange>({
+    startDate: null,
+    endDate: null,
+  })
 
   const [deleteClassReport] = useDeleteClassReportMutation()
 
@@ -199,6 +214,52 @@ export default function ClassReportList() {
   const lessonEvaluationOptions = ["পড়া শিখেছে", "আংশিক শিখেছে", "পড়া শিখেনি", "অনুপস্থিত"]
   const handleWrittenOptions = ["লিখেছে", "আংশিক লিখেছে", "লিখেনি", "কাজ নেই"]
 
+  // Date Range Picker Handlers
+  const handleDateRangePickerOpen = () => {
+    setDateRangePickerOpen(true)
+  }
+
+  const handleDateRangePickerClose = () => {
+    setDateRangePickerOpen(false)
+  }
+
+  const handleDateRangeApply = (range: IDateRange) => {
+    setSelectedDateRange(range)
+    setFilters((prev) => ({
+      ...prev,
+      startDate: range.startDate ? format(range.startDate, "yyyy-MM-dd") : "",
+      endDate: range.endDate ? format(range.endDate, "yyyy-MM-dd") : "",
+    }))
+
+    if (range.startDate && range.endDate) {
+      toast.success(
+        `Date range applied: ${format(range.startDate, "dd MMM yyyy")} - ${format(range.endDate, "dd MMM yyyy")}`,
+      )
+    }
+
+    setPage(0)
+    refetch()
+  }
+
+  const handleClearDateRange = () => {
+    setSelectedDateRange({ startDate: null, endDate: null })
+    setFilters((prev) => ({
+      ...prev,
+      startDate: "",
+      endDate: "",
+    }))
+    toast.success("Date range filter cleared")
+    setPage(0)
+    refetch()
+  }
+
+  const formatDateRangeDisplay = () => {
+    if (!selectedDateRange.startDate || !selectedDateRange.endDate) {
+      return "Select date range"
+    }
+    return `${format(selectedDateRange.startDate, "dd MMM yyyy")} - ${format(selectedDateRange.endDate, "dd MMM yyyy")}`
+  }
+
   const handleRefresh = () => {
     setRefreshKey((prev) => prev + 1)
     refetch()
@@ -219,32 +280,10 @@ export default function ClassReportList() {
   }
 
   const handleFilterChange = (filterName: keyof Filters, value: string) => {
-    // Validate date range
-    if (filterName === "startDate" || filterName === "endDate") {
-      const newFilters = { ...filters, [filterName]: value }
-
-      // Check if start date is after end date
-      if (newFilters.startDate && newFilters.endDate) {
-        const startDate = new Date(newFilters.startDate)
-        const endDate = new Date(newFilters.endDate)
-
-        if (startDate > endDate) {
-          // If start date is after end date, adjust the other date
-          if (filterName === "startDate") {
-            newFilters.endDate = value
-          } else {
-            newFilters.startDate = value
-          }
-        }
-      }
-
-      setFilters(newFilters)
-    } else {
-      setFilters((prev) => ({
-        ...prev,
-        [filterName]: value,
-      }))
-    }
+    setFilters((prev) => ({
+      ...prev,
+      [filterName]: value,
+    }))
 
     setPage(0)
     refetch()
@@ -294,7 +333,10 @@ export default function ClassReportList() {
       startDate: "",
       endDate: "",
     })
+    setSelectedDateRange({ startDate: null, endDate: null })
     setSearchTerm("")
+    setPage(0)
+    refetch()
   }
 
   const handleToggleExpand = (reportId: string) => {
@@ -569,7 +611,7 @@ export default function ClassReportList() {
                   </Grid>
 
                   {/* Handwriting Filter */}
-                  <Grid item xs={12} sm={6} md={2}>
+                  <Grid item xs={12} sm={6} md={2.5}>
                     <Card variant="outlined" sx={{ borderRadius: 2 }}>
                       <CardContent>
                         <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
@@ -600,20 +642,20 @@ export default function ClassReportList() {
                   </Grid>
 
                   {/* Enhanced Date Range Filter */}
-                  <Grid item xs={12} sm={12} md={6}>
+                  <Grid item xs={12} sm={12} md={12}>
                     <Card
                       variant="outlined"
                       sx={{
                         borderRadius: 3,
                         background:
-                          filters.startDate || filters.endDate
+                          selectedDateRange.startDate || selectedDateRange.endDate
                             ? `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(
                                 theme.palette.secondary.main,
                                 0.05,
                               )} 100%)`
                             : "background.paper",
                         border:
-                          filters.startDate || filters.endDate
+                          selectedDateRange.startDate || selectedDateRange.endDate
                             ? `2px solid ${alpha(theme.palette.primary.main, 0.3)}`
                             : "1px solid rgba(0, 0, 0, 0.12)",
                         transition: "all 0.3s ease",
@@ -624,256 +666,36 @@ export default function ClassReportList() {
                       }}
                     >
                       <CardContent sx={{ p: 3 }}>
-                        {/* Header with Icon and Status */}
-                        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 3 }}>
-                          <Box sx={{ display: "flex", alignItems: "center" }}>
-                            <Box
-                              sx={{
-                                p: 1.5,
-                                borderRadius: 2,
-                                bgcolor: alpha(theme.palette.primary.main, 0.1),
-                                mr: 2,
-                              }}
-                            >
-                              <CalendarIcon sx={{ color: "primary.main", fontSize: 24 }} />
-                            </Box>
-                            <Box>
-                              <Typography variant="h6" fontWeight={700} sx={{ color: "text.primary" }}>
-                                Date Range Filter
-                              </Typography>
-                              <Typography variant="caption" color="text.secondary">
-                                Select your preferred date range
-                              </Typography>
-                            </Box>
-                          </Box>
-                          {(filters.startDate || filters.endDate) && (
-                            <Chip
-                              size="small"
-                              label="Active"
-                              color="primary"
-                              sx={{
-                                fontWeight: 600,
-                                boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.3)}`,
-                              }}
-                            />
-                          )}
-                        </Box>
-
-                        {/* Date Range Display */}
-                        {(filters.startDate || filters.endDate) && (
-                          <Box
+                       
+                       
+                        {/* Date Range Picker Button */}
+                        <Box sx={{ display: "flex", gap: 2, alignItems: "center", mb: 2 }}>
+                          <Button
+                            variant="outlined"
+                            startIcon={<DateRange />}
+                            onClick={handleDateRangePickerOpen}
                             sx={{
-                              mb: 3,
-                              p: 2,
                               borderRadius: 2,
-                              bgcolor: alpha(theme.palette.success.main, 0.08),
-                              border: `1px solid ${alpha(theme.palette.success.main, 0.2)}`,
+                              textTransform: "none",
+                              minWidth: 250,
+                              justifyContent: "flex-start",
+                              color: selectedDateRange.startDate ? "primary.main" : "text.secondary",
+                              borderColor: selectedDateRange.startDate ? "primary.main" : "rgba(0, 0, 0, 0.23)",
+                              fontSize: "0.875rem",
+                              py: 1.5,
+                              "&:hover": {
+                                transform: "translateY(-1px)",
+                                boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.2)}`,
+                              },
+                              transition: "all 0.2s ease",
                             }}
                           >
-                            <Typography variant="body2" fontWeight={600} color="success.main" sx={{ mb: 1 }}>
-                              Selected Range:
-                            </Typography>
-                            <Typography variant="body1" sx={{ fontFamily: "monospace" }}>
-                              {filters.startDate ? format(new Date(filters.startDate), "MMM dd, yyyy") : "Start Date"}
-                              {" → "}
-                              {filters.endDate ? format(new Date(filters.endDate), "MMM dd, yyyy") : "End Date"}
-                            </Typography>
-                          </Box>
-                        )}
+                            {formatDateRangeDisplay()}
+                          </Button>
+                         
+                        </Box>
 
-                        {/* Date Input Fields */}
-                        <Grid container spacing={2} sx={{ mb: 3 }}>
-                          <Grid item xs={12} sm={6}>
-                            <Box sx={{ position: "relative" }}>
-                              <TextField
-                                fullWidth
-                                label="Start Date"
-                                type="date"
-                                size="medium"
-                                value={filters.startDate}
-                                onChange={(e) => handleFilterChange("startDate", e.target.value)}
-                                InputLabelProps={{ shrink: true }}
-                                inputProps={{
-                                  max: filters.endDate || format(new Date(), "yyyy-MM-dd"),
-                                }}
-                                error={
-                                  !!(filters.startDate && filters.endDate && new Date(filters.startDate) > new Date(filters.endDate))
-                                }
-                                sx={{
-                                  "& .MuiOutlinedInput-root": {
-                                    borderRadius: 2,
-                                    bgcolor: "background.paper",
-                                    "&:hover": {
-                                      "& .MuiOutlinedInput-notchedOutline": {
-                                        borderColor: "primary.main",
-                                      },
-                                    },
-                                    "&.Mui-focused": {
-                                      "& .MuiOutlinedInput-notchedOutline": {
-                                        borderWidth: 2,
-                                      },
-                                    },
-                                  },
-                                  "& .MuiInputLabel-root": {
-                                    fontWeight: 600,
-                                  },
-                                }}
-                              />
-                              {filters.startDate && (
-                                <IconButton
-                                  size="small"
-                                  sx={{
-                                    position: "absolute",
-                                    right: 40,
-                                    top: "50%",
-                                    transform: "translateY(-50%)",
-                                    bgcolor: alpha(theme.palette.error.main, 0.1),
-                                    "&:hover": {
-                                      bgcolor: alpha(theme.palette.error.main, 0.2),
-                                    },
-                                  }}
-                                  onClick={() => handleFilterChange("startDate", "")}
-                                >
-                                  <CancelIcon fontSize="small" sx={{ color: "error.main" }} />
-                                </IconButton>
-                              )}
-                            </Box>
-                          </Grid>
-                          <Grid item xs={12} sm={6}>
-                            <Box sx={{ position: "relative" }}>
-                              <TextField
-                                fullWidth
-                                label="End Date"
-                                type="date"
-                                size="medium"
-                                value={filters.endDate}
-                                onChange={(e) => handleFilterChange("endDate", e.target.value)}
-                                InputLabelProps={{ shrink: true }}
-                                inputProps={{
-                                  min: filters.startDate,
-                                  max: format(new Date(), "yyyy-MM-dd"),
-                                }}
-                                // error={
-                                //   filters.startDate &&
-                                //   filters.endDate &&
-                                //   new Date(filters.startDate) > new Date(filters.endDate)
-                                // }
-                                sx={{
-                                  "& .MuiOutlinedInput-root": {
-                                    borderRadius: 2,
-                                    bgcolor: "background.paper",
-                                    "&:hover": {
-                                      "& .MuiOutlinedInput-notchedOutline": {
-                                        borderColor: "primary.main",
-                                      },
-                                    },
-                                    "&.Mui-focused": {
-                                      "& .MuiOutlinedInput-notchedOutline": {
-                                        borderWidth: 2,
-                                      },
-                                    },
-                                  },
-                                  "& .MuiInputLabel-root": {
-                                    fontWeight: 600,
-                                  },
-                                }}
-                              />
-                              {filters.endDate && (
-                                <IconButton
-                                  size="small"
-                                  sx={{
-                                    position: "absolute",
-                                    right: 40,
-                                    top: "50%",
-                                    transform: "translateY(-50%)",
-                                    bgcolor: alpha(theme.palette.error.main, 0.1),
-                                    "&:hover": {
-                                      bgcolor: alpha(theme.palette.error.main, 0.2),
-                                    },
-                                  }}
-                                  onClick={() => handleFilterChange("endDate", "")}
-                                >
-                                  <CancelIcon fontSize="small" sx={{ color: "error.main" }} />
-                                </IconButton>
-                              )}
-                            </Box>
-                          </Grid>
-                        </Grid>
-
-                        {/* Error Message */}
-                        {filters.startDate &&
-                          filters.endDate &&
-                          new Date(filters.startDate) > new Date(filters.endDate) && (
-                            <Box
-                              sx={{
-                                mb: 2,
-                                p: 2,
-                                borderRadius: 2,
-                                bgcolor: alpha(theme.palette.error.main, 0.08),
-                                border: `1px solid ${alpha(theme.palette.error.main, 0.2)}`,
-                                display: "flex",
-                                alignItems: "center",
-                              }}
-                            >
-                              <CancelIcon sx={{ color: "error.main", mr: 1, fontSize: 20 }} />
-                              <Typography variant="body2" color="error.main" fontWeight={500}>
-                                Start date must be before end date
-                              </Typography>
-                            </Box>
-                          )}
-
-                   
-
-                        {/* Action Buttons */}
-                        {(filters.startDate || filters.endDate) && (
-                          <Box sx={{ display: "flex", gap: 1, mt: 2 }}>
-                            <Button
-                              variant="outlined"
-                              color="error"
-                              size="small"
-                              fullWidth
-                              startIcon={<CancelIcon />}
-                              onClick={() => {
-                                handleFilterChange("startDate", "")
-                                handleFilterChange("endDate", "")
-                              }}
-                              sx={{
-                                borderRadius: 2,
-                                textTransform: "none",
-                                fontWeight: 600,
-                                py: 1,
-                                "&:hover": {
-                                  transform: "translateY(-1px)",
-                                  boxShadow: `0 4px 12px ${alpha(theme.palette.error.main, 0.2)}`,
-                                },
-                                transition: "all 0.2s ease",
-                              }}
-                            >
-                              Clear Range
-                            </Button>
-                            <Button
-                              variant="contained"
-                              color="primary"
-                              size="small"
-                              fullWidth
-                              startIcon={<CheckCircleIcon />}
-                              sx={{
-                                borderRadius: 2,
-                                textTransform: "none",
-                                fontWeight: 600,
-                                py: 1,
-                                boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`,
-                                "&:hover": {
-                                  transform: "translateY(-1px)",
-                                  boxShadow: `0 6px 16px ${alpha(theme.palette.primary.main, 0.4)}`,
-                                },
-                                transition: "all 0.2s ease",
-                              }}
-                            >
-                              Apply Filter
-                            </Button>
-                          </Box>
-                        )}
+                       
                       </CardContent>
                     </Card>
                   </Grid>
@@ -1362,6 +1184,14 @@ export default function ClassReportList() {
           </Fade>
         </Container>
       </Box>
+
+      {/* Date Range Picker Dialog */}
+      <DateRangePicker
+        open={dateRangePickerOpen}
+        onClose={handleDateRangePickerClose}
+        onApply={handleDateRangeApply}
+        initialRange={selectedDateRange}
+      />
 
       {/* Delete Confirmation Dialog */}
       <Dialog
