@@ -838,7 +838,8 @@ export default function ClassReportForm({ id }: any) {
                               />
                             </Tooltip>
                           </div>
-                          <div className="w-[285px] md:w-full overflow-x-auto max-[800px]:border max-[800px]:border-gray-300   max-[800px]:rounded   max-[800px]:block   max-[800px]:max-w-[100vw]   max-[800px]:relative   max-[800px]:whitespace-nowrap   max-[800px]:overflow-x-auto   max-[800px]:scrolling-touch   min-[900px]:overflow-x-visible min-[900px]:table">
+
+                          <div className="max-[320px]:w-[300px] max-[375px]:w-[360px] max-[425px]:w-[410px] max-[800px]:border max-[800px]:border-gray-300 max-[800px]:rounded   max-[800px]:block max-[800px]:max-w-[100vw] max-[800px]:relative max-[800px]:whitespace-nowrap max-[800px]:overflow-x-auto ">
                             <Table
                               sx={{
                                 minWidth: 900,
@@ -846,7 +847,7 @@ export default function ClassReportForm({ id }: any) {
                                   width: "100%",
                                   minWidth: "100%",
                                   tableLayout: { sm: "auto", md: "fixed", lg: "fixed" },
-                                },
+                                }, 
                               }}
                             >
                               <TableHead>
@@ -856,7 +857,6 @@ export default function ClassReportForm({ id }: any) {
                                     উপস্থিতি
                                   </TableCell>
                                   <TableCell align="center" width="20%">
-
                                     <div className="flex gap-2 justify-center">
                                       <Tooltip title="Disable lesson evaluation">
                                         <FormControlLabel
