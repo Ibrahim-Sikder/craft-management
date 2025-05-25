@@ -24,7 +24,6 @@ import {
   TableRow,
   TablePagination,
   MenuItem,
-  Divider,
   InputAdornment,
   Tooltip,
   Dialog,
@@ -72,6 +71,8 @@ import { useDeleteClassReportMutation, useGetAllClassReportsQuery } from "@/redu
 import { useGetAllClassesQuery } from "@/redux/api/classApi"
 import { useGetAllSubjectsQuery } from "@/redux/api/subjectApi"
 import { useGetAllTeachersQuery } from "@/redux/api/teacherApi"
+import ClassReportDetailsModal from "../_components/ClassReportDetailsModal"
+
 type Filters = {
   classes: string
   subjects: string
@@ -80,6 +81,8 @@ type Filters = {
   hour: string
   lessonEvaluation: string
   handwriting: string
+  startDate: string
+  endDate: string
 }
 
 export default function ClassReportList() {
@@ -87,14 +90,16 @@ export default function ClassReportList() {
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(10)
   const [searchTerm, setSearchTerm] = useState("")
-  const [filters, setFilters] = useState({
+  const [filters, setFilters] = useState<Filters>({
     classes: "",
     subjects: "",
     teachers: "",
     date: "",
     hour: "",
     lessonEvaluation: "",
-    handwriting: ''
+    handwriting: "",
+    startDate: "",
+    endDate: "",
   })
 
   const [orderBy, setOrderBy] = useState<string>("createdAt")
@@ -106,6 +111,7 @@ export default function ClassReportList() {
   const [expandedReport, setExpandedReport] = useState<string | null>(null)
   const [detailsModalOpen, setDetailsModalOpen] = useState(false)
   const [selectedReportDetails, setSelectedReportDetails] = useState<any | null>(null)
+
   const [deleteClassReport] = useDeleteClassReportMutation()
 
   // API queries
@@ -125,6 +131,8 @@ export default function ClassReportList() {
       hour: filters.hour,
       lessonEvaluation: filters.lessonEvaluation,
       handwriting: filters.handwriting,
+      startDate: filters.startDate,
+      endDate: filters.endDate,
     },
     {
       refetchOnMountOrArgChange: true,
@@ -161,6 +169,7 @@ export default function ClassReportList() {
 
   const totalCount = classReport?.data?.meta?.total || 0
 
+  console.log("student classreport", classReport)
   const classOptions = useMemo(() => {
     return (
       classData?.data?.classes?.map((cls: any) => ({
@@ -186,14 +195,15 @@ export default function ClassReportList() {
     }))
   }, [teacherData])
 
-
   const hourOptions = ["১ম", "২য়", "৩য়", "৪র্থ", "৫ম", "৬ষ্ঠ", "৭ম", "৮ম"]
   const lessonEvaluationOptions = ["পড়া শিখেছে", "আংশিক শিখেছে", "পড়া শিখেনি", "অনুপস্থিত"]
   const handleWrittenOptions = ["লিখেছে", "আংশিক লিখেছে", "লিখেনি", "কাজ নেই"]
+
   const handleRefresh = () => {
     setRefreshKey((prev) => prev + 1)
     refetch()
   }
+
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage)
   }
@@ -209,10 +219,33 @@ export default function ClassReportList() {
   }
 
   const handleFilterChange = (filterName: keyof Filters, value: string) => {
-    setFilters((prev) => ({
-      ...prev,
-      [filterName]: value,
-    }))
+    // Validate date range
+    if (filterName === "startDate" || filterName === "endDate") {
+      const newFilters = { ...filters, [filterName]: value }
+
+      // Check if start date is after end date
+      if (newFilters.startDate && newFilters.endDate) {
+        const startDate = new Date(newFilters.startDate)
+        const endDate = new Date(newFilters.endDate)
+
+        if (startDate > endDate) {
+          // If start date is after end date, adjust the other date
+          if (filterName === "startDate") {
+            newFilters.endDate = value
+          } else {
+            newFilters.startDate = value
+          }
+        }
+      }
+
+      setFilters(newFilters)
+    } else {
+      setFilters((prev) => ({
+        ...prev,
+        [filterName]: value,
+      }))
+    }
+
     setPage(0)
     refetch()
   }
@@ -258,6 +291,8 @@ export default function ClassReportList() {
       hour: "",
       lessonEvaluation: "",
       handwriting: "",
+      startDate: "",
+      endDate: "",
     })
     setSearchTerm("")
   }
@@ -270,9 +305,12 @@ export default function ClassReportList() {
     }
   }
 
-  const handleOpenDetailsModal = (e: React.MouseEvent, report: any) => {
+  const handleOpenDetailsModal = (e: React.MouseEvent, report: any, evaluation: any) => {
     e.stopPropagation()
-    setSelectedReportDetails(report)
+    setSelectedReportDetails({
+      reportData: report,
+      studentEvaluation: evaluation,
+    })
     setDetailsModalOpen(true)
   }
 
@@ -291,7 +329,6 @@ export default function ClassReportList() {
 
   const filteredReports = useMemo(() => {
     const filtered = [...reports]
-
     return filtered
   }, [reports])
 
@@ -310,7 +347,6 @@ export default function ClassReportList() {
         const subjectB = b.subjects || ""
         return order === "asc" ? subjectA.localeCompare(subjectB) : subjectB.localeCompare(subjectA)
       } else {
-
         return order === "asc"
           ? new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
           : new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
@@ -340,8 +376,8 @@ export default function ClassReportList() {
 
   return (
     <ThemeProvider theme={theme}>
-      <Box sx={{ flexGrow: 1, bgcolor: "background.default",  minHeight: "100vh", borderRadius: 2 }}>
-        <Container maxWidth="xl" sx={{ mt: 0, mb: 8, borderRadius: 2, p:{xs:1, md:"8px"} }}>
+      <Box sx={{ flexGrow: 1, bgcolor: "background.default", minHeight: "100vh", borderRadius: 2 }}>
+        <Container maxWidth="xl" sx={{ mt: 0, mb: 8, borderRadius: 2, p: { xs: 1, md: "8px" } }}>
           <Fade in={true} timeout={800}>
             <div>
               <div className="flex justify-between items-center mb-6 flex-wrap gap-4 pt-4">
@@ -370,7 +406,6 @@ export default function ClassReportList() {
                   </Button>
                 </div>
               </div>
-             
 
               {/* Filter Cards */}
               <Box sx={{ mb: 4 }}>
@@ -502,7 +537,7 @@ export default function ClassReportList() {
                     </Card>
                   </Grid>
 
-                  {/* পাঠ মূল্যায়ন	 Filter */}
+                  {/* Lesson Evaluation Filter */}
                   <Grid item xs={12} sm={6} md={2}>
                     <Card variant="outlined" sx={{ borderRadius: 2 }}>
                       <CardContent>
@@ -532,7 +567,8 @@ export default function ClassReportList() {
                       </CardContent>
                     </Card>
                   </Grid>
-                  {/* পাঠ মূল্যায়ন	 Filter */}
+
+                  {/* Handwriting Filter */}
                   <Grid item xs={12} sm={6} md={2}>
                     <Card variant="outlined" sx={{ borderRadius: 2 }}>
                       <CardContent>
@@ -563,28 +599,281 @@ export default function ClassReportList() {
                     </Card>
                   </Grid>
 
-                  {/* Date Filter */}
-                  <Grid item xs={12} sm={6} md={2.4}>
-                    <Card variant="outlined" sx={{ borderRadius: 2 }}>
-                      <CardContent>
-                        <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                          <CalendarIcon sx={{ color: "primary.main", mr: 1 }} />
-                          <Typography variant="subtitle1" fontWeight={600}>
-                            Date
-                          </Typography>
+                  {/* Enhanced Date Range Filter */}
+                  <Grid item xs={12} sm={12} md={6}>
+                    <Card
+                      variant="outlined"
+                      sx={{
+                        borderRadius: 3,
+                        background:
+                          filters.startDate || filters.endDate
+                            ? `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(
+                                theme.palette.secondary.main,
+                                0.05,
+                              )} 100%)`
+                            : "background.paper",
+                        border:
+                          filters.startDate || filters.endDate
+                            ? `2px solid ${alpha(theme.palette.primary.main, 0.3)}`
+                            : "1px solid rgba(0, 0, 0, 0.12)",
+                        transition: "all 0.3s ease",
+                        "&:hover": {
+                          boxShadow: `0 8px 25px ${alpha(theme.palette.primary.main, 0.15)}`,
+                          transform: "translateY(-2px)",
+                        },
+                      }}
+                    >
+                      <CardContent sx={{ p: 3 }}>
+                        {/* Header with Icon and Status */}
+                        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 3 }}>
+                          <Box sx={{ display: "flex", alignItems: "center" }}>
+                            <Box
+                              sx={{
+                                p: 1.5,
+                                borderRadius: 2,
+                                bgcolor: alpha(theme.palette.primary.main, 0.1),
+                                mr: 2,
+                              }}
+                            >
+                              <CalendarIcon sx={{ color: "primary.main", fontSize: 24 }} />
+                            </Box>
+                            <Box>
+                              <Typography variant="h6" fontWeight={700} sx={{ color: "text.primary" }}>
+                                Date Range Filter
+                              </Typography>
+                              <Typography variant="caption" color="text.secondary">
+                                Select your preferred date range
+                              </Typography>
+                            </Box>
+                          </Box>
+                          {(filters.startDate || filters.endDate) && (
+                            <Chip
+                              size="small"
+                              label="Active"
+                              color="primary"
+                              sx={{
+                                fontWeight: 600,
+                                boxShadow: `0 2px 8px ${alpha(theme.palette.primary.main, 0.3)}`,
+                              }}
+                            />
+                          )}
                         </Box>
-                        <TextField
-                          fullWidth
-                          id="date-filter"
-                          label="Select Date"
-                          type="date"
-                          size="small"
-                          value={filters.date}
-                          onChange={(e) => handleFilterChange("date", e.target.value)}
-                          InputLabelProps={{
-                            shrink: true,
-                          }}
-                        />
+
+                        {/* Date Range Display */}
+                        {(filters.startDate || filters.endDate) && (
+                          <Box
+                            sx={{
+                              mb: 3,
+                              p: 2,
+                              borderRadius: 2,
+                              bgcolor: alpha(theme.palette.success.main, 0.08),
+                              border: `1px solid ${alpha(theme.palette.success.main, 0.2)}`,
+                            }}
+                          >
+                            <Typography variant="body2" fontWeight={600} color="success.main" sx={{ mb: 1 }}>
+                              Selected Range:
+                            </Typography>
+                            <Typography variant="body1" sx={{ fontFamily: "monospace" }}>
+                              {filters.startDate ? format(new Date(filters.startDate), "MMM dd, yyyy") : "Start Date"}
+                              {" → "}
+                              {filters.endDate ? format(new Date(filters.endDate), "MMM dd, yyyy") : "End Date"}
+                            </Typography>
+                          </Box>
+                        )}
+
+                        {/* Date Input Fields */}
+                        <Grid container spacing={2} sx={{ mb: 3 }}>
+                          <Grid item xs={12} sm={6}>
+                            <Box sx={{ position: "relative" }}>
+                              <TextField
+                                fullWidth
+                                label="Start Date"
+                                type="date"
+                                size="medium"
+                                value={filters.startDate}
+                                onChange={(e) => handleFilterChange("startDate", e.target.value)}
+                                InputLabelProps={{ shrink: true }}
+                                inputProps={{
+                                  max: filters.endDate || format(new Date(), "yyyy-MM-dd"),
+                                }}
+                                error={
+                                  !!(filters.startDate && filters.endDate && new Date(filters.startDate) > new Date(filters.endDate))
+                                }
+                                sx={{
+                                  "& .MuiOutlinedInput-root": {
+                                    borderRadius: 2,
+                                    bgcolor: "background.paper",
+                                    "&:hover": {
+                                      "& .MuiOutlinedInput-notchedOutline": {
+                                        borderColor: "primary.main",
+                                      },
+                                    },
+                                    "&.Mui-focused": {
+                                      "& .MuiOutlinedInput-notchedOutline": {
+                                        borderWidth: 2,
+                                      },
+                                    },
+                                  },
+                                  "& .MuiInputLabel-root": {
+                                    fontWeight: 600,
+                                  },
+                                }}
+                              />
+                              {filters.startDate && (
+                                <IconButton
+                                  size="small"
+                                  sx={{
+                                    position: "absolute",
+                                    right: 40,
+                                    top: "50%",
+                                    transform: "translateY(-50%)",
+                                    bgcolor: alpha(theme.palette.error.main, 0.1),
+                                    "&:hover": {
+                                      bgcolor: alpha(theme.palette.error.main, 0.2),
+                                    },
+                                  }}
+                                  onClick={() => handleFilterChange("startDate", "")}
+                                >
+                                  <CancelIcon fontSize="small" sx={{ color: "error.main" }} />
+                                </IconButton>
+                              )}
+                            </Box>
+                          </Grid>
+                          <Grid item xs={12} sm={6}>
+                            <Box sx={{ position: "relative" }}>
+                              <TextField
+                                fullWidth
+                                label="End Date"
+                                type="date"
+                                size="medium"
+                                value={filters.endDate}
+                                onChange={(e) => handleFilterChange("endDate", e.target.value)}
+                                InputLabelProps={{ shrink: true }}
+                                inputProps={{
+                                  min: filters.startDate,
+                                  max: format(new Date(), "yyyy-MM-dd"),
+                                }}
+                                // error={
+                                //   filters.startDate &&
+                                //   filters.endDate &&
+                                //   new Date(filters.startDate) > new Date(filters.endDate)
+                                // }
+                                sx={{
+                                  "& .MuiOutlinedInput-root": {
+                                    borderRadius: 2,
+                                    bgcolor: "background.paper",
+                                    "&:hover": {
+                                      "& .MuiOutlinedInput-notchedOutline": {
+                                        borderColor: "primary.main",
+                                      },
+                                    },
+                                    "&.Mui-focused": {
+                                      "& .MuiOutlinedInput-notchedOutline": {
+                                        borderWidth: 2,
+                                      },
+                                    },
+                                  },
+                                  "& .MuiInputLabel-root": {
+                                    fontWeight: 600,
+                                  },
+                                }}
+                              />
+                              {filters.endDate && (
+                                <IconButton
+                                  size="small"
+                                  sx={{
+                                    position: "absolute",
+                                    right: 40,
+                                    top: "50%",
+                                    transform: "translateY(-50%)",
+                                    bgcolor: alpha(theme.palette.error.main, 0.1),
+                                    "&:hover": {
+                                      bgcolor: alpha(theme.palette.error.main, 0.2),
+                                    },
+                                  }}
+                                  onClick={() => handleFilterChange("endDate", "")}
+                                >
+                                  <CancelIcon fontSize="small" sx={{ color: "error.main" }} />
+                                </IconButton>
+                              )}
+                            </Box>
+                          </Grid>
+                        </Grid>
+
+                        {/* Error Message */}
+                        {filters.startDate &&
+                          filters.endDate &&
+                          new Date(filters.startDate) > new Date(filters.endDate) && (
+                            <Box
+                              sx={{
+                                mb: 2,
+                                p: 2,
+                                borderRadius: 2,
+                                bgcolor: alpha(theme.palette.error.main, 0.08),
+                                border: `1px solid ${alpha(theme.palette.error.main, 0.2)}`,
+                                display: "flex",
+                                alignItems: "center",
+                              }}
+                            >
+                              <CancelIcon sx={{ color: "error.main", mr: 1, fontSize: 20 }} />
+                              <Typography variant="body2" color="error.main" fontWeight={500}>
+                                Start date must be before end date
+                              </Typography>
+                            </Box>
+                          )}
+
+                   
+
+                        {/* Action Buttons */}
+                        {(filters.startDate || filters.endDate) && (
+                          <Box sx={{ display: "flex", gap: 1, mt: 2 }}>
+                            <Button
+                              variant="outlined"
+                              color="error"
+                              size="small"
+                              fullWidth
+                              startIcon={<CancelIcon />}
+                              onClick={() => {
+                                handleFilterChange("startDate", "")
+                                handleFilterChange("endDate", "")
+                              }}
+                              sx={{
+                                borderRadius: 2,
+                                textTransform: "none",
+                                fontWeight: 600,
+                                py: 1,
+                                "&:hover": {
+                                  transform: "translateY(-1px)",
+                                  boxShadow: `0 4px 12px ${alpha(theme.palette.error.main, 0.2)}`,
+                                },
+                                transition: "all 0.2s ease",
+                              }}
+                            >
+                              Clear Range
+                            </Button>
+                            <Button
+                              variant="contained"
+                              color="primary"
+                              size="small"
+                              fullWidth
+                              startIcon={<CheckCircleIcon />}
+                              sx={{
+                                borderRadius: 2,
+                                textTransform: "none",
+                                fontWeight: 600,
+                                py: 1,
+                                boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.3)}`,
+                                "&:hover": {
+                                  transform: "translateY(-1px)",
+                                  boxShadow: `0 6px 16px ${alpha(theme.palette.primary.main, 0.4)}`,
+                                },
+                                transition: "all 0.2s ease",
+                              }}
+                            >
+                              Apply Filter
+                            </Button>
+                          </Box>
+                        )}
                       </CardContent>
                     </Card>
                   </Grid>
@@ -669,15 +958,10 @@ export default function ClassReportList() {
                   </Box>
                 ) : (
                   <>
-                    <div className="w-[285px] md:w-full overflow-x-auto max-[800px]:border max-[800px]:border-gray-300   max-[800px]:rounded   max-[800px]:block   max-[800px]:max-w-[100vw]   max-[800px]:relative   max-[800px]:whitespace-nowrap   max-[800px]:overflow-x-auto   max-[800px]:scrolling-touch   min-[900px]:overflow-x-visible min-[900px]:table">
+                    <TableContainer>
                       <Table
                         sx={{
                           minWidth: 900,
-                          "@media (min-width: 900px)": {
-                            width: "100%",
-                            minWidth: "100%",
-                            tableLayout: { sm: "auto", md: "fixed", lg: "fixed" },
-                          },
                         }}
                       >
                         <TableHead>
@@ -715,7 +999,6 @@ export default function ClassReportList() {
                                 )}
                               </Box>
                             </TableCell>
-                            {/* <TableCell>Roll</TableCell> */}
                             <TableCell>Student Name</TableCell>
                             <TableCell>
                               <Box
@@ -740,14 +1023,12 @@ export default function ClassReportList() {
                                 )}
                               </Box>
                             </TableCell>
-
                             <TableCell>Subject</TableCell>
                             <TableCell>Teacher</TableCell>
                             <TableCell>Hour</TableCell>
                             <TableCell>Attendance</TableCell>
                             <TableCell>Lesson</TableCell>
                             <TableCell>Homework</TableCell>
-                            {/* <TableCell>Task Status</TableCell> */}
                             <TableCell>Actions</TableCell>
                           </TableRow>
                         </TableHead>
@@ -761,9 +1042,7 @@ export default function ClassReportList() {
                                   {report.studentEvaluations?.map((evaluation: any, index: number) => {
                                     const student = evaluation.studentId
                                     const isAbsent = evaluation?.attendance === "অনুপস্থিত"
-                                    const isFailedLesson = evaluation?.lessonEvaluation === "পড়া শিখেনি"
-                                    const isFailedHandwriting = evaluation?.handwriting === "লিখেনি"
-                                    console.log('evaluation', evaluation)
+
                                     return (
                                       <TableRow
                                         key={`${report._id}-${index}`}
@@ -777,7 +1056,19 @@ export default function ClassReportList() {
                                           "&:last-child td": {
                                             borderBottom: 0,
                                           },
-                                          // Disabled style for absent students
+                                          ...(evaluation?.comments && {
+                                            background: `linear-gradient(90deg, ${alpha(
+                                              theme.palette.warning.light,
+                                              0.08,
+                                            )} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
+                                            borderLeft: `3px solid ${theme.palette.warning.main}`,
+                                            "&:hover": {
+                                              background: `linear-gradient(90deg, ${alpha(
+                                                theme.palette.warning.light,
+                                                0.12,
+                                              )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
+                                            },
+                                          }),
                                           ...(isAbsent && {
                                             opacity: 0.5,
                                             pointerEvents: "none",
@@ -787,21 +1078,12 @@ export default function ClassReportList() {
                                             },
                                           }),
                                         }}
-                                        onClick={() => {
-                                          if (!isAbsent) handleToggleExpand(report._id);
-                                        }}
-                                      // onClick={() => handleToggleExpand(report._id)}
                                       >
                                         <TableCell sx={{ py: 1.5 }}>
                                           <Typography variant="body2" fontWeight={500}>
                                             {report.date ? formatDate(report.date) : "N/A"}
                                           </Typography>
                                         </TableCell>
-                                        {/* <TableCell sx={{ py: 1.5 }}>
-                                          <Typography variant="body2">
-                                            {student?.studentClassRoll || "Not available"}
-                                          </Typography>
-                                        </TableCell> */}
                                         <TableCell sx={{ py: 1.5 }}>
                                           <Typography
                                             variant="body2"
@@ -887,7 +1169,8 @@ export default function ClassReportList() {
                                         <TableCell>
                                           <Chip
                                             icon={
-                                              evaluation?.lessonEvaluation && evaluation?.lessonEvaluation !== "পড়া শিখেনি" ? (
+                                              evaluation?.lessonEvaluation &&
+                                              evaluation?.lessonEvaluation !== "পড়া শিখেনি" ? (
                                                 <CheckCircleIcon sx={{ color: "#651FFF" }} />
                                               ) : (
                                                 <CancelIcon sx={{ color: "#FF1744" }} />
@@ -897,14 +1180,25 @@ export default function ClassReportList() {
                                             size="small"
                                             sx={{
                                               fontWeight: 500,
-                                              color: evaluation?.lessonEvaluation && evaluation?.lessonEvaluation !== "পড়া শিখেনি" ? "#651FFF" : "#FF1744",
-                                              bgcolor: evaluation?.lessonEvaluation && evaluation?.lessonEvaluation !== "পড়া শিখেনি" ? "#EDE7F6" : "#FFEBEE",
-                                              border: `1px solid ${evaluation?.lessonEvaluation && evaluation?.lessonEvaluation !== "পড়া শিখেনি" ? "#651FFF" : "#FF1744"}`,
+                                              color:
+                                                evaluation?.lessonEvaluation &&
+                                                evaluation?.lessonEvaluation !== "পড়া শিখেনি"
+                                                  ? "#651FFF"
+                                                  : "#FF1744",
+                                              bgcolor:
+                                                evaluation?.lessonEvaluation &&
+                                                evaluation?.lessonEvaluation !== "পড়া শিখেনি"
+                                                  ? "#EDE7F6"
+                                                  : "#FFEBEE",
+                                              border: `1px solid ${
+                                                evaluation?.lessonEvaluation &&
+                                                evaluation?.lessonEvaluation !== "পড়া শিখেনি"
+                                                  ? "#651FFF"
+                                                  : "#FF1744"
+                                              }`,
                                             }}
                                           />
-
                                         </TableCell>
-
                                         <TableCell>
                                           <Chip
                                             icon={
@@ -918,14 +1212,22 @@ export default function ClassReportList() {
                                             size="small"
                                             sx={{
                                               fontWeight: 500,
-                                              color: evaluation?.handwriting && evaluation?.handwriting !== "লিখেনি" ? "#00BFA6" : "#FF1744",
-                                              bgcolor: evaluation?.handwriting && evaluation?.handwriting !== "লিখেনি" ? "#E0F7FA" : "#FFEBEE",
-                                              border: `1px solid ${evaluation?.handwriting && evaluation?.handwriting !== "লিখেনি" ? "#00BFA6" : "#FF1744"}`,
+                                              color:
+                                                evaluation?.handwriting && evaluation?.handwriting !== "লিখেনি"
+                                                  ? "#00BFA6"
+                                                  : "#FF1744",
+                                              bgcolor:
+                                                evaluation?.handwriting && evaluation?.handwriting !== "লিখেনি"
+                                                  ? "#E0F7FA"
+                                                  : "#FFEBEE",
+                                              border: `1px solid ${
+                                                evaluation?.handwriting && evaluation?.handwriting !== "লিখেনি"
+                                                  ? "#00BFA6"
+                                                  : "#FF1744"
+                                              }`,
                                             }}
                                           />
-
                                         </TableCell>
-
                                         <TableCell>
                                           <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
                                             {!isMobile && (
@@ -933,18 +1235,7 @@ export default function ClassReportList() {
                                                 <Tooltip title="View Details">
                                                   <IconButton
                                                     size="small"
-                                                    sx={{
-                                                      color: "info.main",
-                                                      bgcolor: alpha(theme.palette.info.main, 0.1),
-                                                      mr: 1,
-                                                      "&:hover": {
-                                                        bgcolor: alpha(theme.palette.info.main, 0.2),
-                                                        transform: "translateY(-2px)",
-                                                        boxShadow: `0 4px 8px ${alpha(theme.palette.info.main, 0.2)}`,
-                                                      },
-                                                      transition: "all 0.2s",
-                                                    }}
-                                                    onClick={(e) => handleOpenDetailsModal(e, report)}
+                                                    onClick={(e) => handleOpenDetailsModal(e, report, evaluation)}
                                                   >
                                                     <VisibilityIcon fontSize="small" />
                                                   </IconButton>
@@ -961,7 +1252,10 @@ export default function ClassReportList() {
                                                       "&:hover": {
                                                         bgcolor: alpha(theme.palette.warning.main, 0.2),
                                                         transform: "translateY(-2px)",
-                                                        boxShadow: `0 4px 8px ${alpha(theme.palette.warning.main, 0.2)}`,
+                                                        boxShadow: `0 4px 8px ${alpha(
+                                                          theme.palette.warning.main,
+                                                          0.2,
+                                                        )}`,
                                                       },
                                                       transition: "all 0.2s",
                                                     }}
@@ -972,7 +1266,6 @@ export default function ClassReportList() {
                                                 </Tooltip>
                                               </>
                                             )}
-
                                             <Tooltip title="Delete Report">
                                               <IconButton
                                                 size="small"
@@ -1001,7 +1294,7 @@ export default function ClassReportList() {
                             })
                           ) : (
                             <TableRow>
-                              <TableCell colSpan={11} align="center" sx={{ py: 8 }}>
+                              <TableCell colSpan={10} align="center" sx={{ py: 8 }}>
                                 <Box
                                   sx={{
                                     textAlign: "center",
@@ -1043,7 +1336,7 @@ export default function ClassReportList() {
                           )}
                         </TableBody>
                       </Table>
-                    </div>
+                    </TableContainer>
                     <TablePagination
                       rowsPerPageOptions={[5, 10, 25, 50]}
                       component="div"
@@ -1108,184 +1401,14 @@ export default function ClassReportList() {
       </Dialog>
 
       {/* Details Modal */}
-      <Dialog
+      <ClassReportDetailsModal
         open={detailsModalOpen}
         onClose={handleCloseDetailsModal}
-        maxWidth="lg"
-        fullWidth
-        PaperProps={{
-          sx: {
-            borderRadius: 3,
-            width: "100%",
-          },
+        data={{
+          reportData: selectedReportDetails?.reportData,
+          studentEvaluation: selectedReportDetails?.studentEvaluation,
         }}
-      >
-        <DialogTitle sx={{ pb: 1 }}>
-          <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
-            Class Report Details
-          </Typography>
-        </DialogTitle>
-        <DialogContent>
-          {selectedReportDetails && (
-            <>
-              <Box sx={{ mb: 3, mt: 1 }}>
-                <Grid container spacing={2}>
-                  <Grid item xs={12} sm={6} md={3}>
-                    <Typography variant="subtitle2" color="text.secondary">
-                      Class
-                    </Typography>
-                    <Typography variant="body1" fontWeight={500}>
-                      {selectedReportDetails.classes?.className || selectedReportDetails.classes || "N/A"}
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={12} sm={6} md={3}>
-                    <Typography variant="subtitle2" color="text.secondary">
-                      Subject
-                    </Typography>
-                    <Typography variant="body1" fontWeight={500}>
-                      {selectedReportDetails.subjects?.name || selectedReportDetails.subjects || "N/A"}
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={12} sm={6} md={3}>
-                    <Typography variant="subtitle2" color="text.secondary">
-                      Date
-                    </Typography>
-                    <Typography variant="body1" fontWeight={500}>
-                      {selectedReportDetails.date ? formatDate(selectedReportDetails.date) : "N/A"}
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={12} sm={6} md={3}>
-                    <Typography variant="subtitle2" color="text.secondary">
-                      Hour
-                    </Typography>
-                    <Typography variant="body1" fontWeight={500}>
-                      {selectedReportDetails.hour || "N/A"}
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={12} sm={6} md={3}>
-                    <Typography variant="subtitle2" color="text.secondary">
-                      Teacher
-                    </Typography>
-                    <Typography variant="body1" fontWeight={500}>
-                      {selectedReportDetails.teachers || "Not assigned"}
-                    </Typography>
-                  </Grid>
-                </Grid>
-              </Box>
-
-              <Box sx={{ mt: 2, mb: 2 }}>
-                <Grid container spacing={2}>
-                  <Grid item xs={12} sm={6}>
-                    <Typography variant="subtitle2" color="text.secondary">
-                      Task Status
-                    </Typography>
-                    <Box sx={{ mt: 1 }}>
-                      {selectedReportDetails.noTaskForClass ? (
-                        <Chip
-                          icon={<BlockIcon sx={{ color: "#FF9800" }} />}
-                          label="No Task Assigned"
-                          size="small"
-                          sx={{
-                            fontWeight: 500,
-                            color: "#FF9800",
-                            bgcolor: "#FFF3E0",
-                            border: "1px solid #FF9800",
-                          }}
-                        />
-                      ) : selectedReportDetails.noHomeworkForClass ? (
-                        <Chip
-                          icon={<BlockIcon sx={{ color: "#2196F3" }} />}
-                          label="No Homework"
-                          size="small"
-                          sx={{
-                            fontWeight: 500,
-                            color: "#2196F3",
-                            bgcolor: "#E3F2FD",
-                            border: "1px solid #2196F3",
-                          }}
-                        />
-                      ) : (
-                        <Chip
-                          icon={<CheckCircleIcon sx={{ color: "#4CAF50" }} />}
-                          label="Tasks Assigned"
-                          size="small"
-                          sx={{
-                            fontWeight: 500,
-                            color: "#4CAF50",
-                            bgcolor: "#E8F5E9",
-                            border: "1px solid #4CAF50",
-                          }}
-                        />
-                      )}
-                    </Box>
-                  </Grid>
-                </Grid>
-              </Box>
-
-              <Divider sx={{ my: 2 }} />
-
-              <Typography variant="subtitle1" fontWeight={600} gutterBottom>
-                Student Details
-              </Typography>
-              <TableContainer component={Paper} variant="outlined">
-                <Table size="small">
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>Roll</TableCell>
-                      <TableCell>Student Name</TableCell>
-                      <TableCell>Lesson Evaluation</TableCell>
-                      <TableCell>Handwriting</TableCell>
-                      <TableCell>Attendance</TableCell>
-                      <TableCell>Parent Signature</TableCell>
-                      <TableCell>Comments</TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {getStudentRows(selectedReportDetails).map((student: any) => (
-                      <TableRow key={student.id}>
-                        <TableCell>{student.roll}</TableCell>
-                        <TableCell>{student.name}</TableCell>
-                        <TableCell>{student.lessonEvaluation}</TableCell>
-                        <TableCell>{student.handwriting}</TableCell>
-                        <TableCell>{student.attendance}</TableCell>
-                        <TableCell>{student.parentSignature}</TableCell>
-                        <TableCell>{student.comments}</TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-
-              {selectedReportDetails.todayLesson && (
-                <Box sx={{ mt: 3 }}>
-                  <Typography variant="subtitle1" fontWeight={600}>
-                    Today's Lesson
-                  </Typography>
-                  <Typography variant="body2">
-                    {selectedReportDetails.todayLesson?.lessonContent || "No content available"}
-                  </Typography>
-                </Box>
-              )}
-
-              {selectedReportDetails.homeTask && (
-                <Box sx={{ mt: 3 }}>
-                  <Typography variant="subtitle1" fontWeight={600}>
-                    Homework
-                  </Typography>
-                  <Typography variant="body2">
-                    {selectedReportDetails.homeTask?.content || "No content available"}
-                  </Typography>
-                </Box>
-              )}
-            </>
-          )}
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 3 }}>
-          <Button onClick={handleCloseDetailsModal} variant="contained">
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
+      />
     </ThemeProvider>
   )
 }
