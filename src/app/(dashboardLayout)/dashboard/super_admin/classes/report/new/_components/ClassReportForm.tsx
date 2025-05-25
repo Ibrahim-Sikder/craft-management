@@ -312,43 +312,105 @@ export default function ClassReportForm({ id }: any) {
   const handleSubmit = async (data: FieldValues) => {
     console.log("raw data", data)
 
-    const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+    // Enhanced mobile detection
+    const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || 
+                     window.innerWidth <= 768 || 
+                     'ontouchstart' in window
 
-    // Enhanced mobile data processing
+    // Enhanced mobile data processing with better error handling
     if (isMobile) {
-      // Add delay for mobile processing
-      await new Promise((resolve) => setTimeout(resolve, 150))
+      try {
+        // Add longer delay for mobile processing
+        await new Promise((resolve) => setTimeout(resolve, 300))
 
-      // Fix autocomplete data format issues for mobile
-      if (data.classes && typeof data.classes === "string") {
-        const match = classOption.find((opt: any) => opt.label === data.classes)
-        if (match) data.classes = match
-      }
+        // More robust autocomplete data format fixes for mobile
+        if (data.classes) {
+          if (typeof data.classes === "string") {
+            const match = classOption.find((opt: any) => 
+              opt.label === data.classes || opt.value === data.classes
+            )
+            if (match) {
+              data.classes = match
+            } else {
+              // Fallback: create object if string doesn't match any option
+              data.classes = { label: data.classes, value: data.classes }
+            }
+          } else if (!data.classes.label || !data.classes.value) {
+            // Ensure object has required properties
+            data.classes = { 
+              label: data.classes.label || data.classes.value || data.classes, 
+              value: data.classes.value || data.classes.label || data.classes 
+            }
+          }
+        }
 
-      if (data.subjects && typeof data.subjects === "string") {
-        const match = subjectOption.find((opt: any) => opt.label === data.subjects)
-        if (match) data.subjects = match
-      }
+        if (data.subjects) {
+          if (typeof data.subjects === "string") {
+            const match = subjectOption.find((opt: any) => 
+              opt.label === data.subjects || opt.value === data.subjects
+            )
+            if (match) {
+              data.subjects = match
+            } else {
+              data.subjects = { label: data.subjects, value: data.subjects }
+            }
+          } else if (!data.subjects.label || !data.subjects.value) {
+            data.subjects = { 
+              label: data.subjects.label || data.subjects.value || data.subjects, 
+              value: data.subjects.value || data.subjects.label || data.subjects 
+            }
+          }
+        }
 
-      if (data.teachers && typeof data.teachers === "string") {
-        const match = teacherOption.find((opt: any) => opt.label === data.teachers)
-        if (match) data.teachers = match
+        if (data.teachers) {
+          if (typeof data.teachers === "string") {
+            const match = teacherOption.find((opt: any) => 
+              opt.label === data.teachers || opt.value === data.teachers
+            )
+            if (match) {
+              data.teachers = match
+            } else {
+              data.teachers = { label: data.teachers, value: data.teachers }
+            }
+          } else if (!data.teachers.label || !data.teachers.value) {
+            data.teachers = { 
+              label: data.teachers.label || data.teachers.value || data.teachers, 
+              value: data.teachers.value || data.teachers.label || data.teachers 
+            }
+          }
+        }
+
+        console.log("Mobile processed data:", data)
+      } catch (error) {
+        console.error("Mobile data processing error:", error)
+        toast.error("Mobile data processing failed. Please try again.")
+        return
       }
     }
 
-    // Basic validation
-    if (!data.classes) {
+    // Enhanced validation with better error messages
+    if (!data.classes || (typeof data.classes === 'object' && !data.classes.label)) {
       toast.error("শ্রেণী নির্বাচন করুন")
       return
     }
 
-    if (!data.subjects) {
+    if (!data.subjects || (typeof data.subjects === 'object' && !data.subjects.label)) {
       toast.error("বিষয় নির্বাচন করুন")
       return
     }
 
-    if (!data.teachers) {
+    if (!data.teachers || (typeof data.teachers === 'object' && !data.teachers.label)) {
       toast.error("শিক্ষক নির্বাচন করুন")
+      return
+    }
+
+    if (!data.hour) {
+      toast.error("ঘন্টা নির্বাচন করুন")
+      return
+    }
+
+    if (!data.date) {
+      toast.error("তারিখ নির্বাচন করুন")
       return
     }
 
@@ -445,10 +507,29 @@ export default function ClassReportForm({ id }: any) {
       }
     } catch (error: any) {
       console.error("Error saving class report:", error)
-      setSnackbarMessage(error?.data?.message || "Failed to save class report")
+      
+      // Enhanced error handling for mobile
+      const errorMessage = error?.data?.message || error?.message || "Failed to save class report"
+      
+      // Log additional debug info for mobile
+      if (/Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+        console.log("Mobile error debug:", {
+          error,
+          formData: data,
+          studentEvaluations: studentEvaluations.length,
+          networkStatus: navigator.onLine ? 'online' : 'offline'
+        })
+      }
+      
+      setSnackbarMessage(errorMessage)
       setSnackbarSeverity("error")
       setSnackbarOpen(true)
-      toast.error(error?.data?.message || "Failed to save class report")
+      toast.error(errorMessage)
+      
+      // Additional mobile-specific error handling
+      if (errorMessage.includes('network') || !navigator.onLine) {
+        toast.error("নেটওয়ার্ক সমস্যা। অনুগ্রহ করে আপনার ইন্টারনেট সংযোগ পরীক্ষা করুন।")
+      }
     }
   }
   const handleMenuClose = () => {
@@ -688,6 +769,41 @@ export default function ClassReportForm({ id }: any) {
     toast.success(checked ? "আজ কোন কাজ/হোমওয়ার্ক নেই!" : "কাজ/হোমওয়ার্ক স্ট্যাটাস আপডেট করা হয়েছে")
   }
 
+  useEffect(() => {
+    // Mobile-specific optimizations
+    const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+    
+    if (isMobile) {
+      // Prevent zoom on input focus for iOS
+      const viewport = document.querySelector('meta[name="viewport"]')
+      if (viewport) {
+        viewport.setAttribute('content', 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no')
+      }
+      
+      // Add mobile-specific styles
+      const style = document.createElement('style')
+      style.textContent = `
+        .MuiAutocomplete-popper {
+          z-index: 9999 !important;
+        }
+        .MuiSelect-select {
+          font-size: 16px !important;
+        }
+        .MuiInputBase-input {
+          font-size: 16px !important;
+        }
+      `
+      document.head.appendChild(style)
+      
+      return () => {
+        document.head.removeChild(style)
+        if (viewport) {
+          viewport.setAttribute('content', 'width=device-width, initial-scale=1.0')
+        }
+      }
+    }
+  }, [])
+
   return (
     <>
       {singleClassReportLoading && isLoading ? (
@@ -789,6 +905,11 @@ export default function ClassReportForm({ id }: any) {
                                 freeSolo
                                 multiple={false}
                                 options={teacherOption}
+                                // Add these mobile-optimized props
+                                forcePopupIcon={false}
+                                clearOnBlur={false}
+                                selectOnFocus={true}
+                                handleHomeEndKeys={true}
                               />
                             </Grid>
                             <Grid item xs={6} sm={6} md={2} lg={2.5}>
@@ -800,6 +921,11 @@ export default function ClassReportForm({ id }: any) {
                                 multiple={false}
                                 options={classOption}
                                 onChange={handleClassChange}
+                                // Add these mobile-optimized props
+                                forcePopupIcon={false}
+                                clearOnBlur={false}
+                                selectOnFocus={true}
+                                handleHomeEndKeys={true}
                               />
                             </Grid>
                             <Grid item xs={6} sm={6} md={3} lg={2.5}>
@@ -810,6 +936,11 @@ export default function ClassReportForm({ id }: any) {
                                 freeSolo
                                 multiple={false}
                                 options={subjectOption}
+                                // Add these mobile-optimized props
+                                forcePopupIcon={false}
+                                clearOnBlur={false}
+                                selectOnFocus={true}
+                                handleHomeEndKeys={true}
                               />
                             </Grid>
                             <Grid item xs={6} sm={6} md={2} lg={1.5}>
