@@ -944,65 +944,22 @@ export default function ClassReportForm({ id }: any) {
                               disabled={isDataLoading}
                             />
                           </Grid>
-                          <Grid item xs={6} sm={6} md={2} lg={1.5}>
+                          <Grid item xs={6} sm={6} md={2} lg={2.5}>
                             <CraftSelect
                               name="hour"
                               label="ঘন্টা"
                               items={classHour}
-                              sx={{ minWidth: { xs: 100, sm: 120, md: 130 } }}
+                             
                               disabled={!!isDataLoading}
                             />
                           </Grid>
-                          <Grid item xs={6} sm={6} md={2} lg={1.5}>
+                          <Grid item xs={6} sm={6} md={2} lg={2}>
                             <CraftDatePicker name="date" label="তারিখ" disabled={!!isDataLoading} />
                           </Grid>
-                          <Grid item xs={12} sm={12} md={12} lg={1.5}>
-                            <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
-                              <Button
-                                variant="outlined"
-                                startIcon={<DateRange />}
-                                onClick={handleDateRangePickerOpen}
-                                disabled={!!isDataLoading}
-                                sx={{
-                                  borderRadius: 2,
-                                  textTransform: "none",
-                                  minWidth: 200,
-                                  justifyContent: "flex-start",
-                                  color: selectedDateRange.startDate ? "primary.main" : "text.secondary",
-                                  borderColor: selectedDateRange.startDate ? "primary.main" : "rgba(0, 0, 0, 0.23)",
-                                  fontSize: "0.875rem",
-                                }}
-                              >
-                                {formatDateRangeDisplay()}
-                              </Button>
-                              {(selectedDateRange.startDate || selectedDateRange.endDate) && (
-                                <IconButton
-                                  size="small"
-                                  onClick={handleClearDateRange}
-                                  sx={{ color: "text.secondary" }}
-                                  disabled={!!isDataLoading}
-                                >
-                                  <Clear />
-                                </IconButton>
-                              )}
-                            </Box>
-                          </Grid>
+                        
                         </Grid>
 
-                        {/* Date Range Display Chip */}
-                        {selectedDateRange.startDate && selectedDateRange.endDate && (
-                          <Box sx={{ mt: 2 }}>
-                            <Chip
-                              icon={<CalendarToday />}
-                              label={`Filtered by: ${formatDateRangeDisplay()}`}
-                              onDelete={handleClearDateRange}
-                              color="primary"
-                              variant="outlined"
-                              sx={{ borderRadius: 2 }}
-                              disabled={!!isDataLoading}
-                            />
-                          </Box>
-                        )}
+                        
                       </Box>
 
                       {isLoading ? (
