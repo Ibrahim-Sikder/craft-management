@@ -81,6 +81,7 @@ type StudentEvaluation = {
   comments: string
 }
 
+
 export default function ClassReportForm({ id }: any) {
   const router = useRouter()
   const [page, setPage] = useState(0)
@@ -280,6 +281,16 @@ export default function ClassReportForm({ id }: any) {
   }
 
   const handleSubmit = async (data: FieldValues) => {
+
+    if (!data.classes || !data.subjects || !data.teachers) {
+  toast.error("Please select valid options from dropdowns");
+  return;
+}
+
+if (!data.date) {
+  toast.error("Please select a valid date");
+  return;
+}
 
     try {
       const classValue = typeof data.classes === "object" ? data.classes.label : data.classes
