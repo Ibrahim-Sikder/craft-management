@@ -28,6 +28,7 @@ import {
   DialogTitle,
   Skeleton,
   Fade,
+  ThemeProvider,
   Checkbox,
   Alert,
   Snackbar,
@@ -124,13 +125,6 @@ export default function ClassReportForm({ id }: any) {
   const [noTaskForClass, setNoTaskForClass] = useState(false)
   const [lessonEvaluationTask, setLessonEvaluationTask] = useState(false)
   const [handwrittenTask, setHandwrittenTask] = useState(false)
-
-  // Date Range Picker State
-  const [dateRangePickerOpen, setDateRangePickerOpen] = useState(false)
-  const [selectedDateRange, setSelectedDateRange] = useState<IDateRange>({
-    startDate: null,
-    endDate: null,
-  })
 
   const { data: singleClassReport, isLoading: singleClassReportLoading } = useGetSingleClassReportQuery({ id })
 
@@ -260,62 +254,39 @@ export default function ClassReportForm({ id }: any) {
     }
   }, [singleClassReport?.data])
 
-  // Add comprehensive loading state
-  const isDataLoading = useMemo(() => {
-    if (id) {
-      // In edit mode, wait for single report and all reference data
-      return singleClassReportLoading || !classData || !subjectData || !teacherData
-    } else {
-      // In create mode, wait for reference data and students (if class is selected)
-      return !classData || !subjectData || !teacherData || (filters.class && isLoading)
-    }
-  }, [singleClassReportLoading, classData, subjectData, teacherData, id, filters.class, isLoading])
-
-  // Improve defaultValues with better dependency tracking
+  // Fixed defaultValues with proper option mapping
   const defaultValues = useMemo(() => {
-    // Don't return values until all data is loaded
-    if (isDataLoading || !singleClassReport?.data) return {}
+    if (!singleClassReport?.data) return null
 
     const report = singleClassReport.data
 
-    // Set IDs after data is confirmed loaded
-    if (report.todayLesson?._id && !todayLessonId) {
+    if (report.todayLesson?._id) {
       setTodayLessonId(report.todayLesson._id)
     }
 
-    if (report.homeTask?._id && !homeTaskId) {
+    if (report.homeTask?._id) {
       setHomeTaskId(report.homeTask._id)
     }
-
-    if (report.classes && !filters.class) {
+    if (report.classes) {
       setFilters((prev) => ({
         ...prev,
         class: report.classes,
       }))
     }
 
-    // Find the correct option objects from loaded data
-    const classOption = classData?.data?.classes?.find((cls: any) => cls.className === report.classes)
-    const subjectOption = subjectData?.data?.subjects?.find((sub: any) => sub.name === report.subjects)
-    const teacherOption = teacherData?.data?.find((teacher: any) => teacher.name === report.teachers)
+    // Find the correct option objects for autocomplete fields
+    const classObj = classOption.find((opt: any) => opt.label === report.classes)
+    const subjectObj = subjectOption.find((opt: any) => opt.label === report.subjects)
+    const teacherObj = teacherOption.find((opt: any) => opt.label === report.teachers)
 
     return {
-      classes: classOption ? { label: classOption.className, value: classOption._id } : null,
-      subjects: subjectOption ? { label: subjectOption.name, value: subjectOption._id } : null,
-      teachers: teacherOption ? { label: teacherOption.name, value: teacherOption._id } : null,
+      classes: classObj || report.classes,
+      subjects: subjectObj || report.subjects,
       hour: report.hour || "",
       date: report.date ? format(new Date(report.date), "yyyy-MM-dd") : "",
+      teachers: teacherObj || report.teachers,
     }
-  }, [
-    singleClassReport?.data,
-    classData,
-    subjectData,
-    teacherData,
-    isDataLoading,
-    todayLessonId,
-    homeTaskId,
-    filters.class,
-  ])
+  }, [singleClassReport, classOption, subjectOption, teacherOption])
 
   const handleLessonEvaluationTaskChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const checked = event.target.checked
@@ -329,143 +300,59 @@ export default function ClassReportForm({ id }: any) {
     toast.success(checked ? "হাতের লিখা অক্ষম করা হয়েছে!" : "হাতের লিখা সক্ষম করা হয়েছে!")
   }
 
-  // Date Range Picker Handlers
-  const handleDateRangePickerOpen = () => {
-    setDateRangePickerOpen(true)
-  }
 
-  const handleDateRangePickerClose = () => {
-    setDateRangePickerOpen(false)
-  }
 
-  const handleDateRangeApply = (range: IDateRange) => {
-    setSelectedDateRange(range)
-    setFilters((prev) => ({
-      ...prev,
-      startDate: range.startDate ? format(range.startDate, "yyyy-MM-dd") : "",
-      endDate: range.endDate ? format(range.endDate, "yyyy-MM-dd") : "",
-    }))
 
-    if (range.startDate && range.endDate) {
-      toast.success(
-        `Date range applied: ${format(range.startDate, "dd MMM yyyy")} - ${format(range.endDate, "dd MMM yyyy")}`,
-      )
-    }
 
-    // Refetch data with new date range
-    refetch()
-  }
 
-  const handleClearDateRange = () => {
-    setSelectedDateRange({ startDate: null, endDate: null })
-    setFilters((prev) => ({
-      ...prev,
-      startDate: "",
-      endDate: "",
-    }))
-    toast.success("Date range filter cleared")
-    refetch()
-  }
 
-  const formatDateRangeDisplay = () => {
-    if (!selectedDateRange.startDate || !selectedDateRange.endDate) {
-      return "Select date range"
-    }
-    return `${format(selectedDateRange.startDate, "dd MMM yyyy")} - ${format(selectedDateRange.endDate, "dd MMM yyyy")}`
-  }
 
-  // Enhanced mobile error handling in handleSubmit
+
+  // Enhanced mobile handling in handleSubmit
   const handleSubmit = async (data: FieldValues) => {
+    console.log("raw data", data)
+
+    const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+
+    // Enhanced mobile data processing
+    if (isMobile) {
+      // Add delay for mobile processing
+      await new Promise((resolve) => setTimeout(resolve, 150))
+
+      // Fix autocomplete data format issues for mobile
+      if (data.classes && typeof data.classes === "string") {
+        const match = classOption.find((opt: any) => opt.label === data.classes)
+        if (match) data.classes = match
+      }
+
+      if (data.subjects && typeof data.subjects === "string") {
+        const match = subjectOption.find((opt: any) => opt.label === data.subjects)
+        if (match) data.subjects = match
+      }
+
+      if (data.teachers && typeof data.teachers === "string") {
+        const match = teacherOption.find((opt: any) => opt.label === data.teachers)
+        if (match) data.teachers = match
+      }
+    }
+
+    // Basic validation
+    if (!data.classes) {
+      toast.error("শ্রেণী নির্বাচন করুন")
+      return
+    }
+
+    if (!data.subjects) {
+      toast.error("বিষয় নির্বাচন করুন")
+      return
+    }
+
+    if (!data.teachers) {
+      toast.error("শিক্ষক নির্বাচন করুন")
+      return
+    }
+
     try {
-      // Show loading state
-      const loadingToast = toast.loading("Saving class report...")
-
-      const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
-
-      // Enhanced mobile data processing
-      if (isMobile) {
-        // Add longer delay for mobile processing
-        await new Promise((resolve) => setTimeout(resolve, 200))
-
-        // More robust autocomplete data fixing
-        if (data.classes) {
-          if (typeof data.classes === "string") {
-            const match = classOption.find((opt: any) => opt.label === data.classes || opt.value === data.classes)
-            if (match) {
-              data.classes = match
-            } else {
-              toast.dismiss(loadingToast)
-              toast.error("শ্রেণী সঠিকভাবে নির্বাচন করুন")
-              return
-            }
-          }
-        }
-
-        if (data.subjects) {
-          if (typeof data.subjects === "string") {
-            const match = subjectOption.find((opt: any) => opt.label === data.subjects || opt.value === data.subjects)
-            if (match) {
-              data.subjects = match
-            } else {
-              toast.dismiss(loadingToast)
-              toast.error("বিষয় সঠিকভাবে নির্বাচন করুন")
-              return
-            }
-          }
-        }
-
-        if (data.teachers) {
-          if (typeof data.teachers === "string") {
-            const match = teacherOption.find((opt: any) => opt.label === data.teachers || opt.value === data.teachers)
-            if (match) {
-              data.teachers = match
-            } else {
-              toast.dismiss(loadingToast)
-              toast.error("শিক্ষক সঠিকভাবে নির্বাচন করুন")
-              return
-            }
-          }
-        }
-      }
-
-      // Enhanced validation
-      if (!data.classes || (typeof data.classes === "object" && (!data.classes.label || !data.classes.value))) {
-        toast.dismiss(loadingToast)
-        toast.error("শ্রেণী সঠিকভাবে নির্বাচন করুন")
-        return
-      }
-
-      if (!data.subjects || (typeof data.subjects === "object" && (!data.subjects.label || !data.subjects.value))) {
-        toast.dismiss(loadingToast)
-        toast.error("বিষয় সঠিকভাবে নির্বাচন করুন")
-        return
-      }
-
-      if (!data.teachers || (typeof data.teachers === "object" && (!data.teachers.label || !data.teachers.value))) {
-        toast.dismiss(loadingToast)
-        toast.error("শিক্ষক সঠিকভাবে নির্বাচন করুন")
-        return
-      }
-
-      if (!data.hour) {
-        toast.dismiss(loadingToast)
-        toast.error("ঘন্টা নির্বাচন করুন")
-        return
-      }
-
-      if (!data.date) {
-        toast.dismiss(loadingToast)
-        toast.error("তারিখ নির্বাচন করুন")
-        return
-      }
-
-      if (students.length === 0) {
-        toast.dismiss(loadingToast)
-        toast.error("কোন ছাত্র পাওয়া যায়নি")
-        return
-      }
-
-      // Rest of the existing handleSubmit logic...
       const classValue = typeof data.classes === "object" ? data.classes.label : data.classes
       const subjectValue = typeof data.subjects === "object" ? data.subjects.label : data.subjects
       const teacherValue = typeof data.teachers === "object" ? data.teachers.label : data.teachers
@@ -492,51 +379,76 @@ export default function ClassReportForm({ id }: any) {
               comments: "",
             }
           } else {
-            const attendanceValue = existingEval?.attendance || "উপস্থিত"
+            return (() => {
+              const attendanceValue = existingEval?.attendance || "উপস্থিত"
 
-            if (attendanceValue === "অনুপস্থিত") {
+              if (attendanceValue === "অনুপস্থিত") {
+                return {
+                  studentId: existingEval ? existingEval.studentId : student._id,
+                  attendance: "অনুপস্থিত",
+                  lessonEvaluation: "অনুপস্থিত",
+                  handwriting: "অনুপস্থিত",
+                  parentSignature: false,
+                  comments: "",
+                }
+              }
+
+              if (noTaskForClass) {
+                return {
+                  studentId: student._id,
+                  lessonEvaluation: "পাঠ নেই",
+                  handwriting: "কাজ নেই",
+                  attendance: attendanceValue,
+                  parentSignature: false,
+                  comments: "",
+                }
+              }
               return {
                 studentId: existingEval ? existingEval.studentId : student._id,
-                attendance: "অনুপস্থিত",
-                lessonEvaluation: "অনুপস্থিত",
-                handwriting: "অনুপস্থিত",
-                parentSignature: false,
-                comments: "",
+                lessonEvaluation: lessonEvaluationTask ? "পাঠ নেই" : existingEval?.lessonEvaluation || "পড়া শিখেছে",
+                handwriting: handwrittenTask ? "কাজ নেই" : existingEval?.handwriting || "লিখেছে",
+                attendance: attendanceValue,
+                parentSignature:
+                  noTaskForClass || (lessonEvaluationTask && handwrittenTask)
+                    ? false
+                    : existingEval?.parentSignature || true,
+                comments: existingEval?.comments || "",
               }
-            }
-
-            return {
-              studentId: existingEval ? existingEval.studentId : student._id,
-              lessonEvaluation: lessonEvaluationTask ? "পাঠ নেই" : existingEval?.lessonEvaluation || "পড়া শিখেছে",
-              handwriting: handwrittenTask ? "কাজ নেই" : existingEval?.handwriting || "লিখেছে",
-              attendance: attendanceValue,
-              parentSignature:
-                noTaskForClass || (lessonEvaluationTask && handwrittenTask)
-                  ? false
-                  : existingEval?.parentSignature || true,
-              comments: existingEval?.comments || "",
-            }
+            })()
           }
         }),
         todayLesson: todayLessonId,
         homeTask: homeTaskId,
       }
+      console.log("formated data", formattedData)
 
-      let response
       if (!id) {
-        response = await createClassReport(formattedData).unwrap()
-      } else {
-        response = await updateClassReport({ id, data: formattedData }).unwrap()
-      }
+        const response = await createClassReport(formattedData).unwrap()
 
-      if (response.success) {
-        toast.dismiss(loadingToast)
-        toast.success(id ? "Class report updated successfully!" : "Class report saved successfully!")
-        router.push("/dashboard/super_admin/classes/report/list")
+        if (response.success) {
+          setSnackbarMessage("Class report saved successfully!")
+          setSnackbarSeverity("success")
+          setSnackbarOpen(true)
+          toast.success("Class report saved successfully!")
+          router.push("/dashboard/super_admin/classes/report/list")
+        }
+      } else {
+        const response = await updateClassReport({ id, data: formattedData }).unwrap()
+
+        if (response.success) {
+          setSnackbarMessage("Class report update successfully!")
+          setSnackbarSeverity("success")
+          setSnackbarOpen(true)
+          toast.success("Class report update successfully!")
+          router.push("/dashboard/super_admin/classes/report/list")
+        }
       }
     } catch (error: any) {
       console.error("Error saving class report:", error)
-      toast.error(error?.data?.message || error?.message || "Failed to save class report")
+      setSnackbarMessage(error?.data?.message || "Failed to save class report")
+      setSnackbarSeverity("error")
+      setSnackbarOpen(true)
+      toast.error(error?.data?.message || "Failed to save class report")
     }
   }
   const handleMenuClose = () => {
@@ -776,535 +688,479 @@ export default function ClassReportForm({ id }: any) {
     toast.success(checked ? "আজ কোন কাজ/হোমওয়ার্ক নেই!" : "কাজ/হোমওয়ার্ক স্ট্যাটাস আপডেট করা হয়েছে")
   }
 
-  // Replace the main loading condition
   return (
     <>
-      {isDataLoading ? (
-        <Box sx={{ flexGrow: 1, bgcolor: "background.default", minHeight: "100vh", borderRadius: 2 }}>
-          <Container maxWidth={false} sx={{ mt: 0, mb: 8, borderRadius: 2, px: { xs: 0, sm: 0, md: 4, lg: 5 } }}>
-            <Box sx={{ p: 3 }}>
-              <Skeleton variant="text" width="40%" height={60} sx={{ mb: 3 }} />
-              <Paper elevation={0} sx={{ mb: 4, p: 3 }}>
-                <Grid container spacing={2}>
-                  <Grid item xs={6} sm={6} md={3} lg={3}>
-                    <Skeleton variant="rectangular" height={56} />
-                  </Grid>
-                  <Grid item xs={6} sm={6} md={3} lg={3}>
-                    <Skeleton variant="rectangular" height={56} />
-                  </Grid>
-                  <Grid item xs={6} sm={6} md={3} lg={3}>
-                    <Skeleton variant="rectangular" height={56} />
-                  </Grid>
-                  <Grid item xs={6} sm={6} md={1.5} lg={1.5}>
-                    <Skeleton variant="rectangular" height={56} />
-                  </Grid>
-                  <Grid item xs={6} sm={6} md={1.5} lg={1.5}>
-                    <Skeleton variant="rectangular" height={56} />
-                  </Grid>
-                </Grid>
-              </Paper>
-              <Paper elevation={0}>
-                {Array.from(new Array(5)).map((_, index) => (
-                  <Box key={index} sx={{ display: "flex", py: 2, px: 2, alignItems: "center" }}>
-                    <Skeleton variant="text" width="20%" height={40} sx={{ mr: 2 }} />
-                    <Skeleton variant="rectangular" width={40} height={40} sx={{ mr: 2 }} />
-                    <Skeleton variant="rectangular" width="15%" height={40} sx={{ mr: 2 }} />
-                    <Skeleton variant="rectangular" width="15%" height={40} sx={{ mr: 2 }} />
-                    <Skeleton variant="rectangular" width={40} height={40} sx={{ mr: 2 }} />
-                    <Skeleton variant="rectangular" width="25%" height={40} />
-                  </Box>
-                ))}
-              </Paper>
-            </Box>
-          </Container>
-        </Box>
+      {singleClassReportLoading && isLoading ? (
+        <div>Loading.....</div>
       ) : (
         <>
-          <CraftForm onSubmit={handleSubmit} defaultValues={defaultValues || {}}>
-            <Box sx={{ flexGrow: 1, bgcolor: "background.default", minHeight: "100vh", borderRadius: 2 }}>
-              <Container maxWidth={false} sx={{ mt: 0, mb: 8, borderRadius: 2, px: { xs: 0, sm: 0, md: 4, lg: 5 } }}>
-                <Fade in={true} timeout={800}>
-                  <Box>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        mb: 3,
-                        flexWrap: "wrap",
-                        gap: 2,
-                        paddingTop: 2,
-                      }}
-                    >
-                      <Typography
-                        variant="h4"
-                        component="h1"
+          <ThemeProvider theme={theme}>
+            <CraftForm onSubmit={handleSubmit} defaultValues={defaultValues || {}}>
+              <Box sx={{ flexGrow: 1, bgcolor: "background.default", minHeight: "100vh", borderRadius: 2 }}>
+                <Container maxWidth={false} sx={{ mt: 0, mb: 8, borderRadius: 2, px: { xs: 0, sm: 0, md: 4, lg: 5 } }}>
+                  <Fade in={true} timeout={800}>
+                    <Box>
+                      <Box
                         sx={{
-                          fontWeight: 700,
-                          color: "text.primary",
-                          fontSize: { xs: "1.5rem", sm: "1.75rem", md: "2rem" },
+                          display: "flex",
+                          justifyContent: "space-between",
+                          alignItems: "center",
+                          mb: 3,
+                          flexWrap: "wrap",
+                          gap: 2,
+                          paddingTop: 2,
                         }}
                       >
-                        {id ? "Edit Report" : "+ Add New Report"}
-                        {isEditMode && (
-                          <Typography component="span" variant="subtitle1" sx={{ ml: 2, color: "text.secondary" }}>
-                            (Editing existing report)
-                          </Typography>
-                        )}
-                      </Typography>
-                      <Box sx={{ display: "flex", gap: { xs: 0.5, sm: 2 }, flexWrap: "wrap" }}>
-                        <Button
-                          variant="contained"
-                          color="primary"
-                          startIcon={<Add />}
-                          onClick={handleOpenTodayLessonDialog}
+                        <Typography
+                          variant="h4"
+                          component="h1"
                           sx={{
-                            bgcolor: todayLessonId ? "success.main" : "",
-                            borderRadius: 2,
-                            boxShadow: "0px 4px 10px rgba(99, 102, 241, 0.2)",
-                            fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                            px: { xs: 1, sm: 2 },
+                            fontWeight: 700,
+                            color: "text.primary",
+                            fontSize: { xs: "1.5rem", sm: "1.75rem", md: "2rem" },
                           }}
                         >
-                          {todayLessonId ? " আজকের পাঠে দেখুন" : "আজকের পাঠ"}
-                        </Button>
-                        <Button
-                          variant="contained"
-                          color="primary"
-                          startIcon={<Add />}
-                          onClick={handleOpenTodayTaskDialog}
-                          sx={{
-                            bgcolor: homeTaskId ? "success.main" : "#3792de",
-                            borderRadius: 2,
-                            boxShadow: "0px 4px 10px rgba(99, 102, 241, 0.2)",
-                            fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                            px: { xs: 1, sm: 2 },
-                          }}
-                        >
-                          {homeTaskId ? "বাড়ির কাজ দেখুন" : "বাড়ির কাজ"}
-                        </Button>
-                        <Button
-                          type="submit"
-                          variant="contained"
-                          color="primary"
-                          startIcon={<Save />}
-                          disabled={isSubmitting}
-                          sx={{
-                            bgcolor: "#4F0187",
-                            borderRadius: 2,
-                            boxShadow: "0px 4px 10px rgba(99, 102, 241, 0.2)",
-                            fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                            px: { xs: 2, sm: 2 },
-                          }}
-                        >
-                          {isSubmitting ? "Saving..." : "Save"}
-                        </Button>
-                      </Box>
-                    </Box>
-
-                    <Paper elevation={0} sx={{ mb: 4, width: "100%", overflow: "hidden" }}>
-                      <Box sx={{ p: { xs: 1, sm: 1, md: 2, lg: 3 }, borderBottom: "1px solid rgba(0, 0, 0, 0.06)" }}>
-                        <Grid container spacing={2} alignItems="center">
-                          <Grid item xs={6} sm={6} md={3} lg={2.5}>
-                            <CraftIntAutoComplete
-                              name="teachers"
-                              placeholder="শিক্ষকের নাম লিখুন"
-                              label="শিক্ষকের নাম"
-                              fullWidth
-                              freeSolo={false}
-                              multiple={false}
-                              options={teacherOption}
-                              disabled={!!isDataLoading}
-                            />
-                          </Grid>
-                          <Grid item xs={6} sm={6} md={2} lg={2.5}>
-                            <CraftIntAutoComplete
-                              name="classes"
-                              label="শ্রেণীর নাম লিখুন"
-                              fullWidth
-                              freeSolo={false}
-                              multiple={false}
-                              options={classOption}
-                              onChange={handleClassChange}
-                              // Add these for mobile optimization
-                              disableClearable={true}
-                              blurOnSelect={true}
-                              clearOnBlur={true}
-                              disabled={isDataLoading}
-                            />
-                          </Grid>
-                          <Grid item xs={6} sm={6} md={3} lg={2.5}>
-                            <CraftIntAutoComplete
-                              name="subjects"
-                              label="বিষয়ের নাম লিখুন"
-                              fullWidth
-                              freeSolo={false}
-                              multiple={false}
-                              options={subjectOption}
-                              disabled={isDataLoading}
-                            />
-                          </Grid>
-                          <Grid item xs={6} sm={6} md={2} lg={2.5}>
-                            <CraftSelect
-                              name="hour"
-                              label="ঘন্টা"
-                              items={classHour}
-                             
-                              disabled={!!isDataLoading}
-                            />
-                          </Grid>
-                          <Grid item xs={6} sm={6} md={2} lg={2}>
-                            <CraftDatePicker name="date" label="তারিখ" disabled={!!isDataLoading} />
-                          </Grid>
-                        
-                        </Grid>
-
-                        
-                      </Box>
-
-                      {isLoading ? (
-                        <Box sx={{ p: 2 }}>
-                          {Array.from(new Array(5)).map((_, index) => (
-                            <Box key={index} sx={{ display: "flex", py: 2, px: 2, alignItems: "center" }}>
-                              <Skeleton variant="circular" width={40} height={40} sx={{ mr: 2 }} />
-                              <Box sx={{ width: "100%" }}>
-                                <Skeleton variant="text" width="40%" height={30} />
-                                <Box sx={{ display: "flex", mt: 1 }}>
-                                  <Skeleton variant="text" width="20%" sx={{ mr: 2 }} />
-                                  <Skeleton variant="text" width="30%" />
-                                </Box>
-                              </Box>
-                              <Skeleton variant="rectangular" width={100} height={36} sx={{ borderRadius: 1 }} />
-                            </Box>
-                          ))}
+                          {id ? "Edit Report" : "+ Add New Report"}
+                          {isEditMode && (
+                            <Typography component="span" variant="subtitle1" sx={{ ml: 2, color: "text.secondary" }}>
+                              (Editing existing report)
+                            </Typography>
+                          )}
+                        </Typography>
+                        <Box sx={{ display: "flex", gap: { xs: 0.5, sm: 2 }, flexWrap: "wrap" }}>
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            startIcon={<Add />}
+                            onClick={handleOpenTodayLessonDialog}
+                            sx={{
+                              bgcolor: todayLessonId ? "success.main" : "",
+                              borderRadius: 2,
+                              boxShadow: "0px 4px 10px rgba(99, 102, 241, 0.2)",
+                              fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                              px: { xs: 1, sm: 2 },
+                            }}
+                          >
+                            {todayLessonId ? " আজকের পাঠে দেখুন" : "আজকের পাঠ"}
+                          </Button>
+                          <Button
+                            variant="contained"
+                            color="primary"
+                            startIcon={<Add />}
+                            onClick={handleOpenTodayTaskDialog}
+                            sx={{
+                              bgcolor: homeTaskId ? "success.main" : "#3792de",
+                              borderRadius: 2,
+                              boxShadow: "0px 4px 10px rgba(99, 102, 241, 0.2)",
+                              fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                              px: { xs: 1, sm: 2 },
+                            }}
+                          >
+                            {homeTaskId ? "বাড়ির কাজ দেখুন" : "বাড়ির কাজ"}
+                          </Button>
+                          <Button
+                            type="submit"
+                            variant="contained"
+                            color="primary"
+                            startIcon={<Save />}
+                            disabled={isSubmitting}
+                            sx={{
+                              bgcolor: "#4F0187",
+                              borderRadius: 2,
+                              boxShadow: "0px 4px 10px rgba(99, 102, 241, 0.2)",
+                              fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                              px: { xs: 2, sm: 2 },
+                            }}
+                          >
+                            {isSubmitting ? "Saving..." : "Save"}
+                          </Button>
                         </Box>
-                      ) : (
-                        <>
-                          <div className="flex gap-2 justify-center">
-                            <Tooltip title="Disable all tasks">
-                              <FormControlLabel
-                                control={
-                                  <Switch
-                                    checked={noTaskForClass}
-                                    onChange={handleNoTaskChange}
-                                    color="primary"
-                                    disabled={!!isDataLoading}
-                                  />
-                                }
-                                label={
-                                  <Typography variant="caption" sx={{ fontSize: 15 }}>
-                                    আজকে কোন পাঠ নেই
-                                  </Typography>
-                                }
-                                labelPlacement="start"
+                      </Box>
+
+                      <Paper elevation={0} sx={{ mb: 4, width: "100%", overflow: "hidden" }}>
+                        <Box sx={{ p: { xs: 1, sm: 1, md: 2, lg: 3 }, borderBottom: "1px solid rgba(0, 0, 0, 0.06)" }}>
+                          <Grid container spacing={2} alignItems="center">
+                            <Grid item xs={6} sm={6} md={3} lg={2.5}>
+                              <CraftIntAutoComplete
+                                name="teachers"
+                                placeholder="শিক্ষকের নাম লিখুন"
+                                label="শিক্ষকের নাম"
+                                fullWidth
+                                freeSolo
+                                multiple={false}
+                                options={teacherOption}
                               />
-                            </Tooltip>
-                          </div>
-                          <div className="w-[285px] md:w-full overflow-x-auto max-[800px]:border max-[800px]:border-gray-300   max-[800px]:rounded   max-[800px]:block   max-[800px]:max-w-[100vw]   max-[800px]:relative   max-[800px]:whitespace-nowrap   max-[800px]:overflow-x-auto   max-[800px]:scrolling-touch   min-[900px]:overflow-x-visible min-[900px]:table">
-                            <Table
-                              sx={{
-                                minWidth: 900,
-                                "@media (min-width: 900px)": {
-                                  width: "100%",
-                                  minWidth: "100%",
-                                  tableLayout: { sm: "auto", md: "fixed", lg: "fixed" },
-                                },
-                              }}
-                            >
-                              <TableHead>
-                                <TableRow>
-                                  <TableCell width="20%">ছাত্রের নাম</TableCell>
-                                  <TableCell align="center" width="10%">
-                                    উপস্থিতি
-                                  </TableCell>
-                                  <TableCell align="center" width="20%">
-                                    <div className="flex gap-2 justify-center">
-                                      <Tooltip title="Disable lesson evaluation">
-                                        <FormControlLabel
-                                          control={
-                                            <Switch
-                                              checked={lessonEvaluationTask}
-                                              onChange={handleLessonEvaluationTaskChange}
-                                              color="primary"
-                                              disabled={!!noTaskForClass || !!isDataLoading}
-                                            />
-                                          }
-                                          label={
-                                            <Typography variant="caption" sx={{ fontSize: 15 }}>
-                                              পাঠ মূল্যায়ন
-                                            </Typography>
-                                          }
-                                          labelPlacement="start"
-                                        />
-                                      </Tooltip>
-                                    </div>
-                                  </TableCell>
+                            </Grid>
+                            <Grid item xs={6} sm={6} md={2} lg={2.5}>
+                              <CraftIntAutoComplete
+                                name="classes"
+                                label="শ্রেণীর নাম লিখুন"
+                                fullWidth
+                                freeSolo
+                                multiple={false}
+                                options={classOption}
+                                onChange={handleClassChange}
+                              />
+                            </Grid>
+                            <Grid item xs={6} sm={6} md={3} lg={2.5}>
+                              <CraftIntAutoComplete
+                                name="subjects"
+                                label="বিষয়ের নাম লিখুন"
+                                fullWidth
+                                freeSolo
+                                multiple={false}
+                                options={subjectOption}
+                              />
+                            </Grid>
+                            <Grid item xs={6} sm={6} md={2} lg={1.5}>
+                              <CraftSelect
+                                name="hour"
+                                label="ঘন্টা"
+                                items={classHour}
+                                sx={{ minWidth: { xs: 100, sm: 120, md: 130 } }}
+                              />
+                            </Grid>
+                            <Grid item xs={6} sm={6} md={2} lg={2.5}>
+                              <CraftDatePicker name="date" label="তারিখ" />
+                            </Grid>
 
-                                  <TableCell align="center" width="20%">
-                                    <div className="flex gap-2 justify-center">
-                                      <Tooltip title="Disable handwritten task">
-                                        <FormControlLabel
-                                          control={
-                                            <Switch
-                                              checked={handwrittenTask}
-                                              onChange={handleHandwrittenTaskChange}
-                                              color="primary"
-                                              disabled={!!noTaskForClass || !!isDataLoading}
-                                            />
-                                          }
-                                          label={
-                                            <Typography variant="caption" sx={{ fontSize: 15 }}>
-                                              হাতের লিখা
-                                            </Typography>
-                                          }
-                                          labelPlacement="start"
-                                        />
-                                      </Tooltip>
-                                    </div>
-                                  </TableCell>
-                                  <TableCell align="center" width="10%">
-                                    অভিভাবকের স্বাক্ষর
-                                  </TableCell>
-                                  <TableCell align="center" sx={{ minWidth: 200 }}>
-                                    মন্তব্য
-                                  </TableCell>
-                                </TableRow>
-                              </TableHead>
-                              <TableBody>
-                                {students.length === 0 && (
+                          </Grid>
+                        </Box>
+
+                        {isLoading ? (
+                          <Box sx={{ p: 2 }}>
+                            {Array.from(new Array(5)).map((_, index) => (
+                              <Box key={index} sx={{ display: "flex", py: 2, px: 2, alignItems: "center" }}>
+                                <Skeleton variant="circular" width={40} height={40} sx={{ mr: 2 }} />
+                                <Box sx={{ width: "100%" }}>
+                                  <Skeleton variant="text" width="40%" height={30} />
+                                  <Box sx={{ display: "flex", mt: 1 }}>
+                                    <Skeleton variant="text" width="20%" sx={{ mr: 2 }} />
+                                    <Skeleton variant="text" width="30%" />
+                                  </Box>
+                                </Box>
+                                <Skeleton variant="rectangular" width={100} height={36} sx={{ borderRadius: 1 }} />
+                              </Box>
+                            ))}
+                          </Box>
+                        ) : (
+                          <>
+                            <div className="flex gap-2 justify-center">
+                              <Tooltip title="Disable all tasks">
+                                <FormControlLabel
+                                  control={
+                                    <Switch checked={noTaskForClass} onChange={handleNoTaskChange} color="primary" />
+                                  }
+                                  label={
+                                    <Typography variant="caption" sx={{ fontSize: 15 }}>
+                                      আজকে কোন পাঠ নেই
+                                    </Typography>
+                                  }
+                                  labelPlacement="start"
+                                />
+                              </Tooltip>
+                            </div>
+                            <div className="w-[285px] md:w-full overflow-x-auto max-[800px]:border max-[800px]:border-gray-300   max-[800px]:rounded   max-[800px]:block   max-[800px]:max-w-[100vw]   max-[800px]:relative   max-[800px]:whitespace-nowrap   max-[800px]:overflow-x-auto   max-[800px]:scrolling-touch   min-[900px]:overflow-x-visible min-[900px]:table">
+                              <Table
+                                sx={{
+                                  minWidth: 900,
+                                  "@media (min-width: 900px)": {
+                                    width: "100%",
+                                    minWidth: "100%",
+                                    tableLayout: { sm: "auto", md: "fixed", lg: "fixed" },
+                                  },
+                                }}
+                              >
+                                <TableHead>
                                   <TableRow>
-                                    <TableCell colSpan={6} align="center" sx={{ py: 8 }}>
-                                      <Box sx={{ textAlign: "center" }}>
-                                        <SearchIcon sx={{ fontSize: 48, color: "text.disabled", mb: 2 }} />
-                                        <Typography variant="h6" gutterBottom>
-                                          No students found
-                                        </Typography>
-                                        <Typography variant="body2" color="text.secondary">
-                                          Try adjusting your search or filter to find what you&apos;re looking for.
-                                        </Typography>
-                                      </Box>
+                                    <TableCell width="20%">ছাত্রের নাম</TableCell>
+                                    <TableCell align="center" width="10%">
+                                      উপস্থিতি
+                                    </TableCell>
+                                    <TableCell align="center" width="20%">
+                                      <div className="flex gap-2 justify-center">
+                                        <Tooltip title="Disable lesson evaluation">
+                                          <FormControlLabel
+                                            control={
+                                              <Switch
+                                                checked={lessonEvaluationTask}
+                                                onChange={handleLessonEvaluationTaskChange}
+                                                color="primary"
+                                                disabled={noTaskForClass}
+                                              />
+                                            }
+                                            label={
+                                              <Typography variant="caption" sx={{ fontSize: 15 }}>
+                                                পাঠ মূল্যায়ন
+                                              </Typography>
+                                            }
+                                            labelPlacement="start"
+                                          />
+                                        </Tooltip>
+                                      </div>
+                                    </TableCell>
+
+                                    <TableCell align="center" width="20%">
+                                      <div className="flex gap-2 justify-center">
+                                        <Tooltip title="Disable handwritten task">
+                                          <FormControlLabel
+                                            control={
+                                              <Switch
+                                                checked={handwrittenTask}
+                                                onChange={handleHandwrittenTaskChange}
+                                                color="primary"
+                                                disabled={noTaskForClass}
+                                              />
+                                            }
+                                            label={
+                                              <Typography variant="caption" sx={{ fontSize: 15 }}>
+                                                হাতের লিখা
+                                              </Typography>
+                                            }
+                                            labelPlacement="start"
+                                          />
+                                        </Tooltip>
+                                      </div>
+                                    </TableCell>
+                                    <TableCell align="center" width="10%">
+                                      অভিভাবকের স্বাক্ষর
+                                    </TableCell>
+                                    <TableCell align="center" sx={{ minWidth: 200 }}>
+                                      মন্তব্য
                                     </TableCell>
                                   </TableRow>
-                                )}
+                                </TableHead>
+                                <TableBody>
+                                  {students.length === 0 && (
+                                    <TableRow>
+                                      <TableCell colSpan={6} align="center" sx={{ py: 8 }}>
+                                        <Box sx={{ textAlign: "center" }}>
+                                          <SearchIcon sx={{ fontSize: 48, color: "text.disabled", mb: 2 }} />
+                                          <Typography variant="h6" gutterBottom>
+                                            No students found
+                                          </Typography>
+                                          <Typography variant="body2" color="text.secondary">
+                                            Try adjusting your search or filter to find what you&apos;re looking for.
+                                          </Typography>
+                                        </Box>
+                                      </TableCell>
+                                    </TableRow>
+                                  )}
 
-                                {students.length > 0 ? (
-                                  students.map((student: any) => {
-                                    const evaluation = getStudentEvaluation(student._id)
-                                    const isAbsent = evaluation.attendance !== "উপস্থিত"
-                                    return (
-                                      <TableRow key={student._id} sx={{ transition: "all 0.2s" }}>
-                                        <TableCell component="th" scope="row">
-                                          <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                                            {student.name}
-                                          </Typography>
-                                          <Typography variant="caption" color="text.secondary">
-                                            {student.studentId} • {student.className}, {student.section}
-                                          </Typography>
-                                        </TableCell>
-                                        <TableCell align="center">
-                                          <Checkbox
-                                            color="primary"
-                                            checked={evaluation.attendance === "উপস্থিত"}
-                                            onChange={(e) =>
-                                              handleAttendanceChange(
-                                                student._id,
-                                                e.target.checked ? "উপস্থিত" : "অনুপস্থিত",
-                                              )
-                                            }
-                                            disabled={!!isDataLoading}
-                                          />
-                                        </TableCell>
-                                        <TableCell align="center">
-                                          <FormControl
-                                            fullWidth
-                                            sx={{ minWidth: { xs: 120, sm: 140, md: 160 } }}
-                                            disabled={
-                                              !!isAbsent || !!noTaskForClass || !!lessonEvaluationTask || !!isDataLoading
-                                            }
-                                          >
-                                            <InputLabel id={`lesson-label-${student._id}`}>
-                                              Lesson Evaluation
-                                            </InputLabel>
-                                            <Select
-                                              labelId={`lesson-label-${student._id}`}
-                                              value={evaluation.lessonEvaluation}
-                                              label="Lesson Evaluation"
+                                  {students.length > 0 ? (
+                                    students.map((student: any) => {
+                                      const evaluation = getStudentEvaluation(student._id)
+                                      const isAbsent = evaluation.attendance !== "উপস্থিত"
+                                      return (
+                                        <TableRow key={student._id} sx={{ transition: "all 0.2s" }}>
+                                          <TableCell component="th" scope="row">
+                                            <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                                              {student.name}
+                                            </Typography>
+                                            <Typography variant="caption" color="text.secondary">
+                                              {student.studentId} • {student.className}, {student.section}
+                                            </Typography>
+                                          </TableCell>
+                                          <TableCell align="center">
+                                            <Checkbox
+                                              color="primary"
+                                              checked={evaluation.attendance === "উপস্থিত"}
                                               onChange={(e) =>
-                                                handleLessonEvaluationChange(student._id, e.target.value)
+                                                handleAttendanceChange(
+                                                  student._id,
+                                                  e.target.checked ? "উপস্থিত" : "অনুপস্থিত",
+                                                )
                                               }
-                                              disabled={!!isDataLoading}
+                                            />
+                                          </TableCell>
+                                          <TableCell align="center">
+                                            <FormControl
+                                              fullWidth
+                                              sx={{ minWidth: { xs: 120, sm: 140, md: 160 } }}
+                                              disabled={isAbsent || noTaskForClass || lessonEvaluationTask}
                                             >
-                                              {lessonEvaluation.map((item) => (
-                                                <MenuItem key={item} value={item}>
-                                                  {item}
-                                                </MenuItem>
-                                              ))}
-                                            </Select>
-                                          </FormControl>
-                                        </TableCell>
+                                              <InputLabel id={`lesson-label-${student._id}`}>
+                                                Lesson Evaluation
+                                              </InputLabel>
+                                              <Select
+                                                labelId={`lesson-label-${student._id}`}
+                                                value={evaluation.lessonEvaluation}
+                                                label="Lesson Evaluation"
+                                                onChange={(e) =>
+                                                  handleLessonEvaluationChange(student._id, e.target.value)
+                                                }
+                                              >
+                                                {lessonEvaluation.map((item) => (
+                                                  <MenuItem key={item} value={item}>
+                                                    {item}
+                                                  </MenuItem>
+                                                ))}
+                                              </Select>
+                                            </FormControl>
+                                          </TableCell>
 
-                                        <TableCell align="center">
-                                          <FormControl
-                                            fullWidth
-                                            sx={{ minWidth: { xs: 120, sm: 140, md: 160 } }}
-                                            disabled={!isAbsent || !noTaskForClass || !handwrittenTask || !isDataLoading}
-                                          >
-                                            <InputLabel id={`handwriting-label-${student._id}`}>Handwriting</InputLabel>
-                                            <Select
-                                              labelId={`handwriting-label-${student._id}`}
-                                              value={evaluation.handwriting || "লিখেছে"}
-                                              label="Handwriting"
-                                              onChange={(e) => handleHandwritingChange(student._id, e.target.value)}
-                                              disabled={!!isDataLoading}
+                                          <TableCell align="center">
+                                            <FormControl
+                                              fullWidth
+                                              sx={{ minWidth: { xs: 120, sm: 140, md: 160 } }}
+                                              disabled={isAbsent || noTaskForClass || handwrittenTask}
                                             >
-                                              {handWritting.map((item) => (
-                                                <MenuItem key={item} value={item}>
-                                                  {item}
-                                                </MenuItem>
-                                              ))}
-                                            </Select>
-                                          </FormControl>
-                                        </TableCell>
+                                              <InputLabel id={`handwriting-label-${student._id}`}>
+                                                Handwriting
+                                              </InputLabel>
+                                              <Select
+                                                labelId={`handwriting-label-${student._id}`}
+                                                value={evaluation.handwriting || "লিখেছে"}
+                                                label="Handwriting"
+                                                onChange={(e) => handleHandwritingChange(student._id, e.target.value)}
+                                              >
+                                                {handWritting.map((item) => (
+                                                  <MenuItem key={item} value={item}>
+                                                    {item}
+                                                  </MenuItem>
+                                                ))}
+                                              </Select>
+                                            </FormControl>
+                                          </TableCell>
 
-                                        <TableCell align="center">
-                                          <Checkbox
-                                            color="primary"
-                                            checked={evaluation.parentSignature === true}
-                                            onChange={(e) => handleParentSignatureChange(student._id, e.target.checked)}
-                                            disabled={
-                                              !!isAbsent ||
-                                              !!noTaskForClass ||
-                                              (!!lessonEvaluationTask && !!handwrittenTask) ||
-                                              !!isDataLoading
-                                            }
-                                          />
-                                        </TableCell>
-                                        <TableCell>
-                                          <TextField
-                                            fullWidth
-                                            multiline
-                                            minRows={1}
-                                            label="মন্তব্য"
-                                            placeholder="মন্তব্য"
-                                            value={evaluation.comments || ""}
-                                            onChange={(e) => handleCommentsChange(student._id, e.target.value)}
-                                            disabled={!!isAbsent || !!noTaskForClass || !!isDataLoading}
-                                          />
-                                        </TableCell>
-                                      </TableRow>
-                                    )
-                                  })
-                                ) : (
-                                  <TableRow>
-                                    <TableCell colSpan={8} align="center" sx={{ py: 8 }}>
-                                      <Box sx={{ textAlign: "center" }}>
-                                        <SearchIcon sx={{ fontSize: 48, color: "text.disabled", mb: 2 }} />
-                                        <Typography variant="h6" gutterBottom>
-                                          No students found
-                                        </Typography>
-                                        <Typography variant="body2" color="text.secondary">
-                                          Try adjusting your search or filter to find what you&apos;re looking for.
-                                        </Typography>
-                                      </Box>
-                                    </TableCell>
-                                  </TableRow>
-                                )}
-                              </TableBody>
-                            </Table>
-                          </div>
-                        </>
-                      )}
-                    </Paper>
-                  </Box>
-                </Fade>
-              </Container>
-            </Box>
+                                          <TableCell align="center">
+                                            <Checkbox
+                                              color="primary"
+                                              checked={evaluation.parentSignature === true}
+                                              onChange={(e) =>
+                                                handleParentSignatureChange(student._id, e.target.checked)
+                                              }
+                                              disabled={
+                                                isAbsent || noTaskForClass || (lessonEvaluationTask && handwrittenTask)
+                                              }
+                                            />
+                                          </TableCell>
+                                          <TableCell>
+                                            <TextField
+                                              fullWidth
+                                              multiline
+                                              minRows={1}
+                                              label="মন্তব্য"
+                                              placeholder="মন্তব্য"
+                                              value={evaluation.comments || ""}
+                                              onChange={(e) => handleCommentsChange(student._id, e.target.value)}
+                                              disabled={isAbsent || noTaskForClass}
+                                            />
+                                          </TableCell>
+                                        </TableRow>
+                                      )
+                                    })
+                                  ) : (
+                                    <TableRow>
+                                      <TableCell colSpan={8} align="center" sx={{ py: 8 }}>
+                                        <Box sx={{ textAlign: "center" }}>
+                                          <SearchIcon sx={{ fontSize: 48, color: "text.disabled", mb: 2 }} />
+                                          <Typography variant="h6" gutterBottom>
+                                            No students found
+                                          </Typography>
+                                          <Typography variant="body2" color="text.secondary">
+                                            Try adjusting your search or filter to find what you&apos;re looking for.
+                                          </Typography>
+                                        </Box>
+                                      </TableCell>
+                                    </TableRow>
+                                  )}
+                                </TableBody>
+                              </Table>
+                            </div>
+                          </>
+                        )}
+                      </Paper>
+                    </Box>
+                  </Fade>
+                </Container>
+              </Box>
 
-            <Menu
-              anchorEl={anchorEl}
-              open={Boolean(anchorEl)}
-              onClose={handleMenuClose}
-              PaperProps={{
-                elevation: 3,
-                sx: {
-                  mt: 1,
-                  minWidth: 180,
-                  borderRadius: 2,
-                  overflow: "auto",
-                },
-              }}
-            >
-              <MenuItem onClick={handleMenuClose} sx={{ py: 1.5 }}>
-                <VisibilityIcon fontSize="small" sx={{ mr: 2, color: "info.main" }} />
-                View Details
-              </MenuItem>
-              <MenuItem onClick={handleMenuClose} sx={{ py: 1.5 }}>
-                <EditIcon fontSize="small" sx={{ mr: 2, color: "warning.main" }} />
-                Edit
-              </MenuItem>
-              <Divider />
-              <MenuItem onClick={handleDeleteClick} sx={{ py: 1.5, color: "error.main" }}>
-                <DeleteIcon fontSize="small" sx={{ mr: 2 }} />
-                Delete
-              </MenuItem>
-            </Menu>
-
-            <Dialog
-              open={deleteDialogOpen}
-              onClose={handleDeleteCancel}
-              PaperProps={{
-                sx: {
-                  borderRadius: 3,
-                  width: "100%",
-                  maxWidth: 480,
-                },
-              }}
-            >
-              <DialogTitle sx={{ pb: 1 }}>
-                <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
-                  Delete Student
-                </Typography>
-              </DialogTitle>
-              <DialogContent>
-                <DialogContentText>
-                  Are you sure you want to delete the student &#34;{selectedStudent?.name}&#34;? This action cannot be
-                  undone.
-                </DialogContentText>
-              </DialogContent>
-              <DialogActions sx={{ px: 3, pb: 3 }}>
-                <Button
-                  onClick={handleDeleteCancel}
-                  variant="outlined"
-                  color="inherit"
-                  sx={{ borderColor: "rgba(0, 0, 0, 0.12)" }}
-                >
-                  Cancel
-                </Button>
-                <Button onClick={handleDeleteConfirm} variant="contained" color="error" sx={{ ml: 2 }}>
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleMenuClose}
+                PaperProps={{
+                  elevation: 3,
+                  sx: {
+                    mt: 1,
+                    minWidth: 180,
+                    borderRadius: 2,
+                    overflow: "auto",
+                  },
+                }}
+              >
+                <MenuItem onClick={handleMenuClose} sx={{ py: 1.5 }}>
+                  <VisibilityIcon fontSize="small" sx={{ mr: 2, color: "info.main" }} />
+                  View Details
+                </MenuItem>
+                <MenuItem onClick={handleMenuClose} sx={{ py: 1.5 }}>
+                  <EditIcon fontSize="small" sx={{ mr: 2, color: "warning.main" }} />
+                  Edit
+                </MenuItem>
+                <Divider />
+                <MenuItem onClick={handleDeleteClick} sx={{ py: 1.5, color: "error.main" }}>
+                  <DeleteIcon fontSize="small" sx={{ mr: 2 }} />
                   Delete
-                </Button>
-              </DialogActions>
-            </Dialog>
+                </MenuItem>
+              </Menu>
 
-            <Snackbar
-              open={snackbarOpen}
-              autoHideDuration={6000}
-              onClose={handleSnackbarClose}
-              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-            >
-              <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} variant="filled" sx={{ width: "100%" }}>
-                {snackbarMessage}
-              </Alert>
-            </Snackbar>
-          </CraftForm>
+              <Dialog
+                open={deleteDialogOpen}
+                onClose={handleDeleteCancel}
+                PaperProps={{
+                  sx: {
+                    borderRadius: 3,
+                    width: "100%",
+                    maxWidth: 480,
+                  },
+                }}
+              >
+                <DialogTitle sx={{ pb: 1 }}>
+                  <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
+                    Delete Student
+                  </Typography>
+                </DialogTitle>
+                <DialogContent>
+                  <DialogContentText>
+                    Are you sure you want to delete the student &#34;{selectedStudent?.name}&#34;? This action cannot be
+                    undone.
+                  </DialogContentText>
+                </DialogContent>
+                <DialogActions sx={{ px: 3, pb: 3 }}>
+                  <Button
+                    onClick={handleDeleteCancel}
+                    variant="outlined"
+                    color="inherit"
+                    sx={{ borderColor: "rgba(0, 0, 0, 0.12)" }}
+                  >
+                    Cancel
+                  </Button>
+                  <Button onClick={handleDeleteConfirm} variant="contained" color="error" sx={{ ml: 2 }}>
+                    Delete
+                  </Button>
+                </DialogActions>
+              </Dialog>
 
-          {/* Date Range Picker Dialog */}
-          <DateRangePicker
-            open={dateRangePickerOpen}
-            onClose={handleDateRangePickerClose}
-            onApply={handleDateRangeApply}
-            initialRange={selectedDateRange}
-          />
+              <Snackbar
+                open={snackbarOpen}
+                autoHideDuration={6000}
+                onClose={handleSnackbarClose}
+                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+              >
+                <Alert
+                  onClose={handleSnackbarClose}
+                  severity={snackbarSeverity}
+                  variant="filled"
+                  sx={{ width: "100%" }}
+                >
+                  {snackbarMessage}
+                </Alert>
+              </Snackbar>
+            </CraftForm>
+          </ThemeProvider>
+
+
 
           <TodayLesson
             id={todayLessonId}
