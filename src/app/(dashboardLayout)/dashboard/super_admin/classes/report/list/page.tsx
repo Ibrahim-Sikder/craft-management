@@ -74,8 +74,9 @@ import { useGetAllSubjectsQuery } from "@/redux/api/subjectApi"
 import { useGetAllTeachersQuery } from "@/redux/api/teacherApi"
 import ClassReportDetailsModal from "../_components/ClassReportDetailsModal"
 import toast from "react-hot-toast"
-import  DateRangePicker from "../new/_components/DateRangePicker";
+import DateRangePicker from "../new/_components/DateRangePicker";
 import Link from "next/link"
+import { DateRangeIcon } from "@mui/x-date-pickers"
 type Filters = {
   classes: string
   subjects: string
@@ -643,7 +644,7 @@ export default function ClassReportList() {
                   </Grid>
 
                   {/* Enhanced Date Range Filter */}
-                  <Grid item xs={12} sm={12} md={12}>
+                  <Grid item xs={12} sm={6} md={2.5}>
                     <Card
                       variant="outlined"
                       sx={{
@@ -667,7 +668,12 @@ export default function ClassReportList() {
                       }}
                     >
                       <CardContent sx={{ p: 3 }}>
-
+                        <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                          <DateRangeIcon sx={{ color: "primary.main", mr: 1 }} />
+                          <Typography variant="subtitle1" fontWeight={600}>
+                            Date
+                          </Typography>
+                        </Box>
 
                         {/* Date Range Picker Button */}
                         <Box sx={{ display: "flex", gap: 2, alignItems: "center", mb: 2 }}>
@@ -1014,9 +1020,9 @@ export default function ClassReportList() {
                                                   ? "#EDE7F6"
                                                   : "#FFEBEE",
                                               border: `1px solid ${evaluation?.lessonEvaluation &&
-                                                  evaluation?.lessonEvaluation !== "পড়া শিখেনি"
-                                                  ? "#651FFF"
-                                                  : "#FF1744"
+                                                evaluation?.lessonEvaluation !== "পড়া শিখেনি"
+                                                ? "#651FFF"
+                                                : "#FF1744"
                                                 }`,
                                             }}
                                           />
@@ -1043,8 +1049,8 @@ export default function ClassReportList() {
                                                   ? "#E0F7FA"
                                                   : "#FFEBEE",
                                               border: `1px solid ${evaluation?.handwriting && evaluation?.handwriting !== "লিখেনি"
-                                                  ? "#00BFA6"
-                                                  : "#FF1744"
+                                                ? "#00BFA6"
+                                                : "#FF1744"
                                                 }`,
                                             }}
                                           />
