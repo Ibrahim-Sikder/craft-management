@@ -13,9 +13,10 @@ interface ITextField {
   sx?: SxProps;
   items: string[];
   defaultValue?: string;
-  value?: string; // ✅ added value
+  value?: string;
   margin?: "none" | "normal" | "dense";
   onChange?: (value: any) => void;
+  disabled?: boolean;
 }
 
 const CraftSelect = ({
@@ -29,7 +30,8 @@ const CraftSelect = ({
   sx,
   onChange,
   defaultValue,
-  value, // ✅ received value
+  value,
+  disabled = false,
 }: ITextField) => {
   const { control, formState } = useFormContext();
   const isError = formState.errors[name] !== undefined;
@@ -42,7 +44,7 @@ const CraftSelect = ({
       render={({ field }) => (
         <TextField
           {...field}
-          value={value !== undefined ? value : field.value} // ✅ prefer props.value if given
+          value={value !== undefined ? value : field.value}
           sx={{ ...sx }}
           size={size}
           select
@@ -51,10 +53,11 @@ const CraftSelect = ({
           fullWidth={fullWidth}
           error={isError}
           margin={margin}
+          disabled={disabled} 
           onChange={(e) => {
-            field.onChange(e); // for react-hook-form state
+            field.onChange(e);
             if (onChange) {
-              onChange(e.target.value); // for external custom handler
+              onChange(e.target.value);
             }
           }}
           helperText={

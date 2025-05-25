@@ -15,7 +15,9 @@ interface ITASDatepickerProps {
   margin?: "none" | "normal" | "dense";
   sx?: SxProps;
   disableFuture?: boolean;
+  disabled?: boolean;
 }
+
 
 const CraftDatePicker = ({
   name,
@@ -25,6 +27,7 @@ const CraftDatePicker = ({
   fullWidth = true,
   margin = "normal",
   sx,
+    disabled = false,
 }: ITASDatepickerProps) => {
   const { control } = useFormContext();
 
@@ -57,6 +60,7 @@ const CraftDatePicker = ({
                   variant: "outlined",
                   fullWidth: fullWidth,
                   margin: margin,
+                  disabled: disabled, 
                 },
               }}
             />

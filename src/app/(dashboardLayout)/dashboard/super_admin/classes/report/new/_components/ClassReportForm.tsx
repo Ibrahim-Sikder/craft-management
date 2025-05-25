@@ -28,7 +28,6 @@ import {
   DialogTitle,
   Skeleton,
   Fade,
-  ThemeProvider,
   Checkbox,
   Alert,
   Snackbar,
@@ -39,6 +38,8 @@ import {
   Switch,
   FormControlLabel,
   Tooltip,
+  Chip,
+  IconButton,
 } from "@mui/material"
 import {
   Search as SearchIcon,
@@ -47,6 +48,9 @@ import {
   Visibility as VisibilityIcon,
   Add,
   Save,
+  CalendarToday,
+  Clear,
+  DateRange,
 } from "@mui/icons-material"
 import CraftForm from "@/components/Forms/Form"
 import CraftDatePicker from "@/components/Forms/DatePicker"
@@ -70,6 +74,7 @@ import TodayLesson from "./TodayLesson"
 import TodayTask from "./TodayTask"
 import { format } from "date-fns"
 import { useGetAllTeachersQuery } from "@/redux/api/teacherApi"
+import DateRangePicker from "./DateRangePicker"
 
 // Define a type for student evaluation
 type StudentEvaluation = {
@@ -81,6 +86,10 @@ type StudentEvaluation = {
   comments: string
 }
 
+interface IDateRange {
+  startDate: Date | null
+  endDate: Date | null
+}
 
 export default function ClassReportForm({ id }: any) {
   const router = useRouter()
@@ -95,6 +104,8 @@ export default function ClassReportForm({ id }: any) {
     teacher: "",
     date: "",
     day: "",
+    startDate: "",
+    endDate: "",
   })
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [selectedBrand, setSelectedBrand] = useState("")
@@ -113,6 +124,13 @@ export default function ClassReportForm({ id }: any) {
   const [noTaskForClass, setNoTaskForClass] = useState(false)
   const [lessonEvaluationTask, setLessonEvaluationTask] = useState(false)
   const [handwrittenTask, setHandwrittenTask] = useState(false)
+
+  // Date Range Picker State
+  const [dateRangePickerOpen, setDateRangePickerOpen] = useState(false)
+  const [selectedDateRange, setSelectedDateRange] = useState<IDateRange>({
+    startDate: null,
+    endDate: null,
+  })
 
   const { data: singleClassReport, isLoading: singleClassReportLoading } = useGetSingleClassReportQuery({ id })
 
@@ -169,6 +187,8 @@ export default function ClassReportForm({ id }: any) {
       page: page + 1,
       searchTerm: searchTerm,
       className: filters.class ? filters.class : undefined,
+      startDate: filters.startDate || undefined,
+      endDate: filters.endDate || undefined,
     },
     {
       skip: id && isEditMode,
@@ -240,33 +260,62 @@ export default function ClassReportForm({ id }: any) {
     }
   }, [singleClassReport?.data])
 
+  // Add comprehensive loading state
+  const isDataLoading = useMemo(() => {
+    if (id) {
+      // In edit mode, wait for single report and all reference data
+      return singleClassReportLoading || !classData || !subjectData || !teacherData
+    } else {
+      // In create mode, wait for reference data and students (if class is selected)
+      return !classData || !subjectData || !teacherData || (filters.class && isLoading)
+    }
+  }, [singleClassReportLoading, classData, subjectData, teacherData, id, filters.class, isLoading])
+
+  // Improve defaultValues with better dependency tracking
   const defaultValues = useMemo(() => {
-    if (!singleClassReport?.data) return null
+    // Don't return values until all data is loaded
+    if (isDataLoading || !singleClassReport?.data) return {}
 
     const report = singleClassReport.data
 
-    if (report.todayLesson?._id) {
+    // Set IDs after data is confirmed loaded
+    if (report.todayLesson?._id && !todayLessonId) {
       setTodayLessonId(report.todayLesson._id)
     }
 
-    if (report.homeTask?._id) {
+    if (report.homeTask?._id && !homeTaskId) {
       setHomeTaskId(report.homeTask._id)
     }
-    if (report.classes?._id) {
+
+    if (report.classes && !filters.class) {
       setFilters((prev) => ({
         ...prev,
-        class: report.classes._id,
+        class: report.classes,
       }))
     }
 
+    // Find the correct option objects from loaded data
+    const classOption = classData?.data?.classes?.find((cls: any) => cls.className === report.classes)
+    const subjectOption = subjectData?.data?.subjects?.find((sub: any) => sub.name === report.subjects)
+    const teacherOption = teacherData?.data?.find((teacher: any) => teacher.name === report.teachers)
+
     return {
-      classes: report.classes,
-      subjects: report.subjects,
+      classes: classOption ? { label: classOption.className, value: classOption._id } : null,
+      subjects: subjectOption ? { label: subjectOption.name, value: subjectOption._id } : null,
+      teachers: teacherOption ? { label: teacherOption.name, value: teacherOption._id } : null,
       hour: report.hour || "",
       date: report.date ? format(new Date(report.date), "yyyy-MM-dd") : "",
-      teachers: report.teachers || "",
     }
-  }, [singleClassReport])
+  }, [
+    singleClassReport?.data,
+    classData,
+    subjectData,
+    teacherData,
+    isDataLoading,
+    todayLessonId,
+    homeTaskId,
+    filters.class,
+  ])
 
   const handleLessonEvaluationTaskChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const checked = event.target.checked
@@ -280,49 +329,143 @@ export default function ClassReportForm({ id }: any) {
     toast.success(checked ? "হাতের লিখা অক্ষম করা হয়েছে!" : "হাতের লিখা সক্ষম করা হয়েছে!")
   }
 
+  // Date Range Picker Handlers
+  const handleDateRangePickerOpen = () => {
+    setDateRangePickerOpen(true)
+  }
+
+  const handleDateRangePickerClose = () => {
+    setDateRangePickerOpen(false)
+  }
+
+  const handleDateRangeApply = (range: IDateRange) => {
+    setSelectedDateRange(range)
+    setFilters((prev) => ({
+      ...prev,
+      startDate: range.startDate ? format(range.startDate, "yyyy-MM-dd") : "",
+      endDate: range.endDate ? format(range.endDate, "yyyy-MM-dd") : "",
+    }))
+
+    if (range.startDate && range.endDate) {
+      toast.success(
+        `Date range applied: ${format(range.startDate, "dd MMM yyyy")} - ${format(range.endDate, "dd MMM yyyy")}`,
+      )
+    }
+
+    // Refetch data with new date range
+    refetch()
+  }
+
+  const handleClearDateRange = () => {
+    setSelectedDateRange({ startDate: null, endDate: null })
+    setFilters((prev) => ({
+      ...prev,
+      startDate: "",
+      endDate: "",
+    }))
+    toast.success("Date range filter cleared")
+    refetch()
+  }
+
+  const formatDateRangeDisplay = () => {
+    if (!selectedDateRange.startDate || !selectedDateRange.endDate) {
+      return "Select date range"
+    }
+    return `${format(selectedDateRange.startDate, "dd MMM yyyy")} - ${format(selectedDateRange.endDate, "dd MMM yyyy")}`
+  }
+
+  // Enhanced mobile error handling in handleSubmit
   const handleSubmit = async (data: FieldValues) => {
-
-    const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-
-    if (isMobile) {
-      // Fix autocomplete data format issues
-      if (data.classes && typeof data.classes === 'string') {
-        const match = classOption.find((opt: any) => opt.label === data.classes);
-        if (match) data.classes = match;
-      }
-
-      if (data.subjects && typeof data.subjects === 'string') {
-        const match = subjectOption.find((opt: any) => opt.label === data.subjects);
-        if (match) data.subjects = match;
-      }
-
-      if (data.teachers && typeof data.teachers === 'string') {
-        const match = teacherOption.find((opt: any) => opt.label === data.teachers);
-        if (match) data.teachers = match;
-      }
-
-      // Add small delay for mobile processing
-      await new Promise(resolve => setTimeout(resolve, 100));
-    }
-
-    // Enhanced validation with better error messages
-    if (!data.classes || (typeof data.classes === 'object' && !data.classes.label)) {
-      toast.error("শ্রেণী সঠিকভাবে নির্বাচন করুন");
-      return;
-    }
-
-    if (!data.subjects || (typeof data.subjects === 'object' && !data.subjects.label)) {
-      toast.error("বিষয় সঠিকভাবে নির্বাচন করুন");
-      return;
-    }
-
-    if (!data.teachers || (typeof data.teachers === 'object' && !data.teachers.label)) {
-      toast.error("শিক্ষক সঠিকভাবে নির্বাচন করুন");
-      return;
-    }
-
-
     try {
+      // Show loading state
+      const loadingToast = toast.loading("Saving class report...")
+
+      const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+
+      // Enhanced mobile data processing
+      if (isMobile) {
+        // Add longer delay for mobile processing
+        await new Promise((resolve) => setTimeout(resolve, 200))
+
+        // More robust autocomplete data fixing
+        if (data.classes) {
+          if (typeof data.classes === "string") {
+            const match = classOption.find((opt: any) => opt.label === data.classes || opt.value === data.classes)
+            if (match) {
+              data.classes = match
+            } else {
+              toast.dismiss(loadingToast)
+              toast.error("শ্রেণী সঠিকভাবে নির্বাচন করুন")
+              return
+            }
+          }
+        }
+
+        if (data.subjects) {
+          if (typeof data.subjects === "string") {
+            const match = subjectOption.find((opt: any) => opt.label === data.subjects || opt.value === data.subjects)
+            if (match) {
+              data.subjects = match
+            } else {
+              toast.dismiss(loadingToast)
+              toast.error("বিষয় সঠিকভাবে নির্বাচন করুন")
+              return
+            }
+          }
+        }
+
+        if (data.teachers) {
+          if (typeof data.teachers === "string") {
+            const match = teacherOption.find((opt: any) => opt.label === data.teachers || opt.value === data.teachers)
+            if (match) {
+              data.teachers = match
+            } else {
+              toast.dismiss(loadingToast)
+              toast.error("শিক্ষক সঠিকভাবে নির্বাচন করুন")
+              return
+            }
+          }
+        }
+      }
+
+      // Enhanced validation
+      if (!data.classes || (typeof data.classes === "object" && (!data.classes.label || !data.classes.value))) {
+        toast.dismiss(loadingToast)
+        toast.error("শ্রেণী সঠিকভাবে নির্বাচন করুন")
+        return
+      }
+
+      if (!data.subjects || (typeof data.subjects === "object" && (!data.subjects.label || !data.subjects.value))) {
+        toast.dismiss(loadingToast)
+        toast.error("বিষয় সঠিকভাবে নির্বাচন করুন")
+        return
+      }
+
+      if (!data.teachers || (typeof data.teachers === "object" && (!data.teachers.label || !data.teachers.value))) {
+        toast.dismiss(loadingToast)
+        toast.error("শিক্ষক সঠিকভাবে নির্বাচন করুন")
+        return
+      }
+
+      if (!data.hour) {
+        toast.dismiss(loadingToast)
+        toast.error("ঘন্টা নির্বাচন করুন")
+        return
+      }
+
+      if (!data.date) {
+        toast.dismiss(loadingToast)
+        toast.error("তারিখ নির্বাচন করুন")
+        return
+      }
+
+      if (students.length === 0) {
+        toast.dismiss(loadingToast)
+        toast.error("কোন ছাত্র পাওয়া যায়নি")
+        return
+      }
+
+      // Rest of the existing handleSubmit logic...
       const classValue = typeof data.classes === "object" ? data.classes.label : data.classes
       const subjectValue = typeof data.subjects === "object" ? data.subjects.label : data.subjects
       const teacherValue = typeof data.teachers === "object" ? data.teachers.label : data.teachers
@@ -333,7 +476,6 @@ export default function ClassReportForm({ id }: any) {
         classes: classValue,
         hour: data.hour,
         date: format(new Date(data.date), "yyyy-MM-dd"),
-
         noTaskForClass: noTaskForClass,
         lessonEvaluationTask: lessonEvaluationTask,
         handwrittenTask: handwrittenTask,
@@ -341,7 +483,6 @@ export default function ClassReportForm({ id }: any) {
           const existingEval = studentEvaluations.find((evaluation) => evaluation.studentId === student._id)
 
           if (noTaskForClass) {
-
             return {
               studentId: student._id,
               lessonEvaluation: "পাঠ নেই",
@@ -351,78 +492,51 @@ export default function ClassReportForm({ id }: any) {
               comments: "",
             }
           } else {
+            const attendanceValue = existingEval?.attendance || "উপস্থিত"
 
-            return (() => {
-              const attendanceValue = existingEval?.attendance || "উপস্থিত"
-
-              if (attendanceValue === "অনুপস্থিত") {
-                return {
-                  studentId: existingEval ? existingEval.studentId : student._id,
-                  attendance: "অনুপস্থিত",
-                  lessonEvaluation: "অনুপস্থিত",
-                  handwriting: "অনুপস্থিত",
-                  parentSignature: false,
-                  comments: "",
-                }
-              }
-
-              if (noTaskForClass) {
-                return {
-                  studentId: student._id,
-                  lessonEvaluation: "পাঠ নেই",
-                  handwriting: "কাজ নেই",
-                  attendance: attendanceValue,
-                  parentSignature: false,
-                  comments: "",
-                }
-              }
+            if (attendanceValue === "অনুপস্থিত") {
               return {
                 studentId: existingEval ? existingEval.studentId : student._id,
-                lessonEvaluation: lessonEvaluationTask ? "পাঠ নেই" : existingEval?.lessonEvaluation || "",
-                handwriting: handwrittenTask ? "কাজ নেই" : existingEval?.handwriting || "",
-                attendance: attendanceValue,
-                parentSignature:
-                  noTaskForClass || (lessonEvaluationTask && handwrittenTask)
-                    ? false
-                    : existingEval?.parentSignature || false,
-                comments: existingEval?.comments || "",
+                attendance: "অনুপস্থিত",
+                lessonEvaluation: "অনুপস্থিত",
+                handwriting: "অনুপস্থিত",
+                parentSignature: false,
+                comments: "",
               }
-            })()
+            }
 
+            return {
+              studentId: existingEval ? existingEval.studentId : student._id,
+              lessonEvaluation: lessonEvaluationTask ? "পাঠ নেই" : existingEval?.lessonEvaluation || "পড়া শিখেছে",
+              handwriting: handwrittenTask ? "কাজ নেই" : existingEval?.handwriting || "লিখেছে",
+              attendance: attendanceValue,
+              parentSignature:
+                noTaskForClass || (lessonEvaluationTask && handwrittenTask)
+                  ? false
+                  : existingEval?.parentSignature || true,
+              comments: existingEval?.comments || "",
+            }
           }
         }),
         todayLesson: todayLessonId,
         homeTask: homeTaskId,
       }
 
-
+      let response
       if (!id) {
-        const response = await createClassReport(formattedData).unwrap()
-
-        if (response.success) {
-          setSnackbarMessage("Class report saved successfully!")
-          setSnackbarSeverity("success")
-          setSnackbarOpen(true)
-          toast.success("Class report saved successfully!")
-          router.push("/dashboard/super_admin/classes/report/list")
-        }
+        response = await createClassReport(formattedData).unwrap()
       } else {
-        const response = await updateClassReport({ id, data: formattedData }).unwrap()
+        response = await updateClassReport({ id, data: formattedData }).unwrap()
+      }
 
-        if (response.success) {
-          setSnackbarMessage("Class report update successfully!")
-          setSnackbarSeverity("success")
-          setSnackbarOpen(true)
-          toast.success("Class report update successfully!")
-          router.push("/dashboard/super_admin/classes/report/list")
-        }
+      if (response.success) {
+        toast.dismiss(loadingToast)
+        toast.success(id ? "Class report updated successfully!" : "Class report saved successfully!")
+        router.push("/dashboard/super_admin/classes/report/list")
       }
     } catch (error: any) {
       console.error("Error saving class report:", error)
-      setSnackbarMessage(error?.data?.message || "Failed to save class report")
-      setSnackbarSeverity("error")
-      setSnackbarOpen(true)
-      toast.error(error?.data?.message || "Failed to save class report")
+      toast.error(error?.data?.message || error?.message || "Failed to save class report")
     }
   }
   const handleMenuClose = () => {
@@ -568,6 +682,13 @@ export default function ClassReportForm({ id }: any) {
     return 0
   })
 
+  const handleClassName = (event: any, newValue: any) => {
+    setSelectedBrand(newValue)
+    const filtered = sortedVehicleName
+      ?.filter((vehicle: any) => vehicle.label?.toLowerCase().includes(newValue?.toLowerCase()))
+      .sort((a: any, b: any) => a.label.localeCompare(b.label))
+    setFilteredVehicles(filtered)
+  }
 
   const handleClassChange = (event: any, newValue: any) => {
     if (id && isEditMode) {
@@ -655,17 +776,52 @@ export default function ClassReportForm({ id }: any) {
     toast.success(checked ? "আজ কোন কাজ/হোমওয়ার্ক নেই!" : "কাজ/হোমওয়ার্ক স্ট্যাটাস আপডেট করা হয়েছে")
   }
 
+  // Replace the main loading condition
   return (
     <>
-      {singleClassReportLoading ? (
-        <div>Loading.....</div>
+      {isDataLoading ? (
+        <Box sx={{ flexGrow: 1, bgcolor: "background.default", minHeight: "100vh", borderRadius: 2 }}>
+          <Container maxWidth={false} sx={{ mt: 0, mb: 8, borderRadius: 2, px: { xs: 0, sm: 0, md: 4, lg: 5 } }}>
+            <Box sx={{ p: 3 }}>
+              <Skeleton variant="text" width="40%" height={60} sx={{ mb: 3 }} />
+              <Paper elevation={0} sx={{ mb: 4, p: 3 }}>
+                <Grid container spacing={2}>
+                  <Grid item xs={6} sm={6} md={3} lg={3}>
+                    <Skeleton variant="rectangular" height={56} />
+                  </Grid>
+                  <Grid item xs={6} sm={6} md={3} lg={3}>
+                    <Skeleton variant="rectangular" height={56} />
+                  </Grid>
+                  <Grid item xs={6} sm={6} md={3} lg={3}>
+                    <Skeleton variant="rectangular" height={56} />
+                  </Grid>
+                  <Grid item xs={6} sm={6} md={1.5} lg={1.5}>
+                    <Skeleton variant="rectangular" height={56} />
+                  </Grid>
+                  <Grid item xs={6} sm={6} md={1.5} lg={1.5}>
+                    <Skeleton variant="rectangular" height={56} />
+                  </Grid>
+                </Grid>
+              </Paper>
+              <Paper elevation={0}>
+                {Array.from(new Array(5)).map((_, index) => (
+                  <Box key={index} sx={{ display: "flex", py: 2, px: 2, alignItems: "center" }}>
+                    <Skeleton variant="text" width="20%" height={40} sx={{ mr: 2 }} />
+                    <Skeleton variant="rectangular" width={40} height={40} sx={{ mr: 2 }} />
+                    <Skeleton variant="rectangular" width="15%" height={40} sx={{ mr: 2 }} />
+                    <Skeleton variant="rectangular" width="15%" height={40} sx={{ mr: 2 }} />
+                    <Skeleton variant="rectangular" width={40} height={40} sx={{ mr: 2 }} />
+                    <Skeleton variant="rectangular" width="25%" height={40} />
+                  </Box>
+                ))}
+              </Paper>
+            </Box>
+          </Container>
+        </Box>
       ) : (
         <>
-
           <CraftForm onSubmit={handleSubmit} defaultValues={defaultValues || {}}>
-            <Box
-              sx={{ flexGrow: 1, bgcolor: "background.default", minHeight: "100vh", borderRadius: 2 }}
-            >
+            <Box sx={{ flexGrow: 1, bgcolor: "background.default", minHeight: "100vh", borderRadius: 2 }}>
               <Container maxWidth={false} sx={{ mt: 0, mb: 8, borderRadius: 2, px: { xs: 0, sm: 0, md: 4, lg: 5 } }}>
                 <Fade in={true} timeout={800}>
                   <Box>
@@ -749,7 +905,7 @@ export default function ClassReportForm({ id }: any) {
                     <Paper elevation={0} sx={{ mb: 4, width: "100%", overflow: "hidden" }}>
                       <Box sx={{ p: { xs: 1, sm: 1, md: 2, lg: 3 }, borderBottom: "1px solid rgba(0, 0, 0, 0.06)" }}>
                         <Grid container spacing={2} alignItems="center">
-                          <Grid item xs={6} sm={6} md={3} lg={3}>
+                          <Grid item xs={6} sm={6} md={3} lg={2.5}>
                             <CraftIntAutoComplete
                               name="teachers"
                               placeholder="শিক্ষকের নাম লিখুন"
@@ -758,11 +914,11 @@ export default function ClassReportForm({ id }: any) {
                               freeSolo={false}
                               multiple={false}
                               options={teacherOption}
+                              disabled={!!isDataLoading}
                             />
                           </Grid>
-                          <Grid item xs={6} sm={6} md={2} lg={3}>
+                          <Grid item xs={6} sm={6} md={2} lg={2.5}>
                             <CraftIntAutoComplete
-
                               name="classes"
                               label="শ্রেণীর নাম লিখুন"
                               fullWidth
@@ -774,10 +930,10 @@ export default function ClassReportForm({ id }: any) {
                               disableClearable={true}
                               blurOnSelect={true}
                               clearOnBlur={true}
-
+                              disabled={isDataLoading}
                             />
                           </Grid>
-                          <Grid item xs={6} sm={6} md={3} lg={3}>
+                          <Grid item xs={6} sm={6} md={3} lg={2.5}>
                             <CraftIntAutoComplete
                               name="subjects"
                               label="বিষয়ের নাম লিখুন"
@@ -785,6 +941,7 @@ export default function ClassReportForm({ id }: any) {
                               freeSolo={false}
                               multiple={false}
                               options={subjectOption}
+                              disabled={isDataLoading}
                             />
                           </Grid>
                           <Grid item xs={6} sm={6} md={2} lg={1.5}>
@@ -793,12 +950,59 @@ export default function ClassReportForm({ id }: any) {
                               label="ঘন্টা"
                               items={classHour}
                               sx={{ minWidth: { xs: 100, sm: 120, md: 130 } }}
+                              disabled={!!isDataLoading}
                             />
                           </Grid>
                           <Grid item xs={6} sm={6} md={2} lg={1.5}>
-                            <CraftDatePicker name="date" label="তারিখ" />
+                            <CraftDatePicker name="date" label="তারিখ" disabled={!!isDataLoading} />
+                          </Grid>
+                          <Grid item xs={12} sm={12} md={12} lg={1.5}>
+                            <Box sx={{ display: "flex", gap: 1, alignItems: "center" }}>
+                              <Button
+                                variant="outlined"
+                                startIcon={<DateRange />}
+                                onClick={handleDateRangePickerOpen}
+                                disabled={!!isDataLoading}
+                                sx={{
+                                  borderRadius: 2,
+                                  textTransform: "none",
+                                  minWidth: 200,
+                                  justifyContent: "flex-start",
+                                  color: selectedDateRange.startDate ? "primary.main" : "text.secondary",
+                                  borderColor: selectedDateRange.startDate ? "primary.main" : "rgba(0, 0, 0, 0.23)",
+                                  fontSize: "0.875rem",
+                                }}
+                              >
+                                {formatDateRangeDisplay()}
+                              </Button>
+                              {(selectedDateRange.startDate || selectedDateRange.endDate) && (
+                                <IconButton
+                                  size="small"
+                                  onClick={handleClearDateRange}
+                                  sx={{ color: "text.secondary" }}
+                                  disabled={!!isDataLoading}
+                                >
+                                  <Clear />
+                                </IconButton>
+                              )}
+                            </Box>
                           </Grid>
                         </Grid>
+
+                        {/* Date Range Display Chip */}
+                        {selectedDateRange.startDate && selectedDateRange.endDate && (
+                          <Box sx={{ mt: 2 }}>
+                            <Chip
+                              icon={<CalendarToday />}
+                              label={`Filtered by: ${formatDateRangeDisplay()}`}
+                              onDelete={handleClearDateRange}
+                              color="primary"
+                              variant="outlined"
+                              sx={{ borderRadius: 2 }}
+                              disabled={!!isDataLoading}
+                            />
+                          </Box>
+                        )}
                       </Box>
 
                       {isLoading ? (
@@ -827,6 +1031,7 @@ export default function ClassReportForm({ id }: any) {
                                     checked={noTaskForClass}
                                     onChange={handleNoTaskChange}
                                     color="primary"
+                                    disabled={!!isDataLoading}
                                   />
                                 }
                                 label={
@@ -838,8 +1043,7 @@ export default function ClassReportForm({ id }: any) {
                               />
                             </Tooltip>
                           </div>
-
-                          <div className="max-[320px]:w-[300px] max-[375px]:w-[360px] max-[425px]:w-[410px] max-[800px]:border max-[800px]:border-gray-300 max-[800px]:rounded   max-[800px]:block max-[800px]:max-w-[100vw] max-[800px]:relative max-[800px]:whitespace-nowrap max-[800px]:overflow-x-auto ">
+                          <div className="w-[285px] md:w-full overflow-x-auto max-[800px]:border max-[800px]:border-gray-300   max-[800px]:rounded   max-[800px]:block   max-[800px]:max-w-[100vw]   max-[800px]:relative   max-[800px]:whitespace-nowrap   max-[800px]:overflow-x-auto   max-[800px]:scrolling-touch   min-[900px]:overflow-x-visible min-[900px]:table">
                             <Table
                               sx={{
                                 minWidth: 900,
@@ -847,7 +1051,7 @@ export default function ClassReportForm({ id }: any) {
                                   width: "100%",
                                   minWidth: "100%",
                                   tableLayout: { sm: "auto", md: "fixed", lg: "fixed" },
-                                }, 
+                                },
                               }}
                             >
                               <TableHead>
@@ -865,7 +1069,7 @@ export default function ClassReportForm({ id }: any) {
                                               checked={lessonEvaluationTask}
                                               onChange={handleLessonEvaluationTaskChange}
                                               color="primary"
-                                              disabled={noTaskForClass}
+                                              disabled={!!noTaskForClass || !!isDataLoading}
                                             />
                                           }
                                           label={
@@ -888,7 +1092,7 @@ export default function ClassReportForm({ id }: any) {
                                               checked={handwrittenTask}
                                               onChange={handleHandwrittenTaskChange}
                                               color="primary"
-                                              disabled={noTaskForClass}
+                                              disabled={!!noTaskForClass || !!isDataLoading}
                                             />
                                           }
                                           label={
@@ -950,13 +1154,16 @@ export default function ClassReportForm({ id }: any) {
                                                 e.target.checked ? "উপস্থিত" : "অনুপস্থিত",
                                               )
                                             }
+                                            disabled={!!isDataLoading}
                                           />
                                         </TableCell>
                                         <TableCell align="center">
                                           <FormControl
                                             fullWidth
                                             sx={{ minWidth: { xs: 120, sm: 140, md: 160 } }}
-                                            disabled={isAbsent || noTaskForClass || lessonEvaluationTask}
+                                            disabled={
+                                              !!isAbsent || !!noTaskForClass || !!lessonEvaluationTask || !!isDataLoading
+                                            }
                                           >
                                             <InputLabel id={`lesson-label-${student._id}`}>
                                               Lesson Evaluation
@@ -968,6 +1175,7 @@ export default function ClassReportForm({ id }: any) {
                                               onChange={(e) =>
                                                 handleLessonEvaluationChange(student._id, e.target.value)
                                               }
+                                              disabled={!!isDataLoading}
                                             >
                                               {lessonEvaluation.map((item) => (
                                                 <MenuItem key={item} value={item}>
@@ -982,16 +1190,15 @@ export default function ClassReportForm({ id }: any) {
                                           <FormControl
                                             fullWidth
                                             sx={{ minWidth: { xs: 120, sm: 140, md: 160 } }}
-                                            disabled={isAbsent || noTaskForClass || handwrittenTask}
+                                            disabled={!isAbsent || !noTaskForClass || !handwrittenTask || !isDataLoading}
                                           >
-                                            <InputLabel id={`handwriting-label-${student._id}`}>
-                                              Handwriting
-                                            </InputLabel>
+                                            <InputLabel id={`handwriting-label-${student._id}`}>Handwriting</InputLabel>
                                             <Select
                                               labelId={`handwriting-label-${student._id}`}
                                               value={evaluation.handwriting || "লিখেছে"}
                                               label="Handwriting"
                                               onChange={(e) => handleHandwritingChange(student._id, e.target.value)}
+                                              disabled={!!isDataLoading}
                                             >
                                               {handWritting.map((item) => (
                                                 <MenuItem key={item} value={item}>
@@ -1006,11 +1213,12 @@ export default function ClassReportForm({ id }: any) {
                                           <Checkbox
                                             color="primary"
                                             checked={evaluation.parentSignature === true}
-                                            onChange={(e) =>
-                                              handleParentSignatureChange(student._id, e.target.checked)
-                                            }
+                                            onChange={(e) => handleParentSignatureChange(student._id, e.target.checked)}
                                             disabled={
-                                              isAbsent || noTaskForClass || (lessonEvaluationTask && handwrittenTask)
+                                              !!isAbsent ||
+                                              !!noTaskForClass ||
+                                              (!!lessonEvaluationTask && !!handwrittenTask) ||
+                                              !!isDataLoading
                                             }
                                           />
                                         </TableCell>
@@ -1023,7 +1231,7 @@ export default function ClassReportForm({ id }: any) {
                                             placeholder="মন্তব্য"
                                             value={evaluation.comments || ""}
                                             onChange={(e) => handleCommentsChange(student._id, e.target.value)}
-                                            disabled={isAbsent || noTaskForClass}
+                                            disabled={!!isAbsent || !!noTaskForClass || !!isDataLoading}
                                           />
                                         </TableCell>
                                       </TableRow>
@@ -1127,17 +1335,19 @@ export default function ClassReportForm({ id }: any) {
               onClose={handleSnackbarClose}
               anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
             >
-              <Alert
-                onClose={handleSnackbarClose}
-                severity={snackbarSeverity}
-                variant="filled"
-                sx={{ width: "100%" }}
-              >
+              <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} variant="filled" sx={{ width: "100%" }}>
                 {snackbarMessage}
               </Alert>
             </Snackbar>
           </CraftForm>
 
+          {/* Date Range Picker Dialog */}
+          <DateRangePicker
+            open={dateRangePickerOpen}
+            onClose={handleDateRangePickerClose}
+            onApply={handleDateRangeApply}
+            initialRange={selectedDateRange}
+          />
 
           <TodayLesson
             id={todayLessonId}

@@ -66,7 +66,6 @@ import {
 } from "@mui/icons-material"
 import DrawIcon from "@mui/icons-material/Draw"
 import BlockIcon from "@mui/icons-material/Block"
-import Link from "next/link"
 import { format } from "date-fns"
 import { customTheme } from "@/ThemeStyle"
 import { useDeleteClassReportMutation, useGetAllClassReportsQuery } from "@/redux/api/classReportApi"
@@ -75,7 +74,8 @@ import { useGetAllSubjectsQuery } from "@/redux/api/subjectApi"
 import { useGetAllTeachersQuery } from "@/redux/api/teacherApi"
 import ClassReportDetailsModal from "../_components/ClassReportDetailsModal"
 import toast from "react-hot-toast"
-import DateRangePicker from "../new/_components/DateRangePicker"
+import  DateRangePicker from "../new/_components/DateRangePicker";
+import Link from "next/link"
 type Filters = {
   classes: string
   subjects: string
@@ -177,7 +177,8 @@ export default function ClassReportList() {
   }, [filters, searchTerm, page, rowsPerPage, refetch])
 
   const theme = customTheme
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"))
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"), { noSsr: true });
+
   const reports = useMemo(() => {
     return classReport?.data?.reports || []
   }, [classReport])
@@ -650,9 +651,9 @@ export default function ClassReportList() {
                         background:
                           selectedDateRange.startDate || selectedDateRange.endDate
                             ? `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(
-                                theme.palette.secondary.main,
-                                0.05,
-                              )} 100%)`
+                              theme.palette.secondary.main,
+                              0.05,
+                            )} 100%)`
                             : "background.paper",
                         border:
                           selectedDateRange.startDate || selectedDateRange.endDate
@@ -666,8 +667,8 @@ export default function ClassReportList() {
                       }}
                     >
                       <CardContent sx={{ p: 3 }}>
-                       
-                       
+
+
                         {/* Date Range Picker Button */}
                         <Box sx={{ display: "flex", gap: 2, alignItems: "center", mb: 2 }}>
                           <Button
@@ -692,10 +693,10 @@ export default function ClassReportList() {
                           >
                             {formatDateRangeDisplay()}
                           </Button>
-                         
+
                         </Box>
 
-                       
+
                       </CardContent>
                     </Card>
                   </Grid>
@@ -992,7 +993,7 @@ export default function ClassReportList() {
                                           <Chip
                                             icon={
                                               evaluation?.lessonEvaluation &&
-                                              evaluation?.lessonEvaluation !== "পড়া শিখেনি" ? (
+                                                evaluation?.lessonEvaluation !== "পড়া শিখেনি" ? (
                                                 <CheckCircleIcon sx={{ color: "#651FFF" }} />
                                               ) : (
                                                 <CancelIcon sx={{ color: "#FF1744" }} />
@@ -1004,20 +1005,19 @@ export default function ClassReportList() {
                                               fontWeight: 500,
                                               color:
                                                 evaluation?.lessonEvaluation &&
-                                                evaluation?.lessonEvaluation !== "পড়া শিখেনি"
+                                                  evaluation?.lessonEvaluation !== "পড়া শিখেনি"
                                                   ? "#651FFF"
                                                   : "#FF1744",
                                               bgcolor:
                                                 evaluation?.lessonEvaluation &&
-                                                evaluation?.lessonEvaluation !== "পড়া শিখেনি"
+                                                  evaluation?.lessonEvaluation !== "পড়া শিখেনি"
                                                   ? "#EDE7F6"
                                                   : "#FFEBEE",
-                                              border: `1px solid ${
-                                                evaluation?.lessonEvaluation &&
-                                                evaluation?.lessonEvaluation !== "পড়া শিখেনি"
+                                              border: `1px solid ${evaluation?.lessonEvaluation &&
+                                                  evaluation?.lessonEvaluation !== "পড়া শিখেনি"
                                                   ? "#651FFF"
                                                   : "#FF1744"
-                                              }`,
+                                                }`,
                                             }}
                                           />
                                         </TableCell>
@@ -1042,11 +1042,10 @@ export default function ClassReportList() {
                                                 evaluation?.handwriting && evaluation?.handwriting !== "লিখেনি"
                                                   ? "#E0F7FA"
                                                   : "#FFEBEE",
-                                              border: `1px solid ${
-                                                evaluation?.handwriting && evaluation?.handwriting !== "লিখেনি"
+                                              border: `1px solid ${evaluation?.handwriting && evaluation?.handwriting !== "লিখেনি"
                                                   ? "#00BFA6"
                                                   : "#FF1744"
-                                              }`,
+                                                }`,
                                             }}
                                           />
                                         </TableCell>
@@ -1186,12 +1185,14 @@ export default function ClassReportList() {
       </Box>
 
       {/* Date Range Picker Dialog */}
-      <DateRangePicker
-        open={dateRangePickerOpen}
-        onClose={handleDateRangePickerClose}
-        onApply={handleDateRangeApply}
-        initialRange={selectedDateRange}
-      />
+      {typeof window !== 'undefined' && (
+        <DateRangePicker
+          open={dateRangePickerOpen}
+          onClose={handleDateRangePickerClose}
+          onApply={handleDateRangeApply}
+          initialRange={selectedDateRange}
+        />
+      )}
 
       {/* Delete Confirmation Dialog */}
       <Dialog
