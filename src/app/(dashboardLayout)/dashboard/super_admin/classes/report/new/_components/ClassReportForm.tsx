@@ -282,15 +282,45 @@ export default function ClassReportForm({ id }: any) {
 
   const handleSubmit = async (data: FieldValues) => {
 
-    if (!data.classes || !data.subjects || !data.teachers) {
-  toast.error("Please select valid options from dropdowns");
-  return;
-}
+    const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
 
-if (!data.date) {
-  toast.error("Please select a valid date");
-  return;
-}
+    if (isMobile) {
+      // Fix autocomplete data format issues
+      if (data.classes && typeof data.classes === 'string') {
+        const match = classOption.find((opt: any) => opt.label === data.classes);
+        if (match) data.classes = match;
+      }
+
+      if (data.subjects && typeof data.subjects === 'string') {
+        const match = subjectOption.find((opt: any) => opt.label === data.subjects);
+        if (match) data.subjects = match;
+      }
+
+      if (data.teachers && typeof data.teachers === 'string') {
+        const match = teacherOption.find((opt: any) => opt.label === data.teachers);
+        if (match) data.teachers = match;
+      }
+
+      // Add small delay for mobile processing
+      await new Promise(resolve => setTimeout(resolve, 100));
+    }
+
+    // Enhanced validation with better error messages
+    if (!data.classes || (typeof data.classes === 'object' && !data.classes.label)) {
+      toast.error("শ্রেণী সঠিকভাবে নির্বাচন করুন");
+      return;
+    }
+
+    if (!data.subjects || (typeof data.subjects === 'object' && !data.subjects.label)) {
+      toast.error("বিষয় সঠিকভাবে নির্বাচন করুন");
+      return;
+    }
+
+    if (!data.teachers || (typeof data.teachers === 'object' && !data.teachers.label)) {
+      toast.error("শিক্ষক সঠিকভাবে নির্বাচন করুন");
+      return;
+    }
+
 
     try {
       const classValue = typeof data.classes === "object" ? data.classes.label : data.classes
@@ -303,7 +333,7 @@ if (!data.date) {
         classes: classValue,
         hour: data.hour,
         date: format(new Date(data.date), "yyyy-MM-dd"),
-      
+
         noTaskForClass: noTaskForClass,
         lessonEvaluationTask: lessonEvaluationTask,
         handwrittenTask: handwrittenTask,
@@ -739,6 +769,7 @@ if (!data.date) {
                           </Grid>
                           <Grid item xs={6} sm={6} md={2} lg={3}>
                             <CraftIntAutoComplete
+                              
                               name="classes"
                               label="শ্রেণীর নাম লিখুন"
                               fullWidth
@@ -746,6 +777,11 @@ if (!data.date) {
                               multiple={false}
                               options={classOption}
                               onChange={handleClassChange}
+                              // Add these for mobile optimization
+                              disableClearable={true}
+                              blurOnSelect={true}
+                              clearOnBlur={true}
+
                             />
                           </Grid>
                           <Grid item xs={6} sm={6} md={3} lg={3}>
@@ -753,7 +789,7 @@ if (!data.date) {
                               name="subjects"
                               label="বিষয়ের নাম লিখুন"
                               fullWidth
-                               freeSolo={false}
+                              freeSolo={false}
                               multiple={false}
                               options={subjectOption}
                             />

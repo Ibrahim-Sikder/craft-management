@@ -10,12 +10,12 @@ import type { SxProps } from "@mui/material"
 
 type Option =
   | {
-      title: string
-    }
+    title: string
+  }
   | {
-      value: string
-      label: string
-    }
+    value: string
+    label: string
+  }
 
 type TStateProps = {
   name: string
@@ -30,9 +30,12 @@ type TStateProps = {
   margin?: "none" | "normal" | "dense"
   defaultValue?: any
   placeholder?: string
-  disabled?:any,
+  disabled?: any
   onInputChange?: (event: React.SyntheticEvent, value: string) => void
   onChange?: (event: React.SyntheticEvent, value: any) => void
+  disableClearable?: boolean
+  blurOnSelect?: boolean
+  clearOnBlur?: boolean
 }
 
 
@@ -93,12 +96,12 @@ const CraftIntAutoComplete = ({
             // Process the value for React Hook Form
             const processedValue = Array.isArray(newValue)
               ? newValue.map((item) => {
-                  if (typeof item === "string") return item
-                  if (item && typeof item === "object") {
-                    return item.title || item.value || item
-                  }
-                  return item
-                })
+                if (typeof item === "string") return item
+                if (item && typeof item === "object") {
+                  return item.title || item.value || item
+                }
+                return item
+              })
               : newValue
 
             field.onChange(processedValue)
