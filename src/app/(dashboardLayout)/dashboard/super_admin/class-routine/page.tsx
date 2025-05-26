@@ -611,7 +611,7 @@ const ClassRoutinePage = () => {
             maxHeight: "70vh",
             overflow: "auto",
             borderRadius: 3,
-            background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.05)} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`,
+            background: "white",
             border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
             zIndex: 1000,
           }}

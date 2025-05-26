@@ -39,6 +39,7 @@ import {
   StepLabel,
   StepContent,
   Menu,
+  PaletteColor,
 } from "@mui/material"
 import {
   Feedback as FeedbackIcon,
@@ -303,7 +304,7 @@ const SuggestionsComplaintsPage = () => {
   }
 
   return (
-    <Container maxWidth="xl" sx={{ py: 4 }}>
+    <Container maxWidth="xl" sx={{ py: 2 }}>
       {/* Header Section */}
       <Box sx={{ mb: 4 }}>
         <Fade in timeout={800}>
@@ -329,6 +330,7 @@ const SuggestionsComplaintsPage = () => {
                     backgroundClip: "text",
                     WebkitBackgroundClip: "text",
                     WebkitTextFillColor: "transparent",
+                    paddingTop:3,
                   }}
                 >
                   পরামর্শ ও অভিযোগ বক্স
@@ -372,26 +374,26 @@ const SuggestionsComplaintsPage = () => {
             ].map((stat, index) => (
               <Grid item xs={6} md={3} key={index}>
                 <Card
-                //   sx={{
-                //     p: 3,
-                //     borderRadius: 3,
-                //     background: `linear-gradient(135deg, ${alpha((theme.palette[stat.color as keyof typeof theme.palette] as PaletteColor).main, 0.1)} 0%, ${alpha((theme.palette[stat.color as keyof typeof theme.palette] as PaletteColor).main, 0.05)} 100%)`,
-                //     border: `1px solid ${alpha((theme.palette[stat.color as keyof typeof theme.palette] as PaletteColor).main, 0.2)}`,
-                //     "&:hover": {
-                //       transform: "translateY(-4px)",
-                //       boxShadow: `0 12px 40px ${alpha((theme.palette[stat.color as keyof typeof theme.palette] as PaletteColor).main, 0.15)}`,
-                //     },
-                //     transition: "all 0.3s ease",
-                //   }}
+                  sx={{
+                    p: 3,
+                    borderRadius: 3,
+                    background: `linear-gradient(135deg, ${alpha((theme.palette[stat.color as keyof typeof theme.palette] as PaletteColor).main, 0.1)} 0%, ${alpha((theme.palette[stat.color as keyof typeof theme.palette] as PaletteColor).main, 0.05)} 100%)`,
+                    border: `1px solid ${alpha((theme.palette[stat.color as keyof typeof theme.palette] as PaletteColor).main, 0.2)}`,
+                    "&:hover": {
+                      transform: "translateY(-4px)",
+                      boxShadow: `0 12px 40px ${alpha((theme.palette[stat.color as keyof typeof theme.palette] as PaletteColor).main, 0.15)}`,
+                    },
+                    transition: "all 0.3s ease",
+                  }}
                 >
                   <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                     <Box
-                    //   sx={{
-                    //     p: 1.5,
-                    //     borderRadius: 2,
-                    //     bgcolor: alpha(theme.palette[stat.color as keyof typeof theme.palette].main, 0.1),
-                    //     color: `${stat.color}.main`,
-                    //   }}
+                      sx={{
+                        p: 1.5,
+                        borderRadius: 2,
+                        bgcolor: alpha((theme.palette[stat.color as keyof typeof theme.palette] as PaletteColor).main, 0.1),
+                        color: `${stat.color}.main`,
+                      }}
                     >
                       {stat.icon}
                     </Box>
