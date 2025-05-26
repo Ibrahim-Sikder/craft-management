@@ -20,6 +20,7 @@ import {
   Divider,
   useMediaQuery,
   Typography,
+  Badge,
 } from "@mui/material";
 import {
   Menu as MenuIcon,
@@ -31,8 +32,9 @@ import {
   MenuOpen,
   ExpandLess,
   Close,
+  Notifications,
 } from "@mui/icons-material";
-import { ThemeProvider, createTheme } from "@mui/material/styles";
+import { ThemeProvider, alpha, createTheme } from "@mui/material/styles";
 import { useRouter, usePathname } from "next/navigation";
 import Cookies from "js-cookie";
 
@@ -49,6 +51,7 @@ const CustomSidebar: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [notification, setNotification] = useState<null | HTMLElement>(null);
   const [userRole, setUserRole] = useState<UserRole | null>(null);
 
   useEffect(() => {
@@ -91,6 +94,8 @@ const CustomSidebar: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
   const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
   const handleProfileMenuClose = () => setAnchorEl(null);
+  const handleNotificationOpen = (event: React.MouseEvent<HTMLElement>) => setNotification(event.currentTarget);
+  const handleNotificationClose = () => setNotification(null);
   const handleLogout = () => {
     // Remove specific token cookie
     Cookies.remove('craft-token', { path: '/' });
@@ -186,6 +191,21 @@ const CustomSidebar: React.FC<{ children: React.ReactNode }> = ({ children }) =>
               <InputBase sx={{ width: "100%", paddingLeft: 4, color: "black" }} placeholder="Search…" />
             </Box>
           </Box>
+          <IconButton
+            sx={{
+              px: { xs: 1, md: 2 },
+              borderRadius: 3,
+              bgcolor: alpha(theme.palette.primary.main, 0.1),
+              color: theme.palette.primary.main,
+              "&:hover": {
+                bgcolor: alpha(theme.palette.primary.main, 0.3),
+              },
+            }}         
+          >
+            <Badge badgeContent={4} color="error">
+              <Notifications />
+            </Badge>
+          </IconButton>
           <IconButton onClick={handleProfileMenuOpen} color="inherit"><Avatar /></IconButton>
         </Toolbar>
       </AppBar>
@@ -195,8 +215,8 @@ const CustomSidebar: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         <MenuItem onClick={handleProfileMenuClose}><Settings /> Settings</MenuItem>
         <Divider />
         <MenuItem onClick={handleLogout}><Logout /> Logout</MenuItem>
-
       </Menu>
+      
 
       {/* drawer */}
       <Drawer
