@@ -7,8 +7,8 @@ const Loader = () => {
     <div className="flex justify-center items-center h-screen bg-white">
       <Image
         src={url}
-        height={60}
-        width={60}
+        height={200}
+        width={150}
         alt={`A cute animal!`}
         unoptimized={true}
       />

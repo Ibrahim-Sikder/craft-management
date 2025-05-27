@@ -22,6 +22,7 @@ import {
   Typography,
   Badge,
 } from "@mui/material";
+
 import {
   Menu as MenuIcon,
   ExpandMore,
@@ -37,11 +38,12 @@ import {
 import { ThemeProvider, alpha, createTheme } from "@mui/material/styles";
 import { useRouter, usePathname } from "next/navigation";
 import Cookies from "js-cookie";
-
 import { navigationItems } from "@/components/Sidebar/DrawerItem";
 import { UserRole } from "@/types/common";
 import { getUserInfo } from "@/services/acttion";
-const DRAWER_WIDTH = 310;
+
+const DRAWER_WIDTH = 280;
+
 const COLLAPSED_DRAWER_WIDTH = 75;
 
 const CustomSidebar: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -51,7 +53,6 @@ const CustomSidebar: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [notification, setNotification] = useState<null | HTMLElement>(null);
   const [userRole, setUserRole] = useState<UserRole | null>(null);
 
   useEffect(() => {
@@ -62,8 +63,6 @@ const CustomSidebar: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
     fetchUserInfo();
   }, []);
-
-
 
   const theme = createTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -94,8 +93,6 @@ const CustomSidebar: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
   const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
   const handleProfileMenuClose = () => setAnchorEl(null);
-  const handleNotificationOpen = (event: React.MouseEvent<HTMLElement>) => setNotification(event.currentTarget);
-  const handleNotificationClose = () => setNotification(null);
   const handleLogout = () => {
     // Remove specific token cookie
     Cookies.remove('craft-token', { path: '/' });
@@ -122,9 +119,9 @@ const CustomSidebar: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         <ListItem
           onClick={() => handleNavigation(item.path, item.children ? item.title : undefined)}
           sx={{
-            pl: nested ? 4 : 2,
-            pr: 2,
-            gap: 2,
+            pl: nested ? 2 : 1,
+            pr: 1,
+            gap: .5,
             justifyContent: (!open && !isMobile && !nested) ? "center" : "flex-start",
             cursor: "pointer",
             backgroundColor: pathname === item.path ? "rgba(0, 0, 0, 0.08)" : "inherit",
@@ -132,7 +129,7 @@ const CustomSidebar: React.FC<{ children: React.ReactNode }> = ({ children }) =>
             '&:hover': { backgroundColor: "rgba(0, 0, 0, 0.04)" },
           }}
         >
-          <ListItemIcon sx={{ minWidth: "auto", marginRight: (isMobile || open) ? 2 : 0 }}>
+          <ListItemIcon sx={{ minWidth: "auto", marginRight: (isMobile || open) ? 1 : 0 }}>
             {item.icon}
           </ListItemIcon>
           {(isMobile || open) && (
@@ -200,7 +197,7 @@ const CustomSidebar: React.FC<{ children: React.ReactNode }> = ({ children }) =>
               "&:hover": {
                 bgcolor: alpha(theme.palette.primary.main, 0.3),
               },
-            }}         
+            }}
           >
             <Badge badgeContent={4} color="error">
               <Notifications />
@@ -216,7 +213,6 @@ const CustomSidebar: React.FC<{ children: React.ReactNode }> = ({ children }) =>
         <Divider />
         <MenuItem onClick={handleLogout}><Logout /> Logout</MenuItem>
       </Menu>
-      
 
       {/* drawer */}
       <Drawer
@@ -233,15 +229,13 @@ const CustomSidebar: React.FC<{ children: React.ReactNode }> = ({ children }) =>
           },
         }}
       >
-        <Toolbar />
-        <List sx={{ padding: '8px' }}>{renderNavigationItems(roleBasedItems)}</List>
+        <List sx={{ padding: '8px', mt: 8 }}>{renderNavigationItems(roleBasedItems)}</List>
       </Drawer>
+
       {/*Main content page  */}
       <div className="flex flex-grow pt-2 md:pt-7 px-2 md:px-3 mt-14 bg-white">
         {children}
       </div>
-
-      {/* <Box component="main" sx={{ flexGrow: 1, paddingTop: { xs: 1, sm: 2 }, marginTop: { xs: 7, sm: 7 }, background: "white" }}>{children}</Box> */}
     </Box>
   );
 };
