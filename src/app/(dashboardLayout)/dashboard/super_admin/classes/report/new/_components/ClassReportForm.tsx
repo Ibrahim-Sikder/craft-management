@@ -1045,7 +1045,8 @@ export default function ClassReportForm({ id }: any) {
                             </Tooltip>
                           </div>                      
 
-                          <div className="max-[320px]:w-[300px] max-[375px]:w-[360px] max-[425px]:w-[410px] max-[800px]:border max-[800px]:border-gray-300 max-[800px]:rounded   max-[800px]:block max-[800px]:max-w-[100vw] max-[800px]:relative max-[800px]:whitespace-nowrap max-[800px]:overflow-x-auto ">
+                          <div className="max-[320px]:w-[250px] max-[375px]:w-[300px] max-[425px]:w-[380px] max-[800px]:border max-[800px]:border-gray-300 max-[800px]:rounded   max-[800px]:block max-[800px]:max-w-[100vw] max-[800px]:relative max-[800px]:whitespace-nowrap max-[800px]:overflow-x-auto">
+
                             <Table
                               sx={{
                                 minWidth: 900,
