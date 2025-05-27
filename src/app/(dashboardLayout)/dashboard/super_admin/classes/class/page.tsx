@@ -12,49 +12,55 @@ import {
   Button,
   Paper,
   Grid,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TablePagination,
-  Menu,
-  MenuItem,
-  Divider,
   InputAdornment,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
-  Skeleton,
   Fade,
   Tooltip,
   IconButton,
   alpha,
+  CardMedia,
+  CardContent,
+  Avatar,
+  Chip,
 } from "@mui/material"
+
 import {
   Add as AddIcon,
   Search as SearchIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  Visibility as VisibilityIcon,
-  ArrowUpward as ArrowUpwardIcon,
-  ArrowDownward as ArrowDownwardIcon,
   Refresh as RefreshIcon,
+  School,
 } from "@mui/icons-material"
+
 import Link from "next/link"
 import { useDeleteClassMutation, useGetAllClassesQuery } from "@/redux/api/classApi"
 import { theme } from "@/lib/Theme/Theme"
+import Loader from "@/app/loading"
+import { motion } from "framer-motion"
+import { DepartmentChip, StyledCard } from "@/style/customeStyle"
+
+const departmentColors: Record<string, string> = {
+  Languages: "#3a7bd5",
+  Mathematics: "#00d2ff",
+  Science: "#6a11cb",
+  History: "#fc4a1a",
+  "Computer Science": "#00b09b",
+  "Physical Education": "#f46b45",
+  Art: "#c471ed",
+  Music: "#12c2e9",
+  "Not Specified": "#888888",
+}
+
 
 export default function ClassesListPage() {
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(10)
   const [searchTerm, setSearchTerm] = useState("")
-  const [orderBy, setOrderBy] = useState<string>("name")
-  const [order, setOrder] = useState<"asc" | "desc">("asc")
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [selectedClass, setSelectedClass] = useState<any | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
   const [deleteClass] = useDeleteClassMutation()
@@ -72,34 +78,12 @@ export default function ClassesListPage() {
     refetch()
   }
 
-  const handleChangePage = (event: unknown, newPage: number) => {
-    setPage(newPage)
-  }
-
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setRowsPerPage(Number.parseInt(event.target.value, 10))
-    setPage(0)
-  }
-
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value)
     setPage(0)
   }
 
-  const handleSort = (property: string) => {
-    const isAsc = orderBy === property && order === "asc"
-    setOrder(isAsc ? "desc" : "asc")
-    setOrderBy(property)
-  }
 
-  const handleMenuClose = () => {
-    setAnchorEl(null)
-  }
-
-  const handleDeleteClick = () => {
-    setDeleteDialogOpen(true)
-    setAnchorEl(null)
-  }
 
   const handleDeleteConfirm = async () => {
     if (selectedClass?._id) {
@@ -119,7 +103,6 @@ export default function ClassesListPage() {
   }
 
   const classes = classData?.data?.classes || []
-  const totalCount = classData?.data?.meta?.total || 0
   console.log("classes data ", classes)
 
   return (
@@ -166,7 +149,6 @@ export default function ClassesListPage() {
                   </Button>
                 </Box>
               </Box>
-
               <Paper elevation={0} sx={{ mb: 4, overflow: "hidden" }}>
                 <Box sx={{ p: 3, borderBottom: "1px solid rgba(0, 0, 0, 0.06)" }}>
                   <Grid container spacing={2} alignItems="center">
@@ -197,159 +179,151 @@ export default function ClassesListPage() {
                 </Box>
 
                 {isLoading ? (
-                  <Box sx={{ p: 2 }}>
-                    {Array.from(new Array(5)).map((_, index) => (
-                      <Box key={index} sx={{ display: "flex", py: 2, px: 2, alignItems: "center" }}>
-                        <Skeleton variant="circular" width={40} height={40} sx={{ mr: 2 }} />
-                        <Box sx={{ width: "100%" }}>
-                          <Skeleton variant="text" width="40%" height={30} />
-                          <Box sx={{ display: "flex", mt: 1 }}>
-                            <Skeleton variant="text" width="20%" sx={{ mr: 2 }} />
-                            <Skeleton variant="text" width="30%" />
-                          </Box>
-                        </Box>
-                        <Skeleton variant="rectangular" width={100} height={36} sx={{ borderRadius: 1 }} />
-                      </Box>
-                    ))}
-                  </Box>
+                  <Loader />
                 ) : (
                   <>
-                    <TableContainer sx={{
-                      overflowX: "auto",
-                      WebkitOverflowScrolling: "touch",
-                      maxWidth: "100vw"
-                    }}>
-                      <Table sx={{ minWidth: 650 }}>
-                        <TableHead>
-                          <TableRow>
-                            <TableCell>
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  cursor: "pointer",
-                                  userSelect: "none",
-                                  color: orderBy === "className" ? "primary.main" : "inherit",
-                                }}
-                                onClick={() => handleSort("className")}
-                              >
-                                Class Name
-                                {orderBy === "className" && (
-                                  <Box component="span" sx={{ display: "inline-flex", ml: 0.5 }}>
-                                    {order === "asc" ? (
-                                      <ArrowUpwardIcon fontSize="small" />
-                                    ) : (
-                                      <ArrowDownwardIcon fontSize="small" />
-                                    )}
-                                  </Box>
-                                )}
-                              </Box>
-                            </TableCell>
-                            <TableCell>
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  cursor: "pointer",
-                                  userSelect: "none",
-                                }}
-                              >
-                                Section
-                              </Box>
-                            </TableCell>
-                            <TableCell align="right">Actions</TableCell>
-                          </TableRow>
-                        </TableHead>
-                        <TableBody>
-                          {classes.length > 0 ? (
-                            classes.map((classItem: any) => {
-                              // Get the section name from the sections array
-                              const sectionName =
-                                classItem.sections && classItem.sections.length > 0
-                                  ? classItem.sections[0].name
-                                  : "No Section"
-                              return (
-                                <TableRow key={classItem._id} sx={{ transition: "all 0.2s" }}>
-                                  <TableCell component="th" scope="row">
-                                    <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                                      {classItem.className}
-                                    </Typography>
-                                  </TableCell>
-                                  <TableCell>
-                                    <Typography variant="body2">{sectionName}</Typography>
-                                  </TableCell>
-                                  <TableCell align="right">
-                                    <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-                                      <Tooltip title="Edit Class">
-                                        <IconButton
-                                          component={Link}
-                                          href={`/dashboard/super_admin/classes/class/update?id=${classItem._id}`}
-                                          size="small"
-                                          sx={{
-                                            color: "warning.main",
-                                            bgcolor: alpha(theme.palette.warning.main, 0.1),
-                                            mr: 1,
-                                            "&:hover": {
-                                              bgcolor: alpha(theme.palette.warning.main, 0.2),
-                                            },
-                                          }}
-                                        >
-                                          <EditIcon fontSize="small" />
-                                        </IconButton>
-                                      </Tooltip>
-                                      <Tooltip title="Delete Class">
-                                        <IconButton
-                                          size="small"
-                                          onClick={(e) => {
-                                            setSelectedClass(classItem)
-                                            setDeleteDialogOpen(true)
-                                          }}
-                                          sx={{
-                                            color: "error.main",
-                                            bgcolor: alpha(theme.palette.error.main, 0.1),
-                                            "&:hover": {
-                                              bgcolor: alpha(theme.palette.error.main, 0.2),
-                                            },
-                                          }}
-                                        >
-                                          <DeleteIcon fontSize="small" />
-                                        </IconButton>
-                                      </Tooltip>
-                                    </Box>
-                                  </TableCell>
-                                </TableRow>
-                              )
-                            })
-                          ) : (
-                            <TableRow>
-                              <TableCell colSpan={3} align="center" sx={{ py: 8 }}>
-                                <Box sx={{ textAlign: "center" }}>
-                                  <SearchIcon sx={{ fontSize: 48, color: "text.disabled", mb: 2 }} />
-                                  <Typography variant="h6" gutterBottom>
-                                    No classes found
-                                  </Typography>
-                                  <Typography variant="body2" color="text.secondary">
-                                    Try adjusting your search or filter to find what you&apos;re looking for.
-                                  </Typography>
+                    <Grid container spacing={3}>
+                      {classes.map((classItem: any, index: any) => (
+                        <Grid item xs={12} sm={6} md={4} lg={3} key={classItem.id}>
+                          <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.4, delay: index * 0.05 }}
+                          >
+                            <StyledCard>
+                              <Box sx={{ position: "relative" }}>
+                                <CardMedia
+                                  component="div"
+                                  sx={{
+                                    height: 100,
+                                    backgroundColor: departmentColors[classItem.className] || departmentColors["Not Specified"],
+                                    position: "relative",
+                                  }}
+                                />
+                                <Box
+                                  sx={{
+                                    position: "absolute",
+                                    top: 50,
+                                    left: "50%",
+                                    transform: "translateX(-50%)",
+                                    zIndex: 1,
+                                  }}
+                                >
+                                  <Avatar
+                                    src={classItem.className}
+                                    sx={{ width: 80, height: 80, border: "4px solid white" }}
+                                  >
+                                    {classItem.className.charAt(0)}
+                                  </Avatar>
                                 </Box>
-                              </TableCell>
-                            </TableRow>
-                          )}
-                        </TableBody>
-                      </Table>
-                    </TableContainer>
-                    <TablePagination
-                      rowsPerPageOptions={[5, 10, 25, 50]}
-                      component="div"
-                      count={totalCount}
-                      rowsPerPage={rowsPerPage}
-                      page={page}
-                      onPageChange={handleChangePage}
-                      onRowsPerPageChange={handleChangeRowsPerPage}
-                      sx={{
-                        borderTop: "1px solid rgba(0, 0, 0, 0.06)",
-                      }}
-                    />
+                              </Box>
+                              <CardContent sx={{ pt: 5, pb: 2 }}>
+                                <Box sx={{ textAlign: "center", mb: 2 }}>
+                                  <Typography variant="h6" fontWeight={600} gutterBottom>
+                                    {classItem.className}
+                                  </Typography>
+
+                                  {classItem.sections.map((section: any) => (
+                                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                                      Section: {section?.name ?? "No Section"}
+                                    </Typography>
+                                  ))}
+                                  <div>
+                                    Class Teacher:
+                                    <Chip
+                                      label={classItem.className}
+                                      size="small"
+                                      sx={{
+                                        bgcolor: alpha(theme.palette.secondary.main, 0.08),
+                                        color: theme.palette.secondary.main,
+                                        fontWeight: 500,
+                                        borderRadius: 1,
+                                        "& .MuiChip-label": { px: 1 },
+                                      }}
+                                    />
+                                  </div>
+                                  <div>
+                                    Class Teacher:
+                                    <DepartmentChip
+                                      label={classItem.className}
+                                      size="small"
+                                      sx={{
+                                        backgroundColor: alpha(departmentColors[classItem.name] || departmentColors["Not Specified"], 0.1),
+                                        color: departmentColors[classItem.name] || departmentColors["Not Specified"],
+                                      }}
+                                    />
+                                  </div>
+                                </Box>
+                                <Box sx={{ mb: 2 }}>
+                                  <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                                    <School fontSize="small" sx={{ color: "text.secondary", mr: 1 }} />
+                                    <Typography variant="body2" color="text.secondary">
+                                      Total Student: {classItem.className}
+                                    </Typography>
+                                  </Box>
+                                  <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                                    <School fontSize="small" sx={{ color: "text.secondary", mr: 1 }} />
+                                    <Typography variant="body2" color="text.secondary">
+                                      Total Subjects: {classItem.className}
+                                    </Typography>
+                                  </Box>
+                                  <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                                    <School fontSize="small" sx={{ color: "text.secondary", mr: 1 }} />
+                                    <Typography variant="body2" color="text.secondary">
+                                      Total Teacher: {classItem.className}
+                                    </Typography>
+                                  </Box>
+                                </Box>
+                              </CardContent>
+                              <Box sx={{
+                                position: "absolute",
+                                top: 8,
+                                right: 8,
+                                zIndex: 1,
+                              }}>
+
+
+                                <Tooltip title="Edit Class">
+                                  <IconButton
+                                    component={Link}
+                                    href={`/dashboard/super_admin/classes/class/update?id=${classItem._id}`}
+                                    size="small"
+                                    sx={{
+                                      color: "warning.main",
+                                      bgcolor: alpha(theme.palette.warning.main, 0.1),
+                                      mr: 1,
+                                      "&:hover": {
+                                        bgcolor: alpha(theme.palette.warning.main, 0.2),
+                                      },
+                                    }}
+                                  >
+                                    <EditIcon fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+                                <Tooltip title="Delete Class">
+                                  <IconButton
+                                    size="small"
+                                    onClick={(e) => {
+                                      setSelectedClass(classItem)
+                                      setDeleteDialogOpen(true)
+                                    }}
+                                    sx={{
+                                      color: "error.main",
+                                      bgcolor: alpha(theme.palette.error.main, 0.1),
+                                      "&:hover": {
+                                        bgcolor: alpha(theme.palette.error.main, 0.2),
+                                      },
+                                    }}
+                                  >
+                                    <DeleteIcon fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+                              </Box>
+                            </StyledCard>
+                          </motion.div>
+                        </Grid>
+                      ))}
+                    </Grid>
                   </>
                 )}
               </Paper>
@@ -357,37 +331,6 @@ export default function ClassesListPage() {
           </Fade>
         </Container>
       </Box>
-
-      {/* Context Menu */}
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleMenuClose}
-        PaperProps={{
-          elevation: 3,
-          sx: {
-            mt: 1,
-            minWidth: 180,
-            borderRadius: 2,
-            overflow: "hidden",
-          },
-        }}
-      >
-        <MenuItem onClick={handleMenuClose} sx={{ py: 1.5 }}>
-          <VisibilityIcon fontSize="small" sx={{ mr: 2, color: "info.main" }} />
-          View Details
-        </MenuItem>
-        <MenuItem onClick={handleMenuClose} sx={{ py: 1.5 }}>
-          <EditIcon fontSize="small" sx={{ mr: 2, color: "warning.main" }} />
-          Edit Class
-        </MenuItem>
-        <Divider />
-        <MenuItem onClick={handleDeleteClick} sx={{ py: 1.5, color: "error.main" }}>
-          <DeleteIcon fontSize="small" sx={{ mr: 2 }} />
-          Delete Class
-        </MenuItem>
-      </Menu>
-
       {/* Delete Confirmation Dialog */}
       <Dialog
         open={deleteDialogOpen}
