@@ -63,6 +63,7 @@ import {
   Refresh as RefreshIcon,
   DateRange,
   Clear,
+  DownhillSkiing,
 } from "@mui/icons-material"
 import DrawIcon from "@mui/icons-material/Draw"
 import BlockIcon from "@mui/icons-material/Block"
@@ -858,6 +859,7 @@ export default function ClassReportList() {
                         <TableBody>
                           {sortedReports.length > 0 ? (
                             sortedReports.map((report: any) => {
+                       
                               const isExpanded = expandedReport === report._id
 
                               return (
@@ -1053,6 +1055,15 @@ export default function ClassReportList() {
                                           <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
                                             {!isMobile && (
                                               <>
+                                                <a
+                                                  className="editIconWrap edit2"
+                                                  href={`${process.env.NEXT_PUBLIC_BASE_API_URL}/class-report/classreport/${report._id}`}
+
+                                                  target="_blank"
+                                                  rel="noreferrer"
+                                                >
+                                                  <DownhillSkiing />
+                                                </a>
                                                 <Tooltip title="View Details">
                                                   <IconButton
                                                     size="small"
