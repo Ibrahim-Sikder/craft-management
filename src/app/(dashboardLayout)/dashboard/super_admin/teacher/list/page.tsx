@@ -15,7 +15,6 @@ import {
   CardMedia,
   CardActions,
   Avatar,
-  Chip,
   Button,
   IconButton,
   InputAdornment,
@@ -73,13 +72,10 @@ import {
   StatusChip,
   StyledBadge,
   StyledCard,
-  ViewToggleButton,
 } from "@/style/customeStyle"
 import { useRouter } from "next/navigation"
 import Swal from "sweetalert2"
-import toast from "react-hot-toast"
 
-// Define department colors for visual distinction
 const departmentColors: Record<string, string> = {
   Languages: "#3a7bd5",
   Mathematics: "#00d2ff",
@@ -92,7 +88,6 @@ const departmentColors: Record<string, string> = {
   "Not Specified": "#888888",
 }
 
-// Fallback departments to use when none is specified
 const departmentsList = [
   "Languages",
   "Mathematics",
@@ -111,7 +106,6 @@ export default function TeachersDashboard() {
 
   // State management
   const [teachers, setTeachers] = useState<Teacher[]>([])
-  const [viewMode, setViewMode] = useState<"grid" | "list" | "kanban">("grid")
   const [searchQuery, setSearchQuery] = useState("")
   const [tabValue, setTabValue] = useState(0)
   const [sortBy, setSortBy] = useState<"name" | "department" | "experience" | "rating" | "performance">("name")
@@ -260,21 +254,17 @@ export default function TeachersDashboard() {
       })
 
       if (result.isConfirmed) {
-        // Execute the delete API call
         await deleteTeacher(selectedTeacher._id).unwrap()
         
-        // Show success message
         Swal.fire({
           title: "Deleted!",
           text: `${selectedTeacher.name} has been deleted successfully.`,
           icon: "success"
         })
         
-        // Refresh the teacher list
         refetch()
       }
     } catch (err: any) {
-      // Show error message
       Swal.fire({
         title: "Error!",
         text: err.data?.message || "Failed to delete teacher",
@@ -306,7 +296,6 @@ export default function TeachersDashboard() {
     refetch()
   }
 
-  // Filter and sort teachers based on current settings
   const filteredTeachers = teachers
     .filter(
       (teacher) =>
@@ -419,27 +408,6 @@ export default function TeachersDashboard() {
                 </Grid>
                 <Grid item xs={12} md={6}>
                   <Box sx={{ display: "flex", justifyContent: { xs: "flex-start", md: "flex-end" }, gap: 1 }}>
-                    <ViewToggleButton
-                      startIcon={<GridViewIcon />}
-                      active={viewMode === "grid"}
-                      onClick={() => setViewMode("grid")}
-                    >
-                      Grid
-                    </ViewToggleButton>
-                    <ViewToggleButton
-                      startIcon={<ListViewIcon />}
-                      active={viewMode === "list"}
-                      onClick={() => setViewMode("list")}
-                    >
-                      List
-                    </ViewToggleButton>
-                    <ViewToggleButton
-                      startIcon={<KanbanViewIcon />}
-                      active={viewMode === "kanban"}
-                      onClick={() => setViewMode("kanban")}
-                    >
-                      Kanban
-                    </ViewToggleButton>
                     <Tooltip title="Sort options">
                       <IconButton onClick={handleSortClick}>
                         <SortIcon />
