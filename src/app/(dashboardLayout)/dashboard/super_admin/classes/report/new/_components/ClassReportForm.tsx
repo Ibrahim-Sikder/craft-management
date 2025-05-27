@@ -731,13 +731,13 @@ export default function ClassReportForm({ id }: any) {
     return 0
   })
 
-  const handleClassName = (event: any, newValue: any) => {
-    setSelectedBrand(newValue)
-    const filtered = sortedVehicleName
-      ?.filter((vehicle: any) => vehicle.label?.toLowerCase().includes(newValue?.toLowerCase()))
-      .sort((a: any, b: any) => a.label.localeCompare(b.label))
-    setFilteredVehicles(filtered)
-  }
+  // const handleClassName = (event: any, newValue: any) => {
+  //   setSelectedBrand(newValue)
+  //   const filtered = sortedVehicleName
+  //     ?.filter((vehicle: any) => vehicle.label?.toLowerCase().includes(newValue?.toLowerCase()))
+  //     .sort((a: any, b: any) => a.label.localeCompare(b.label))
+  //   setFilteredVehicles(filtered)
+  // }
 
   const handleClassChange = (event: any, newValue: any) => {
     if (id && isEditMode) {
@@ -864,7 +864,7 @@ export default function ClassReportForm({ id }: any) {
   return (
     <ThemeProvider theme={theme}>
       {singleClassReportLoading ? (
-        <div>Loading.....</div>
+        <div></div>
       ) : (
         <>
 
@@ -1045,7 +1045,7 @@ export default function ClassReportForm({ id }: any) {
                             </Tooltip>
                           </div>                      
 
-                          <div className="max-[320px]:w-[250px] max-[375px]:w-[300px] max-[425px]:w-[380px] max-[800px]:border max-[800px]:border-gray-300 max-[800px]:rounded   max-[800px]:block max-[800px]:max-w-[100vw] max-[800px]:relative max-[800px]:whitespace-nowrap max-[800px]:overflow-x-auto">
+                          <div className="max-[320px]:block max-[320px]:w-[250px] max-[375px]:block max-[375px]:w-[300px] max-[425px]:block max-[425px]:w-[380px] max-[800px]:border max-[800px]:border-gray-300 max-[800px]:rounded   max-[800px]:block max-[800px]:max-w-[100vw] max-[800px]:relative max-[800px]:whitespace-nowrap max-[800px]:overflow-x-auto">
 
                             <Table
                               sx={{
@@ -1054,6 +1054,7 @@ export default function ClassReportForm({ id }: any) {
                                   width: "100%",
                                   minWidth: "100%",
                                   tableLayout: { sm: "auto", md: "fixed", lg: "fixed" },
+                                  px:10
                                 }, 
                               }}
                             >
