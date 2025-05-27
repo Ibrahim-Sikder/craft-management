@@ -3,18 +3,13 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import {
-  Box,
   Container,
-  Typography,
   TextField,
   Button,
-  Paper,
   IconButton,
   Avatar,
-  Grid,
   Chip,
   Table,
   TableBody,
@@ -23,53 +18,33 @@ import {
   TableHead,
   TableRow,
   TablePagination,
-  Menu,
-  MenuItem,
   InputAdornment,
   Tooltip,
   Dialog,
   DialogActions,
   DialogContent,
-  DialogContentText,
   DialogTitle,
-  useMediaQuery,
-  Skeleton,
   Fade,
   alpha,
   createTheme,
   ThemeProvider,
-  Alert,
-  Snackbar,
 } from "@mui/material"
 import {
   Add as AddIcon,
   Search as SearchIcon,
-  FilterList as FilterListIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  Visibility as VisibilityIcon,
   ArrowUpward as ArrowUpwardIcon,
   ArrowDownward as ArrowDownwardIcon,
-  CheckCircle as CheckCircleIcon,
-  Download as DownloadIcon,
-  Print as PrintIcon,
   Refresh as RefreshIcon,
-  Class as ClassIcon,
   MenuBook as MenuBookIcon,
   Assignment as AssignmentIcon,
-  List as ListIcon,
 } from "@mui/icons-material"
-import { Roboto } from "next/font/google"
 import Link from "next/link"
-import { format } from "date-fns"
 import { useDeleteSubjectMutation, useGetAllSubjectsQuery } from "@/redux/api/subjectApi"
 import { useRouter } from "next/navigation"
 import toast from "react-hot-toast"
-
-const roboto = Roboto({
-  weight: ["300", "400", "500", "700"],
-  subsets: ["latin"],
-})
+import Loader from "@/app/loading"
 
 // Create a custom theme with vibrant colors
 const customTheme = createTheme({
@@ -109,15 +84,7 @@ const customTheme = createTheme({
       dark: "#2563eb",
     },
   },
-  typography: {
-    fontFamily: roboto.style.fontFamily,
-    h4: {
-      fontWeight: 600,
-    },
-    h6: {
-      fontWeight: 500,
-    },
-  },
+  
   shape: {
     borderRadius: 12,
   },
@@ -190,24 +157,19 @@ const customTheme = createTheme({
 export default function SubjectManagementPage() {
   const router = useRouter()
   const [page, setPage] = useState(0)
-  const [rowsPerPage, setRowsPerPage] = useState(10)
+  const [rowsPerPage, setRowsPerPage] = useState(15)
   const [searchTerm, setSearchTerm] = useState("")
   const [paperFilter, setPaperFilter] = useState<string | null>(null)
   const [classFilter, setClassFilter] = useState<string | null>(null)
   const [optionalFilter, setOptionalFilter] = useState<boolean | null>(null)
   const [orderBy, setOrderBy] = useState<string>("name")
   const [order, setOrder] = useState<"asc" | "desc">("asc")
-  const [paperFilterAnchorEl, setPaperFilterAnchorEl] = useState<null | HTMLElement>(null)
-  const [classFilterAnchorEl, setClassFilterAnchorEl] = useState<null | HTMLElement>(null)
-  const [optionalFilterAnchorEl, setOptionalFilterAnchorEl] = useState<null | HTMLElement>(null)
   const [selectedSubject, setSelectedSubject] = useState<any | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [viewLessonsDialogOpen, setViewLessonsDialogOpen] = useState(false)
   const [snackbarOpen, setSnackbarOpen] = useState(false)
   const [snackbarMessage, setSnackbarMessage] = useState("")
   const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success")
 
-  // API integration
   const {
     data: subjectData,
     isLoading,
@@ -221,9 +183,7 @@ export default function SubjectManagementPage() {
   const [deleteSubject, { isLoading: isDeleting }] = useDeleteSubjectMutation()
 
   const theme = customTheme
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"))
 
-  // Get subjects from API response
   const subjects = subjectData?.data?.subjects || []
 
   const handleRefresh = () => {
@@ -239,46 +199,10 @@ export default function SubjectManagementPage() {
     setPage(0)
   }
 
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value)
-    setPage(0)
-  }
-
-  const handlePaperFilterClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setPaperFilterAnchorEl(event.currentTarget)
-  }
-
-  const handleClassFilterClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setClassFilterAnchorEl(event.currentTarget)
-  }
-
-  const handleOptionalFilterClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setOptionalFilterAnchorEl(event.currentTarget)
-  }
-
-  const handleFilterClose = () => {
-    setPaperFilterAnchorEl(null)
-    setClassFilterAnchorEl(null)
-    setOptionalFilterAnchorEl(null)
-  }
-
-  const handlePaperFilterSelect = (paper: string | null) => {
-    setPaperFilter(paper)
-    setPaperFilterAnchorEl(null)
-    setPage(0)
-  }
-
-  const handleClassFilterSelect = (className: string | null) => {
-    setClassFilter(className)
-    setClassFilterAnchorEl(null)
-    setPage(0)
-  }
-
-  const handleOptionalFilterSelect = (isOptional: boolean | null) => {
-    setOptionalFilter(isOptional)
-    setOptionalFilterAnchorEl(null)
-    setPage(0)
-  }
+   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
+      setSearchTerm(e.target.value)
+      setPage(0)
+    }
 
   const handleSort = (property: string) => {
     const isAsc = orderBy === property && order === "asc"
@@ -291,11 +215,6 @@ export default function SubjectManagementPage() {
     setDeleteDialogOpen(true)
   }
 
-  const handleViewLessons = (subject: any) => {
-    setSelectedSubject(subject)
-    setViewLessonsDialogOpen(true)
-  }
-
   const handleDeleteConfirm = async () => {
     if (!selectedSubject) return
 
@@ -306,7 +225,7 @@ export default function SubjectManagementPage() {
         setSnackbarSeverity("success")
         setSnackbarOpen(true)
         toast.success("Subject deleted successfully")
-        refetch() // Refresh the subject list
+        refetch() 
       }
     } catch (error: any) {
       setSnackbarMessage(error?.data?.message || "Failed to delete subject")
@@ -322,21 +241,12 @@ export default function SubjectManagementPage() {
   const handleDeleteCancel = () => {
     setDeleteDialogOpen(false)
     setSelectedSubject(null)
-  }
-
-  const handleSnackbarClose = () => {
-    setSnackbarOpen(false)
-  }
-
-  const handleCloseLessonsDialog = () => {
-    setViewLessonsDialogOpen(false)
-  }
+  }  
 
   const handleEditSubject = (id: string) => {
     router.push(`/dashboard/super_admin/subject/update/${id}`)
   }
 
-  // Process and filter subjects
   const filteredSubjects = subjects
     .filter(
       (subject: any) =>
@@ -371,8 +281,6 @@ export default function SubjectManagementPage() {
 
   const paginatedSubjects = filteredSubjects.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
 
-
-
   const getSubjectColor = (name: string) => {
     const colors = [
       theme.palette.primary.main,
@@ -386,26 +294,21 @@ export default function SubjectManagementPage() {
     return colors[index]
   }
 
-  const formatDate = (dateString: string) => {
-    try {
-      return format(new Date(dateString), "MMM dd, yyyy")
-    } catch (error: any) {
-      return "Invalid date"
-    }
-  }
-
   return (
     <ThemeProvider theme={theme}>
-      <Box sx={{ flexGrow: 1, bgcolor: "background.default", borderRadius: 2 }}>
-        <Container maxWidth="xl" sx={{ mt: 0, mb: 8, borderRadius: 2 }}>
+
+      <div className="flex-grow rounded-4xl" style={{
+        background: `linear-gradient(135deg, rgba(63, 81, 181, 0.2) 0%, rgba(245, 245, 245, 0.7) 100%)`,
+      }}>
+        <Container maxWidth="xl" className="mt-0 mb-8 rounded-lg">
           <Fade in={true} timeout={800}>
-            <Box>
-              <div className="md:flex justify-between items-center mb-3 flex-wrap gap-2 pt-2">
+            <div>
+              <div className="md:flex justify-between items-center mb-3 flex-wrap gap-2 pt-5">
                 <div className="text-2xl md:text-3xl font-bold text-gray-900 flex items-center">
                   <MenuBookIcon sx={{ height: 40, width: 40, color: "#6366f1" }} />
-                  Subject Management
+                  <h1>Subject Management</h1>
                 </div>
-                <Box sx={{ display: "flex", gap: 2 }}>
+                <div className="flex gap-2">
                   <Button
                     variant="outlined"
                     startIcon={<RefreshIcon />}
@@ -427,19 +330,19 @@ export default function SubjectManagementPage() {
                   >
                     Add New Subject
                   </Button>
-                </Box>
+                </div>
               </div>
 
-              <Paper elevation={0} sx={{ mb: 4, overflow: "hidden" }}>
-                <Box sx={{ p: 2, borderBottom: "1px solid rgba(0, 0, 0, 0.06)" }}>
-                  <Grid container spacing={1} alignItems="center">
-                    <Grid item xs={12} md={4.5}>
+              <div className="mb-4 overflow-hidden bg-white shadow-sm rounded-3xl">
+                <div className="p-2 border-b border-gray-100">
+                  <div className="grid grid-cols-12 gap-1 items-center">
+                    <div className="col-span-12 md:col-span-5 mt-3">
                       <TextField
                         fullWidth
                         placeholder="Search by Subject Name or Code..."
                         variant="outlined"
                         value={searchTerm}
-                        onChange={handleSearchChange}
+                        onChange={handleSearch}
                         InputProps={{
                           startAdornment: (
                             <InputAdornment position="start">
@@ -455,126 +358,77 @@ export default function SubjectManagementPage() {
                           },
                         }}
                       />
-                    </Grid>
-
-                  </Grid>
-                </Box>
+                    </div>
+                  </div>
+                </div>
 
                 {isLoading ? (
-                  <Box sx={{ p: 2 }}>
-                    {Array.from(new Array(5)).map((_, index) => (
-                      <Box key={index} sx={{ display: "flex", py: 2, px: 2, alignItems: "center" }}>
-                        <Skeleton variant="circular" width={40} height={40} sx={{ mr: 2 }} />
-                        <Box sx={{ width: "100%" }}>
-                          <Skeleton variant="text" width="40%" height={30} />
-                          <Box sx={{ display: "flex", mt: 1 }}>
-                            <Skeleton variant="text" width="20%" sx={{ mr: 2 }} />
-                            <Skeleton variant="text" width="30%" />
-                          </Box>
-                        </Box>
-                        <Skeleton variant="rectangular" width={100} height={36} sx={{ borderRadius: 1 }} />
-                      </Box>
-                    ))}
-                  </Box>
+                  <Loader/>
                 ) : (
                   <>
                     <TableContainer sx={{
-            overflowX: "auto",  
-            WebkitOverflowScrolling: "touch",  
-            maxWidth: "100vw"  
-          }}>
+                      overflowX: "auto",
+                      WebkitOverflowScrolling: "touch",
+                      maxWidth: "100vw"
+                    }}>
                       <Table sx={{ minWidth: 650 }}>
                         <TableHead>
                           <TableRow>
                             <TableCell>
-
-                              SL. No.
-
-
+                              <span>SL. No.</span>
                             </TableCell>
-                            {/* <TableCell>
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  cursor: "pointer",
-                                  userSelect: "none",
-                                  color: orderBy === "code" ? "primary.main" : "inherit",
-                                }}
-                                onClick={() => handleSort("code")}
-                              >
-                                Code
-                                {orderBy === "code" && (
-                                  <Box component="span" sx={{ display: "inline-flex", ml: 0.5 }}>
-                                    {order === "asc" ? (
-                                      <ArrowUpwardIcon fontSize="small" />
-                                    ) : (
-                                      <ArrowDownwardIcon fontSize="small" />
-                                    )}
-                                  </Box>
-                                )}
-                              </Box>
-                            </TableCell> */}
                             <TableCell>
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  cursor: "pointer",
-                                  userSelect: "none",
-                                  color: orderBy === "name" ? "primary.main" : "inherit",
-                                }}
+                              <div
+                                className="flex items-center cursor-pointer select-none"
                                 onClick={() => handleSort("name")}
                               >
-                                Subject
+                                <span className={orderBy === "name" ? "text-primary" : ""}>
+                                  Subject
+                                </span>
                                 {orderBy === "name" && (
-                                  <Box component="span" sx={{ display: "inline-flex", ml: 0.5 }}>
+                                  <span className="ml-0.5 inline-flex">
                                     {order === "asc" ? (
                                       <ArrowUpwardIcon fontSize="small" />
                                     ) : (
                                       <ArrowDownwardIcon fontSize="small" />
                                     )}
-                                  </Box>
+                                  </span>
                                 )}
-                              </Box>
+                              </div>
                             </TableCell>
                             <TableCell>
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  cursor: "pointer",
-                                  userSelect: "none",
-                                  color: orderBy === "paper" ? "primary.main" : "inherit",
-                                }}
+                              <div
+                                className="flex items-center cursor-pointer select-none"
                                 onClick={() => handleSort("paper")}
                               >
-                                Paper
+                                <span className={orderBy === "paper" ? "text-primary" : ""}>
+                                  Paper
+                                </span>
                                 {orderBy === "paper" && (
-                                  <Box component="span" sx={{ display: "inline-flex", ml: 0.5 }}>
+                                  <span className="ml-0.5 inline-flex">
                                     {order === "asc" ? (
                                       <ArrowUpwardIcon fontSize="small" />
                                     ) : (
                                       <ArrowDownwardIcon fontSize="small" />
                                     )}
-                                  </Box>
+                                  </span>
                                 )}
-                              </Box>
+                              </div>
                             </TableCell>
-                           
-                            <TableCell align="right">Actions</TableCell>
+                            <TableCell align="right">
+                              <span>Actions</span>
+                            </TableCell>
                           </TableRow>
                         </TableHead>
                         <TableBody>
                           {paginatedSubjects.length > 0 ? (
                             paginatedSubjects.map((subject: any, index: number) => (
-                              <TableRow key={subject._id} sx={{ transition: "all 0.2s" }}>
+                              <TableRow key={subject._id} className="transition-all duration-200">
                                 <TableCell>
-                                  {index + 1}
+                                  <span>{index + 1}</span>
                                 </TableCell>
-                                
                                 <TableCell>
-                                  <Box sx={{ display: "flex", alignItems: "center" }}>
+                                  <div className="flex items-center">
                                     <Avatar
                                       src={subject.image || ""}
                                       sx={{
@@ -587,8 +441,8 @@ export default function SubjectManagementPage() {
                                     >
                                       {subject.name.charAt(0)}
                                     </Avatar>
-                                    <Typography variant="body2">{subject.name}</Typography>
-                                  </Box>
+                                    <span className="text-sm">{subject.name}</span>
+                                  </div>
                                 </TableCell>
                                 <TableCell>
                                   <Chip
@@ -601,10 +455,8 @@ export default function SubjectManagementPage() {
                                     }}
                                   />
                                 </TableCell>
-                                
                                 <TableCell align="right">
-                                  <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-                                   
+                                  <div className="flex justify-end">
                                     <Tooltip title="Edit Subject">
                                       <IconButton
                                         size="small"
@@ -636,30 +488,29 @@ export default function SubjectManagementPage() {
                                         <DeleteIcon fontSize="small" />
                                       </IconButton>
                                     </Tooltip>
-                                  </Box>
+                                  </div>
                                 </TableCell>
                               </TableRow>
                             ))
                           ) : (
                             <TableRow>
-                              <TableCell colSpan={8} align="center" sx={{ py: 8 }}>
-                                <Box sx={{ textAlign: "center" }}>
+                              <TableCell colSpan={8} align="center" className="py-8">
+                                <div className="text-center">
                                   <SearchIcon sx={{ fontSize: 48, color: "text.disabled", mb: 2 }} />
-                                  <Typography variant="h6" gutterBottom>
-                                    No subjects found
-                                  </Typography>
-                                  <Typography variant="body2" color="text.secondary">
-                                    Try adjusting your search or filter to find what you&apos;re looking for.
-                                  </Typography>
-                                </Box>
+                                  <h6 className="text-lg font-medium mb-2">No subjects found</h6>
+                                  <p className="text-gray-500">
+                                    Try adjusting your search or filter to find what you're looking for.
+                                  </p>
+                                </div>
                               </TableCell>
                             </TableRow>
                           )}
                         </TableBody>
                       </Table>
                     </TableContainer>
+                    
                     <TablePagination
-                      rowsPerPageOptions={[5, 10, 25, 50]}
+                      rowsPerPageOptions={[15, 25, 50]}
                       component="div"
                       count={filteredSubjects.length}
                       rowsPerPage={rowsPerPage}
@@ -672,26 +523,23 @@ export default function SubjectManagementPage() {
                     />
                   </>
                 )}
-              </Paper>
-            </Box>
+              </div>
+            </div>
           </Fade>
         </Container>
-      </Box>
-
+      </div>
       {/* Delete Confirmation Dialog */}
       <Dialog open={deleteDialogOpen} onClose={handleDeleteCancel}>
-        <DialogTitle sx={{ pb: 1 }}>
-          <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
-            Delete Subject
-          </Typography>
+        <DialogTitle className="pb-1">
+          <h6 className="text-lg font-semibold">Delete Subject</h6>
         </DialogTitle>
         <DialogContent>
-          <DialogContentText>
+          <p>
             Are you sure you want to delete the subject &quot;{selectedSubject?.name}&quot;? This action cannot be
             undone.
-          </DialogContentText>
+          </p>
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 3 }}>
+        <DialogActions className="px-3 pb-3">
           <Button
             onClick={handleDeleteCancel}
             variant="outlined"
@@ -700,72 +548,11 @@ export default function SubjectManagementPage() {
           >
             Cancel
           </Button>
-          <Button onClick={handleDeleteConfirm} variant="contained" color="error" sx={{ ml: 2 }} disabled={isDeleting}>
+          <Button onClick={handleDeleteConfirm} variant="contained" color="error" className="ml-2" disabled={isDeleting}>
             {isDeleting ? "Deleting..." : "Delete"}
           </Button>
         </DialogActions>
       </Dialog>
-
-      {/* View Lessons Dialog */}
-      <Dialog open={viewLessonsDialogOpen} onClose={handleCloseLessonsDialog} maxWidth="sm" fullWidth>
-        <DialogTitle sx={{ pb: 1 }}>
-          <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
-            Lessons for {selectedSubject?.name}
-          </Typography>
-        </DialogTitle>
-        <DialogContent>
-          {selectedSubject?.lessons && selectedSubject?.lessons.length > 0 ? (
-            <Box sx={{ mt: 2 }}>
-              {selectedSubject?.lessons.map((lesson: any, index: number) => (
-                <Paper
-                  key={index}
-                  elevation={0}
-                  sx={{
-                    p: 2,
-                    mb: 2,
-                    border: "1px solid rgba(0, 0, 0, 0.08)",
-                    borderRadius: 2,
-                    bgcolor: "rgba(99, 102, 241, 0.02)",
-                  }}
-                >
-                  <Box sx={{ display: "flex", alignItems: "center" }}>
-                    <Chip
-                      label={`Lesson ${lesson.lessonNo}`}
-                      size="small"
-                      color="primary"
-                      sx={{ mr: 2, fontWeight: 500 }}
-                    />
-                    <Typography variant="body1">{lesson.lessonName}</Typography>
-                  </Box>
-                </Paper>
-              ))}
-            </Box>
-          ) : (
-            <Box sx={{ textAlign: "center", py: 4 }}>
-              <Typography variant="body1" color="text.secondary">
-                No lessons available for this subject.
-              </Typography>
-            </Box>
-          )}
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 3 }}>
-          <Button onClick={handleCloseLessonsDialog} variant="contained">
-            Close
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Snackbar for notifications */}
-      <Snackbar
-        open={snackbarOpen}
-        autoHideDuration={6000}
-        onClose={handleSnackbarClose}
-        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
-      >
-        <Alert onClose={handleSnackbarClose} severity={snackbarSeverity} variant="filled" sx={{ width: "100%" }}>
-          {snackbarMessage}
-        </Alert>
-      </Snackbar>
     </ThemeProvider>
   )
 }

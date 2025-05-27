@@ -363,7 +363,6 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
         onClose()
     }
 
-
     return (
         <Dialog
             open={open}
@@ -378,8 +377,7 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
                 },
             }}
         >
-            <div className="flex justify-between px-4 py-3 bg-gray-100 border-b border-blue-100 ">
-          
+            <div className="flex justify-between px-4 py-3 bg-gray-100 border-b border-blue-100">          
                 <div className="flex items-center gap-1">
                     <CalendarToday sx={{ color: "primary.main" }} />
                     <span className="font-[600]">
