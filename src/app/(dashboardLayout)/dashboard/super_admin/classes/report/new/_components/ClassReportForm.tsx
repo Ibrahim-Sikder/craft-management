@@ -950,7 +950,7 @@ export default function ClassReportForm({ id }: any) {
                       </Box>
                     </Box>
 
-                    <Paper elevation={0} sx={{ mb: 4, width: "100%", overflow: "hidden" }}>
+                    <Paper elevation={0} sx={{  mb: 4, width: "100%", overflow: "hidden" }}>
                       <Box sx={{ p: { xs: 1, sm: 1, md: 2, lg: 3 }, borderBottom: "1px solid rgba(0, 0, 0, 0.06)" }}>
                         <Grid container spacing={2} alignItems="center">
                           <Grid item xs={6} sm={6} md={3} lg={2.5}>

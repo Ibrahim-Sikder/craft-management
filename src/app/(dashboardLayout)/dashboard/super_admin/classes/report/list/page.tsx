@@ -77,6 +77,7 @@ import toast from "react-hot-toast"
 import DateRangePicker from "../new/_components/DateRangePicker";
 import Link from "next/link"
 import { DateRangeIcon } from "@mui/x-date-pickers"
+import { red } from "@mui/material/colors"
 type Filters = {
   classes: string
   subjects: string
@@ -693,10 +694,7 @@ export default function ClassReportList() {
                           >
                             {formatDateRangeDisplay()}
                           </Button>
-
                         </Box>
-
-
                       </CardContent>
                     </Card>
                   </Grid>
@@ -781,10 +779,17 @@ export default function ClassReportList() {
                   </Box>
                 ) : (
                   <>
-                    <div className="max-[320px]:w-[300px] max-[375px]:w-[360px] max-[425px]:w-[410px] max-[800px]:border max-[800px]:border-gray-300 max-[800px]:rounded   max-[800px]:block max-[800px]:max-w-[100vw] max-[800px]:relative max-[800px]:whitespace-nowrap max-[800px]:overflow-x-auto ">
+                    <div className="max-[320px]:block max-[320px]:w-[250px] max-[375px]:block max-[375px]:w-[300px] max-[425px]:block max-[425px]:w-[380px] max-[800px]:border max-[800px]:border-gray-300 max-[800px]:rounded   max-[800px]:block max-[800px]:max-w-[100vw] max-[800px]:relative max-[800px]:whitespace-nowrap max-[800px]:overflow-x-auto">
+
                       <Table
                         sx={{
                           minWidth: 900,
+                          "@media (min-width: 900px)": {
+                            width: "100%",
+                            minWidth: "100%",
+                            tableLayout: { sm: "auto", md: "fixed", lg: "fixed" },
+                            px: 10
+                          },
                         }}
                       >
                         <TableHead>
@@ -799,7 +804,7 @@ export default function ClassReportList() {
                               },
                             }}
                           >
-                            <TableCell>
+                            <TableCell width="6%">
                               <Box
                                 sx={{
                                   display: "flex",
@@ -807,6 +812,7 @@ export default function ClassReportList() {
                                   cursor: "pointer",
                                   userSelect: "none",
                                   color: orderBy === "date" ? "primary.main" : "inherit",
+
                                 }}
                                 onClick={() => handleSort("date")}
                               >
@@ -822,8 +828,8 @@ export default function ClassReportList() {
                                 )}
                               </Box>
                             </TableCell>
-                            <TableCell>Student Name</TableCell>
-                            <TableCell>
+                            <TableCell >Student Name</TableCell>
+                            <TableCell width="5%">
                               <Box
                                 sx={{
                                   display: "flex",
@@ -846,12 +852,14 @@ export default function ClassReportList() {
                                 )}
                               </Box>
                             </TableCell>
-                            <TableCell>Subject</TableCell>
-                            <TableCell>Teacher</TableCell>
-                            <TableCell>Hour</TableCell>
-                            <TableCell>Attendance</TableCell>
-                            <TableCell>Lesson</TableCell>
-                            <TableCell>Homework</TableCell>
+                            <TableCell width="10%">Subject</TableCell>
+                            <TableCell width="10%">Teacher</TableCell>
+                            <TableCell width="4%">Hour</TableCell>
+                            <TableCell width="8%">Attendance</TableCell>
+                            <TableCell width="6%">Lesson</TableCell>
+                            <TableCell width="6%">Homework</TableCell>
+                            <TableCell width="6%">Signature</TableCell>
+                            <TableCell>Comments</TableCell>
                             <TableCell>Actions</TableCell>
                           </TableRow>
                         </TableHead>
@@ -970,7 +978,7 @@ export default function ClassReportList() {
                                           <Chip
                                             icon={
                                               evaluation?.attendance?.toLowerCase() === "উপস্থিত" ? (
-                                                <CheckCircleIcon sx={{ color: "success.main" }} />
+                                                <CheckCircleIcon color="success" />
                                               ) : (
                                                 <CancelIcon sx={{ color: "error.main" }} />
                                               )
@@ -1048,6 +1056,32 @@ export default function ClassReportList() {
                                                 }`,
                                             }}
                                           />
+                                        </TableCell>
+                                        <TableCell align="center">
+                                          {
+                                            evaluation?.parentSignature &&
+                                              evaluation?.parentSignature !== "" ? (
+                                              <CheckCircleIcon color="success" />
+                                            ) : (
+                                              <CancelIcon color="error" />
+                                            )
+                                          }
+                                        </TableCell>
+                                        <TableCell sx={{ py: 1.5 }}>
+                                          <Box
+                                            sx={{
+                                              display: "inline-flex",
+                                              bgcolor: alpha(theme.palette.primary.main, 0.08),
+                                              color: theme.palette.primary.main,
+                                              px: 1.5,
+                                              py: 0.5,
+                                              borderRadius: 1,
+                                              fontWeight: 600,
+                                              fontSize: "0.8125rem",
+                                            }}
+                                          >
+                                            {evaluation.comments}
+                                          </Box>
                                         </TableCell>
                                         <TableCell>
                                           <Box sx={{ display: "flex", justifyContent: "flex-end" }}>

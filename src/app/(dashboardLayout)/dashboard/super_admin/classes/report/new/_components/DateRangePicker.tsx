@@ -377,6 +377,7 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
                     borderRadius: 2,
                     minHeight: 650,
                     bgcolor: "#f8f9fa",
+                    mt:40
                 },
             }}
         >
@@ -436,29 +437,30 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
                             </Box>
 
                             {/* Custom Date Inputs */}
-                            <Box sx={{ display: "flex", gap: 2, mb: 2, alignItems: "center" }}>
-                                <FormControl size="small" sx={{ minWidth: 120 }}>
+                            <div className="md:flex items-center gap-2 mb-2 ">
+                                <FormControl size="small" sx={{ minWidth: {xs:280, md:120} }}>
                                     <Select value="custom" size="small">
                                         <MenuItem value="custom">Custom</MenuItem>
                                     </Select>
                                 </FormControl>
+                                <div className="flex items-center gap-2 mt-2">
+                                    <TextField
+                                        value={customStartDate}
+                                        onChange={(e) => setCustomStartDate(e.target.value)}
+                                        size="small"
+                                        placeholder="Start date"
+                                        sx={{ minWidth: 120 }}
+                                    />
 
-                                <TextField
-                                    value={customStartDate}
-                                    onChange={(e) => setCustomStartDate(e.target.value)}
-                                    size="small"
-                                    placeholder="Start date"
-                                    sx={{ minWidth: 120 }}
-                                />
-
-                                <TextField
-                                    value={customEndDate}
-                                    onChange={(e) => setCustomEndDate(e.target.value)}
-                                    size="small"
-                                    placeholder="End date"
-                                    sx={{ minWidth: 120 }}
-                                />
-                            </Box>
+                                    <TextField
+                                        value={customEndDate}
+                                        onChange={(e) => setCustomEndDate(e.target.value)}
+                                        size="small"
+                                        placeholder="End date"
+                                        sx={{ minWidth: 120 }}
+                                    />
+                                </div>
+                            </div>
 
                             {/* Timezone Info */}
                             <Typography variant="caption" color="text.secondary">
