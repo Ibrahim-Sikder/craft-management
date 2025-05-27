@@ -64,6 +64,7 @@ import {
   DateRange,
   Clear,
   DownhillSkiing,
+  Download,
 } from "@mui/icons-material"
 import DrawIcon from "@mui/icons-material/Draw"
 import BlockIcon from "@mui/icons-material/Block"
@@ -78,6 +79,8 @@ import toast from "react-hot-toast"
 import DateRangePicker from "../new/_components/DateRangePicker";
 import Link from "next/link"
 import { DateRangeIcon } from "@mui/x-date-pickers"
+import Loader from "@/app/loading"
+
 type Filters = {
   classes: string
   subjects: string
@@ -448,9 +451,9 @@ export default function ClassReportList() {
 
               {/* Filter Cards */}
               <Box sx={{ mb: 4 }}>
-                <Grid container spacing={2}>
+                <div className="grid grid-cols-1 md:grid-cols-6 gap-[6px]" >
                   {/* Class Filter */}
-                  <Grid item xs={12} sm={6} md={2}>
+                  <Grid item xs={12} sm={6} md={1}>
                     <Card variant="outlined" sx={{ borderRadius: 2 }}>
                       <CardContent>
                         <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
@@ -546,7 +549,7 @@ export default function ClassReportList() {
                   </Grid>
 
                   {/* Hour Filter */}
-                  <Grid item xs={12} sm={6} md={1.5}>
+                  <Grid item xs={12} sm={6} md={1}>
                     <Card variant="outlined" sx={{ borderRadius: 2 }}>
                       <CardContent>
                         <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
@@ -608,7 +611,7 @@ export default function ClassReportList() {
                   </Grid>
 
                   {/* Handwriting Filter */}
-                  <Grid item xs={12} sm={6} md={2.5}>
+                  <Grid item xs={12} sm={6} md={2}>
                     <Card variant="outlined" sx={{ borderRadius: 2 }}>
                       <CardContent>
                         <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
@@ -643,6 +646,7 @@ export default function ClassReportList() {
                     <Card
                       variant="outlined"
                       sx={{
+                        minWidth:400, 
                         borderRadius: 3,
                         background:
                           selectedDateRange.startDate || selectedDateRange.endDate
@@ -676,10 +680,11 @@ export default function ClassReportList() {
                             variant="outlined"
                             startIcon={<DateRange />}
                             onClick={handleDateRangePickerOpen}
+                            fullWidth
                             sx={{
+                        
                               borderRadius: 2,
-                              textTransform: "none",
-                              minWidth: 250,
+                              textTransform: "none",                              
                               justifyContent: "flex-start",
                               color: selectedDateRange.startDate ? "primary.main" : "text.secondary",
                               borderColor: selectedDateRange.startDate ? "primary.main" : "rgba(0, 0, 0, 0.23)",
@@ -694,14 +699,11 @@ export default function ClassReportList() {
                           >
                             {formatDateRangeDisplay()}
                           </Button>
-
                         </Box>
-
-
                       </CardContent>
                     </Card>
                   </Grid>
-                </Grid>
+                </div>
 
                 {/* Search and Actions */}
                 <Box sx={{ mt: 2, display: "flex", gap: 2, flexWrap: "wrap" }}>
@@ -765,27 +767,35 @@ export default function ClassReportList() {
 
               <Paper elevation={0} sx={{ mb: 4, overflow: "hidden" }}>
                 {isLoading ? (
-                  <Box sx={{ p: 2 }}>
-                    {Array.from(new Array(5)).map((_, index) => (
-                      <Box key={index} sx={{ display: "flex", py: 2, px: 2, alignItems: "center" }}>
-                        <Skeleton variant="circular" width={40} height={40} sx={{ mr: 2 }} />
-                        <Box sx={{ width: "100%" }}>
-                          <Skeleton variant="text" width="40%" height={30} />
-                          <Box sx={{ display: "flex", mt: 1 }}>
-                            <Skeleton variant="text" width="20%" sx={{ mr: 2 }} />
-                            <Skeleton variant="text" width="30%" />
-                          </Box>
-                        </Box>
-                        <Skeleton variant="rectangular" width={100} height={36} sx={{ borderRadius: 1 }} />
-                      </Box>
-                    ))}
-                  </Box>
+                  <Loader/>
+                  // <Box sx={{ p: 2 }}>
+                  //   {Array.from(new Array(5)).map((_, index) => (
+                  //     <Box key={index} sx={{ display: "flex", py: 2, px: 2, alignItems: "center" }}>
+                  //       <Skeleton variant="circular" width={40} height={40} sx={{ mr: 2 }} />
+                  //       <Box sx={{ width: "100%" }}>
+                  //         <Skeleton variant="text" width="40%" height={30} />
+                  //         <Box sx={{ display: "flex", mt: 1 }}>
+                  //           <Skeleton variant="text" width="20%" sx={{ mr: 2 }} />
+                  //           <Skeleton variant="text" width="30%" />
+                  //         </Box>
+                  //       </Box>
+                  //       <Skeleton variant="rectangular" width={100} height={36} sx={{ borderRadius: 1 }} />
+                  //     </Box>
+                  //   ))}
+                  // </Box>
                 ) : (
                   <>
-                    <TableContainer>
+                    <div className="max-[320px]:block max-[320px]:w-[250px] max-[375px]:block max-[375px]:w-[300px] max-[425px]:block max-[425px]:w-[380px] max-[800px]:border max-[800px]:border-gray-300 max-[800px]:rounded   max-[800px]:block max-[800px]:max-w-[100vw] max-[800px]:relative max-[800px]:whitespace-nowrap max-[800px]:overflow-x-auto">
+
                       <Table
                         sx={{
                           minWidth: 900,
+                          "@media (min-width: 900px)": {
+                            width: "100%",
+                            minWidth: "100%",
+                            tableLayout: { sm: "auto", md: "fixed", lg: "fixed" },
+                            px: 10
+                          },
                         }}
                       >
                         <TableHead>
@@ -800,7 +810,7 @@ export default function ClassReportList() {
                               },
                             }}
                           >
-                            <TableCell>
+                            <TableCell width="6%">
                               <Box
                                 sx={{
                                   display: "flex",
@@ -808,6 +818,7 @@ export default function ClassReportList() {
                                   cursor: "pointer",
                                   userSelect: "none",
                                   color: orderBy === "date" ? "primary.main" : "inherit",
+
                                 }}
                                 onClick={() => handleSort("date")}
                               >
@@ -823,8 +834,8 @@ export default function ClassReportList() {
                                 )}
                               </Box>
                             </TableCell>
-                            <TableCell>Student Name</TableCell>
-                            <TableCell>
+                            <TableCell >Student Name</TableCell>
+                            <TableCell width="5%">
                               <Box
                                 sx={{
                                   display: "flex",
@@ -847,12 +858,14 @@ export default function ClassReportList() {
                                 )}
                               </Box>
                             </TableCell>
-                            <TableCell>Subject</TableCell>
-                            <TableCell>Teacher</TableCell>
-                            <TableCell>Hour</TableCell>
-                            <TableCell>Attendance</TableCell>
-                            <TableCell>Lesson</TableCell>
-                            <TableCell>Homework</TableCell>
+                            <TableCell width="10%">Subject</TableCell>
+                            <TableCell width="10%">Teacher</TableCell>
+                            <TableCell width="4%">Hour</TableCell>
+                            <TableCell width="8%">Attendance</TableCell>
+                            <TableCell width="9%">Lesson</TableCell>
+                            <TableCell width="8%">Homework</TableCell>
+                            <TableCell width="6%">Signature</TableCell>
+                            <TableCell width="10%">Comments</TableCell>
                             <TableCell>Actions</TableCell>
                           </TableRow>
                         </TableHead>
@@ -972,7 +985,7 @@ export default function ClassReportList() {
                                           <Chip
                                             icon={
                                               evaluation?.attendance?.toLowerCase() === "উপস্থিত" ? (
-                                                <CheckCircleIcon sx={{ color: "success.main" }} />
+                                                <CheckCircleIcon color="success" />
                                               ) : (
                                                 <CancelIcon sx={{ color: "error.main" }} />
                                               )
@@ -1051,6 +1064,32 @@ export default function ClassReportList() {
                                             }}
                                           />
                                         </TableCell>
+                                        <TableCell align="center">
+                                          {
+                                            evaluation?.parentSignature &&
+                                              evaluation?.parentSignature !== "" ? (
+                                              <CheckCircleIcon color="success" />
+                                            ) : (
+                                              <CancelIcon color="error" />
+                                            )
+                                          }
+                                        </TableCell>
+                                        <TableCell sx={{ py: 1.5 }}>
+                                          <Box
+                                            sx={{
+                                              display: "inline-flex",
+                                              bgcolor: alpha(theme.palette.primary.main, 0.08),
+                                              color: theme.palette.primary.main,
+                                              px: 1.5,
+                                              py: 0.5,
+                                              borderRadius: 1,
+                                              fontWeight: 600,
+                                              fontSize: "0.8125rem",
+                                            }}
+                                          >
+                                            {evaluation.comments}
+                                          </Box>
+                                        </TableCell>
                                         <TableCell>
                                           <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
                                             {!isMobile && (
@@ -1062,7 +1101,7 @@ export default function ClassReportList() {
                                                   target="_blank"
                                                   rel="noreferrer"
                                                 >
-                                                  <DownhillSkiing />
+                                                  <Download/>
                                                 </a>
                                                 <Tooltip title="View Details">
                                                   <IconButton
@@ -1168,7 +1207,7 @@ export default function ClassReportList() {
                           )}
                         </TableBody>
                       </Table>
-                    </TableContainer>
+                    </div>
                     <TablePagination
                       rowsPerPageOptions={[5, 10, 25, 50]}
                       component="div"

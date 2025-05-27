@@ -90,54 +90,7 @@ const StatCard = ({ icon, title, value, trend, trendValue, color }: any) => {
           <div className="hidden md:block text-4xl font-bold mb-1">{value}</div>
           <div className="hidden md:block text-sm text-gray-500">{title}</div>
         </div>
-      </div>
-
-
-      {/* <Card
-        elevation={0}
-        sx={{
-          borderRadius: 3,
-          overflow: "hidden",
-          height: "100%",
-          border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-          background: alpha(theme.palette.background.paper, 0.8),
-          backdropFilter: "blur(10px)",
-          transition: "all 0.3s ease",
-          "&:hover": {
-            boxShadow: `0 8px 32px 0 ${alpha(color, 0.2)}`,
-            transform: "translateY(-5px)",
-          },
-        }}
-      >
-        <CardContent sx={{ p: 2.5 }}>
-          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 2 }}>
-            <Avatar
-              sx={{
-                bgcolor: alpha(color, 0.1),
-                color: color,
-                width: 48,
-                height: 48,
-              }}
-            >
-              {icon}
-            </Avatar>
-            <Chip
-              icon={isPositive ? <TrendingUp fontSize="small" /> : <TrendingDown fontSize="small" />}
-              label={`${trendValue}%`}
-              size="small"
-              color={isPositive ? "success" : "error"}
-              sx={{ height: 24 }}
-            />
-          </Box>
-          <Typography variant="h4" component="div" sx={{ fontWeight: 700, mb: 0.5 }}>
-            {value}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {title}
-          </Typography>
-        </CardContent>
-      </Card> */}
-
+      </div> 
     </>
   )
 }

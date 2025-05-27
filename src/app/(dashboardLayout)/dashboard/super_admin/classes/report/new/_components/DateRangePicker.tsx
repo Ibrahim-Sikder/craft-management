@@ -4,9 +4,7 @@ import type React from "react"
 import { useState, useEffect } from "react"
 import {
     Dialog,
-    DialogTitle,
     DialogContent,
-    DialogActions,
     Button,
     Box,
     Typography,
@@ -58,8 +56,8 @@ const presetRanges = [
     { label: "Today", value: "today" },
     { label: "Yesterday", value: "yesterday" },
     { label: "Last 7 days", value: "last7days" },
-    { label: "Last 14 days", value: "last14days" },
-    { label: "Last 28 days", value: "last28days" },
+    { label: "Last 15 days", value: "last15days" },
+    // { label: "Last 28 days", value: "last28days" },
     { label: "Last 30 days", value: "last30days" },
     { label: "This week", value: "thisweek" },
     { label: "Last week", value: "lastweek" },
@@ -98,14 +96,14 @@ const getPresetRange = (preset: string): DateRange => {
             const last7 = new Date(today)
             last7.setDate(last7.getDate() - 6)
             return { startDate: startOfDay(last7), endDate: endOfDay(today) }
-        case "last14days":
-            const last14 = new Date(today)
-            last14.setDate(last14.getDate() - 13)
-            return { startDate: startOfDay(last14), endDate: endOfDay(today) }
-        case "last28days":
-            const last28 = new Date(today)
-            last28.setDate(last28.getDate() - 27)
-            return { startDate: startOfDay(last28), endDate: endOfDay(today) }
+        case "last15days":
+            const last15 = new Date(today)
+            last15.setDate(last15.getDate() - 14)
+            return { startDate: startOfDay(last15), endDate: endOfDay(today) }
+        // case "last28days":
+        //     const last28 = new Date(today)
+        //     last28.setDate(last28.getDate() - 27)
+        //     return { startDate: startOfDay(last28), endDate: endOfDay(today) }
         case "last30days":
             const last30 = new Date(today)
             last30.setDate(last30.getDate() - 29)
@@ -365,32 +363,51 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
         onClose()
     }
 
-
     return (
         <Dialog
             open={open}
             onClose={onClose}
-            maxWidth="lg"
+            maxWidth="md"
             fullWidth
             PaperProps={{
                 sx: {
                     borderRadius: 2,
-                    minHeight: 650,
                     bgcolor: "#f8f9fa",
+                    mt: 12
                 },
             }}
         >
-            <DialogTitle sx={{ pb: 1, bgcolor: "white", borderBottom: "1px solid #e0e0e0" }}>
-                <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <div className="flex justify-between px-4 py-3 bg-gray-100 border-b border-blue-100">          
+                <div className="flex items-center gap-1">
                     <CalendarToday sx={{ color: "primary.main" }} />
-                    <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                    <span className="font-[600]">
                         Select Date Range
-                    </Typography>
-                </Box>
-            </DialogTitle>
+                    </span>
+                </div>              
+                <div className="">
+                    <Button
+                        onClick={handleCancel}
+                        variant="outlined"
+                        color="inherit"
+                        sx={{ borderColor: "rgba(0, 0, 0, 0.12)", mr: 2 }}
+                    >
+                        Cancel
+                    </Button>
+                    <Button
+                        onClick={handleApply}
+                        variant="contained"
+                        color="primary"
+                        disabled={!selectedRange.startDate || !selectedRange.endDate}
+                        sx={{ bgcolor: "#1976d2" }}
+                    >
+                        Update
+                    </Button>
+                </div>
+            
+            </div>
 
             <DialogContent sx={{ p: 0, bgcolor: "#f8f9fa" }}>
-                <Grid container sx={{ height: 550 }}>
+                <Grid container sx={{ height: 500 }}>
                     {/* Preset Options */}
                     <Grid item xs={12} md={3} sx={{ bgcolor: "white", borderRight: "1px solid #e0e0e0" }}>
                         <Box sx={{ p: 2 }}>
@@ -420,9 +437,9 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
                         </Grid>
 
                         {/* Bottom Section */}
-                        <Box sx={{ p: 3, bgcolor: "white", borderTop: "1px solid #e0e0e0" }}>
+                        <Box sx={{ p: 1, bgcolor: "white", borderTop: "1px solid #e0e0e0" }}>
                             {/* Compare Checkbox */}
-                            <Box sx={{ mb: 2 }}>
+                            <Box sx={{ mb: 1}}>
                                 <FormControlLabel
                                     control={
                                         <Checkbox
@@ -436,29 +453,30 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
                             </Box>
 
                             {/* Custom Date Inputs */}
-                            <Box sx={{ display: "flex", gap: 2, mb: 2, alignItems: "center" }}>
-                                <FormControl size="small" sx={{ minWidth: 120 }}>
+                            <div className="md:flex items-center gap-2 mb-2 ">
+                                <FormControl size="small" sx={{ minWidth: { xs: 280, md: 120 } }}>
                                     <Select value="custom" size="small">
                                         <MenuItem value="custom">Custom</MenuItem>
                                     </Select>
                                 </FormControl>
+                                <div className="flex items-center gap-2 mt-2 md:mt-0">
+                                    <TextField
+                                        value={customStartDate}
+                                        onChange={(e) => setCustomStartDate(e.target.value)}
+                                        size="small"
+                                        placeholder="Start date"
+                                        sx={{ minWidth: 120 }}
+                                    />
 
-                                <TextField
-                                    value={customStartDate}
-                                    onChange={(e) => setCustomStartDate(e.target.value)}
-                                    size="small"
-                                    placeholder="Start date"
-                                    sx={{ minWidth: 120 }}
-                                />
-
-                                <TextField
-                                    value={customEndDate}
-                                    onChange={(e) => setCustomEndDate(e.target.value)}
-                                    size="small"
-                                    placeholder="End date"
-                                    sx={{ minWidth: 120 }}
-                                />
-                            </Box>
+                                    <TextField
+                                        value={customEndDate}
+                                        onChange={(e) => setCustomEndDate(e.target.value)}
+                                        size="small"
+                                        placeholder="End date"
+                                        sx={{ minWidth: 120 }}
+                                    />
+                                </div>
+                            </div>
 
                             {/* Timezone Info */}
                             <Typography variant="caption" color="text.secondary">
@@ -469,25 +487,9 @@ const DateRangePicker: React.FC<DateRangePickerProps> = ({
                 </Grid>
             </DialogContent>
 
-            <DialogActions sx={{ p: 3, bgcolor: "white", borderTop: "1px solid #e0e0e0", justifyContent: "flex-end" }}>
-                <Button
-                    onClick={handleCancel}
-                    variant="outlined"
-                    color="inherit"
-                    sx={{ borderColor: "rgba(0, 0, 0, 0.12)", mr: 2 }}
-                >
-                    Cancel
-                </Button>
-                <Button
-                    onClick={handleApply}
-                    variant="contained"
-                    color="primary"
-                    disabled={!selectedRange.startDate || !selectedRange.endDate}
-                    sx={{ bgcolor: "#1976d2" }}
-                >
-                    Update
-                </Button>
-            </DialogActions>
+            {/* <DialogActions sx={{ p: 3, bgcolor: "white", borderTop: "1px solid #e0e0e0", justifyContent: "flex-end" }}>
+                
+            </DialogActions> */}
         </Dialog>
     )
 }

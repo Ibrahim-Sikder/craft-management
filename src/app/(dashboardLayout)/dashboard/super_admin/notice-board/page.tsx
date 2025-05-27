@@ -60,6 +60,9 @@ import {
   Visibility as VisibilityIcon,
 } from "@mui/icons-material"
 import { format } from "date-fns"
+import img from "../../../../../assets/img/notice/notice.png"
+import Image from "next/image"
+
 
 const NoticeBoardPage = () => {
   const theme = useTheme()
@@ -85,7 +88,7 @@ const NoticeBoardPage = () => {
       isStarred: false,
       views: 245,
       attachments: ["sports_day_schedule.pdf", "registration_form.pdf"],
-      image: "/placeholder.svg?height=200&width=400",
+      image: img,
       priority: "high",
     },
     {
@@ -101,7 +104,7 @@ const NoticeBoardPage = () => {
       isStarred: true,
       views: 189,
       attachments: ["exam_schedule.pdf"],
-      image: "/placeholder.svg?height=200&width=400",
+      image: img,
       priority: "high",
     },
     {
@@ -117,7 +120,7 @@ const NoticeBoardPage = () => {
       isStarred: false,
       views: 156,
       attachments: [],
-      image: "/placeholder.svg?height=200&width=400",
+      image: img,
       priority: "medium",
     },
     {
@@ -133,7 +136,7 @@ const NoticeBoardPage = () => {
       isStarred: true,
       views: 203,
       attachments: ["meeting_agenda.pdf"],
-      image: "/placeholder.svg?height=200&width=400",
+      image: img,
       priority: "medium",
     },
     {
@@ -149,7 +152,7 @@ const NoticeBoardPage = () => {
       isStarred: false,
       views: 178,
       attachments: ["science_fair_guidelines.pdf"],
-      image: "/placeholder.svg?height=200&width=400",
+      image: img,
       priority: "low",
     },
   ]
@@ -222,7 +225,7 @@ const NoticeBoardPage = () => {
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
-   
+
       <Box sx={{ mb: 4 }}>
         <Fade in timeout={800}>
           <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 3 }}>
@@ -401,15 +404,24 @@ const NoticeBoardPage = () => {
                 )}
 
                 {/* Notice Image */}
-                <CardMedia
-                  component="img"
-                  height="200"
-                  image={notice.image}
-                  alt={notice.title}
+
+
+
+                <Box
                   sx={{
                     background: `linear-gradient(135deg, ${alpha(getCategoryColor(notice.category), 0.1)} 0%, ${alpha(getCategoryColor(notice.category), 0.05)} 100%)`,
                   }}
-                />
+                >
+                  <div className="flex justify-center py-2">
+                    <Image
+                      src={notice.image}
+                      alt={notice.title}
+                      width={200}
+                      height={100}
+                    />
+                  </div>
+                </Box>
+
 
                 <CardContent sx={{ p: 3, pb: 1 }}>
                   {/* Category Chip */}
@@ -532,7 +544,7 @@ const NoticeBoardPage = () => {
         ))}
       </Grid>
 
- 
+
       {filteredNotices.length === 0 && (
         <Fade in timeout={1000}>
           <Box
@@ -566,7 +578,6 @@ const NoticeBoardPage = () => {
           </Box>
         </Fade>
       )}
-
 
       <Menu
         anchorEl={anchorEl}
@@ -618,7 +629,7 @@ const NoticeBoardPage = () => {
         onClose={() => setDetailsOpen(false)}
         maxWidth="md"
         fullWidth
-      
+
       >
         {selectedNotice && (
           <>
@@ -697,13 +708,12 @@ const NoticeBoardPage = () => {
         )}
       </Dialog>
 
-
       <Dialog
         open={newNoticeOpen}
         onClose={() => setNewNoticeOpen(false)}
         maxWidth="md"
         fullWidth
-        // 
+      // 
       >
         <DialogTitle>
           <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>

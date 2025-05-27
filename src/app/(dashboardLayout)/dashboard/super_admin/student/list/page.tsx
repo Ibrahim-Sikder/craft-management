@@ -107,7 +107,6 @@ const StudentList = () => {
   // Extract class and section options from their respective data
   const classOptions = useMemo(() => {
     if (!classData?.data) return [];
-    // Handle different possible data structures
     if (Array.isArray(classData.data)) {
       return classData.data;
     } else if (classData.data.classes && Array.isArray(classData.data.classes)) {
@@ -118,7 +117,6 @@ const StudentList = () => {
 
   const sectionOptions = useMemo(() => {
     if (!sectionData?.data) return [];
-    // Handle different possible data structures
     if (Array.isArray(sectionData.data)) {
       return sectionData.data;
     } else if (sectionData.data.sections && Array.isArray(sectionData.data.sections)) {
@@ -246,20 +244,13 @@ const StudentList = () => {
           background: "linear-gradient(135deg, #6a1b9a 0%, #283593 100%)",
         }}
       >
-
-
         <div className="flex flex-col items-center justify-center content-center">
-
           <div className="flex flex-row justify-center items-center content-center text-white">
             <School sx={{ mr: 1, fontSize: { sm: 25, md: 40 } }} />
             <div className="text-lg md:text-4xl font-bold">Student Management System</div>
           </div>
 
-
-
-
           <div className="mt-2">
-
             <div className="flex justify-center mb-2">
               <Chip
                 label={`Total Students: ${metaData?.data?.totalStudents}`}
@@ -274,12 +265,10 @@ const StudentList = () => {
               />
             </div>
 
-
             {/* Secondary Stats - 2 rows of statistics */}
-
             <div className="flex flex-col justify-center gap-1">
-              {/* First row - Student Types */}
 
+              {/* First row - Student Types */}
               <div className="grid grid-cols-2 md:grid-cols-3  justify-center gap-1">
                 <Chip
                   label={`Residential: ${metaData?.data?.totalResidentialStudents}`}

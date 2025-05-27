@@ -731,13 +731,13 @@ export default function ClassReportForm({ id }: any) {
     return 0
   })
 
-  const handleClassName = (event: any, newValue: any) => {
-    setSelectedBrand(newValue)
-    const filtered = sortedVehicleName
-      ?.filter((vehicle: any) => vehicle.label?.toLowerCase().includes(newValue?.toLowerCase()))
-      .sort((a: any, b: any) => a.label.localeCompare(b.label))
-    setFilteredVehicles(filtered)
-  }
+  // const handleClassName = (event: any, newValue: any) => {
+  //   setSelectedBrand(newValue)
+  //   const filtered = sortedVehicleName
+  //     ?.filter((vehicle: any) => vehicle.label?.toLowerCase().includes(newValue?.toLowerCase()))
+  //     .sort((a: any, b: any) => a.label.localeCompare(b.label))
+  //   setFilteredVehicles(filtered)
+  // }
 
   const handleClassChange = (event: any, newValue: any) => {
     if (id && isEditMode) {
@@ -864,7 +864,7 @@ export default function ClassReportForm({ id }: any) {
   return (
     <ThemeProvider theme={theme}>
       {singleClassReportLoading ? (
-        <div>Loading.....</div>
+        <div></div>
       ) : (
         <>
 
@@ -950,7 +950,7 @@ export default function ClassReportForm({ id }: any) {
                       </Box>
                     </Box>
 
-                    <Paper elevation={0} sx={{ mb: 4, width: "100%", overflow: "hidden" }}>
+                    <Paper elevation={0} sx={{  mb: 4, width: "100%", overflow: "hidden" }}>
                       <Box sx={{ p: { xs: 1, sm: 1, md: 2, lg: 3 }, borderBottom: "1px solid rgba(0, 0, 0, 0.06)" }}>
                         <Grid container spacing={2} alignItems="center">
                           <Grid item xs={6} sm={6} md={3} lg={2.5}>
@@ -1043,8 +1043,10 @@ export default function ClassReportForm({ id }: any) {
                                 labelPlacement="start"
                               />
                             </Tooltip>
-                          </div>
-                          <div className="w-[285px] md:w-full overflow-x-auto max-[800px]:border max-[800px]:border-gray-300   max-[800px]:rounded   max-[800px]:block   max-[800px]:max-w-[100vw]   max-[800px]:relative   max-[800px]:whitespace-nowrap   max-[800px]:overflow-x-auto   max-[800px]:scrolling-touch   min-[900px]:overflow-x-visible min-[900px]:table">
+                          </div>                      
+
+                          <div className="max-[320px]:block max-[320px]:w-[250px] max-[375px]:block max-[375px]:w-[300px] max-[425px]:block max-[425px]:w-[380px] max-[800px]:border max-[800px]:border-gray-300 max-[800px]:rounded   max-[800px]:block max-[800px]:max-w-[100vw] max-[800px]:relative max-[800px]:whitespace-nowrap max-[800px]:overflow-x-auto">
+
                             <Table
                               sx={{
                                 minWidth: 900,
@@ -1052,7 +1054,8 @@ export default function ClassReportForm({ id }: any) {
                                   width: "100%",
                                   minWidth: "100%",
                                   tableLayout: { sm: "auto", md: "fixed", lg: "fixed" },
-                                },
+                                  px:10
+                                }, 
                               }}
                             >
                               <TableHead>
