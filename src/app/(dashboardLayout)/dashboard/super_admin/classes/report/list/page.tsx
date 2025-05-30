@@ -1,13 +1,11 @@
-/* eslint-disable react-hooks/exhaustive-deps */
- 
+/* eslint-disable react/no-unescaped-entities */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
 import React from "react"
 
-import { useState, useMemo, useEffect, useCallback } from "react"
-import debounce from "lodash/debounce"
+import { useState, useMemo, useEffect } from "react"
 import {
   Box,
   Container,
@@ -21,6 +19,7 @@ import {
   Table,
   TableBody,
   TableCell,
+  TableContainer,
   TableHead,
   TableRow,
   TablePagination,
@@ -33,6 +32,7 @@ import {
   DialogContentText,
   DialogTitle,
   useMediaQuery,
+  Skeleton,
   Fade,
   alpha,
   Card,
@@ -52,6 +52,7 @@ import {
   Person as PersonIcon,
   Book as BookIcon,
   Class as ClassIcon,
+  CalendarMonth as CalendarIcon,
   ArrowUpward as ArrowUpwardIcon,
   ArrowDownward as ArrowDownwardIcon,
   CheckCircle as CheckCircleIcon,
@@ -61,22 +62,21 @@ import {
   Print as PrintIcon,
   Refresh as RefreshIcon,
   DateRange,
+  Clear,
+  DownhillSkiing,
   Download,
 } from "@mui/icons-material"
 import DrawIcon from "@mui/icons-material/Draw"
 import BlockIcon from "@mui/icons-material/Block"
 import { format } from "date-fns"
 import { customTheme } from "@/ThemeStyle"
-import {
-  useDeleteClassReportMutation,
-  useGetAllClassReportsQuery,
-} from "@/redux/api/classReportApi"
+import { useDeleteClassReportMutation, useGetAllClassReportsQuery } from "@/redux/api/classReportApi"
 import { useGetAllClassesQuery } from "@/redux/api/classApi"
 import { useGetAllSubjectsQuery } from "@/redux/api/subjectApi"
 import { useGetAllTeachersQuery } from "@/redux/api/teacherApi"
 import ClassReportDetailsModal from "../_components/ClassReportDetailsModal"
 import toast from "react-hot-toast"
-import DateRangePicker from "../new/_components/DateRangePicker"
+import DateRangePicker from "../new/_components/DateRangePicker";
 import Link from "next/link"
 import { DateRangeIcon } from "@mui/x-date-pickers"
 import Loader from "@/app/loading"
@@ -101,7 +101,7 @@ interface IDateRange {
 export default function ClassReportList() {
   // State
   const [page, setPage] = useState(0)
-  const [rowsPerPage, setRowsPerPage] = useState(10) // Fixed limit to match backend
+  const [rowsPerPage, setRowsPerPage] = useState(10)
   const [searchTerm, setSearchTerm] = useState("")
   const [filters, setFilters] = useState<Filters>({
     classes: "",
@@ -134,18 +134,16 @@ export default function ClassReportList() {
 
   const [deleteClassReport] = useDeleteClassReportMutation()
 
-  // Add this after the existing state declarations (around line 60)
-
-  // API queries - Remove the duplicate queryParams ref and fix the query
+  // API queries
   const {
     data: classReport,
     isLoading,
     refetch,
   } = useGetAllClassReportsQuery(
     {
-      limit: 10, // Always use 10 to match backend
+      limit: rowsPerPage,
       page: page + 1,
-      searchTerm,
+      searchTerm: searchTerm,
       className: filters.classes,
       subject: filters.subjects,
       teacher: filters.teachers,
@@ -157,10 +155,7 @@ export default function ClassReportList() {
       endDate: filters.endDate,
     },
     {
-      refetchOnMountOrArgChange: 30,
-      pollingInterval: 0,
-      refetchOnFocus: false,
-      refetchOnReconnect: true,
+      refetchOnMountOrArgChange: true,
     },
   )
 
@@ -181,26 +176,21 @@ export default function ClassReportList() {
     page: 1,
     searchTerm: "",
   })
-  const debouncedRefetch = useCallback(
-    debounce(() => {
-      refetch()
-    }, 300),
-    [refetch],
-  )
 
   useEffect(() => {
-    debouncedRefetch()
-    return () => debouncedRefetch.cancel()
-  }, [filters, searchTerm, page, debouncedRefetch])
+    refetch()
+  }, [filters, searchTerm, page, rowsPerPage, refetch])
 
   const theme = customTheme
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"), { noSsr: true })
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"), { noSsr: true });
 
   const reports = useMemo(() => {
     return classReport?.data?.reports || []
   }, [classReport])
 
   const totalCount = classReport?.data?.meta?.total || 0
+
+  console.log("student classreport", classReport)
   const classOptions = useMemo(() => {
     return (
       classData?.data?.classes?.map((cls: any) => ({
@@ -229,6 +219,8 @@ export default function ClassReportList() {
   const hourOptions = ["১ম", "২য়", "৩য়", "৪র্থ", "৫ম", "৬ষ্ঠ", "৭ম", "৮ম"]
   const lessonEvaluationOptions = ["পড়া শিখেছে", "আংশিক শিখেছে", "পড়া শিখেনি", "অনুপস্থিত"]
   const handleWrittenOptions = ["লিখেছে", "আংশিক লিখেছে", "লিখেনি", "কাজ নেই"]
+
+  // Date Range Picker Handlers
   const handleDateRangePickerOpen = () => {
     setDateRangePickerOpen(true)
   }
@@ -250,6 +242,7 @@ export default function ClassReportList() {
         `Date range applied: ${format(range.startDate, "dd MMM yyyy")} - ${format(range.endDate, "dd MMM yyyy")}`,
       )
     }
+
     setPage(0)
     refetch()
   }
@@ -272,8 +265,8 @@ export default function ClassReportList() {
     }
     return `${format(selectedDateRange.startDate, "dd MMM yyyy")} - ${format(selectedDateRange.endDate, "dd MMM yyyy")}`
   }
+
   const handleRefresh = () => {
-   
     setRefreshKey((prev) => prev + 1)
     refetch()
   }
@@ -283,8 +276,7 @@ export default function ClassReportList() {
   }
 
   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const newRowsPerPage = 10
-    setRowsPerPage(newRowsPerPage)
+    setRowsPerPage(Number.parseInt(event.target.value, 10))
     setPage(0)
   }
 
@@ -292,12 +284,15 @@ export default function ClassReportList() {
     setSearchTerm(event.target.value)
     setPage(0)
   }
+
   const handleFilterChange = (filterName: keyof Filters, value: string) => {
     setFilters((prev) => ({
       ...prev,
       [filterName]: value,
     }))
+
     setPage(0)
+    refetch()
   }
 
   const handleSort = (property: string) => {
@@ -349,6 +344,8 @@ export default function ClassReportList() {
     setPage(0)
     refetch()
   }
+
+
 
   const handleOpenDetailsModal = (e: React.MouseEvent, report: any, evaluation: any) => {
     e.stopPropagation()
@@ -419,34 +416,6 @@ export default function ClassReportList() {
     })
   }
 
-  // Add prefetching function for next page
-  const prefetchNextPage = useCallback(async () => {
-    const totalPages = Math.ceil((classReport?.data?.meta?.total || 0) / 10)
-    if (page < totalPages - 1) {
-      const nextPageParams = {
-        limit: 10,
-        page: page + 2,
-        searchTerm,
-        className: filters.classes,
-        subject: filters.subjects,
-        teacher: filters.teachers,
-        date: filters.date,
-        hour: filters.hour,
-        lessonEvaluation: filters.lessonEvaluation,
-        handwriting: filters.handwriting,
-        startDate: filters.startDate,
-        endDate: filters.endDate,
-      }
-
-      try {
-      
-        console.log("📄 Prefetched next page")
-      } catch (error) {
-        console.error("Error prefetching next page:", error)
-      }
-    }
-  }, [page, classReport?.data?.meta?.total, searchTerm, filters])
-
   return (
     <ThemeProvider theme={theme}>
       <Box sx={{ flexGrow: 1, bgcolor: "background.default", minHeight: "100vh", borderRadius: 2 }}>
@@ -482,7 +451,7 @@ export default function ClassReportList() {
 
               {/* Filter Cards */}
               <Box sx={{ mb: 4 }}>
-                <div className="grid grid-cols-1 md:grid-cols-6 gap-[6px]">
+                <div className="grid grid-cols-1 md:grid-cols-6 gap-[6px]" >
                   {/* Class Filter */}
                   <Grid item xs={12} sm={6} md={1}>
                     <Card variant="outlined" sx={{ borderRadius: 2 }}>
@@ -682,9 +651,9 @@ export default function ClassReportList() {
                         background:
                           selectedDateRange.startDate || selectedDateRange.endDate
                             ? `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(
-                                theme.palette.secondary.main,
-                                0.05,
-                              )} 100%)`
+                              theme.palette.secondary.main,
+                              0.05,
+                            )} 100%)`
                             : "background.paper",
                         border:
                           selectedDateRange.startDate || selectedDateRange.endDate
@@ -713,6 +682,7 @@ export default function ClassReportList() {
                             onClick={handleDateRangePickerOpen}
                             fullWidth
                             sx={{
+
                               borderRadius: 2,
                               textTransform: "none",
                               justifyContent: "flex-start",
@@ -816,6 +786,7 @@ export default function ClassReportList() {
                 ) : (
                   <>
                     <div className="max-[320px]:block max-[320px]:w-[250px] max-[375px]:block max-[375px]:w-[300px] max-[425px]:block max-[425px]:w-[380px] max-[800px]:border max-[800px]:border-gray-300 max-[800px]:rounded   max-[800px]:block max-[800px]:max-w-[100vw] max-[800px]:relative max-[800px]:whitespace-nowrap max-[800px]:overflow-x-auto">
+
                       <Table
                         sx={{
                           minWidth: 900,
@@ -823,7 +794,7 @@ export default function ClassReportList() {
                             width: "100%",
                             minWidth: "100%",
                             tableLayout: { sm: "auto", md: "fixed", lg: "fixed" },
-                            px: 10,
+                            px: 10
                           },
                         }}
                       >
@@ -847,6 +818,7 @@ export default function ClassReportList() {
                                   cursor: "pointer",
                                   userSelect: "none",
                                   color: orderBy === "date" ? "primary.main" : "inherit",
+
                                 }}
                                 onClick={() => handleSort("date")}
                               >
@@ -862,7 +834,7 @@ export default function ClassReportList() {
                                 )}
                               </Box>
                             </TableCell>
-                            <TableCell>Student Name</TableCell>
+                            <TableCell >Student Name</TableCell>
                             <TableCell width="5%">
                               <Box
                                 sx={{
@@ -900,6 +872,7 @@ export default function ClassReportList() {
                         <TableBody>
                           {sortedReports.length > 0 ? (
                             sortedReports.map((report: any) => {
+
                               const isExpanded = expandedReport === report._id
 
                               return (
@@ -1035,7 +1008,7 @@ export default function ClassReportList() {
                                           <Chip
                                             icon={
                                               evaluation?.lessonEvaluation &&
-                                              evaluation?.lessonEvaluation !== "পড়া শিখেনি" ? (
+                                                evaluation?.lessonEvaluation !== "পড়া শিখেনি" ? (
                                                 <CheckCircleIcon sx={{ color: "#651FFF" }} />
                                               ) : (
                                                 <CancelIcon sx={{ color: "#FF1744" }} />
@@ -1047,20 +1020,19 @@ export default function ClassReportList() {
                                               fontWeight: 500,
                                               color:
                                                 evaluation?.lessonEvaluation &&
-                                                evaluation?.lessonEvaluation !== "পড়া শিখেনি"
+                                                  evaluation?.lessonEvaluation !== "পড়া শিখেনি"
                                                   ? "#651FFF"
                                                   : "#FF1744",
                                               bgcolor:
                                                 evaluation?.lessonEvaluation &&
-                                                evaluation?.lessonEvaluation !== "পড়া শিখেনি"
+                                                  evaluation?.lessonEvaluation !== "পড়া শিখেনি"
                                                   ? "#EDE7F6"
                                                   : "#FFEBEE",
-                                              border: `1px solid ${
-                                                evaluation?.lessonEvaluation &&
+                                              border: `1px solid ${evaluation?.lessonEvaluation &&
                                                 evaluation?.lessonEvaluation !== "পড়া শিখেনি"
-                                                  ? "#651FFF"
-                                                  : "#FF1744"
-                                              }`,
+                                                ? "#651FFF"
+                                                : "#FF1744"
+                                                }`,
                                             }}
                                           />
                                         </TableCell>
@@ -1085,20 +1057,22 @@ export default function ClassReportList() {
                                                 evaluation?.handwriting && evaluation?.handwriting !== "লিখেনি"
                                                   ? "#E0F7FA"
                                                   : "#FFEBEE",
-                                              border: `1px solid ${
-                                                evaluation?.handwriting && evaluation?.handwriting !== "লিখেনি"
-                                                  ? "#00BFA6"
-                                                  : "#FF1744"
-                                              }`,
+                                              border: `1px solid ${evaluation?.handwriting && evaluation?.handwriting !== "লিখেনি"
+                                                ? "#00BFA6"
+                                                : "#FF1744"
+                                                }`,
                                             }}
                                           />
                                         </TableCell>
                                         <TableCell align="center">
-                                          {evaluation?.parentSignature && evaluation?.parentSignature !== "" ? (
-                                            <CheckCircleIcon color="success" />
-                                          ) : (
-                                            <CancelIcon color="error" />
-                                          )}
+                                          {
+                                            evaluation?.parentSignature &&
+                                              evaluation?.parentSignature !== "" ? (
+                                              <CheckCircleIcon color="success" />
+                                            ) : (
+                                              <CancelIcon color="error" />
+                                            )
+                                          }
                                         </TableCell>
                                         <TableCell sx={{ py: 1.5 }}>
                                           <Box
@@ -1123,6 +1097,7 @@ export default function ClassReportList() {
                                                 <a
                                                   className="editIconWrap edit2"
                                                   href={`${process.env.NEXT_PUBLIC_BASE_API_URL}/class-report/classreport/${report._id}`}
+
                                                   target="_blank"
                                                   rel="noreferrer"
                                                 >
@@ -1234,14 +1209,13 @@ export default function ClassReportList() {
                       </Table>
                     </div>
                     <TablePagination
-                      rowsPerPageOptions={[10]} // Only allow 10 rows per page
+                      rowsPerPageOptions={[5, 10, 25, 50]}
                       component="div"
                       count={totalCount}
-                      rowsPerPage={10} // Fixed at 10
+                      rowsPerPage={rowsPerPage}
                       page={page}
                       onPageChange={handleChangePage}
                       onRowsPerPageChange={handleChangeRowsPerPage}
-                      onMouseEnter={prefetchNextPage}
                       sx={{
                         borderTop: `1px solid ${alpha(theme.palette.divider, 0.7)}`,
                         "& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows": {
@@ -1261,7 +1235,7 @@ export default function ClassReportList() {
       </Box>
 
       {/* Date Range Picker Dialog */}
-      {typeof window !== "undefined" && (
+      {typeof window !== 'undefined' && (
         <DateRangePicker
           open={dateRangePickerOpen}
           onClose={handleDateRangePickerClose}
