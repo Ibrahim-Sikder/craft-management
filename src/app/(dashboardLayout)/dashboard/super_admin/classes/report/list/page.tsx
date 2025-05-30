@@ -70,8 +70,6 @@ import { customTheme } from "@/ThemeStyle"
 import {
   useDeleteClassReportMutation,
   useGetAllClassReportsQuery,
-  prefetchClassReports,
-  clearClassReportCache,
 } from "@/redux/api/classReportApi"
 import { useGetAllClassesQuery } from "@/redux/api/classApi"
 import { useGetAllSubjectsQuery } from "@/redux/api/subjectApi"
@@ -275,7 +273,7 @@ export default function ClassReportList() {
     return `${format(selectedDateRange.startDate, "dd MMM yyyy")} - ${format(selectedDateRange.endDate, "dd MMM yyyy")}`
   }
   const handleRefresh = () => {
-    clearClassReportCache()
+   
     setRefreshKey((prev) => prev + 1)
     refetch()
   }
@@ -441,7 +439,7 @@ export default function ClassReportList() {
       }
 
       try {
-        await prefetchClassReports.initiate(nextPageParams)
+      
         console.log("📄 Prefetched next page")
       } catch (error) {
         console.error("Error prefetching next page:", error)
