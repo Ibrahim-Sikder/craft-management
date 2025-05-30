@@ -82,6 +82,8 @@ const StudentForm = ({ id }: StudentFormProps) => {
       refetchOnMountOrArgChange: true,
     },
   )
+
+
   const formRef = useRef<any>(null)
 
   const router = useRouter()
@@ -146,7 +148,7 @@ const StudentForm = ({ id }: StudentFormProps) => {
         presentThana: studentData.presentThana || "",
 
         // Academic Information
-        className: studentData.className || [],
+        className: studentData?.className || [],
         studentClassRoll: studentData.studentClassRoll || "",
         batch: studentData.batch || "",
         section: studentData.section || [],
@@ -205,11 +207,11 @@ const StudentForm = ({ id }: StudentFormProps) => {
   const classOption = useMemo(() => {
     if (!classData?.data?.classes) return []
     return classData?.data?.classes.map((clg: any) => ({
-      label: clg.className,
-      value: clg._id,
+      label: clg?.className,
+      value: clg?._id,
     }))
   }, [classData])
-  const secionOption = useMemo(() => {
+  const sectionOption = useMemo(() => {
     if (!sectionData?.data?.sections) return []
     return sectionData?.data?.sections.map((sec: any) => ({
       label: sec.name,
@@ -255,34 +257,30 @@ const StudentForm = ({ id }: StudentFormProps) => {
     setActiveStep((prevActiveStep) => prevActiveStep - 1)
   }
 
+
   const handleSubmit = async (data: FieldValues) => {
     if (!data.name) {
-      toast.error("Student name is missing!");
-    } else if (!data.gender) {
-      toast.error("Gender is missing!");
-    } else if (!data.birthDate) {
-      toast.error("Birth Date is missing!");
-    } else if (!data.birthRegistrationNo) {
-      toast.error("Birth registration is missing!");
-    } else if (!data.fatherName) {
-      toast.error("Father's name is missing!");
-    } else if (!data.motherName) {
-      toast.error("Mother's name is missing!");
-    } else if (!data.permanentAddress) {
-      toast.error("Permanent address is missing!");
-    } else if (!data.className) {
-      toast.error("Class name is missing!");
-    } else if (!data.section) {
-      toast.error("Section name is missing!");
-    } else if (!data.activeSession) {
-      toast.error("Active session is missing!");
-    }
-    else if (!data.studentType) {
-      toast.error("Student type is missing!");
+      toast.error("Student name is missing!")
+    } else if (!data.studentType) {
+      toast.error("Student type is missing!")
     } else {
-      const classArray = data.className?.map((item: any) => item.label) || [];
-      const sectionArray = data.section?.map((item: any) => item.label) || [];
-      const sessionArray = data.activeSession?.map((item: any) => item.label) || [];
+      const classArray = Array.isArray(data.className)
+        ? data.className.map((item: any) => (typeof item === "object" ? item.label : item))
+        : data.className
+          ? [data.className]
+          : []
+
+      const sectionArray = Array.isArray(data.section)
+        ? data.section.map((item: any) => (typeof item === "object" ? item.label : item))
+        : data.section
+          ? [data.section]
+          : []
+
+      const sessionArray = Array.isArray(data.activeSession)
+        ? data.activeSession.map((item: any) => (typeof item === "object" ? item.label : item))
+        : data.activeSession
+          ? [data.activeSession]
+          : []
 
       const submissionData = {
         ...data,
@@ -302,45 +300,43 @@ const StudentForm = ({ id }: StudentFormProps) => {
         className: classArray,
         section: sectionArray,
         activeSession: sessionArray,
-      };
+      }
 
-
+      console.log("submission data", submissionData)
 
       try {
         if (id) {
-          const res = await updateStudent({ id, data: submissionData }).unwrap();
+          const res = await updateStudent({ id, data: submissionData }).unwrap()
           if (res.success) {
-            setSuccess(true);
+            setSuccess(true)
             setSnackbar({
               open: true,
               message: "Student updated successfully!",
               severity: "success",
-            });
+            })
             setTimeout(() => {
-              router.push("/dashboard/super_admin/student/list");
-            }, 2000);
+              router.push("/dashboard/super_admin/student/list")
+            }, 2000)
           }
         } else {
-          const res = await createStudents(submissionData).unwrap();
+          const res = await createStudents(submissionData).unwrap()
           if (res.success) {
-            setSuccess(true);
+            setSuccess(true)
             setSnackbar({
               open: true,
               message: "Student registered successfully!",
               severity: "success",
-            });
+            })
             setTimeout(() => {
-              router.push("/dashboard/super_admin/student/list");
-            }, 2000);
+              router.push("/dashboard/super_admin/student/list")
+            }, 2000)
           }
         }
       } catch (error: any) {
-        console.error("❌ Submission error:", error);
-
+        console.error("❌ Submission error:", error)
       }
     }
-  };
-
+  }
 
 
   const handleCloseSnackbar = () => {
@@ -400,11 +396,7 @@ const StudentForm = ({ id }: StudentFormProps) => {
             <CraftSelectWithIcon
               name="gender"
               size="medium"
-              label={
-                <span>
-                  Gender <span style={{ color: 'red' }}>*</span>
-                </span>
-              }
+              label='Gender'
 
               placeholder="Select Gender"
               items={["Male", "Female", "Other"]}
@@ -440,11 +432,7 @@ const StudentForm = ({ id }: StudentFormProps) => {
             <CraftInputWithIcon
               fullWidth
               name="birthDate"
-              label={
-                <span>
-                  Birth Date <span style={{ color: 'red' }}>*</span>
-                </span>
-              }
+              label='  Birth Date'
               type="date"
               size="medium"
               InputProps={{
@@ -457,11 +445,7 @@ const StudentForm = ({ id }: StudentFormProps) => {
             <CraftInputWithIcon
               fullWidth
               name="birthRegistrationNo"
-              label={
-                <span>
-                  Birth Registration No. <span style={{ color: 'red' }}>*</span>
-                </span>
-              }
+              label='Birth Registration No.'
 
               placeholder="Birth Registration Number"
               size="medium"
@@ -474,11 +458,7 @@ const StudentForm = ({ id }: StudentFormProps) => {
             <CraftInputWithIcon
               fullWidth
               name="email"
-              label={
-                <span>
-                  Email
-                </span>
-              }
+              label='Email'
 
               placeholder="e.g., exmaple@gmail.com"
               size="medium"
@@ -508,11 +488,7 @@ const StudentForm = ({ id }: StudentFormProps) => {
             <CraftInputWithIcon
               fullWidth
               name="fatherName"
-              label={
-                <span>
-                  Father's Name. <span style={{ color: 'red' }}>*</span>
-                </span>
-              }
+              label=" Father's Name."
 
               placeholder="Father's Name"
               size="medium"
@@ -525,11 +501,7 @@ const StudentForm = ({ id }: StudentFormProps) => {
           <Grid item xs={12} md={6}>
             <CraftInputWithIcon
               fullWidth
-              label={
-                <span>
-                  Mother's Name. <span style={{ color: 'red' }}>*</span>
-                </span>
-              }
+              label='Mother Name'
               name="motherName"
 
               placeholder="Mother Name"
@@ -639,11 +611,7 @@ const StudentForm = ({ id }: StudentFormProps) => {
                 <Grid item xs={12}>
                   <CraftInputWithIcon
                     fullWidth
-                    label={
-                      <span>
-                        Permanent Address <span style={{ color: 'red' }}>*</span>
-                      </span>
-                    }
+                    label=' Permanent Address'
                     name="permanentAddress"
 
                     placeholder="Permanent Address"
@@ -769,17 +737,13 @@ const StudentForm = ({ id }: StudentFormProps) => {
           <Grid item xs={12} md={6}>
             <CraftIntAutoCompleteWithIcon
               name="className"
-
-              label={
-                <span>
-                  Class <span style={{ color: 'red' }}>*</span>
-                </span>
-              }
+              label='Class'
               placeholder="Select Class"
               options={classOption}
               fullWidth
               multiple
               icon={<Class color="primary" />}
+              required
             />
           </Grid>
 
@@ -811,14 +775,9 @@ const StudentForm = ({ id }: StudentFormProps) => {
             <CraftIntAutoCompleteWithIcon
               name="section"
               size="medium"
-
               placeholder="Select Section"
-              label={
-                <span>
-                  Section <span style={{ color: 'red' }}>*</span>
-                </span>
-              }
-              options={secionOption}
+              label='Section'
+              options={sectionOption}
               fullWidth
               multiple
               icon={<Class color="primary" />}
@@ -833,11 +792,7 @@ const StudentForm = ({ id }: StudentFormProps) => {
 
               placeholder="Select Active Session"
               options={sessionOption}
-              label={
-                <span>
-                  Active Session <span style={{ color: 'red' }}>*</span>
-                </span>
-              }
+              label=' Active Session'
               fullWidth
               multiple
               icon={<CalendarMonth color="primary" />}
@@ -868,7 +823,7 @@ const StudentForm = ({ id }: StudentFormProps) => {
                 </span>
               }
               placeholder="Select Student Type"
-              items={["Residential", "Non-residential"]}
+              items={["Residential", "Non-residential", "Day-care"]}
               adornment={<Person color="action" />}
             />
           </Grid>
@@ -1134,7 +1089,7 @@ const StudentForm = ({ id }: StudentFormProps) => {
           boxShadow: "0 4px 20px rgba(33, 150, 243, 0.4)",
         }}
       >
-        <Container maxWidth="xl">
+        <Container maxWidth="xl" sx={{p:{xs:"4px"}}}>
           <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
             <Person sx={{ fontSize: 40, mr: 2 }} />
             <Typography variant="h4" component="h1" sx={{ fontWeight: 700 }}>
@@ -1149,7 +1104,7 @@ const StudentForm = ({ id }: StudentFormProps) => {
         </Container>
       </Box>
 
-      <Container maxWidth="xl">
+      <Container maxWidth="xl" sx={{p:{xs:"4px"}}}>
         <Box sx={{ mb: 3 }}>
           <Link href="/dashboard/super_admin/student/list" passHref>
             <Button

@@ -1,9 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-"use client"
+'use client'
 
-import type React from "react"
-
-import { useState } from "react"
+import React, { useMemo, useState } from "react"
 import {
   Box,
   Button,
@@ -44,16 +43,16 @@ import {
   FileDownload,
   Refresh,
   School,
-  Person,
-  CurrencyExchange,
   Phone,
   Email,
-  Badge,
 } from "@mui/icons-material"
 import Link from "next/link"
 import { useDeleteStudentMutation, useGetAllStudentsQuery } from "@/redux/api/studentApi"
 
 import Swal from "sweetalert2"
+import { useGetAllClassesQuery } from "@/redux/api/classApi"
+import { useGetAllSectionsQuery } from "@/redux/api/sectionApi"
+import { useGetAllMetaQuery } from "@/redux/api/metaApi"
 
 const StudentList = () => {
   const theme = useTheme()
@@ -72,7 +71,6 @@ const StudentList = () => {
     background: "#f5f5f5",
   }
 
-
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(10)
   const [searchTerm, setSearchTerm] = useState("")
@@ -84,8 +82,8 @@ const StudentList = () => {
     gender: "",
     studentType: "",
   })
-
-
+  const { data: metaData } = useGetAllMetaQuery({})
+  console.log(metaData)
   // Fetch real data from backend
   const {
     data: studentData,
@@ -96,10 +94,36 @@ const StudentList = () => {
     page: page + 1,
     searchTerm: searchTerm,
   })
+
+  // Fetch class and section data separately
+  const { data: classData } = useGetAllClassesQuery({})
+  const { data: sectionData } = useGetAllSectionsQuery({})
+
   const [deleteStudent] = useDeleteStudentMutation()
 
   const students = studentData?.data || []
   const totalStudents = studentData?.meta?.total || 0
+
+  // Extract class and section options from their respective data
+  const classOptions = useMemo(() => {
+    if (!classData?.data) return [];
+    if (Array.isArray(classData.data)) {
+      return classData.data;
+    } else if (classData.data.classes && Array.isArray(classData.data.classes)) {
+      return classData.data.classes;
+    }
+    return [];
+  }, [classData]);
+
+  const sectionOptions = useMemo(() => {
+    if (!sectionData?.data) return [];
+    if (Array.isArray(sectionData.data)) {
+      return sectionData.data;
+    } else if (sectionData.data.sections && Array.isArray(sectionData.data.sections)) {
+      return sectionData.data.sections;
+    }
+    return [];
+  }, [sectionData]);
 
   // Handle search
   const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -129,31 +153,14 @@ const StudentList = () => {
     refetch()
   }
 
-
   const handleChangePage = (_event: unknown, newPage: number) => {
     setPage(newPage)
   }
-
 
   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
     setRowsPerPage(Number.parseInt(event.target.value, 10))
     setPage(0)
   }
-
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Active":
-        return "success"
-      case "Inactive":
-        return "error"
-      case "Graduated":
-        return "info"
-      default:
-        return "default"
-    }
-  }
-
 
   const getStudentTypeColor = (type: string) => {
     switch (type) {
@@ -161,15 +168,14 @@ const StudentList = () => {
         return customColors.accent1
       case "Non-Residential":
         return customColors.accent3
+      case "Day-care":
+        return customColors.accent4
       default:
         return customColors.accent4
     }
   }
 
-
   const handleDelete = async (id: string) => {
-
-
     setTimeout(() => {
       Swal.fire({
         title: "Are you sure?",
@@ -190,10 +196,8 @@ const StudentList = () => {
               icon: "success"
             });
 
-
             refetch();
           } catch (err: any) {
-
             Swal.fire({
               title: "Error!",
               text: err.data?.message || "Failed to delete student",
@@ -205,52 +209,114 @@ const StudentList = () => {
     }, 100);
   };
 
-  // Apply filters to students
   const filteredStudents = students.filter((student: any) => {
-    let match = true
+    if (!student) return false;
 
-    if (filters.className && student.className !== filters.className) match = false
-    if (filters.section && student.section !== filters.section) match = false
-    if (filters.status && student.status !== filters.status) match = false
-    if (filters.gender && student.gender !== filters.gender) match = false
-    if (filters.studentType && student.studentType !== filters.studentType) match = false
+    if (filters.className && String(filters.className) !== String(student.className)) {
+      return false;
+    }
 
-    return match
-  })
+    if (filters.section && String(filters.section) !== String(student.section)) {
+      return false;
+    }
 
-  // Calculate statistics
-  const activeStudents = students.filter((s: any) => s.status === "Active").length
-  const inactiveStudents = students.filter((s: any) => s.status !== "Active").length
-  const maleStudents = students.filter((s: any) => s.gender === "Male").length
-  const femaleStudents = students.filter((s: any) => s.gender === "Female").length
+    if (filters.status && String(filters.status) !== String(student.status)) {
+      return false;
+    }
 
-  // Get unique classes and sections for statistics
-  const classes: string[] = [...new Set(students.map((s: any) => s.className as string))] as string[]
-  const sections = [...new Set(students.map((s: any) => s.section))]
+    if (filters.gender && String(filters.gender) !== String(student.gender)) {
+      return false;
+    }
+
+    if (filters.studentType && String(filters.studentType) !== String(student.studentType)) {
+      return false;
+    }
+
+    return true;
+  });
+
 
   return (
-    <Container maxWidth="xl">
+    <Container maxWidth="xl" sx={{ p: { xs: "4px" } }}>
       <Paper
-        elevation={3}
-        sx={{
-          mb: 3,
-          background: `linear-gradient(135deg, ${customColors.primary} 0%, ${customColors.accent3} 100%)`,
-          color: "white",
-          py: 3,
-          borderRadius: 2,
-          boxShadow: `0 8px 32px 0 ${alpha(customColors.primary, 0.3)}`,
+        className="mb-6 py-6 rounded-lg text-white"
+        style={{
+          background: "linear-gradient(135deg, #6a1b9a 0%, #283593 100%)",
         }}
       >
-        <Box sx={{ display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <School sx={{ mr: 1, fontSize: 40 }} />
-          <Typography variant="h4" component="h1" sx={{ fontWeight: "bold" }}>
-            Student Management System
-          </Typography>
-        </Box>
-        <Typography variant="subtitle1" align="center" sx={{ mt: 1, opacity: 0.9 }}>
-          Comprehensive view of all students with advanced filtering and management options
-        </Typography>
+        <div className="flex flex-col items-center justify-center content-center">
+          <div className="flex flex-row justify-center items-center content-center text-white">
+            <School sx={{ mr: 1, fontSize: { sm: 25, md: 40 } }} />
+            <div className="text-lg md:text-4xl font-bold">Student Management System</div>
+          </div>
+
+          <div className="mt-2">
+            <div className="flex justify-center mb-2">
+              <Chip
+                label={`Total Students: ${metaData?.data?.totalStudents}`}
+                sx={{
+                  bgcolor: alpha("#ffffff", 0.2),
+                  color: "white",
+                  fontWeight: 600,
+                  px: 2,
+                  py: 0.5,
+                  fontSize: "1rem"
+                }}
+              />
+            </div>
+
+            {/* Secondary Stats - 2 rows of statistics */}
+            <div className="flex flex-col justify-center gap-1">
+
+              {/* First row - Student Types */}
+              <div className="grid grid-cols-2 md:grid-cols-3  justify-center gap-1">
+                <Chip
+                  label={`Residential: ${metaData?.data?.totalResidentialStudents}`}
+                  sx={{
+                    bgcolor: alpha(customColors.accent1, 0.7),
+                    color: "white",
+                    fontWeight: 500
+                  }}
+                />
+                <Chip
+                  label={`Non-residential: ${metaData?.data?.totalNonResidentialStudents}`}
+                  sx={{
+                    bgcolor: alpha(customColors.accent3, 0.7),
+                    color: "white",
+                    fontWeight: 500
+                  }}
+                />
+                <Chip
+                  label={`Day-care: ${metaData?.data?.totalDayCareStudents}`}
+                  sx={{
+                    bgcolor: alpha(customColors.accent4, 0.7),
+                    color: "white",
+                    fontWeight: 500
+                  }}
+                />
+                <Chip
+                  label={`Male: ${metaData?.data?.totalMaleStudents}`}
+                  sx={{
+                    bgcolor: alpha(customColors.info, 0.7),
+                    color: "white",
+                    fontWeight: 500
+                  }}
+                />
+                <Chip
+                  label={`Female: ${metaData?.data?.totalFemaleStudents}`}
+                  sx={{
+                    bgcolor: alpha(customColors.secondary, 0.7),
+                    color: "white",
+                    fontWeight: 500
+                  }}
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
       </Paper>
+
 
       <Card
         sx={{
@@ -351,9 +417,9 @@ const StudentList = () => {
                   <InputLabel>Class</InputLabel>
                   <Select name="className" value={filters.className} label="Class" onChange={handleFilterChange}>
                     <MenuItem value="">All Classes</MenuItem>
-                    {classes.map((cls: string) => (
-                      <MenuItem key={cls} value={cls}>
-                        {cls}
+                    {classOptions.map((cls: any, i: number) => (
+                      <MenuItem key={i} value={cls.className || cls.name || cls}>
+                        {cls.className || cls.name || cls}
                       </MenuItem>
                     ))}
                   </Select>
@@ -364,9 +430,9 @@ const StudentList = () => {
                   <InputLabel>Section</InputLabel>
                   <Select name="section" value={filters.section} label="Section" onChange={handleFilterChange}>
                     <MenuItem value="">All Sections</MenuItem>
-                    {sections.map((section: any) => (
-                      <MenuItem key={section} value={section}>
-                        {section}
+                    {sectionOptions.map((section: any, i: number) => (
+                      <MenuItem key={i} value={section.name || section}>
+                        {section.name || section}
                       </MenuItem>
                     ))}
                   </Select>
@@ -404,7 +470,8 @@ const StudentList = () => {
                   >
                     <MenuItem value="">All Types</MenuItem>
                     <MenuItem value="Residential">Residential</MenuItem>
-                    <MenuItem value="Non-Residential">Non-Residential</MenuItem>
+                    <MenuItem value="Non-residential">Non-residential</MenuItem>
+                    <MenuItem value="Day-care">Day-care</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>
@@ -413,8 +480,12 @@ const StudentList = () => {
         )}
 
         <CardContent sx={{ p: 0 }}>
-          <TableContainer>
-            <Table sx={{ minWidth: 650 }}>
+          <TableContainer sx={{
+            overflowX: "auto",
+            WebkitOverflowScrolling: "touch",
+            maxWidth: "100vw"
+          }}>
+            <Table sx={{ minWidth: { xs: 0, md: 650 } }}>
               <TableHead>
                 <TableRow
                   sx={{
@@ -428,7 +499,6 @@ const StudentList = () => {
                   <TableCell sx={{ fontWeight: "bold", color: customColors.primary }}>Guardian</TableCell>
                   <TableCell sx={{ fontWeight: "bold", color: customColors.primary }}>Contact</TableCell>
                   <TableCell sx={{ fontWeight: "bold", color: customColors.primary }}>Type</TableCell>
-                  <TableCell sx={{ fontWeight: "bold", color: customColors.primary }}>Status</TableCell>
                   <TableCell sx={{ fontWeight: "bold", color: customColors.primary }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
@@ -451,7 +521,7 @@ const StudentList = () => {
                         },
                       }}
                     >
-                      <TableCell>
+                      <TableCell sx={{ width: { xs: 2 } }}>
                         <Chip
                           label={student.studentId}
                           size="small"
@@ -462,20 +532,20 @@ const StudentList = () => {
                           }}
                         />
                       </TableCell>
-                      <TableCell>
+                      <TableCell sx={{}}>
                         <Box sx={{ display: "flex", alignItems: "center" }}>
                           <Avatar
                             src={student.studentPhoto}
-                            sx={{ width: 80, height: 80, border: "4px solid white" }}
+                            sx={{ width: { sm: 10, md: 80 }, height: { sm: 10, md: 80 }, border: "4px solid white" }}
                           />
                           <Box>
-                            <Typography variant="body1" sx={{ fontWeight: "medium", color: customColors.primary }}>
+                            <div className="text-sm md:text-lg">
                               {student.name}
-                            </Typography>
+                            </div>
                             <Typography
                               variant="caption"
                               color="text.secondary"
-                              sx={{ display: "flex", alignItems: "center" }}
+                              sx={{ display: { xs: "none", md: "flex" }, alignItems: "center" }}
                             >
                               <Email fontSize="small" sx={{ mr: 0.5, fontSize: 12 }} />
                               {student.email}
@@ -483,7 +553,7 @@ const StudentList = () => {
                           </Box>
                         </Box>
                       </TableCell>
-                      <TableCell>
+                      <TableCell sx={{}}>
                         <Typography variant="body2" sx={{ fontWeight: "medium" }}>
                           {student.className}
                         </Typography>
@@ -491,7 +561,7 @@ const StudentList = () => {
                           {student.section}
                         </Typography>
                       </TableCell>
-                      <TableCell>
+                      <TableCell >
                         <Chip
                           label={student.studentClassRoll}
                           size="small"
@@ -501,13 +571,13 @@ const StudentList = () => {
                           }}
                         />
                       </TableCell>
-                      <TableCell>
+                      <TableCell >
                         <Typography variant="body2">{student.guardianName}</Typography>
                         <Typography variant="caption" color="text.secondary" display="block">
                           {student.relation}
                         </Typography>
                       </TableCell>
-                      <TableCell>
+                      <TableCell >
                         <Typography variant="body2" sx={{ display: "flex", alignItems: "center" }}>
                           <Phone fontSize="small" sx={{ mr: 0.5, fontSize: 14 }} />
                           {student.mobile || "N/A"}
@@ -522,7 +592,7 @@ const StudentList = () => {
                           {student.guardianMobile}
                         </Typography>
                       </TableCell>
-                      <TableCell>
+                      <TableCell sx={{}}>
                         <Chip
                           label={student.studentType}
                           size="small"
@@ -534,19 +604,11 @@ const StudentList = () => {
                         />
                       </TableCell>
                       <TableCell>
-                        <Chip
-                          label={student.status}
-                          size="small"
-                          color={getStatusColor(student.status)}
-                          sx={{ fontWeight: "medium" }}
-                        />
-                      </TableCell>
-                      <TableCell>
                         <Box sx={{ display: "flex" }}>
                           <Tooltip title="View Details">
                             <IconButton
                               component={Link}
-                              href={`/dashboard/super_admin/student/profile?id=${student._id}`}
+                              href={`/dashboard/super_admin/student/profile/${student._id}`}
                               size="small"
                               sx={{
                                 color: customColors.info,
@@ -599,7 +661,7 @@ const StudentList = () => {
             </Table>
           </TableContainer>
           <TablePagination
-            rowsPerPageOptions={[5, 10, 25, 50]}
+            rowsPerPageOptions={[10, 25, 50]}
             component="div"
             count={totalStudents}
             rowsPerPage={rowsPerPage}
@@ -614,210 +676,6 @@ const StudentList = () => {
           />
         </CardContent>
       </Card>
-
-      <Box sx={{ display: "flex", flexDirection: { xs: "column", md: "row" }, gap: 3, mb: 3 }}>
-        <Card
-          sx={{
-            width: { xs: "100%", md: "48%" },
-            borderRadius: 2,
-            overflow: "hidden",
-            boxShadow: `0 4px 20px 0 ${alpha(theme.palette.grey[500], 0.2)}`,
-          }}
-        >
-          <Box
-            sx={{
-              p: 2,
-              background: `linear-gradient(90deg, ${alpha(customColors.primary, 0.1)} 0%, ${alpha(customColors.accent2, 0.05)} 100%)`,
-              borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-            }}
-          >
-            <Typography variant="h6" sx={{ color: customColors.primary, fontWeight: "bold" }}>
-              Student Statistics
-            </Typography>
-          </Box>
-          <CardContent>
-            <Grid container spacing={2}>
-              <Grid item xs={6}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 2,
-                    background: `linear-gradient(135deg, ${customColors.success} 0%, ${alpha(customColors.success, 0.8)} 100%)`,
-                    color: "white",
-                    borderRadius: 2,
-                    boxShadow: `0 4px 12px 0 ${alpha(customColors.success, 0.3)}`,
-                  }}
-                >
-                  <Typography variant="h4" sx={{ fontWeight: "bold" }}>
-                    {activeStudents}
-                  </Typography>
-                  <Typography variant="body2" sx={{ display: "flex", alignItems: "center" }}>
-                    <Badge sx={{ mr: 0.5 }} /> Active Students
-                  </Typography>
-                </Paper>
-              </Grid>
-              <Grid item xs={6}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 2,
-                    background: `linear-gradient(135deg, ${customColors.error} 0%, ${alpha(customColors.error, 0.8)} 100%)`,
-                    color: "white",
-                    borderRadius: 2,
-                    boxShadow: `0 4px 12px 0 ${alpha(customColors.error, 0.3)}`,
-                  }}
-                >
-                  <Typography variant="h4" sx={{ fontWeight: "bold" }}>
-                    {inactiveStudents}
-                  </Typography>
-                  <Typography variant="body2" sx={{ display: "flex", alignItems: "center" }}>
-                    <Badge sx={{ mr: 0.5 }} /> Inactive Students
-                  </Typography>
-                </Paper>
-              </Grid>
-              <Grid item xs={6}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 2,
-                    background: `linear-gradient(135deg, ${customColors.accent3} 0%, ${alpha(customColors.accent3, 0.8)} 100%)`,
-                    color: "white",
-                    borderRadius: 2,
-                    boxShadow: `0 4px 12px 0 ${alpha(customColors.accent3, 0.3)}`,
-                  }}
-                >
-                  <Typography variant="h4" sx={{ fontWeight: "bold" }}>
-                    {maleStudents}
-                  </Typography>
-                  <Typography variant="body2" sx={{ display: "flex", alignItems: "center" }}>
-                    <Person sx={{ mr: 0.5 }} /> Male Students
-                  </Typography>
-                </Paper>
-              </Grid>
-              <Grid item xs={6}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 2,
-                    background: `linear-gradient(135deg, ${customColors.accent1} 0%, ${alpha(customColors.accent1, 0.8)} 100%)`,
-                    color: "white",
-                    borderRadius: 2,
-                    boxShadow: `0 4px 12px 0 ${alpha(customColors.accent1, 0.3)}`,
-                  }}
-                >
-                  <Typography variant="h4" sx={{ fontWeight: "bold" }}>
-                    {femaleStudents}
-                  </Typography>
-                  <Typography variant="body2" sx={{ display: "flex", alignItems: "center" }}>
-                    <Person sx={{ mr: 0.5 }} /> Female Students
-                  </Typography>
-                </Paper>
-              </Grid>
-            </Grid>
-          </CardContent>
-        </Card>
-
-        <Card
-          sx={{
-            width: { xs: "100%", md: "48%" },
-            borderRadius: 2,
-            overflow: "hidden",
-            boxShadow: `0 4px 20px 0 ${alpha(theme.palette.grey[500], 0.2)}`,
-          }}
-        >
-          <Box
-            sx={{
-              p: 2,
-              background: `linear-gradient(90deg, ${alpha(customColors.secondary, 0.1)} 0%, ${alpha(customColors.accent4, 0.05)} 100%)`,
-              borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-            }}
-          >
-            <Typography variant="h6" sx={{ color: customColors.secondary, fontWeight: "bold" }}>
-              Financial Overview
-            </Typography>
-          </Box>
-          <CardContent>
-            <Grid container spacing={2}>
-              <Grid item xs={6}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 2,
-                    background: `linear-gradient(135deg, ${customColors.accent4} 0%, ${alpha(customColors.accent4, 0.8)} 100%)`,
-                    color: "white",
-                    borderRadius: 2,
-                    boxShadow: `0 4px 12px 0 ${alpha(customColors.accent4, 0.3)}`,
-                  }}
-                >
-                  <Typography variant="h4" sx={{ fontWeight: "bold" }}>
-                    {students.reduce((sum: number, student: any) => sum + (student.monthlyFee || 0), 0)}
-                  </Typography>
-                  <Typography variant="body2" sx={{ display: "flex", alignItems: "center" }}>
-                    <CurrencyExchange sx={{ mr: 0.5 }} /> Monthly Fees
-                  </Typography>
-                </Paper>
-              </Grid>
-              <Grid item xs={6}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 2,
-                    background: `linear-gradient(135deg, ${customColors.info} 0%, ${alpha(customColors.info, 0.8)} 100%)`,
-                    color: "white",
-                    borderRadius: 2,
-                    boxShadow: `0 4px 12px 0 ${alpha(customColors.info, 0.3)}`,
-                  }}
-                >
-                  <Typography variant="h4" sx={{ fontWeight: "bold" }}>
-                    {students.reduce((sum: number, student: any) => sum + (student.admissionFee || 0), 0)}
-                  </Typography>
-                  <Typography variant="body2" sx={{ display: "flex", alignItems: "center" }}>
-                    <CurrencyExchange sx={{ mr: 0.5 }} /> Admission Fees
-                  </Typography>
-                </Paper>
-              </Grid>
-              <Grid item xs={6}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 2,
-                    background: `linear-gradient(135deg, ${customColors.warning} 0%, ${alpha(customColors.warning, 0.8)} 100%)`,
-                    color: "white",
-                    borderRadius: 2,
-                    boxShadow: `0 4px 12px 0 ${alpha(customColors.warning, 0.3)}`,
-                  }}
-                >
-                  <Typography variant="h4" sx={{ fontWeight: "bold" }}>
-                    {students.reduce((sum: number, student: any) => sum + (student.previousDues || 0), 0)}
-                  </Typography>
-                  <Typography variant="body2" sx={{ display: "flex", alignItems: "center" }}>
-                    <CurrencyExchange sx={{ mr: 0.5 }} /> Previous Dues
-                  </Typography>
-                </Paper>
-              </Grid>
-              <Grid item xs={6}>
-                <Paper
-                  elevation={0}
-                  sx={{
-                    p: 2,
-                    background: `linear-gradient(135deg, ${customColors.accent2} 0%, ${alpha(customColors.accent2, 0.8)} 100%)`,
-                    color: "white",
-                    borderRadius: 2,
-                    boxShadow: `0 4px 12px 0 ${alpha(customColors.accent2, 0.3)}`,
-                  }}
-                >
-                  <Typography variant="h4" sx={{ fontWeight: "bold" }}>
-                    {students.reduce((sum: number, student: any) => sum + (student.sessionFee || 0), 0)}
-                  </Typography>
-                  <Typography variant="body2" sx={{ display: "flex", alignItems: "center" }}>
-                    <CurrencyExchange sx={{ mr: 0.5 }} /> Session Fees
-                  </Typography>
-                </Paper>
-              </Grid>
-            </Grid>
-          </CardContent>
-        </Card>
-      </Box>
     </Container>
   )
 }

@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Box,
   Typography,
@@ -50,84 +50,48 @@ import {
   Settings,
   Help,
   Logout,
+  Class,
 } from "@mui/icons-material"
 import { useRouter } from "next/navigation"
+import { useGetAllMetaQuery } from "@/redux/api/metaApi"
 
-// Custom gradient background component
-// const GradientBackground = ({ children, startColor, endColor, direction = "to right" }: any) => {
-//   return (
-//     <Box
-//       sx={{
-//         background: `linear-gradient(${direction}, ${startColor}, ${endColor})`,
-//         borderRadius: 2,
-//         height: "100%",
-//         display: "flex",
-//         flexDirection: "column",
-//         justifyContent: "space-between",
-//         overflow: "hidden",
-//         position: "relative",
-//         transition: "all 0.3s ease",
-//         "&:hover": {
-//           transform: "translateY(-5px)",
-//           boxShadow: "0 10px 20px rgba(0,0,0,0.1)",
-//         },
-//       }}
-//     >
-//       {children}
-//     </Box>
-//   )
-// }
-
-// Animated stat card component
 const StatCard = ({ icon, title, value, trend, trendValue, color }: any) => {
   const theme = useTheme()
   const isPositive = trend === "up"
 
   return (
-    <Card
-      elevation={0}
-      sx={{
-        borderRadius: 3,
-        overflow: "hidden",
-        height: "100%",
-        border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-        background: alpha(theme.palette.background.paper, 0.8),
-        backdropFilter: "blur(10px)",
-        transition: "all 0.3s ease",
-        "&:hover": {
-          boxShadow: `0 8px 32px 0 ${alpha(color, 0.2)}`,
-          transform: "translateY(-5px)",
-        },
-      }}
-    >
-      <CardContent sx={{ p: 2.5 }}>
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 2 }}>
-          <Avatar
-            sx={{
-              bgcolor: alpha(color, 0.1),
-              color: color,
-              width: 48,
-              height: 48,
-            }}
-          >
-            {icon}
-          </Avatar>
-          <Chip
-            icon={isPositive ? <TrendingUp fontSize="small" /> : <TrendingDown fontSize="small" />}
-            label={`${trendValue}%`}
-            size="small"
-            color={isPositive ? "success" : "error"}
-            sx={{ height: 24 }}
-          />
-        </Box>
-        <Typography variant="h4" component="div" sx={{ fontWeight: 700, mb: 0.5 }}>
-          {value}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          {title}
-        </Typography>
-      </CardContent>
-    </Card>
+    <>
+      <div className="rounded-xl overflow-hidden  border border-gray-200/10 bg-white/80 backdrop-blur-md transition-all duration-300 ease-in-out hover:shadow-xl hover:translate-y-[-5px]">
+        <div className="p-[10px] md:p-[20px]">
+          <div className="flex justify-between items-start md:mb-4">
+            <Avatar
+              sx={{
+                bgcolor: alpha(color, 0.1),
+                color: color,
+                width: { xs: 60, md: 48 },
+                height: { xs: 60, md: 48 }
+              }}
+            >
+              {icon}
+            </Avatar>
+            <div>
+              <div className="md:hidden text-2xl font-bold mb-1">{value}</div>
+              <div className="md:hidden text-sm text-gray-500">{title}</div>
+            </div>
+            <Chip
+              icon={isPositive ? <TrendingUp fontSize="small" /> : <TrendingDown fontSize="small" />}
+              label={`${trendValue}%`}
+              size="small"
+              color={isPositive ? "success" : "error"}
+              sx={{ height: 24 }}
+            />
+
+          </div>
+          <div className="hidden md:block text-4xl font-bold mb-1">{value}</div>
+          <div className="hidden md:block text-sm text-gray-500">{title}</div>
+        </div>
+      </div> 
+    </>
   )
 }
 
@@ -224,23 +188,60 @@ const AttendanceProgress = ({ title, present, total, color }: any) => {
 const DashboardHome = () => {
   const router = useRouter()
   const theme = useTheme()
-  // const [anchorEl, setAnchorEl] = useState(null)
   const [profileAnchorEl, setProfileAnchorEl] = useState(null)
-
-  // Mock data
+  const { data, isLoading } = useGetAllMetaQuery({})
+  const metaData = data?.data
+  // Initial stats with default values
   const [stats, setStats] = useState({
-    students: { total: 85, trend: "up", trendValue: 12 },
-    teachers: { total: 42, trend: "up", trendValue: 8 },
+    students: { total: 0, trend: "up", trendValue: 12 },
+    teachers: { total: 0, trend: "up", trendValue: 8 },
+    classes: { total: 0, trend: "up", trendValue: 5 },
+    staffs: { total: 0, trend: "up", trendValue: 10 },
     income: { total: "₹24,500", trend: "up", trendValue: 15 },
     expenses: { total: "₹18,200", trend: "down", trendValue: 5 },
     attendance: {
-      students: { present: 78, total: 85 },
-      teachers: { present: 38, total: 42 },
+      students: { present: 0, total: 0 },
+      teachers: { present: 0, total: 0 },
     },
     smsBalance: 250,
     smsSent: 42,
     websiteVisits: 1243,
   })
+
+  // Update stats when metaData is available
+  useEffect(() => {
+    if (metaData) {
+      setStats(prevStats => ({
+        ...prevStats,
+        students: {
+          ...prevStats.students,
+          total: metaData.totalStudents || 0
+        },
+        teachers: {
+          ...prevStats.teachers,
+          total: metaData.totalTeachers || 0
+        },
+        classes: {
+          ...prevStats.classes,
+          total: metaData.totalClasses || 0
+        },
+        staffs: {
+          ...prevStats.staffs,
+          total: metaData.totalStaffs || 0
+        },
+        attendance: {
+          students: {
+            present: Math.round((metaData.totalStudents || 0) * 0.85),
+            total: metaData.totalStudents || 0
+          },
+          teachers: {
+            present: Math.round((metaData.totalTeachers || 0) * 0.9),
+            total: metaData.totalTeachers || 0
+          },
+        },
+      }))
+    }
+  }, [metaData])
 
   // Modules data
   const modules = [
@@ -337,8 +338,6 @@ const DashboardHome = () => {
     },
   ]
 
-
-
   // Handle profile menu open/close
   const handleProfileMenuOpen = (event: any) => {
     setProfileAnchorEl(event.currentTarget)
@@ -368,12 +367,11 @@ const DashboardHome = () => {
         borderRadius: 6,
         p: { xs: 1, sm: 3 },
       }}
-
     >
       {/* Header */}
       <div className="md:flex justify-between items-center mb-4 gap-2">
         <div>
-          <h1 className="text-center md:text-left md:mb-2 text-[#4F0187] font-[1000] text-4xl md:text-5xl">
+          <h1 className="text-center md:text-left md:mb-2 text-[#4F0187] font-[1000] text-3xl md:text-5xl">
             Craft Dashboard
           </h1>
 
@@ -388,8 +386,6 @@ const DashboardHome = () => {
               fullWidth
               placeholder="Search by Teacher, Student, Date, Subject, or Class..."
               variant="outlined"
-              // value={searchTerm}
-              // onChange={handleSearchChange}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -485,13 +481,13 @@ const DashboardHome = () => {
         </div>
       </div>
 
-      {/* Stats Overview */}
+      {/* Stats Overview - Now with dynamic data */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
             icon={<Group />}
             title="Total Students"
-            value={stats.students.total}
+            value={isLoading ? "Loading..." : stats.students.total}
             trend={stats.students.trend}
             trendValue={stats.students.trendValue}
             color={theme.palette.primary.main}
@@ -501,39 +497,38 @@ const DashboardHome = () => {
           <StatCard
             icon={<Work />}
             title="Total Teachers"
-            value={stats.teachers.total}
+            value={isLoading ? "Loading..." : stats.teachers.total}
             trend={stats.teachers.trend}
             trendValue={stats.teachers.trendValue}
             color="#FF5722"
           />
         </Grid>
+
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
-            icon={<TrendingUp />}
-            title="Today's Income"
-            value={stats.income.total}
-            trend={stats.income.trend}
-            trendValue={stats.income.trendValue}
-            color="#4CAF50"
+            icon={<Person />}
+            title="Total Staff"
+            value={isLoading ? "Loading..." : stats.staffs.total}
+            trend={stats.staffs.trend}
+            trendValue={stats.staffs.trendValue}
+            color="#3F51B5"
           />
         </Grid>
         <Grid item xs={12} sm={6} md={3}>
           <StatCard
-            icon={<TrendingDown />}
-            title="Today's Expenses"
-            value={stats.expenses.total}
-            trend={stats.expenses.trend}
-            trendValue={stats.expenses.trendValue}
-            color="#F44336"
+            icon={<Class />}
+            title="Total Classes"
+            value={isLoading ? "Loading..." : stats.classes.total}
+            trend={stats.classes.trend}
+            trendValue={stats.classes.trendValue}
+            color="#4CAF50"
           />
         </Grid>
       </Grid>
 
       {/* Attendance & SMS Overview */}
       <div className="grid grid-cols-12 gap-2 space-y-2">
-
-        <div className="lg:col-span-8 col-span-full rounded-lg h-full border border-[rgba(0,0,0,0.1)] bg-white/80 backdrop-blur text-black"
-        >
+        <div className="lg:col-span-8 col-span-full rounded-lg h-full border border-[rgba(0,0,0,0.1)] bg-white/80 backdrop-blur text-black">
           <div className="p-2 md:p-6">
             {/* Header */}
             <div className="flex justify-between items-center mb-6">
@@ -637,12 +632,9 @@ const DashboardHome = () => {
               </Button>
             </div>
           </div>
-
-
         </div>
 
-        <div className="lg:col-span-4 col-span-full rounded-lg h-full border border-[rgba(0,0,0,0.1)] bg-white/80 backdrop-blur text-black"
-        >
+        <div className="lg:col-span-4 col-span-full rounded-lg h-full border border-[rgba(0,0,0,0.1)] bg-white/80 backdrop-blur text-black">
           <div className="p-6">
             {/* Header */}
             <div className="flex justify-between items-center mb-6">
@@ -724,13 +716,7 @@ const DashboardHome = () => {
 
       {/* Modules Grid */}
       <div className="mb-2">
-
-      <h1 className="font-bold text-black text-2xl my-3"> Quick Access Modules</h1>
-      {/* <Box sx={{ mb: 2 }}>
-
-        <Typography variant="h6" fontWeight="bold" sx={{ mb: 3 }}>
-          Quick Access Modules
-        </Typography> */}
+        <h1 className="font-bold text-black text-2xl my-3">Quick Access Modules</h1>
         <Grid container spacing={3}>
           {modules.map((module, index) => (
             <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
@@ -745,8 +731,6 @@ const DashboardHome = () => {
             </Grid>
           ))}
         </Grid>
-      {/* </Box> */}
-
       </div>
     </Box>
   )

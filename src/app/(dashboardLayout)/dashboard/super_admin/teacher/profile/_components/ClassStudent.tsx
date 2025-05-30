@@ -37,7 +37,7 @@ import {
   Visibility,
   Delete
 } from "@mui/icons-material"
-import { teacherData } from "./TeacherOverview"
+import { teacherData } from "./TeacherProfile"
 
 
 const ClassStudent = () => {
@@ -89,7 +89,11 @@ const ClassStudent = () => {
               }
             />
             <CardContent sx={{ p: 0 }}>
-              <TableContainer>
+              <TableContainer sx={{
+            overflowX: "auto",  
+            WebkitOverflowScrolling: "touch",  
+            maxWidth: "100vw"  
+          }}>
                 <Table>
                   <TableHead>
                     <TableRow sx={{ 

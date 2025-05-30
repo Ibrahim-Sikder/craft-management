@@ -32,59 +32,6 @@ import {
   alpha,
 } from "@mui/material"
 import { Download, Print, Home, Notifications, Add, Menu as MenuIcon, Search } from "@mui/icons-material"
-import { ThemeProvider, createTheme } from "@mui/material/styles"
-
-// Create a custom theme
-const theme = createTheme({
-  palette: {
-    primary: {
-      main: "#1976d2",
-    },
-    secondary: {
-      main: "#f50057",
-    },
-    background: {
-      default: "#f5f7fa",
-    },
-  },
-  typography: {
-    fontFamily: '"Poppins", "Roboto", "Helvetica", "Arial", sans-serif',
-    h5: {
-      fontWeight: 600,
-    },
-    h6: {
-      fontWeight: 600,
-    },
-  },
-  components: {
-    MuiPaper: {
-      styleOverrides: {
-        root: {
-          borderRadius: 12,
-          boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
-        },
-      },
-    },
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          borderRadius: 8,
-          textTransform: "none",
-          fontWeight: 600,
-        },
-      },
-    },
-    MuiTextField: {
-      styleOverrides: {
-        root: {
-          "& .MuiOutlinedInput-root": {
-            borderRadius: 8,
-          },
-        },
-      },
-    },
-  },
-})
 
 // Mock data for students
 const students = [
@@ -159,7 +106,7 @@ export default function AdmitCardPage() {
   }
 
   return (
-    <ThemeProvider theme={theme}>
+ 
       <Box sx={{ flexGrow: 1, bgcolor: "background.default", minHeight: "100vh" }}>
         <AppBar position="static" elevation={0} color="default" sx={{ bgcolor: "white" }}>
           <Toolbar>
@@ -352,7 +299,11 @@ export default function AdmitCardPage() {
                 </Button>
               </Box>
             </Box>
-            <TableContainer>
+            <TableContainer sx={{
+                        overflowX: "auto",  
+                        WebkitOverflowScrolling: "touch",  
+                        maxWidth: "100vw"  
+                      }}>
               <Table sx={{ minWidth: 650 }}>
                 <TableHead>
                   <TableRow sx={{ bgcolor: alpha(muiTheme.palette.primary.main, 0.03) }}>
@@ -427,6 +378,6 @@ export default function AdmitCardPage() {
           </Typography>
         </Box>
       </Box>
-    </ThemeProvider>
+
   )
 }

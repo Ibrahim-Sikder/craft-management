@@ -1,8 +1,8 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import {
   Box,
@@ -11,73 +11,59 @@ import {
   TextField,
   Button,
   Paper,
-  IconButton,
-  Avatar,
   Grid,
-  Chip,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  TablePagination,
-  Menu,
-  MenuItem,
-  Divider,
   InputAdornment,
-  Tooltip,
   Dialog,
   DialogActions,
   DialogContent,
   DialogContentText,
   DialogTitle,
-  useMediaQuery,
-  Skeleton,
   Fade,
+  Tooltip,
+  IconButton,
   alpha,
-
-  ThemeProvider,
+  CardMedia,
+  CardContent,
+  Avatar,
+  Chip,
 } from "@mui/material"
+
 import {
   Add as AddIcon,
   Search as SearchIcon,
-  FilterList as FilterListIcon,
-  MoreVert as MoreVertIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  Visibility as VisibilityIcon,
-  ArrowUpward as ArrowUpwardIcon,
-  ArrowDownward as ArrowDownwardIcon,
-  CheckCircle as CheckCircleIcon,
-  Cancel as CancelIcon,
-  AccessTime as AccessTimeIcon,
-  Download as DownloadIcon,
-  Print as PrintIcon,
   Refresh as RefreshIcon,
-  Person as PersonIcon,
-  Book as BookIcon,
-  School as SchoolIcon,
+  School,
 } from "@mui/icons-material"
+
 import Link from "next/link"
-import { useGetAllClassesQuery } from "@/redux/api/classApi"
+import { useDeleteClassMutation, useGetAllClassesQuery } from "@/redux/api/classApi"
 import { theme } from "@/lib/Theme/Theme"
+import Loader from "@/app/loading"
+import { motion } from "framer-motion"
+import { DepartmentChip, StyledCard } from "@/style/customeStyle"
 
-
+const departmentColors: Record<string, string> = {
+  Languages: "#3a7bd5",
+  Mathematics: "#00d2ff",
+  Science: "#6a11cb",
+  History: "#fc4a1a",
+  "Computer Science": "#00b09b",
+  "Physical Education": "#f46b45",
+  Art: "#c471ed",
+  Music: "#12c2e9",
+  "Not Specified": "#888888",
+}
 
 
 export default function ClassesListPage() {
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(10)
   const [searchTerm, setSearchTerm] = useState("")
-  const [statusFilter, setStatusFilter] = useState<string | null>(null)
-  const [orderBy, setOrderBy] = useState<string>("name")
-  const [order, setOrder] = useState<"asc" | "desc">("asc")
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
-  const [filterAnchorEl, setFilterAnchorEl] = useState<null | HTMLElement>(null)
   const [selectedClass, setSelectedClass] = useState<any | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-
+  const [deleteClass] = useDeleteClassMutation()
   const {
     data: classData,
     isLoading,
@@ -88,20 +74,8 @@ export default function ClassesListPage() {
     searchTerm: searchTerm,
   })
 
-
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"))
-
   const handleRefresh = () => {
     refetch()
-  }
-
-  const handleChangePage = (event: unknown, newPage: number) => {
-    setPage(newPage)
-  }
-
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setRowsPerPage(Number.parseInt(event.target.value, 10))
-    setPage(0)
   }
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -109,42 +83,17 @@ export default function ClassesListPage() {
     setPage(0)
   }
 
-  const handleFilterClick = (event: React.MouseEvent<HTMLButtonElement>) => {
-    setFilterAnchorEl(event.currentTarget)
-  }
 
-  const handleFilterClose = () => {
-    setFilterAnchorEl(null)
-  }
 
-  const handleFilterSelect = (status: string | null) => {
-    setStatusFilter(status)
-    setFilterAnchorEl(null)
-    setPage(0)
-  }
-
-  const handleSort = (property: string) => {
-    const isAsc = orderBy === property && order === "asc"
-    setOrder(isAsc ? "desc" : "asc")
-    setOrderBy(property)
-  }
-
-  const handleMenuClick = (event: React.MouseEvent<HTMLButtonElement>, classItem: any) => {
-    setAnchorEl(event.currentTarget)
-    setSelectedClass(classItem)
-  }
-
-  const handleMenuClose = () => {
-    setAnchorEl(null)
-  }
-
-  const handleDeleteClick = () => {
-    setDeleteDialogOpen(true)
-    setAnchorEl(null)
-  }
-
-  const handleDeleteConfirm = () => {
-    // Implement actual delete logic here
+  const handleDeleteConfirm = async () => {
+    if (selectedClass?._id) {
+      try {
+        await deleteClass(selectedClass._id).unwrap()
+        refetch()
+      } catch (error) {
+        console.error("Error deleting class:", error)
+      }
+    }
     setDeleteDialogOpen(false)
     setSelectedClass(null)
   }
@@ -153,16 +102,11 @@ export default function ClassesListPage() {
     setDeleteDialogOpen(false)
   }
 
-  // Get the classes from the API response
   const classes = classData?.data?.classes || []
-
-  // Get the total count from the API response
-  const totalCount = classData?.data?.meta?.total || 0
-
-
+  console.log("classes data ", classes)
 
   return (
-    <ThemeProvider theme={theme}>
+    <>
       <Box sx={{ flexGrow: 1, bgcolor: "background.default", minHeight: "100vh", borderRadius: 2 }}>
         <Container maxWidth="xl" sx={{ mt: 0, mb: 8, borderRadius: 2 }}>
           <Fade in={true} timeout={800}>
@@ -205,7 +149,6 @@ export default function ClassesListPage() {
                   </Button>
                 </Box>
               </Box>
-
               <Paper elevation={0} sx={{ mb: 4, overflow: "hidden" }}>
                 <Box sx={{ p: 3, borderBottom: "1px solid rgba(0, 0, 0, 0.06)" }}>
                   <Grid container spacing={2} alignItems="center">
@@ -232,423 +175,155 @@ export default function ClassesListPage() {
                         }}
                       />
                     </Grid>
-                    <Grid item xs={12} md={6}>
-                      <Box sx={{ display: "flex", gap: 2, justifyContent: { xs: "flex-start", md: "flex-end" } }}>
-                        <Button
-                          variant="outlined"
-                          color="inherit"
-                          startIcon={<FilterListIcon />}
-                          onClick={handleFilterClick}
-                          sx={{
-                            borderColor: "rgba(0, 0, 0, 0.12)",
-                            color: "text.secondary",
-                            "&:hover": {
-                              borderColor: "primary.main",
-                              bgcolor: "rgba(99, 102, 241, 0.04)",
-                            },
-                            ...(statusFilter && {
-                              borderColor: "primary.main",
-                              color: "primary.main",
-                              bgcolor: "rgba(99, 102, 241, 0.04)",
-                            }),
-                          }}
-                        >
-                          {statusFilter || "Filter by Status"}
-                        </Button>
-                        <Menu
-                          anchorEl={filterAnchorEl}
-                          open={Boolean(filterAnchorEl)}
-                          onClose={handleFilterClose}
-                          PaperProps={{
-                            elevation: 3,
-                            sx: {
-                              mt: 1,
-                              minWidth: 180,
-                              borderRadius: 2,
-                              overflow: "hidden",
-                            },
-                          }}
-                        >
-                          <MenuItem
-                            onClick={() => handleFilterSelect(null)}
-                            sx={{
-                              py: 1.5,
-                              ...(statusFilter === null && {
-                                bgcolor: "rgba(99, 102, 241, 0.08)",
-                                color: "primary.main",
-                              }),
-                            }}
-                          >
-                            All Statuses
-                          </MenuItem>
-                          <MenuItem
-                            onClick={() => handleFilterSelect("Active")}
-                            sx={{
-                              py: 1.5,
-                              ...(statusFilter === "Active" && {
-                                bgcolor: "rgba(99, 102, 241, 0.08)",
-                                color: "primary.main",
-                              }),
-                            }}
-                          >
-                            <CheckCircleIcon fontSize="small" color="success" sx={{ mr: 1 }} />
-                            Active
-                          </MenuItem>
-                          <MenuItem
-                            onClick={() => handleFilterSelect("Inactive")}
-                            sx={{
-                              py: 1.5,
-                              ...(statusFilter === "Inactive" && {
-                                bgcolor: "rgba(99, 102, 241, 0.08)",
-                                color: "primary.main",
-                              }),
-                            }}
-                          >
-                            <CancelIcon fontSize="small" color="error" sx={{ mr: 1 }} />
-                            Inactive
-                          </MenuItem>
-                          <MenuItem
-                            onClick={() => handleFilterSelect("Pending")}
-                            sx={{
-                              py: 1.5,
-                              ...(statusFilter === "Pending" && {
-                                bgcolor: "rgba(99, 102, 241, 0.08)",
-                                color: "primary.main",
-                              }),
-                            }}
-                          >
-                            <AccessTimeIcon fontSize="small" color="warning" sx={{ mr: 1 }} />
-                            Pending
-                          </MenuItem>
-                        </Menu>
-
-                        {!isMobile && (
-                          <>
-                            <Button
-                              variant="outlined"
-                              color="inherit"
-                              startIcon={<DownloadIcon />}
-                              sx={{
-                                borderColor: "rgba(0, 0, 0, 0.12)",
-                                color: "text.secondary",
-                                "&:hover": {
-                                  borderColor: "primary.main",
-                                  bgcolor: "rgba(99, 102, 241, 0.04)",
-                                },
-                              }}
-                            >
-                              Export
-                            </Button>
-                            <Button
-                              variant="outlined"
-                              color="inherit"
-                              startIcon={<PrintIcon />}
-                              sx={{
-                                borderColor: "rgba(0, 0, 0, 0.12)",
-                                color: "text.secondary",
-                                "&:hover": {
-                                  borderColor: "primary.main",
-                                  bgcolor: "rgba(99, 102, 241, 0.04)",
-                                },
-                              }}
-                            >
-                              Print
-                            </Button>
-                          </>
-                        )}
-                      </Box>
-                    </Grid>
                   </Grid>
                 </Box>
 
                 {isLoading ? (
-                  <Box sx={{ p: 2 }}>
-                    {Array.from(new Array(5)).map((_, index) => (
-                      <Box key={index} sx={{ display: "flex", py: 2, px: 2, alignItems: "center" }}>
-                        <Skeleton variant="circular" width={40} height={40} sx={{ mr: 2 }} />
-                        <Box sx={{ width: "100%" }}>
-                          <Skeleton variant="text" width="40%" height={30} />
-                          <Box sx={{ display: "flex", mt: 1 }}>
-                            <Skeleton variant="text" width="20%" sx={{ mr: 2 }} />
-                            <Skeleton variant="text" width="30%" />
-                          </Box>
-                        </Box>
-                        <Skeleton variant="rectangular" width={100} height={36} sx={{ borderRadius: 1 }} />
-                      </Box>
-                    ))}
-                  </Box>
+                  <Loader />
                 ) : (
                   <>
-                    <TableContainer>
-                      <Table sx={{ minWidth: 650 }}>
-                        <TableHead>
-                          <TableRow>
-                            <TableCell>
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  cursor: "pointer",
-                                  userSelect: "none",
-                                  color: orderBy === "className" ? "primary.main" : "inherit",
-                                }}
-                                onClick={() => handleSort("className")}
-                              >
-                                Class Name
-                                {orderBy === "className" && (
-                                  <Box component="span" sx={{ display: "inline-flex", ml: 0.5 }}>
-                                    {order === "asc" ? (
-                                      <ArrowUpwardIcon fontSize="small" />
-                                    ) : (
-                                      <ArrowDownwardIcon fontSize="small" />
-                                    )}
-                                  </Box>
-                                )}
-                              </Box>
-                            </TableCell>
-                            <TableCell>
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  cursor: "pointer",
-                                  userSelect: "none",
-                                }}
-                              >
-                                Description
-                              </Box>
-                            </TableCell>
-                            <TableCell>
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  cursor: "pointer",
-                                  userSelect: "none",
-                                }}
-                              >
-                                Teacher
-                              </Box>
-                            </TableCell>
-                            <TableCell>
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  cursor: "pointer",
-                                  userSelect: "none",
-                                }}
-                              >
-                                Students
-                              </Box>
-                            </TableCell>
-                            <TableCell>
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  cursor: "pointer",
-                                  userSelect: "none",
-                                }}
-                              >
-                                Subjects
-                              </Box>
-                            </TableCell>
-                            <TableCell>
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  cursor: "pointer",
-                                  userSelect: "none",
-                                  color: orderBy === "createdAt" ? "primary.main" : "inherit",
-                                }}
-                                onClick={() => handleSort("createdAt")}
-                              >
-                                Created
-                                {orderBy === "createdAt" && (
-                                  <Box component="span" sx={{ display: "inline-flex", ml: 0.5 }}>
-                                    {order === "asc" ? (
-                                      <ArrowUpwardIcon fontSize="small" />
-                                    ) : (
-                                      <ArrowDownwardIcon fontSize="small" />
-                                    )}
-                                  </Box>
-                                )}
-                              </Box>
-                            </TableCell>
-                            <TableCell align="right">Actions</TableCell>
-                          </TableRow>
-                        </TableHead>
-                        <TableBody>
-                          {classes.length > 0 ? (
-                            classes.map((classItem: any) => {
-                              // Get the teacher name from the teachers array
-                              const teacherName =
-                                classItem.teachers && classItem.teachers.length > 0
-                                  ? classItem.teachers[0].name
-                                  : "No Teacher"
-
-                              // Get the number of students
-                              const studentCount = classItem.students ? classItem.students.length : 0
-
-                              // Get the number of subjects
-                              const subjectCount = classItem.subjects ? classItem.subjects.length : 0
-
-                              // Format the date
-                              const createdDate = new Date(classItem.createdAt).toLocaleDateString()
-
-                              return (
-                                <TableRow key={classItem._id} sx={{ transition: "all 0.2s" }}>
-                                  <TableCell component="th" scope="row">
-                                    <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
-                                      {classItem.className}
-                                    </Typography>
-                                  </TableCell>
-                                  <TableCell>
-                                    <Typography
-                                      variant="body2"
-                                      sx={{
-                                        maxWidth: 200,
-                                        overflow: "hidden",
-                                        textOverflow: "ellipsis",
-                                        whiteSpace: "nowrap",
-                                      }}
-                                    >
-                                      {classItem.description || "No description"}
-                                    </Typography>
-                                  </TableCell>
-                                  <TableCell>
-                                    <Box sx={{ display: "flex", alignItems: "center" }}>
-                                      <Avatar
-                                        sx={{
-                                          width: 32,
-                                          height: 32,
-                                          mr: 1.5,
-                                          bgcolor: "primary.main",
-                                          fontSize: "0.875rem",
-                                        }}
-                                      >
-                                        <PersonIcon fontSize="small" />
-                                      </Avatar>
-                                      <Typography variant="body2">{teacherName}</Typography>
-                                    </Box>
-                                  </TableCell>
-                                  <TableCell>
-                                    <Chip
-                                      icon={<SchoolIcon fontSize="small" />}
-                                      label={`${studentCount} student${studentCount !== 1 ? "s" : ""}`}
-                                      size="small"
-                                      sx={{
-                                        bgcolor: alpha(theme.palette.info.main, 0.1),
-                                        color: "info.main",
-                                      }}
-                                    />
-                                  </TableCell>
-                                  <TableCell>
-                                    <Chip
-                                      icon={<BookIcon fontSize="small" />}
-                                      label={`${subjectCount} subject${subjectCount !== 1 ? "s" : ""}`}
-                                      size="small"
-                                      sx={{
-                                        bgcolor: alpha(theme.palette.secondary.main, 0.1),
-                                        color: "secondary.main",
-                                      }}
-                                    />
-                                  </TableCell>
-                                  <TableCell>
-                                    <Typography variant="body2" color="text.secondary">
-                                      {createdDate}
-                                    </Typography>
-                                  </TableCell>
-                                  <TableCell align="right">
-                                    <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-                                      {!isMobile && (
-                                        <>
-                                          <Tooltip title="View Details">
-                                            <IconButton
-                                              size="small"
-                                              sx={{
-                                                color: "info.main",
-                                                bgcolor: alpha(theme.palette.info.main, 0.1),
-                                                mr: 1,
-                                                "&:hover": {
-                                                  bgcolor: alpha(theme.palette.info.main, 0.2),
-                                                },
-                                              }}
-                                            >
-                                              <VisibilityIcon fontSize="small" />
-                                            </IconButton>
-                                          </Tooltip>
-                                          <Tooltip title="Edit Class">
-                                            <IconButton
-                                            component={Link} 
-                                            href={`/dashboard/super_admin/classes/class/update?id=${classItem._id}`}
-                                              size="small"
-                                              sx={{
-                                                color: "warning.main",
-                                                bgcolor: alpha(theme.palette.warning.main, 0.1),
-                                                mr: 1,
-                                                "&:hover": {
-                                                  bgcolor: alpha(theme.palette.warning.main, 0.2),
-                                                },
-                                              }}
-                                            >
-                                              <EditIcon fontSize="small" />
-                                            </IconButton>
-                                          </Tooltip>
-                                        </>
-                                      )}
-                                      <Tooltip title="More Actions">
-                                        <IconButton
-                                          size="small"
-                                          onClick={(e) => handleMenuClick(e, classItem)}
-                                          sx={{
-                                            color: "text.secondary",
-                                            bgcolor: "rgba(0, 0, 0, 0.04)",
-                                            "&:hover": {
-                                              bgcolor: "rgba(0, 0, 0, 0.08)",
-                                            },
-                                          }}
-                                        >
-                                          <MoreVertIcon fontSize="small" />
-                                        </IconButton>
-                                      </Tooltip>
-                                    </Box>
-                                  </TableCell>
-                                </TableRow>
-                              )
-                            })
-                          ) : (
-                            <TableRow>
-                              <TableCell colSpan={7} align="center" sx={{ py: 8 }}>
-                                <Box sx={{ textAlign: "center" }}>
-                                  <SearchIcon sx={{ fontSize: 48, color: "text.disabled", mb: 2 }} />
-                                  <Typography variant="h6" gutterBottom>
-                                    No classes found
-                                  </Typography>
-                                  <Typography variant="body2" color="text.secondary">
-                                    Try adjusting your search or filter to find what you&apos;re looking for.
-                                  </Typography>
+                    <Grid container spacing={3}>
+                      {classes.map((classItem: any, index: any) => (
+                        <Grid item xs={12} sm={6} md={4} lg={3} key={classItem.id}>
+                          <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.4, delay: index * 0.05 }}
+                          >
+                            <StyledCard>
+                              <Box sx={{ position: "relative" }}>
+                                <CardMedia
+                                  component="div"
+                                  sx={{
+                                    height: 100,
+                                    backgroundColor: departmentColors[classItem.className] || departmentColors["Not Specified"],
+                                    position: "relative",
+                                  }}
+                                />
+                                <Box
+                                  sx={{
+                                    position: "absolute",
+                                    top: 50,
+                                    left: "50%",
+                                    transform: "translateX(-50%)",
+                                    zIndex: 1,
+                                  }}
+                                >
+                                  <Avatar
+                                    src={classItem.className}
+                                    sx={{ width: 80, height: 80, border: "4px solid white" }}
+                                  >
+                                    {classItem.className.charAt(0)}
+                                  </Avatar>
                                 </Box>
-                              </TableCell>
-                            </TableRow>
-                          )}
-                        </TableBody>
-                      </Table>
-                    </TableContainer>
-                    <TablePagination
-                      rowsPerPageOptions={[5, 10, 25, 50]}
-                      component="div"
-                      count={totalCount}
-                      rowsPerPage={rowsPerPage}
-                      page={page}
-                      onPageChange={handleChangePage}
-                      onRowsPerPageChange={handleChangeRowsPerPage}
-                      sx={{
-                        borderTop: "1px solid rgba(0, 0, 0, 0.06)",
-                      }}
-                    />
+                              </Box>
+                              <CardContent sx={{ pt: 5, pb: 2 }}>
+                                <Box sx={{ textAlign: "center", mb: 2 }}>
+                                  <Typography variant="h6" fontWeight={600} gutterBottom>
+                                    {classItem.className}
+                                  </Typography>
+
+                                  {classItem.sections.map((section: any) => (
+                                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                                      Section: {section?.name ?? "No Section"}
+                                    </Typography>
+                                  ))}
+                                  <div>
+                                    Class Teacher:
+                                    <Chip
+                                      label={classItem.className}
+                                      size="small"
+                                      sx={{
+                                        bgcolor: alpha(theme.palette.secondary.main, 0.08),
+                                        color: theme.palette.secondary.main,
+                                        fontWeight: 500,
+                                        borderRadius: 1,
+                                        "& .MuiChip-label": { px: 1 },
+                                      }}
+                                    />
+                                  </div>
+                                  <div>
+                                    Class Teacher:
+                                    <DepartmentChip
+                                      label={classItem.className}
+                                      size="small"
+                                      sx={{
+                                        backgroundColor: alpha(departmentColors[classItem.name] || departmentColors["Not Specified"], 0.1),
+                                        color: departmentColors[classItem.name] || departmentColors["Not Specified"],
+                                      }}
+                                    />
+                                  </div>
+                                </Box>
+                                <Box sx={{ mb: 2 }}>
+                                  <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                                    <School fontSize="small" sx={{ color: "text.secondary", mr: 1 }} />
+                                    <Typography variant="body2" color="text.secondary">
+                                      Total Student: {classItem.className}
+                                    </Typography>
+                                  </Box>
+                                  <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                                    <School fontSize="small" sx={{ color: "text.secondary", mr: 1 }} />
+                                    <Typography variant="body2" color="text.secondary">
+                                      Total Subjects: {classItem.className}
+                                    </Typography>
+                                  </Box>
+                                  <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                                    <School fontSize="small" sx={{ color: "text.secondary", mr: 1 }} />
+                                    <Typography variant="body2" color="text.secondary">
+                                      Total Teacher: {classItem.className}
+                                    </Typography>
+                                  </Box>
+                                </Box>
+                              </CardContent>
+                              <Box sx={{
+                                position: "absolute",
+                                top: 8,
+                                right: 8,
+                                zIndex: 1,
+                              }}>
+
+
+                                <Tooltip title="Edit Class">
+                                  <IconButton
+                                    component={Link}
+                                    href={`/dashboard/super_admin/classes/class/update?id=${classItem._id}`}
+                                    size="small"
+                                    sx={{
+                                      color: "warning.main",
+                                      bgcolor: alpha(theme.palette.warning.main, 0.1),
+                                      mr: 1,
+                                      "&:hover": {
+                                        bgcolor: alpha(theme.palette.warning.main, 0.2),
+                                      },
+                                    }}
+                                  >
+                                    <EditIcon fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+                                <Tooltip title="Delete Class">
+                                  <IconButton
+                                    size="small"
+                                    onClick={(e) => {
+                                      setSelectedClass(classItem)
+                                      setDeleteDialogOpen(true)
+                                    }}
+                                    sx={{
+                                      color: "error.main",
+                                      bgcolor: alpha(theme.palette.error.main, 0.1),
+                                      "&:hover": {
+                                        bgcolor: alpha(theme.palette.error.main, 0.2),
+                                      },
+                                    }}
+                                  >
+                                    <DeleteIcon fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+                              </Box>
+                            </StyledCard>
+                          </motion.div>
+                        </Grid>
+                      ))}
+                    </Grid>
                   </>
                 )}
               </Paper>
@@ -656,37 +331,6 @@ export default function ClassesListPage() {
           </Fade>
         </Container>
       </Box>
-
-      {/* Context Menu */}
-      <Menu
-        anchorEl={anchorEl}
-        open={Boolean(anchorEl)}
-        onClose={handleMenuClose}
-        PaperProps={{
-          elevation: 3,
-          sx: {
-            mt: 1,
-            minWidth: 180,
-            borderRadius: 2,
-            overflow: "hidden",
-          },
-        }}
-      >
-        <MenuItem onClick={handleMenuClose} sx={{ py: 1.5 }}>
-          <VisibilityIcon fontSize="small" sx={{ mr: 2, color: "info.main" }} />
-          View Details
-        </MenuItem>
-        <MenuItem onClick={handleMenuClose} sx={{ py: 1.5 }}>
-          <EditIcon fontSize="small" sx={{ mr: 2, color: "warning.main" }} />
-          Edit Class
-        </MenuItem>
-        <Divider />
-        <MenuItem onClick={handleDeleteClick} sx={{ py: 1.5, color: "error.main" }}>
-          <DeleteIcon fontSize="small" sx={{ mr: 2 }} />
-          Delete Class
-        </MenuItem>
-      </Menu>
-
       {/* Delete Confirmation Dialog */}
       <Dialog
         open={deleteDialogOpen}
@@ -724,6 +368,6 @@ export default function ClassesListPage() {
           </Button>
         </DialogActions>
       </Dialog>
-    </ThemeProvider>
+    </>
   )
 }

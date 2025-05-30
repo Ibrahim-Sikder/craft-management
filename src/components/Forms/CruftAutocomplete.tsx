@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
-import type React from "react"
+import React from "react"
 import { Controller, useFormContext } from "react-hook-form"
 import TextField from "@mui/material/TextField"
 import Autocomplete from "@mui/material/Autocomplete"
@@ -30,11 +30,18 @@ type TStateProps = {
   margin?: "none" | "normal" | "dense"
   defaultValue?: any
   placeholder?: string
-  disabled?:any,
+  disabled?: boolean
   onInputChange?: (event: React.SyntheticEvent, value: string) => void
   onChange?: (event: React.SyntheticEvent, value: any) => void
-}
+  disableClearable?: boolean
+  blurOnSelect?: boolean
+  clearOnBlur?: boolean
 
+  // ✅ Added props
+  forcePopupIcon?: boolean
+  selectOnFocus?: boolean
+  handleHomeEndKeys?: boolean
+}
 
 const CraftIntAutoComplete = ({
   name,
@@ -50,11 +57,16 @@ const CraftIntAutoComplete = ({
   placeholder = "Select options",
   onInputChange,
   onChange,
-  disabled
+  disabled,
+  disableClearable = false,
+  blurOnSelect = false,
+  clearOnBlur = false,
+  forcePopupIcon = true,
+  selectOnFocus = false,
+  handleHomeEndKeys = false,
 }: TStateProps) => {
   const { control } = useFormContext()
 
-  // Helper function to get the display value from an option
   const getOptionLabel = (option: any): string => {
     if (!option) return ""
     if (typeof option === "string") return option
@@ -77,20 +89,17 @@ const CraftIntAutoComplete = ({
           options={options}
           getOptionLabel={getOptionLabel}
           value={field.value || defaultValue}
-          renderTags={(value: readonly any[], getTagProps) =>
-            (Array.isArray(value) ? value : []).map((option: any, index: number) => {
-              const tagProps = getTagProps({ index })
-              const { key, ...restTagProps } = tagProps
-              return <Chip key={key || index} variant="outlined" label={getOptionLabel(option)} {...restTagProps} />
-            })
-          }
+          disableClearable={disableClearable}
+          blurOnSelect={blurOnSelect}
+          clearOnBlur={clearOnBlur}
+          forcePopupIcon={forcePopupIcon}
+          selectOnFocus={selectOnFocus}
+          handleHomeEndKeys={handleHomeEndKeys}
           onChange={(event, newValue) => {
-            // Handle custom onChange if provided
             if (onChange) {
               onChange(event, newValue)
             }
 
-            // Process the value for React Hook Form
             const processedValue = Array.isArray(newValue)
               ? newValue.map((item) => {
                   if (typeof item === "string") return item
@@ -104,6 +113,22 @@ const CraftIntAutoComplete = ({
             field.onChange(processedValue)
           }}
           onInputChange={onInputChange}
+          renderTags={(value: readonly any[], getTagProps) =>
+            (Array.isArray(value) ? value : []).map(
+              (option: any, index: number) => {
+                const tagProps = getTagProps({ index })
+                const { key, ...restTagProps } = tagProps
+                return (
+                  <Chip
+                    key={key || index}
+                    variant="outlined"
+                    label={getOptionLabel(option)}
+                    {...restTagProps}
+                  />
+                )
+              }
+            )
+          }
           renderInput={(params) => (
             <TextField
               {...params}
