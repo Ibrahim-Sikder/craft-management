@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
  
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -182,8 +183,6 @@ export default function ClassReportList() {
     page: 1,
     searchTerm: "",
   })
-
-  // Add this debounced refetch function after the API queries
   const debouncedRefetch = useCallback(
     debounce(() => {
       refetch()
@@ -191,7 +190,6 @@ export default function ClassReportList() {
     [refetch],
   )
 
-  // Update the useEffect to use debounced refetch
   useEffect(() => {
     debouncedRefetch()
     return () => debouncedRefetch.cancel()
@@ -205,8 +203,6 @@ export default function ClassReportList() {
   }, [classReport])
 
   const totalCount = classReport?.data?.meta?.total || 0
-
-  console.log("student classreport", classReport)
   const classOptions = useMemo(() => {
     return (
       classData?.data?.classes?.map((cls: any) => ({
@@ -235,8 +231,6 @@ export default function ClassReportList() {
   const hourOptions = ["১ম", "২য়", "৩য়", "৪র্থ", "৫ম", "৬ষ্ঠ", "৭ম", "৮ম"]
   const lessonEvaluationOptions = ["পড়া শিখেছে", "আংশিক শিখেছে", "পড়া শিখেনি", "অনুপস্থিত"]
   const handleWrittenOptions = ["লিখেছে", "আংশিক লিখেছে", "লিখেনি", "কাজ নেই"]
-
-  // Date Range Picker Handlers
   const handleDateRangePickerOpen = () => {
     setDateRangePickerOpen(true)
   }
@@ -258,7 +252,6 @@ export default function ClassReportList() {
         `Date range applied: ${format(range.startDate, "dd MMM yyyy")} - ${format(range.endDate, "dd MMM yyyy")}`,
       )
     }
-
     setPage(0)
     refetch()
   }
@@ -281,8 +274,6 @@ export default function ClassReportList() {
     }
     return `${format(selectedDateRange.startDate, "dd MMM yyyy")} - ${format(selectedDateRange.endDate, "dd MMM yyyy")}`
   }
-
-  // Update the handleRefresh function to clear cache
   const handleRefresh = () => {
     clearClassReportCache()
     setRefreshKey((prev) => prev + 1)
@@ -294,27 +285,21 @@ export default function ClassReportList() {
   }
 
   const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    // Keep limit fixed at 10 to match backend
     const newRowsPerPage = 10
     setRowsPerPage(newRowsPerPage)
     setPage(0)
   }
 
-  // Update the handleSearchChange to remove immediate refetch
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value)
     setPage(0)
-    // The actual refetch will be handled by the useEffect with debouncedRefetch
   }
-
-  // Update the handleFilterChange to remove immediate refetch
   const handleFilterChange = (filterName: keyof Filters, value: string) => {
     setFilters((prev) => ({
       ...prev,
       [filterName]: value,
     }))
     setPage(0)
-    // The actual refetch will be handled by the useEffect with debouncedRefetch
   }
 
   const handleSort = (property: string) => {
