@@ -29,14 +29,7 @@ export const classReportApi = baseApi.injectEndpoints({
         data,
       }),
       invalidatesTags: ["class-report"],
-      onQueryStarted: async (arg, { dispatch, queryFulfilled }) => {
-        try {
-          await queryFulfilled
-          clientCache.clear()
-        } catch (error) {
-          console.error("Error creating class report:", error)
-        }
-      },
+     
     }),
 
     getAllClassReports: build.query({
@@ -133,18 +126,7 @@ export const classReportApi = baseApi.injectEndpoints({
         method: "PATCH",
         data,
       }),
-      invalidatesTags: (result, error, { id }) => [
-        { type: "class-report", id },
-        { type: "class-report", id: "LIST" },
-      ],
-      onQueryStarted: async (arg, { dispatch, queryFulfilled }) => {
-        try {
-          await queryFulfilled
-          clientCache.clear()
-        } catch (error) {
-          console.error("Error updating class report:", error)
-        }
-      },
+      providesTags:['class-report']
     }),
 
     deleteClassReport: build.mutation({
@@ -152,18 +134,7 @@ export const classReportApi = baseApi.injectEndpoints({
         url: `/class-report/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: (result, error, id) => [
-        { type: "class-report", id },
-        { type: "class-report", id: "LIST" },
-      ],
-      onQueryStarted: async (arg, { dispatch, queryFulfilled }) => {
-        try {
-          await queryFulfilled
-          clientCache.clear()
-        } catch (error) {
-          console.error("Error deleting class report:", error)
-        }
-      },
+   providesTags:['class-report']
     }),
 
     prefetchClassReports: build.query({
