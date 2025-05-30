@@ -1,4 +1,24 @@
-import { baseApi } from "./baseApi";
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { baseApi } from "./baseApi"
+
+// Define a type for the cache entry
+interface CacheEntry {
+  timestamp: number
+  data: any
+}
+
+// Create a simple in-memory cache
+const clientCache = new Map<string, CacheEntry>()
+const CACHE_TTL = 60 * 1000 // 1 minute cache TTL
+
+// Helper function to create a cache key from query parameters
+const createCacheKey = (params: Record<string, any>): string => {
+  return Object.entries(params)
+    .sort(([keyA], [keyB]) => keyA.localeCompare(keyB))
+    .map(([key, value]) => `${key}=${value}`)
+    .join("&")
+}
 
 export const classReportApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
@@ -9,9 +29,19 @@ export const classReportApi = baseApi.injectEndpoints({
         data,
       }),
       invalidatesTags: ["class-report"],
+      onQueryStarted: async (arg, { dispatch, queryFulfilled }) => {
+        try {
+          await queryFulfilled
+          clientCache.clear()
+        } catch (error) {
+          console.error("Error creating class report:", error)
+        }
+      },
     }),
- getAllClassReports: build.query({
-      query: ({      limit,
+
+    getAllClassReports: build.query({
+      query: ({
+        limit = 10, // Default to 10 to match backend limit
         page,
         searchTerm,
         className,
@@ -23,25 +53,69 @@ export const classReportApi = baseApi.injectEndpoints({
         handwriting,
         endDate,
         startDate,
-      }) => ({
-        url: "/class-report",
-        method: "GET",
-        params: {
+      }) => {
+        // Ensure limit is always 10
+        const fixedLimit = 10
+
+        const params = {
           page,
-          limit,
+          limit: fixedLimit,
           searchTerm,
           className,
           subject,
           teacher,
           date,
           hour,
-          lessonEvaluation, 
+          lessonEvaluation,
           handwriting,
-           endDate,
-        startDate,
-        },
-      }),
-      providesTags: ["class-report"],
+          endDate,
+          startDate,
+        }
+
+        const cacheKey = createCacheKey(params)
+        const cachedResponse = clientCache.get(cacheKey)
+
+        if (cachedResponse && Date.now() - cachedResponse.timestamp < CACHE_TTL) {
+          console.log("✅ Client cache hit for class reports")
+        } else {
+          console.log("⏳ Client cache miss for class reports")
+        }
+
+        return {
+          url: "/class-report",
+          method: "GET",
+          params,
+        }
+      },
+      keepUnusedDataFor: 300,
+      transformResponse: (response: any, meta, arg) => {
+        const cacheKey = createCacheKey(arg)
+
+        if (response && response.success) {
+          clientCache.set(cacheKey, {
+            timestamp: Date.now(),
+            data: response,
+          })
+        }
+
+        return response
+      },
+      serializeQueryArgs: ({ queryArgs }) => {
+        return createCacheKey(queryArgs)
+      },
+      forceRefetch({ currentArg, previousArg }) {
+        return JSON.stringify(currentArg) !== JSON.stringify(previousArg)
+      },
+      providesTags: (result) =>
+        result?.data?.reports
+          ? [
+              ...result.data.reports.map(({ _id }: { _id: string }) => ({
+                type: "class-report" as const,
+                id: _id,
+              })),
+              { type: "class-report", id: "LIST" },
+            ]
+          : [{ type: "class-report", id: "LIST" }],
     }),
 
     getSingleClassReport: build.query({
@@ -49,7 +123,8 @@ export const classReportApi = baseApi.injectEndpoints({
         url: `/class-report/${id}`,
         method: "GET",
       }),
-      providesTags: ["class-report"],
+      keepUnusedDataFor: 600,
+      providesTags: (result, error, { id }) => [{ type: "class-report", id }],
     }),
 
     updateClassReport: build.mutation({
@@ -58,7 +133,18 @@ export const classReportApi = baseApi.injectEndpoints({
         method: "PATCH",
         data,
       }),
-      invalidatesTags: ["class-report"],
+      invalidatesTags: (result, error, { id }) => [
+        { type: "class-report", id },
+        { type: "class-report", id: "LIST" },
+      ],
+      onQueryStarted: async (arg, { dispatch, queryFulfilled }) => {
+        try {
+          await queryFulfilled
+          clientCache.clear()
+        } catch (error) {
+          console.error("Error updating class report:", error)
+        }
+      },
     }),
 
     deleteClassReport: build.mutation({
@@ -66,10 +152,46 @@ export const classReportApi = baseApi.injectEndpoints({
         url: `/class-report/${id}`,
         method: "DELETE",
       }),
-      invalidatesTags: ["class-report"],
+      invalidatesTags: (result, error, id) => [
+        { type: "class-report", id },
+        { type: "class-report", id: "LIST" },
+      ],
+      onQueryStarted: async (arg, { dispatch, queryFulfilled }) => {
+        try {
+          await queryFulfilled
+          clientCache.clear()
+        } catch (error) {
+          console.error("Error deleting class report:", error)
+        }
+      },
+    }),
+
+    prefetchClassReports: build.query({
+      query: (params) => ({
+        url: "/class-report",
+        method: "GET",
+        params: {
+          ...params,
+          limit: 10, // Always use 10 for prefetching
+        },
+      }),
+      keepUnusedDataFor: 300,
+      transformResponse: (response: any, meta, arg) => {
+        const cacheKey = createCacheKey(arg)
+
+        if (response && response.success) {
+          clientCache.set(cacheKey, {
+            timestamp: Date.now(),
+            data: response,
+          })
+        }
+
+        return response
+      },
+      providesTags: ["class-report"],
     }),
   }),
-});
+})
 
 export const {
   useCreateClassReportMutation,
@@ -77,4 +199,19 @@ export const {
   useGetSingleClassReportQuery,
   useUpdateClassReportMutation,
   useDeleteClassReportMutation,
-} = classReportApi;
+  usePrefetchClassReportsQuery,
+  util: { getRunningQueriesThunk },
+} = classReportApi
+
+export const { prefetchClassReports } = classReportApi.endpoints
+
+export const clearClassReportCache = () => {
+  clientCache.clear()
+}
+
+export const getCacheStats = () => {
+  return {
+    size: clientCache.size,
+    keys: Array.from(clientCache.keys()),
+  }
+}
