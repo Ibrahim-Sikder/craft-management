@@ -70,8 +70,6 @@ export const navigationItems: NavigationItem[] = [
     ),
     roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
     children: [
-
-
       {
         title: "Sections",
         icon: (
@@ -79,7 +77,7 @@ export const navigationItems: NavigationItem[] = [
             <ClassOutlined />
           </ColorfulIcon>
         ),
-        path: "/dashboard/super_admin/classes/section/list",
+        path: "/dashboard/classes/section/list",
         roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
       },
       {
@@ -89,10 +87,9 @@ export const navigationItems: NavigationItem[] = [
             <Class />
           </ColorfulIcon>
         ),
-        path: "/dashboard/super_admin/classes/class",
+        path: "/dashboard/classes/class",
         roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
       },
-
       {
         title: "Subject",
         icon: (
@@ -100,10 +97,9 @@ export const navigationItems: NavigationItem[] = [
             <Book />
           </ColorfulIcon>
         ),
-        path: "/dashboard/super_admin/subject",
+        path: "/dashboard/subject",
         roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
       },
-
       {
         title: "Class Report List ",
         icon: (
@@ -111,7 +107,7 @@ export const navigationItems: NavigationItem[] = [
             <BarChart />
           </ColorfulIcon>
         ),
-        path: "/dashboard/super_admin/classes/report/list",
+        path: "/dashboard/classes/report/list",
         roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
       },
       {
@@ -121,7 +117,7 @@ export const navigationItems: NavigationItem[] = [
             <Addchart />
           </ColorfulIcon>
         ),
-        path: "/dashboard/super_admin/classes/report/new",
+        path: "/dashboard/classes/report/new",
         roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
       },
     ],
@@ -136,7 +132,7 @@ export const navigationItems: NavigationItem[] = [
     roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
     children: [
       {
-        path: "/dashboard/super_admin/teacher/new",
+        path: "/dashboard/teacher/new",
         title: "Add Teachers",
         icon: (
           <ColorfulIcon color="#DB4437">
@@ -146,7 +142,7 @@ export const navigationItems: NavigationItem[] = [
         roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
       },
       {
-        path: "/dashboard/super_admin/teacher/list",
+        path: "/dashboard/teacher/list",
         title: "Teachers List",
         icon: (
           <ColorfulIcon color="#DB4437">
@@ -156,7 +152,7 @@ export const navigationItems: NavigationItem[] = [
         roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
       },
       {
-        path: "/dashboard/super_admin/teacher/daily-report/list",
+        path: "/dashboard/teacher/daily-report/list",
         title: "Daily Class Report",
         icon: (
           <ColorfulIcon color="#DB4437">
@@ -166,7 +162,7 @@ export const navigationItems: NavigationItem[] = [
         roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
       },
       // {
-      //   path: "/dashboard/super_admin/teacher/daily-report/add",
+      //   path: "/dashboard/teacher/daily-report/add",
       //   title: "Add Daily Class Report",
       //   icon: (
       //     <ColorfulIcon color="#DB4437">
@@ -187,7 +183,7 @@ export const navigationItems: NavigationItem[] = [
     roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
     children: [
       {
-        path: "/dashboard/super_admin/staff/add",
+        path: "/dashboard/staff/add",
         title: "Add Staff",
         icon: (
           <ColorfulIcon color="#DB4437">
@@ -197,7 +193,7 @@ export const navigationItems: NavigationItem[] = [
         roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
       },
       {
-        path: "/dashboard/super_admin/staff/list",
+        path: "/dashboard/staff/list",
         title: "Staff List",
         icon: (
           <ColorfulIcon color="#DB4437">
@@ -218,7 +214,7 @@ export const navigationItems: NavigationItem[] = [
     roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
     children: [
       {
-        path: "/dashboard/super_admin/student/list",
+        path: "/dashboard/student/list",
         title: "Students",
         icon: (
           <ColorfulIcon color="#DB4437">
@@ -228,7 +224,7 @@ export const navigationItems: NavigationItem[] = [
         roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
       },
       // {
-      //   path: "/dashboard/super_admin/daily-student-report",
+      //   path: "/dashboard/daily-student-report",
       //   title: "Daily Report ",
       //   icon: (
       //     <ColorfulIcon color="#DB4437">
@@ -238,7 +234,7 @@ export const navigationItems: NavigationItem[] = [
       //   roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
       // },
       // {
-      //   path: "/dashboard/super_admin/daily-student-report/add",
+      //   path: "/dashboard/daily-student-report/add",
       //   title: "Add daily Report ",
       //   icon: (
       //     <ColorfulIcon color="#DB4437">
@@ -249,7 +245,7 @@ export const navigationItems: NavigationItem[] = [
       // },
 
       // {
-      //   path: "/dashboard/super_admin/student-migrate",
+      //   path: "/dashboard/student-migrate",
       //   title: "Migrate Student",
       //   icon: (
       //     <ColorfulIcon color="#DB4437">
@@ -259,7 +255,7 @@ export const navigationItems: NavigationItem[] = [
       //   roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
       // },
       // {
-      //   path: "/dashboard/super_admin/student-status-migrate",
+      //   path: "/dashboard/student-status-migrate",
       //   title: "Migrate Status ",
       //   icon: (
       //     <ColorfulIcon color="#DB4437">
@@ -269,7 +265,7 @@ export const navigationItems: NavigationItem[] = [
       //   roles: ["admin", "teacher", "student", "super_admin",'class_teacher'],
       // },
       // {
-      //   path: "/dashboard/super_admin/shop/list",
+      //   path: "/dashboard/shop/list",
       //   title: "Migrate Branch ",
       //   icon: (
       //     <ColorfulIcon color="#DB4437">
@@ -282,7 +278,7 @@ export const navigationItems: NavigationItem[] = [
   },
   {
     title: "Class Routine ",
-    path: "/dashboard/super_admin/class-routine",
+    path: "/dashboard/class-routine",
     icon: (
       <ColorfulIcon color="#F4B400">
         <Group />
@@ -292,7 +288,7 @@ export const navigationItems: NavigationItem[] = [
   },
   {
     title: "Notice Board",
-    path: "/dashboard/super_admin/notice-board",
+    path: "/dashboard/notice-board",
     icon: (
       <ColorfulIcon color="#F4B400">
         <DeveloperBoard />
@@ -304,7 +300,7 @@ export const navigationItems: NavigationItem[] = [
 
   {
     title: "Notification",
-    path: "/dashboard/super_admin/notification",
+    path: "/dashboard/notification",
     icon: (
       <ColorfulIcon color="#F4B400">
         <NotificationAdd />
@@ -314,7 +310,7 @@ export const navigationItems: NavigationItem[] = [
   },
   {
     title: "Complaints",
-    path: "/dashboard/super_admin/complaints",
+    path: "/dashboard/complaints",
     icon: (
       <ColorfulIcon color="#F4B400">
         <FactCheck />
@@ -332,7 +328,7 @@ export const navigationItems: NavigationItem[] = [
     roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
     children: [
       {
-        path: "/dashboard/super_admin/daily-meal-report",
+        path: "/dashboard/daily-meal-report",
         title: "Meal Report",
         icon: (
           <ColorfulIcon color="#F4B400">
@@ -342,7 +338,7 @@ export const navigationItems: NavigationItem[] = [
         roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
       },
       {
-        path: "/dashboard/super_admin/daily-meal-report/add",
+        path: "/dashboard/daily-meal-report/add",
         title: "Add Meal Report",
         icon: (
           <ColorfulIcon color="#F4B400">
@@ -353,8 +349,7 @@ export const navigationItems: NavigationItem[] = [
       },
     ],
   },
-  {
-    segment: "super_admin/contact",
+  {    
     title: "Fees",
     icon: (
       <ColorfulIcon color="#F4B400">
@@ -365,7 +360,7 @@ export const navigationItems: NavigationItem[] = [
     children: [
 
       {
-        path: "/dashboard/super_admin/fee-type/list",
+        path: "/dashboard/fee-type/list",
         title: "Fees Types ",
         icon: (
           <ColorfulIcon color="#F4B400">
@@ -380,7 +375,7 @@ export const navigationItems: NavigationItem[] = [
 
 
       {
-        path: "/dashboard/super_admin/collect-fee/list",
+        path: "/dashboard/collect-fee/list",
         title: "Collect Fees ",
         icon: (
           <ColorfulIcon color="#F4B400">
@@ -406,7 +401,7 @@ export const navigationItems: NavigationItem[] = [
     roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
     children: [
       {
-        path: "/dashboard/super_admin/stock/allimg",
+        path: "/dashboard/stock/allimg",
         title: "Setup ",
         icon: (
           <ColorfulIcon color="#34A853">
@@ -416,7 +411,7 @@ export const navigationItems: NavigationItem[] = [
         roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
       },
       {
-        path: "/dashboard/super_admin/stock/folder",
+        path: "/dashboard/stock/folder",
         title: "Income / Expense ",
         icon: (
           <ColorfulIcon color="#34A853">
@@ -437,7 +432,7 @@ export const navigationItems: NavigationItem[] = [
     roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
     children: [
       {
-        path: "/dashboard/super_admin/home-work",
+        path: "/dashboard/home-work",
         title: "Home Works ",
         icon: (
           <ColorfulIcon color="#FBBC05">
@@ -461,7 +456,7 @@ export const navigationItems: NavigationItem[] = [
 
 
       {
-        path: "/dashboard/super_admin/stock/folder",
+        path: "/dashboard/stock/folder",
         title: "Leave ",
         icon: (
           <ColorfulIcon color="#4285F4">
@@ -483,7 +478,7 @@ export const navigationItems: NavigationItem[] = [
     roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
     children: [
       {
-        path: "/dashboard/super_admin/grading/list",
+        path: "/dashboard/grading/list",
         title: "Gradings ",
         icon: (
           <ColorfulIcon color="#0F9D58">
@@ -493,7 +488,7 @@ export const navigationItems: NavigationItem[] = [
         roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
       },
       {
-        path: "/dashboard/super_admin/exam/exam-categories",
+        path: "/dashboard/exam/exam-categories",
         title: "Exam Category ",
         icon: (
           <ColorfulIcon color="#0F9D58">
@@ -504,7 +499,7 @@ export const navigationItems: NavigationItem[] = [
       },
 
       {
-        path: "/dashboard/super_admin/stock/allimg",
+        path: "/dashboard/stock/allimg",
         title: "Exams",
         icon: (
           <ColorfulIcon color="#0F9D58">
@@ -514,7 +509,7 @@ export const navigationItems: NavigationItem[] = [
         roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
       },
       {
-        path: "/dashboard/super_admin/stock/allimg",
+        path: "/dashboard/stock/allimg",
         title: "Exam Routines ",
         icon: (
           <ColorfulIcon color="#0F9D58">
@@ -535,7 +530,7 @@ export const navigationItems: NavigationItem[] = [
     roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
     children: [
       {
-        path: "/dashboard/super_admin/stock/allimg",
+        path: "/dashboard/stock/allimg",
         title: "Result",
         icon: (
           <ColorfulIcon color="#F4B400">
@@ -545,7 +540,7 @@ export const navigationItems: NavigationItem[] = [
         roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
       },
       {
-        path: "/dashboard/super_admin/stock/allimg",
+        path: "/dashboard/stock/allimg",
         title: "combined Result ",
         icon: (
           <ColorfulIcon color="#F4B400">
@@ -555,7 +550,7 @@ export const navigationItems: NavigationItem[] = [
         roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
       },
       {
-        path: "/dashboard/super_admin/stock/allimg",
+        path: "/dashboard/stock/allimg",
         title: "Upload Result Sheet",
         icon: (
           <ColorfulIcon color="#F4B400">
@@ -565,7 +560,7 @@ export const navigationItems: NavigationItem[] = [
         roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
       },
       {
-        path: "/dashboard/super_admin/stock/allimg",
+        path: "/dashboard/stock/allimg",
         title: "Subject wise Mark Input ",
         icon: (
           <ColorfulIcon color="#F4B400">
@@ -575,7 +570,7 @@ export const navigationItems: NavigationItem[] = [
         roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
       },
       {
-        path: "/dashboard/super_admin/stock/allimg",
+        path: "/dashboard/stock/allimg",
         title: "Excel Mark Input ",
         icon: (
           <ColorfulIcon color="#F4B400">
@@ -585,7 +580,7 @@ export const navigationItems: NavigationItem[] = [
         roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
       },
       {
-        path: "/dashboard/super_admin/stock/allimg",
+        path: "/dashboard/stock/allimg",
         title: "Download Marksheet ",
         icon: (
           <ColorfulIcon color="#F4B400">
@@ -595,7 +590,7 @@ export const navigationItems: NavigationItem[] = [
         roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
       },
       {
-        path: "/dashboard/super_admin/stock/allimg",
+        path: "/dashboard/stock/allimg",
         title: "Send Result SMS",
         icon: (
           <ColorfulIcon color="#F4B400">
@@ -618,7 +613,7 @@ export const navigationItems: NavigationItem[] = [
     roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
     children: [
       {
-        path: "/dashboard/super_admin/admission",
+        path: "/dashboard/admission",
         title: "Admission Info",
         icon: (
           <ColorfulIcon color="#DB4437">
@@ -641,7 +636,7 @@ export const navigationItems: NavigationItem[] = [
     roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
     children: [
       {
-        path: "/dashboard/super_admin/stock/allimg",
+        path: "/dashboard/stock/allimg",
         title: "Staffs Users",
         icon: (
           <ColorfulIcon color="#4285F4">
@@ -651,7 +646,7 @@ export const navigationItems: NavigationItem[] = [
         roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
       },
       {
-        path: "/dashboard/super_admin/stock/allimg",
+        path: "/dashboard/stock/allimg",
         title: "Teachers",
         icon: (
           <ColorfulIcon color="#4285F4">
@@ -661,7 +656,7 @@ export const navigationItems: NavigationItem[] = [
         roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
       },
       {
-        path: "/dashboard/super_admin/stock/allimg",
+        path: "/dashboard/stock/allimg",
         title: "Students",
         icon: (
           <ColorfulIcon color="#4285F4">
@@ -682,7 +677,7 @@ export const navigationItems: NavigationItem[] = [
     roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
     children: [
       {
-        path: "/dashboard/super_admin/stock/allimg",
+        path: "/dashboard/stock/allimg",
         title: "Default Settings",
         icon: (
           <ColorfulIcon color="#DB4437">
@@ -704,7 +699,7 @@ export const navigationItems: NavigationItem[] = [
     roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
     children: [
       {
-        path: "/dashboard/super_admin/folder",
+        path: "/dashboard/folder",
         title: "Photos",
         icon: (
           <ColorfulIcon color="#4285F4">
@@ -714,7 +709,7 @@ export const navigationItems: NavigationItem[] = [
         roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
       },
       {
-        path: "/dashboard/super_admin/photos",
+        path: "/dashboard/photos",
         title: "Folder",
         icon: (
           <ColorfulIcon color="#4285F4">
@@ -728,7 +723,7 @@ export const navigationItems: NavigationItem[] = [
 
   {
     title: "User Management",
-    path: "/dashboard/super_admin/user-management",
+    path: "/dashboard/user-management",
     icon: (
       <ColorfulIcon color="#F4B400">
         <Group />

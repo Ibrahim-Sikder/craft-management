@@ -55,7 +55,7 @@ const Page = () => {
           <Button
             sx={{ color: "white" }}
             component={Link}
-            href="/dashboard/super_admin/admission/newadmission"
+            href="/dashboard/admission/newadmission"
           >
           
             <PersonAddAltIcon className="h-5 w-5 mr-2" /> New Admission{" "}
@@ -129,7 +129,7 @@ const Page = () => {
                         <VisibilityIcon className="text-green-600" />
                       </IconButton>
                     </Link>
-                    <Link href={`/dashboard/super_admin/admission/${row.id}`}>
+                    <Link href={`/dashboard/admission/${row.id}`}>
                       <IconButton title="Edit">
                         <EditIcon />
                       </IconButton>
