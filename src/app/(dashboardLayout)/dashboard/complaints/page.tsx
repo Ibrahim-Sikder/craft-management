@@ -77,7 +77,7 @@ const SuggestionsComplaintsPage = () => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
   // Mock data
-  const submissions = [
+  const complaints = [
     {
       id: 1,
       type: "suggestion",
@@ -105,90 +105,8 @@ const SuggestionsComplaintsPage = () => {
           author: "Admin",
         },
       ],
-    },
-    {
-      id: 2,
-      type: "complaint",
-      title: "Cafeteria Food Quality Issues",
-      description:
-        "The food quality in the cafeteria has been declining. Many students are getting sick after eating. Please address this urgent matter.",
-      category: "Cafeteria",
-      submitter: "Fatima Khan",
-      submitterAvatar: "/placeholder.svg?height=40&width=40",
-      submitterRole: "Parent",
-      submitDate: new Date(Date.now() - 5 * 24 * 60 * 60 * 1000),
-      status: "in_progress",
-      priority: "high",
-      upvotes: 78,
-      downvotes: 2,
-      comments: 23,
-      rating: 2.1,
-      assignedTo: "Health & Safety Team",
-      estimatedResolution: "1 week",
-      attachments: ["food_photos.jpg"],
-      updates: [
-        {
-          date: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-          message: "Health inspection scheduled for tomorrow",
-          author: "Health Officer",
-        },
-        {
-          date: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-          message: "New food supplier being evaluated",
-          author: "Admin",
-        },
-      ],
-    },
-    {
-      id: 3,
-      type: "suggestion",
-      title: "Add More Sports Equipment",
-      description:
-        "Our sports department needs more equipment for basketball and football. This will help students participate more actively in sports.",
-      category: "Sports",
-      submitter: "Mohammad Ali",
-      submitterAvatar: "/placeholder.svg?height=40&width=40",
-      submitterRole: "Teacher",
-      submitDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
-      status: "resolved",
-      priority: "low",
-      upvotes: 32,
-      downvotes: 1,
-      comments: 8,
-      rating: 4.2,
-      assignedTo: "Sports Department",
-      estimatedResolution: "Completed",
-      attachments: ["equipment_list.pdf"],
-      updates: [
-        {
-          date: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000),
-          message: "New sports equipment purchased and delivered",
-          author: "Sports Coordinator",
-        },
-      ],
-    },
-    {
-      id: 4,
-      type: "complaint",
-      title: "School Bus Timing Issues",
-      description:
-        "The school bus is frequently late, causing students to miss first period classes. This needs immediate attention.",
-      category: "Transportation",
-      submitter: "Sarah Ahmed",
-      submitterAvatar: "/placeholder.svg?height=40&width=40",
-      submitterRole: "Parent",
-      submitDate: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-      status: "pending",
-      priority: "high",
-      upvotes: 56,
-      downvotes: 0,
-      comments: 15,
-      rating: 1.8,
-      assignedTo: "Transport Manager",
-      estimatedResolution: "3 days",
-      attachments: [],
-      updates: [],
-    },
+    }
+  
   ]
 
   const getCategoryIcon = (category: string) => {
@@ -281,7 +199,7 @@ const SuggestionsComplaintsPage = () => {
   }
 
   const filteredSubmissions = useMemo(() => {
-    return submissions
+    return complaints
       .filter((submission) => {
         const matchesSearch =
           submission.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -296,11 +214,11 @@ const SuggestionsComplaintsPage = () => {
   }, [searchTerm, filterType, filterStatus, filterCategory])
 
   const stats = {
-    total: submissions.length,
-    suggestions: submissions.filter((s) => s.type === "suggestion").length,
-    complaints: submissions.filter((s) => s.type === "complaint").length,
-    resolved: submissions.filter((s) => s.status === "resolved").length,
-    pending: submissions.filter((s) => s.status === "pending").length,
+    total: complaints.length,
+    suggestions: complaints.filter((s) => s.type === "suggestion").length,
+    complaints: complaints.filter((s) => s.type === "complaint").length,
+    resolved: complaints.filter((s) => s.status === "resolved").length,
+    pending: complaints.filter((s) => s.status === "pending").length,
   }
 
   return (

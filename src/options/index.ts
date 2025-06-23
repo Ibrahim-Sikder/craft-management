@@ -183,6 +183,7 @@ export const teacherName = [
     { id: "4", name: "Tasnim Akter", roll: "104" },
     { id: "5", name: "Rafid Hassan", roll: "105" },
   ]
+
   
   export const mockSubjects = [
     { id: "1", name: "Mathematics", code: "MATH101" },
@@ -203,3 +204,5 @@ export const teacherName = [
 export const lessonEvaluation = ["পড়া শিখেছে", "আংশিক শিখেছে", "পড়া শিখেনি",'অনুপস্থিত']
 export const handWritting = ["লিখেছে", "আংশিক লিখেছে", "লিখেনি"]
 export const attendance =["উপস্থিত", "অনুপস্থিত", "ছুটি"]
+
+export const bloodGroups = ["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"];

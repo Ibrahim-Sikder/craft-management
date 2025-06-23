@@ -54,6 +54,8 @@ import CraftForm from "@/components/Forms/Form"
 import CraftInputWithIcon from "@/components/Forms/inputWithIcon"
 import CraftIntAutoCompleteWithIcon from "@/components/Forms/AutocompleteWithIcon"
 import { useGetAllClassesQuery } from "@/redux/api/classApi"
+import CraftSelectWithIcon from "@/components/Forms/selectWithIcon"
+import { bloodGroups } from "@/options"
 
 interface TabPanelProps {
   children?: React.ReactNode
@@ -303,7 +305,15 @@ function AdmissionForm() {
           ADMISSION FORM
         </Typography>
       </Paper>
-      <CraftForm onSubmit={handleSubmit}
+      <CraftForm
+        onSubmit={(data) => {
+          // You may want to merge this with your formData state or handle as needed
+          console.log("Form submitted:", data)
+          setFormSubmitted(true)
+          setTimeout(() => {
+            router.push("/admission/success")
+          }, 2000)
+        }}
       >
         <Card elevation={3} sx={{ mb: 4, overflow: "visible" }}>
           <CardContent sx={{ p: 4 }}>
@@ -447,9 +457,9 @@ function AdmissionForm() {
                   />
                 </Grid>
                 <Grid item xs={12} md={4}>
-                   <CraftInputWithIcon
+                  <CraftInputWithIcon
                     fullWidth
-                   label="Session"
+                    label="Session"
                     name="session"
                     size="medium"
                     placeholder="Mobile No."
@@ -457,7 +467,7 @@ function AdmissionForm() {
                       startAdornment: <CalendarMonth sx={{ color: "text.secondary", mr: 1 }} />,
                     }}
                   />
-                  
+
                 </Grid>
                 <Grid item xs={12} md={4}>
                   <FormControl component="fieldset">
@@ -472,70 +482,58 @@ function AdmissionForm() {
                 </Grid>
 
                 <Grid item xs={12} md={4}>
-                  <TextField
+                  <CraftInputWithIcon
                     fullWidth
-                    required
                     label="Date of Birth"
                     name="dateOfBirth"
+                    size="medium"
                     type="date"
-                    value={formData.dateOfBirth}
-                    onChange={handleChange}
-                    InputLabelProps={{ shrink: true }}
+                    placeholder="Date of Birth"
                     InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Cake fontSize="small" color="action" />
-                        </InputAdornment>
-                      ),
+                      startAdornment: <Cake sx={{ color: "text.secondary", mr: 1 }} />,
                     }}
                   />
+
                 </Grid>
                 <Grid item xs={12} md={4}>
-                  <TextField
+                  <CraftInputWithIcon
                     fullWidth
                     label="NID/ Birth Reg. No"
                     name="nidBirth"
-                    value={formData.nidBirth}
-                    onChange={handleChange}
+                    size="medium"
+                    type="date"
+                    placeholder="NID/ Birth Reg. No"
                     InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Description fontSize="small" color="action" />
-                        </InputAdornment>
-                      ),
+                      startAdornment: <Description sx={{ color: "text.secondary", mr: 1 }} />,
                     }}
                   />
+
                 </Grid>
                 <Grid item xs={12} md={4}>
-                  <FormControl fullWidth>
-                    <InputLabel>Blood Group</InputLabel>
-                    <Select name="bloodGroup" value={formData.bloodGroup} onChange={handleChange} label="Blood Group">
-                      <MenuItem value="A+">A+</MenuItem>
-                      <MenuItem value="A-">A-</MenuItem>
-                      <MenuItem value="B+">B+</MenuItem>
-                      <MenuItem value="B-">B-</MenuItem>
-                      <MenuItem value="AB+">AB+</MenuItem>
-                      <MenuItem value="AB-">AB-</MenuItem>
-                      <MenuItem value="O+">O+</MenuItem>
-                      <MenuItem value="O-">O-</MenuItem>
-                    </Select>
-                  </FormControl>
+                  <CraftSelectWithIcon
+                    name="gender"
+                    size="medium"
+                    label='Blood Group'
+
+                    placeholder="Select Blood Group "
+                    items={bloodGroups}
+                    adornment={<Person color="action" />}
+                  />
+
                 </Grid>
                 <Grid item xs={12} md={4}>
-                  <TextField
+                  <CraftInputWithIcon
                     fullWidth
                     label="Nationality"
                     name="nationality"
-                    value={formData.nationality}
-                    onChange={handleChange}
+                    size="medium"
+
+                    placeholder="Date of Birth"
                     InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Flag fontSize="small" color="action" />
-                        </InputAdornment>
-                      ),
+                      startAdornment: <Flag sx={{ color: "text.secondary", mr: 1 }} />,
                     }}
                   />
+
                 </Grid>
               </Grid>
 
@@ -549,113 +547,96 @@ function AdmissionForm() {
 
               <Grid container spacing={3}>
                 <Grid item xs={12} md={6}>
-                  <TextField
+                  <CraftInputWithIcon
                     fullWidth
-                    required
                     label="Father's Name"
                     name="fatherName"
-                    value={formData.fatherName}
-                    onChange={handleChange}
-                    error={!!errors.fatherName}
-                    helperText={errors.fatherName}
+                    size="medium"
+                    placeholder="Father's Name"
                     InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Person fontSize="small" color="action" />
-                        </InputAdornment>
-                      ),
+                      startAdornment: <Flag sx={{ color: "text.secondary", mr: 1 }} />,
                     }}
                   />
+
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <TextField
+                  <CraftInputWithIcon
                     fullWidth
                     label="Mobile"
                     name="fatherMobile"
-                    value={formData.fatherMobile}
-                    onChange={handleChange}
+                    size="medium"
+                    placeholder="Father's Name"
                     InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Phone fontSize="small" color="action" />
-                        </InputAdornment>
-                      ),
+                      startAdornment: <Phone sx={{ color: "text.secondary", mr: 1 }} />,
                     }}
                   />
+
                 </Grid>
                 <Grid item xs={12} md={4}>
-                  <TextField
+                  <CraftInputWithIcon
                     fullWidth
                     label="NID/Passport No"
                     name="fatherNid"
-                    value={formData.fatherNid}
-                    onChange={handleChange}
+                    size="medium"
+                    placeholder="NID/Passport No"
                     InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Description fontSize="small" color="action" />
-                        </InputAdornment>
-                      ),
+                      startAdornment: <Description sx={{ color: "text.secondary", mr: 1 }} />,
                     }}
                   />
+
                 </Grid>
                 <Grid item xs={12} md={4}>
-                  <TextField
+                  <CraftInputWithIcon
                     fullWidth
                     label="Profession"
                     name="fatherProfession"
-                    value={formData.fatherProfession}
-                    onChange={handleChange}
+                    size="medium"
+                    placeholder="NID/Passport No"
                     InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Work fontSize="small" color="action" />
-                        </InputAdornment>
-                      ),
+                      startAdornment: <Work sx={{ color: "text.secondary", mr: 1 }} />,
                     }}
                   />
+
+
                 </Grid>
                 <Grid item xs={12} md={4}>
-                  <TextField
+                  <CraftInputWithIcon
                     fullWidth
                     label="Monthly Income"
                     name="fatherIncome"
-                    value={formData.fatherIncome}
-                    onChange={handleChange}
+                    size="medium"
+                    placeholder="Monthly Income"
                     InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Work fontSize="small" color="action" />
-                        </InputAdornment>
-                      ),
+                      startAdornment: <Work sx={{ color: "text.secondary", mr: 1 }} />,
                     }}
                   />
+
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <TextField
+                  <CraftInputWithIcon
                     fullWidth
                     label="Email ID"
                     name="fatherEmail"
-                    type="email"
-                    value={formData.fatherEmail}
-                    onChange={handleChange}
+                    size="medium"
+                    placeholder="Email ID"
                     InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Email fontSize="small" color="action" />
-                        </InputAdornment>
-                      ),
+                      startAdornment: <Work sx={{ color: "text.secondary", mr: 1 }} />,
                     }}
                   />
+
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <TextField
+                  <CraftInputWithIcon
                     fullWidth
                     label="Facebook ID"
                     name="fatherFb"
-                    value={formData.fatherFb}
-                    onChange={handleChange}
+                    size="medium"
+                    placeholder="Facebook ID"
+                    InputProps={{
+                      startAdornment: <Work sx={{ color: "text.secondary", mr: 1 }} />,
+                    }}
                   />
+
                 </Grid>
               </Grid>
 
@@ -669,113 +650,96 @@ function AdmissionForm() {
 
               <Grid container spacing={3}>
                 <Grid item xs={12} md={6}>
-                  <TextField
+                  <CraftInputWithIcon
                     fullWidth
-                    required
                     label="Mother's Name"
                     name="motherName"
-                    value={formData.motherName}
-                    onChange={handleChange}
-                    error={!!errors.motherName}
-                    helperText={errors.motherName}
+                    size="medium"
+                    placeholder="Monthly Name"
                     InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Person fontSize="small" color="action" />
-                        </InputAdornment>
-                      ),
+                      startAdornment: <Person sx={{ color: "text.secondary", mr: 1 }} />,
                     }}
                   />
+
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <TextField
+                  rid item xs={12} md={6}
+                  <CraftInputWithIcon
                     fullWidth
                     label="Mobile"
                     name="motherMobile"
-                    value={formData.motherMobile}
-                    onChange={handleChange}
+                    size="medium"
+                    placeholder="Monthly Name"
                     InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Phone fontSize="small" color="action" />
-                        </InputAdornment>
-                      ),
+                      startAdornment: <Phone sx={{ color: "text.secondary", mr: 1 }} />,
                     }}
                   />
+
                 </Grid>
                 <Grid item xs={12} md={4}>
-                  <TextField
+                  <CraftInputWithIcon
                     fullWidth
                     label="NID/Passport No"
                     name="motherNid"
-                    value={formData.motherNid}
-                    onChange={handleChange}
+                    size="medium"
+                    placeholder="NID/Passport No"
                     InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Description fontSize="small" color="action" />
-                        </InputAdornment>
-                      ),
+                      startAdornment: <Phone sx={{ color: "text.secondary", mr: 1 }} />,
                     }}
                   />
+
                 </Grid>
                 <Grid item xs={12} md={4}>
-                  <TextField
+                  <CraftInputWithIcon
                     fullWidth
                     label="Profession"
                     name="motherProfession"
-                    value={formData.motherProfession}
-                    onChange={handleChange}
+                    size="medium"
+                    placeholder="NID/Passport No"
                     InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Work fontSize="small" color="action" />
-                        </InputAdornment>
-                      ),
+                      startAdornment: <Work sx={{ color: "text.secondary", mr: 1 }} />,
                     }}
                   />
+
                 </Grid>
                 <Grid item xs={12} md={4}>
-                  <TextField
+                  <CraftInputWithIcon
                     fullWidth
                     label="Monthly Income"
                     name="motherIncome"
-                    value={formData.motherIncome}
-                    onChange={handleChange}
+                    size="medium"
+                    placeholder="Monthly Income"
                     InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Work fontSize="small" color="action" />
-                        </InputAdornment>
-                      ),
+                      startAdornment: <Work sx={{ color: "text.secondary", mr: 1 }} />,
                     }}
                   />
+
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <TextField
+                  <CraftInputWithIcon
                     fullWidth
                     label="Email ID"
                     name="motherEmail"
-                    type="email"
-                    value={formData.motherEmail}
-                    onChange={handleChange}
+                    size="medium"
+                    placeholder="Monthly Income"
                     InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Email fontSize="small" color="action" />
-                        </InputAdornment>
-                      ),
+                      startAdornment: <Email sx={{ color: "text.secondary", mr: 1 }} />,
                     }}
                   />
+
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <TextField
+                  <CraftInputWithIcon
                     fullWidth
                     label="Facebook ID"
                     name="motherFb"
-                    value={formData.motherFb}
-                    onChange={handleChange}
+                    size="medium"
+                    placeholder="Facebook ID"
+                    InputProps={{
+                      startAdornment: <Email sx={{ color: "text.secondary", mr: 1 }} />,
+                    }}
                   />
+
                 </Grid>
               </Grid>
             </TabPanel>
@@ -789,84 +753,70 @@ function AdmissionForm() {
 
               <Grid container spacing={3}>
                 <Grid item xs={12} md={4}>
-                  <TextField
+                  <CraftInputWithIcon
                     fullWidth
                     label="Village"
                     name="village"
-                    value={formData.village}
-                    onChange={handleChange}
+                    size="medium"
+                    placeholder="Village"
                     InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Home fontSize="small" color="action" />
-                        </InputAdornment>
-                      ),
+                      startAdornment: <Email sx={{ color: "text.secondary", mr: 1 }} />,
                     }}
                   />
+
                 </Grid>
                 <Grid item xs={12} md={4}>
-                  <TextField
+                  <CraftInputWithIcon
                     fullWidth
                     label="Post Office"
                     name="postOffice"
-                    value={formData.postOffice}
-                    onChange={handleChange}
+                    size="medium"
+                    placeholder="Village"
                     InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <LocationCity fontSize="small" color="action" />
-                        </InputAdornment>
-                      ),
+                      startAdornment: <LocationCity sx={{ color: "text.secondary", mr: 1 }} />,
                     }}
                   />
+
                 </Grid>
                 <Grid item xs={12} md={4}>
-                  <TextField
+                  <CraftInputWithIcon
                     fullWidth
                     label="PostCode"
                     name="postCode"
-                    value={formData.postCode}
-                    onChange={handleChange}
+                    size="medium"
+                    placeholder="PostCode"
                     InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <LocationCity fontSize="small" color="action" />
-                        </InputAdornment>
-                      ),
+                      startAdornment: <LocationCity sx={{ color: "text.secondary", mr: 1 }} />,
                     }}
                   />
+
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <TextField
+                  <CraftInputWithIcon
                     fullWidth
                     label="Police Station"
                     name="policeStation"
-                    value={formData.policeStation}
-                    onChange={handleChange}
+                    size="medium"
+                    placeholder="Police Station"
                     InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <LocationCity fontSize="small" color="action" />
-                        </InputAdornment>
-                      ),
+                      startAdornment: <LocationCity sx={{ color: "text.secondary", mr: 1 }} />,
                     }}
                   />
+
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <TextField
+                  <CraftInputWithIcon
                     fullWidth
                     label="District"
                     name="district"
-                    value={formData.district}
-                    onChange={handleChange}
+                    size="medium"
+                    placeholder="District"
                     InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <LocationCity fontSize="small" color="action" />
-                        </InputAdornment>
-                      ),
+                      startAdornment: <LocationCity sx={{ color: "text.secondary", mr: 1 }} />,
                     }}
                   />
+
+
                 </Grid>
               </Grid>
 
@@ -880,84 +830,70 @@ function AdmissionForm() {
 
               <Grid container spacing={3}>
                 <Grid item xs={12} md={4}>
-                  <TextField
+                  <CraftInputWithIcon
                     fullWidth
                     label="Village"
                     name="permVillage"
-                    value={formData.permVillage}
-                    onChange={handleChange}
+                    size="medium"
+                    placeholder="Village"
                     InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Home fontSize="small" color="action" />
-                        </InputAdornment>
-                      ),
+                      startAdornment: <Home sx={{ color: "text.secondary", mr: 1 }} />,
                     }}
                   />
+
+
                 </Grid>
                 <Grid item xs={12} md={4}>
-                  <TextField
+                  <CraftInputWithIcon
                     fullWidth
                     label="Post Office"
                     name="permPostOffice"
-                    value={formData.permPostOffice}
-                    onChange={handleChange}
+                    size="medium"
+                    placeholder="Post Office"
                     InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <LocationCity fontSize="small" color="action" />
-                        </InputAdornment>
-                      ),
+                      startAdornment: <LocationCity sx={{ color: "text.secondary", mr: 1 }} />,
                     }}
                   />
+
                 </Grid>
                 <Grid item xs={12} md={4}>
-                  <TextField
+                  <CraftInputWithIcon
                     fullWidth
-                    label="PostCode"
-                    name="permPostCode"
-                    value={formData.permPostCode}
-                    onChange={handleChange}
+                    label="Post Office"
+                    name="permPostOffice"
+                    size="medium"
+                    placeholder="Post Office"
                     InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <LocationCity fontSize="small" color="action" />
-                        </InputAdornment>
-                      ),
+                      startAdornment: <LocationCity sx={{ color: "text.secondary", mr: 1 }} />,
                     }}
                   />
+
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <TextField
+                  <CraftInputWithIcon
                     fullWidth
                     label="Police Station"
                     name="permPoliceStation"
-                    value={formData.permPoliceStation}
-                    onChange={handleChange}
+                    size="medium"
+                    placeholder="Police Station"
                     InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <LocationCity fontSize="small" color="action" />
-                        </InputAdornment>
-                      ),
+                      startAdornment: <LocationCity sx={{ color: "text.secondary", mr: 1 }} />,
                     }}
                   />
+
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <TextField
+                  <CraftInputWithIcon
                     fullWidth
                     label="District"
                     name="permDistrict"
-                    value={formData.permDistrict}
-                    onChange={handleChange}
+                    size="medium"
+                    placeholder="District"
                     InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <LocationCity fontSize="small" color="action" />
-                        </InputAdornment>
-                      ),
+                      startAdornment: <LocationCity sx={{ color: "text.secondary", mr: 1 }} />,
                     }}
                   />
+
                 </Grid>
               </Grid>
             </TabPanel>
@@ -971,148 +907,121 @@ function AdmissionForm() {
 
               <Grid container spacing={3}>
                 <Grid item xs={12}>
-                  <TextField
+                  <CraftInputWithIcon
                     fullWidth
                     label="Name"
                     name="guardianName"
-                    value={formData.guardianName}
-                    onChange={handleChange}
+                    size="medium"
+                    placeholder="Name"
                     InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Person fontSize="small" color="action" />
-                        </InputAdornment>
-                      ),
+                      startAdornment: <Person sx={{ color: "text.secondary", mr: 1 }} />,
                     }}
                   />
+
                 </Grid>
                 <Grid item xs={12} md={4}>
-                  <TextField
+                  <CraftInputWithIcon
                     fullWidth
                     label="Village"
                     name="guardianVillage"
-                    value={formData.guardianVillage}
-                    onChange={handleChange}
+                    size="medium"
+                    placeholder="Village"
                     InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Home fontSize="small" color="action" />
-                        </InputAdornment>
-                      ),
+                      startAdornment: <Home sx={{ color: "text.secondary", mr: 1 }} />,
                     }}
                   />
+
                 </Grid>
                 <Grid item xs={12} md={4}>
-                  <TextField
+                  <CraftInputWithIcon
                     fullWidth
                     label="Post Office"
                     name="guardianPostOffice"
-                    value={formData.guardianPostOffice}
-                    onChange={handleChange}
+                    size="medium"
+                    placeholder="Post Office"
                     InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <LocationCity fontSize="small" color="action" />
-                        </InputAdornment>
-                      ),
+                      startAdornment: <LocationCity sx={{ color: "text.secondary", mr: 1 }} />,
                     }}
                   />
+
                 </Grid>
                 <Grid item xs={12} md={4}>
-                  <TextField
+                  <CraftInputWithIcon
                     fullWidth
                     label="PostCode"
                     name="guardianPostCode"
-                    value={formData.guardianPostCode}
-                    onChange={handleChange}
+                    size="medium"
+                    placeholder="PostCode"
                     InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <LocationCity fontSize="small" color="action" />
-                        </InputAdornment>
-                      ),
+                      startAdornment: <LocationCity sx={{ color: "text.secondary", mr: 1 }} />,
                     }}
                   />
+                 
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <TextField
+                  <CraftInputWithIcon
                     fullWidth
-                    label="Police Station"
+                     label="Police Station"
                     name="guardianPoliceStation"
-                    value={formData.guardianPoliceStation}
-                    onChange={handleChange}
+                    size="medium"
+                    placeholder="Police Station"
                     InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <LocationCity fontSize="small" color="action" />
-                        </InputAdornment>
-                      ),
+                      startAdornment: <LocationCity sx={{ color: "text.secondary", mr: 1 }} />,
                     }}
                   />
+                  
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <TextField
+                   <CraftInputWithIcon
                     fullWidth
-                    label="District"
+                      label="District"
                     name="guardianDistrict"
-                    value={formData.guardianDistrict}
-                    onChange={handleChange}
+                    size="medium"
+                    placeholder="District"
                     InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <LocationCity fontSize="small" color="action" />
-                        </InputAdornment>
-                      ),
+                      startAdornment: <LocationCity sx={{ color: "text.secondary", mr: 1 }} />,
                     }}
                   />
+                  
                 </Grid>
                 <Grid item xs={12} md={4}>
-                  <TextField
+                  <CraftInputWithIcon
                     fullWidth
-                    label="Profession"
+                      label="Profession"
                     name="guardianProfession"
-                    value={formData.guardianProfession}
-                    onChange={handleChange}
+                    size="medium"
+                    placeholder="District"
                     InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Work fontSize="small" color="action" />
-                        </InputAdornment>
-                      ),
+                      startAdornment: <Work sx={{ color: "text.secondary", mr: 1 }} />,
                     }}
                   />
+                  
                 </Grid>
                 <Grid item xs={12} md={4}>
-                  <TextField
+                  <CraftInputWithIcon
                     fullWidth
-                    label="Relation"
+                     label="Relation"
                     name="guardianRelation"
-                    value={formData.guardianRelation}
-                    onChange={handleChange}
+                    size="medium"
+                    placeholder="Relation"
                     InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Person fontSize="small" color="action" />
-                        </InputAdornment>
-                      ),
+                      startAdornment: <Person sx={{ color: "text.secondary", mr: 1 }} />,
                     }}
                   />
+                 
                 </Grid>
                 <Grid item xs={12} md={4}>
-                  <TextField
+                  <CraftInputWithIcon
                     fullWidth
-                    label="Mobile No.*"
+                      label="Mobile No.*"
                     name="guardianMobile"
-                    value={formData.guardianMobile}
-                    onChange={handleChange}
+                    size="medium"
+                    placeholder="Mobile No.*"
                     InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Phone fontSize="small" color="action" />
-                        </InputAdornment>
-                      ),
+                      startAdornment: <Person sx={{ color: "text.secondary", mr: 1 }} />,
                     }}
                   />
+                 
                 </Grid>
               </Grid>
 
@@ -1126,52 +1035,43 @@ function AdmissionForm() {
 
               <Grid container spacing={3}>
                 <Grid item xs={12} md={6}>
-                  <TextField
+                  <CraftInputWithIcon
                     fullWidth
-                    label="Name"
+                     label="Name"
                     name="localGuardianName"
-                    value={formData.localGuardianName}
-                    onChange={handleChange}
+                    size="medium"
+                    placeholder="Name"
                     InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Person fontSize="small" color="action" />
-                        </InputAdornment>
-                      ),
+                      startAdornment: <Person sx={{ color: "text.secondary", mr: 1 }} />,
                     }}
                   />
+                  
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <TextField
+                   <CraftInputWithIcon
                     fullWidth
                     label="Mobile No.*"
                     name="localGuardianMobile"
-                    value={formData.localGuardianMobile}
-                    onChange={handleChange}
+                    size="medium"
+                    placeholder="Mobile No.*"
                     InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Phone fontSize="small" color="action" />
-                        </InputAdornment>
-                      ),
+                      startAdornment: <Person sx={{ color: "text.secondary", mr: 1 }} />,
                     }}
                   />
+                 
                 </Grid>
                 <Grid item xs={12}>
-                  <TextField
+                  <CraftInputWithIcon
                     fullWidth
-                    label="Category/ Designation/ Class & Student ID"
+                   label="Category/ Designation/ Class & Student ID"
                     name="categoryDesignation"
-                    value={formData.categoryDesignation}
-                    onChange={handleChange}
+                    size="medium"
+                    placeholder="Category/ Designation/ Class & Student ID"
                     InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Description fontSize="small" color="action" />
-                        </InputAdornment>
-                      ),
+                      startAdornment: <Description sx={{ color: "text.secondary", mr: 1 }} />,
                     }}
                   />
+                  
                 </Grid>
               </Grid>
             </TabPanel>
