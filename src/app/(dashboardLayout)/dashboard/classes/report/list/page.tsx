@@ -19,10 +19,9 @@ import {
   Table,
   TableBody,
   TableCell,
-  TableContainer,
   TableHead,
   TableRow,
-  TablePagination,
+  Pagination,
   MenuItem,
   InputAdornment,
   Tooltip,
@@ -32,7 +31,6 @@ import {
   DialogContentText,
   DialogTitle,
   useMediaQuery,
-  Skeleton,
   Fade,
   alpha,
   Card,
@@ -52,7 +50,6 @@ import {
   Person as PersonIcon,
   Book as BookIcon,
   Class as ClassIcon,
-  CalendarMonth as CalendarIcon,
   ArrowUpward as ArrowUpwardIcon,
   ArrowDownward as ArrowDownwardIcon,
   CheckCircle as CheckCircleIcon,
@@ -62,8 +59,6 @@ import {
   Print as PrintIcon,
   Refresh as RefreshIcon,
   DateRange,
-  Clear,
-  DownhillSkiing,
   Download,
 } from "@mui/icons-material"
 import DrawIcon from "@mui/icons-material/Draw"
@@ -76,7 +71,7 @@ import { useGetAllSubjectsQuery } from "@/redux/api/subjectApi"
 import { useGetAllTeachersQuery } from "@/redux/api/teacherApi"
 import ClassReportDetailsModal from "../_components/ClassReportDetailsModal"
 import toast from "react-hot-toast"
-import DateRangePicker from "../new/_components/DateRangePicker";
+import DateRangePicker from "../new/_components/DateRangePicker"
 import Link from "next/link"
 import { DateRangeIcon } from "@mui/x-date-pickers"
 import Loader from "@/app/loading"
@@ -99,9 +94,9 @@ interface IDateRange {
 }
 
 export default function ClassReportList() {
-  // State
-  const [page, setPage] = useState(0)
-  const [rowsPerPage, setRowsPerPage] = useState(10)
+  // State - Fixed pagination state management
+  const [page, setPage] = useState(1) // Changed to 1-based indexing to match Material-UI Pagination
+  const [rowsPerPage, setRowsPerPage] = useState(5) // Fixed limit to 5
   const [searchTerm, setSearchTerm] = useState("")
   const [filters, setFilters] = useState<Filters>({
     classes: "",
@@ -134,15 +129,15 @@ export default function ClassReportList() {
 
   const [deleteClassReport] = useDeleteClassReportMutation()
 
-  // API queries
+  // API queries - Fixed pagination parameters
   const {
     data: classReport,
     isLoading,
     refetch,
   } = useGetAllClassReportsQuery(
     {
-      limit: rowsPerPage,
-      page: page + 1,
+      limit: rowsPerPage, // Always 5
+      page: page, // Use 1-based page directly
       searchTerm: searchTerm,
       className: filters.classes,
       subject: filters.subjects,
@@ -182,15 +177,25 @@ export default function ClassReportList() {
   }, [filters, searchTerm, page, rowsPerPage, refetch])
 
   const theme = customTheme
-  const isMobile = useMediaQuery(theme.breakpoints.down("sm"), { noSsr: true });
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"), { noSsr: true })
 
   const reports = useMemo(() => {
     return classReport?.data?.reports || []
   }, [classReport])
 
   const totalCount = classReport?.data?.meta?.total || 0
+  const totalPages = Math.ceil(totalCount / rowsPerPage)
 
-  console.log("student classreport", classReport)
+  console.log("Pagination Debug:", {
+    currentPage: page,
+    totalPages: totalPages,
+    totalCount: totalCount,
+    reportsOnCurrentPage: reports.length,
+    limit: rowsPerPage,
+    hasNextPage: classReport?.data?.meta?.hasNextPage,
+    hasPrevPage: classReport?.data?.meta?.hasPrevPage,
+  })
+
   const classOptions = useMemo(() => {
     return (
       classData?.data?.classes?.map((cls: any) => ({
@@ -243,7 +248,7 @@ export default function ClassReportList() {
       )
     }
 
-    setPage(0)
+    setPage(1) // Reset to first page
     refetch()
   }
 
@@ -255,7 +260,7 @@ export default function ClassReportList() {
       endDate: "",
     }))
     toast.success("Date range filter cleared")
-    setPage(0)
+    setPage(1) // Reset to first page
     refetch()
   }
 
@@ -271,18 +276,15 @@ export default function ClassReportList() {
     refetch()
   }
 
-  const handleChangePage = (event: unknown, newPage: number) => {
-    setPage(newPage)
-  }
-
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setRowsPerPage(Number.parseInt(event.target.value, 10))
-    setPage(0)
+  // Fixed pagination handler
+  const handleChangePage = (event: React.ChangeEvent<unknown>, newPage: number) => {
+    console.log("Changing to page:", newPage)
+    setPage(newPage) // Use newPage directly since Material-UI Pagination is 1-based
   }
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value)
-    setPage(0)
+    setPage(1) // Reset to first page when searching
   }
 
   const handleFilterChange = (filterName: keyof Filters, value: string) => {
@@ -290,8 +292,7 @@ export default function ClassReportList() {
       ...prev,
       [filterName]: value,
     }))
-
-    setPage(0)
+    setPage(1) // Reset to first page when filtering
     refetch()
   }
 
@@ -341,11 +342,9 @@ export default function ClassReportList() {
     })
     setSelectedDateRange({ startDate: null, endDate: null })
     setSearchTerm("")
-    setPage(0)
+    setPage(1) // Reset to first page
     refetch()
   }
-
-
 
   const handleOpenDetailsModal = (e: React.MouseEvent, report: any, evaluation: any) => {
     e.stopPropagation()
@@ -449,9 +448,24 @@ export default function ClassReportList() {
                 </div>
               </div>
 
+              {/* Enhanced Pagination Info */}
+              <Box sx={{ mb: 2, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <Typography variant="body2" color="text.secondary">
+                  Showing {reports.length} reports with student evaluations (Page {page} of {totalPages})
+                </Typography>
+                <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+                  <Typography variant="body2" color="secondary.main" fontWeight={600}>
+                    Total Reports: {totalCount}
+                  </Typography>
+                  <Typography variant="body2" color="primary.main" fontWeight={600}>
+                    Limit: {rowsPerPage} per page
+                  </Typography>
+                </Box>
+              </Box>
+
               {/* Filter Cards */}
               <Box sx={{ mb: 4 }}>
-                <div className="grid grid-cols-1 md:grid-cols-6 gap-[6px]" >
+                <div className="grid grid-cols-1 md:grid-cols-6 gap-[6px]">
                   {/* Class Filter */}
                   <Grid item xs={12} sm={6} md={1}>
                     <Card variant="outlined" sx={{ borderRadius: 2 }}>
@@ -651,9 +665,9 @@ export default function ClassReportList() {
                         background:
                           selectedDateRange.startDate || selectedDateRange.endDate
                             ? `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(
-                              theme.palette.secondary.main,
-                              0.05,
-                            )} 100%)`
+                                theme.palette.secondary.main,
+                                0.05,
+                              )} 100%)`
                             : "background.paper",
                         border:
                           selectedDateRange.startDate || selectedDateRange.endDate
@@ -682,7 +696,6 @@ export default function ClassReportList() {
                             onClick={handleDateRangePickerOpen}
                             fullWidth
                             sx={{
-
                               borderRadius: 2,
                               textTransform: "none",
                               justifyContent: "flex-start",
@@ -768,25 +781,9 @@ export default function ClassReportList() {
               <Paper elevation={0} sx={{ mb: 4, overflow: "hidden" }}>
                 {isLoading ? (
                   <Loader />
-                  // <Box sx={{ p: 2 }}>
-                  //   {Array.from(new Array(5)).map((_, index) => (
-                  //     <Box key={index} sx={{ display: "flex", py: 2, px: 2, alignItems: "center" }}>
-                  //       <Skeleton variant="circular" width={40} height={40} sx={{ mr: 2 }} />
-                  //       <Box sx={{ width: "100%" }}>
-                  //         <Skeleton variant="text" width="40%" height={30} />
-                  //         <Box sx={{ display: "flex", mt: 1 }}>
-                  //           <Skeleton variant="text" width="20%" sx={{ mr: 2 }} />
-                  //           <Skeleton variant="text" width="30%" />
-                  //         </Box>
-                  //       </Box>
-                  //       <Skeleton variant="rectangular" width={100} height={36} sx={{ borderRadius: 1 }} />
-                  //     </Box>
-                  //   ))}
-                  // </Box>
                 ) : (
                   <>
                     <div className="max-[320px]:block max-[320px]:w-[250px] max-[375px]:block max-[375px]:w-[300px] max-[425px]:block max-[425px]:w-[380px] max-[800px]:border max-[800px]:border-gray-300 max-[800px]:rounded   max-[800px]:block max-[800px]:max-w-[100vw] max-[800px]:relative max-[800px]:whitespace-nowrap max-[800px]:overflow-x-auto">
-
                       <Table
                         sx={{
                           minWidth: 900,
@@ -794,7 +791,7 @@ export default function ClassReportList() {
                             width: "100%",
                             minWidth: "100%",
                             tableLayout: { sm: "auto", md: "fixed", lg: "fixed" },
-                            px: 10
+                            px: 10,
                           },
                         }}
                       >
@@ -818,7 +815,6 @@ export default function ClassReportList() {
                                   cursor: "pointer",
                                   userSelect: "none",
                                   color: orderBy === "date" ? "primary.main" : "inherit",
-
                                 }}
                                 onClick={() => handleSort("date")}
                               >
@@ -834,7 +830,7 @@ export default function ClassReportList() {
                                 )}
                               </Box>
                             </TableCell>
-                            <TableCell >Student Name</TableCell>
+                            <TableCell>Student Name</TableCell>
                             <TableCell width="5%">
                               <Box
                                 sx={{
@@ -872,7 +868,6 @@ export default function ClassReportList() {
                         <TableBody>
                           {sortedReports.length > 0 ? (
                             sortedReports.map((report: any) => {
-
                               const isExpanded = expandedReport === report._id
 
                               return (
@@ -1008,7 +1003,7 @@ export default function ClassReportList() {
                                           <Chip
                                             icon={
                                               evaluation?.lessonEvaluation &&
-                                                evaluation?.lessonEvaluation !== "পড়া শিখেনি" ? (
+                                              evaluation?.lessonEvaluation !== "পড়া শিখেনি" ? (
                                                 <CheckCircleIcon sx={{ color: "#651FFF" }} />
                                               ) : (
                                                 <CancelIcon sx={{ color: "#FF1744" }} />
@@ -1020,19 +1015,20 @@ export default function ClassReportList() {
                                               fontWeight: 500,
                                               color:
                                                 evaluation?.lessonEvaluation &&
-                                                  evaluation?.lessonEvaluation !== "পড়া শিখেনি"
+                                                evaluation?.lessonEvaluation !== "পড়া শিখেনি"
                                                   ? "#651FFF"
                                                   : "#FF1744",
                                               bgcolor:
                                                 evaluation?.lessonEvaluation &&
-                                                  evaluation?.lessonEvaluation !== "পড়া শিখেনি"
+                                                evaluation?.lessonEvaluation !== "পড়া শিখেনি"
                                                   ? "#EDE7F6"
                                                   : "#FFEBEE",
-                                              border: `1px solid ${evaluation?.lessonEvaluation &&
+                                              border: `1px solid ${
+                                                evaluation?.lessonEvaluation &&
                                                 evaluation?.lessonEvaluation !== "পড়া শিখেনি"
-                                                ? "#651FFF"
-                                                : "#FF1744"
-                                                }`,
+                                                  ? "#651FFF"
+                                                  : "#FF1744"
+                                              }`,
                                             }}
                                           />
                                         </TableCell>
@@ -1057,22 +1053,20 @@ export default function ClassReportList() {
                                                 evaluation?.handwriting && evaluation?.handwriting !== "লিখেনি"
                                                   ? "#E0F7FA"
                                                   : "#FFEBEE",
-                                              border: `1px solid ${evaluation?.handwriting && evaluation?.handwriting !== "লিখেনি"
-                                                ? "#00BFA6"
-                                                : "#FF1744"
-                                                }`,
+                                              border: `1px solid ${
+                                                evaluation?.handwriting && evaluation?.handwriting !== "লিখেনি"
+                                                  ? "#00BFA6"
+                                                  : "#FF1744"
+                                              }`,
                                             }}
                                           />
                                         </TableCell>
                                         <TableCell align="center">
-                                          {
-                                            evaluation?.parentSignature &&
-                                              evaluation?.parentSignature !== "" ? (
-                                              <CheckCircleIcon color="success" />
-                                            ) : (
-                                              <CancelIcon color="error" />
-                                            )
-                                          }
+                                          {evaluation?.parentSignature && evaluation?.parentSignature !== "" ? (
+                                            <CheckCircleIcon color="success" />
+                                          ) : (
+                                            <CancelIcon color="error" />
+                                          )}
                                         </TableCell>
                                         <TableCell sx={{ py: 1.5 }}>
                                           <Box
@@ -1097,7 +1091,6 @@ export default function ClassReportList() {
                                                 <a
                                                   className="editIconWrap edit2"
                                                   href={`${process.env.NEXT_PUBLIC_BASE_API_URL}/class-report/classreport/${report._id}`}
-
                                                   target="_blank"
                                                   rel="noreferrer"
                                                 >
@@ -1208,24 +1201,54 @@ export default function ClassReportList() {
                         </TableBody>
                       </Table>
                     </div>
-                    <TablePagination
-                      rowsPerPageOptions={[5, 10, 25, 50]}
-                      component="div"
-                      count={totalCount}
-                      rowsPerPage={rowsPerPage}
-                      page={page}
-                      onPageChange={handleChangePage}
-                      onRowsPerPageChange={handleChangeRowsPerPage}
+
+                    {/* Updated Pagination Component */}
+                    <Box
                       sx={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        py: 3,
+                        px: 2,
                         borderTop: `1px solid ${alpha(theme.palette.divider, 0.7)}`,
-                        "& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows": {
-                          fontWeight: 500,
-                        },
-                        "& .MuiTablePagination-select": {
-                          borderRadius: 1,
-                        },
+                        bgcolor: alpha(theme.palette.secondary.main, 0.02),
                       }}
-                    />
+                    >
+                      <Typography variant="body2" color="text.secondary">
+                        Showing {(page - 1) * rowsPerPage + 1} to {Math.min(page * rowsPerPage, totalCount)} of{" "}
+                        {totalCount} entries
+                      </Typography>
+
+                      <Pagination
+                        count={totalPages}
+                        page={page}
+                        onChange={handleChangePage}
+                        color="secondary"
+                        size="large"
+                        showFirstButton
+                        showLastButton
+                        sx={{
+                          "& .MuiPaginationItem-root": {
+                            fontWeight: 500,
+                            border: `1px solid ${alpha(theme.palette.secondary.main, 0.2)}`,
+                            "&:hover": {
+                              bgcolor: alpha(theme.palette.secondary.main, 0.08),
+                              transform: "translateY(-1px)",
+                              boxShadow: `0 2px 8px ${alpha(theme.palette.secondary.main, 0.15)}`,
+                            },
+                            transition: "all 0.2s ease",
+                          },
+                          "& .Mui-selected": {
+                            fontWeight: 600,
+                            bgcolor: `${theme.palette.secondary.main} !important`,
+                            color: "white",
+                            "&:hover": {
+                              bgcolor: `${theme.palette.secondary.dark} !important`,
+                            },
+                          },
+                        }}
+                      />
+                    </Box>
                   </>
                 )}
               </Paper>
@@ -1235,7 +1258,7 @@ export default function ClassReportList() {
       </Box>
 
       {/* Date Range Picker Dialog */}
-      {typeof window !== 'undefined' && (
+      {typeof window !== "undefined" && (
         <DateRangePicker
           open={dateRangePickerOpen}
           onClose={handleDateRangePickerClose}
