@@ -25,6 +25,7 @@ export const classReportApi = baseApi.injectEndpoints({
         handwriting,
         startDate,
         endDate,
+        hasComments
       }) => ({
         url: "/class-report",
         method: "GET",
@@ -41,6 +42,7 @@ export const classReportApi = baseApi.injectEndpoints({
           handwriting,
           startDate,
           endDate,
+          hasComments
         },
       }),
       providesTags: ["class-report"],

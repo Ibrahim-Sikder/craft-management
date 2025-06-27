@@ -40,6 +40,9 @@ import {
   Select,
   type SelectChangeEvent,
   ThemeProvider,
+  Switch,
+  FormControlLabel,
+  Badge,
 } from "@mui/material"
 import {
   Add as AddIcon,
@@ -60,6 +63,8 @@ import {
   Refresh as RefreshIcon,
   DateRange,
   Download,
+  Comment as CommentIcon,
+  FilterList as FilterListIcon,
 } from "@mui/icons-material"
 import DrawIcon from "@mui/icons-material/Draw"
 import BlockIcon from "@mui/icons-material/Block"
@@ -86,6 +91,7 @@ type Filters = {
   handwriting: string
   startDate: string
   endDate: string
+  hasComments: boolean // NEW: Comments filter
 }
 
 interface IDateRange {
@@ -95,8 +101,8 @@ interface IDateRange {
 
 export default function ClassReportList() {
   // State - Fixed pagination state management
-  const [page, setPage] = useState(1) // Changed to 1-based indexing to match Material-UI Pagination
-  const [rowsPerPage, setRowsPerPage] = useState(5) // Fixed limit to 5
+  const [page, setPage] = useState(1)
+  const [rowsPerPage, setRowsPerPage] = useState(5)
   const [searchTerm, setSearchTerm] = useState("")
   const [filters, setFilters] = useState<Filters>({
     classes: "",
@@ -108,6 +114,7 @@ export default function ClassReportList() {
     handwriting: "",
     startDate: "",
     endDate: "",
+    hasComments: false, // NEW: Initialize comments filter
   })
 
   const [orderBy, setOrderBy] = useState<string>("createdAt")
@@ -129,15 +136,15 @@ export default function ClassReportList() {
 
   const [deleteClassReport] = useDeleteClassReportMutation()
 
-  // API queries - Fixed pagination parameters
+  // API queries - Updated to include hasComments filter
   const {
     data: classReport,
     isLoading,
     refetch,
   } = useGetAllClassReportsQuery(
     {
-      limit: rowsPerPage, // Always 5
-      page: page, // Use 1-based page directly
+      limit: rowsPerPage,
+      page: page,
       searchTerm: searchTerm,
       className: filters.classes,
       subject: filters.subjects,
@@ -148,6 +155,7 @@ export default function ClassReportList() {
       handwriting: filters.handwriting,
       startDate: filters.startDate,
       endDate: filters.endDate,
+      hasComments: filters.hasComments, // NEW: Include comments filter
     },
     {
       refetchOnMountOrArgChange: true,
@@ -186,6 +194,13 @@ export default function ClassReportList() {
   const totalCount = classReport?.data?.meta?.total || 0
   const totalPages = Math.ceil(totalCount / rowsPerPage)
 
+  // NEW: Get comments statistics from API response
+  const commentsStats = classReport?.data?.meta?.commentsStats || {
+    totalComments: 0,
+    reportsWithComments: 0,
+    studentsWithComments: 0,
+  }
+
   console.log("Pagination Debug:", {
     currentPage: page,
     totalPages: totalPages,
@@ -194,6 +209,8 @@ export default function ClassReportList() {
     limit: rowsPerPage,
     hasNextPage: classReport?.data?.meta?.hasNextPage,
     hasPrevPage: classReport?.data?.meta?.hasPrevPage,
+    commentsFilter: filters.hasComments,
+    commentsStats: commentsStats,
   })
 
   const classOptions = useMemo(() => {
@@ -248,7 +265,7 @@ export default function ClassReportList() {
       )
     }
 
-    setPage(1) // Reset to first page
+    setPage(1)
     refetch()
   }
 
@@ -260,7 +277,7 @@ export default function ClassReportList() {
       endDate: "",
     }))
     toast.success("Date range filter cleared")
-    setPage(1) // Reset to first page
+    setPage(1)
     refetch()
   }
 
@@ -276,23 +293,40 @@ export default function ClassReportList() {
     refetch()
   }
 
-  // Fixed pagination handler
   const handleChangePage = (event: React.ChangeEvent<unknown>, newPage: number) => {
     console.log("Changing to page:", newPage)
-    setPage(newPage) // Use newPage directly since Material-UI Pagination is 1-based
+    setPage(newPage)
   }
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value)
-    setPage(1) // Reset to first page when searching
+    setPage(1)
   }
 
-  const handleFilterChange = (filterName: keyof Filters, value: string) => {
+  const handleFilterChange = (filterName: keyof Filters, value: string | boolean) => {
     setFilters((prev) => ({
       ...prev,
       [filterName]: value,
     }))
-    setPage(1) // Reset to first page when filtering
+    setPage(1)
+    refetch()
+  }
+
+  // NEW: Handle comments filter toggle
+  const handleCommentsFilterToggle = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const isChecked = event.target.checked
+    setFilters((prev) => ({
+      ...prev,
+      hasComments: isChecked,
+    }))
+    setPage(1)
+
+    if (isChecked) {
+      toast.success(`Showing only records with comments (${commentsStats.totalComments} total)`)
+    } else {
+      toast.success("Comments filter cleared - showing all records")
+    }
+
     refetch()
   }
 
@@ -339,10 +373,11 @@ export default function ClassReportList() {
       handwriting: "",
       startDate: "",
       endDate: "",
+      hasComments: false, // NEW: Reset comments filter
     })
     setSelectedDateRange({ startDate: null, endDate: null })
     setSearchTerm("")
-    setPage(1) // Reset to first page
+    setPage(1)
     refetch()
   }
 
@@ -395,25 +430,27 @@ export default function ClassReportList() {
     })
   }, [filteredReports, orderBy, order])
 
-  const getStudentRows = (report: any) => {
-    if (!report.studentEvaluations || report.studentEvaluations.length === 0) {
-      return []
-    }
+const cardStyle = {
+  width: '100%',
+  borderRadius: 3,
+  background:
+    selectedDateRange.startDate || selectedDateRange.endDate
+      ? `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(
+          theme.palette.secondary.main,
+          0.05,
+        )} 100%)`
+      : "background.paper",
+  border:
+    selectedDateRange.startDate || selectedDateRange.endDate
+      ? `2px solid ${alpha(theme.palette.primary.main, 0.3)}`
+      : "1px solid rgba(0, 0, 0, 0.12)",
+  transition: "all 0.3s ease",
+  "&:hover": {
+    boxShadow: `0 8px 25px ${alpha(theme.palette.primary.main, 0.15)}`,
+    transform: "translateY(-2px)",
+  },
+}
 
-    return report.studentEvaluations.map((evaluation: any) => {
-      const student = evaluation.studentId || {}
-      return {
-        id: student._id,
-        roll: student.studentClassRoll || student.studentId || "N/A",
-        name: student.name || "N/A",
-        lessonEvaluation: evaluation.lessonEvaluation || "N/A",
-        handwriting: evaluation.handwriting || "N/A",
-        attendance: evaluation.attendance || "N/A",
-        parentSignature: evaluation.parentSignature ? "Yes" : "No",
-        comments: evaluation.comments || "",
-      }
-    })
-  }
 
   return (
     <ThemeProvider theme={theme}>
@@ -448,7 +485,7 @@ export default function ClassReportList() {
                 </div>
               </div>
 
-              {/* Enhanced Pagination Info */}
+              {/* Enhanced Pagination Info with Comments Stats */}
               <Box sx={{ mb: 2, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                 <Typography variant="body2" color="text.secondary">
                   Showing {reports.length} reports with student evaluations (Page {page} of {totalPages})
@@ -460,12 +497,22 @@ export default function ClassReportList() {
                   <Typography variant="body2" color="primary.main" fontWeight={600}>
                     Limit: {rowsPerPage} per page
                   </Typography>
+                  {/* NEW: Comments Statistics Display */}
+                  <Badge badgeContent={commentsStats.totalComments} color="warning" max={999}>
+                    <Chip
+                      icon={<CommentIcon />}
+                      label={`${commentsStats.reportsWithComments} Reports with Comments`}
+                      size="small"
+                      color="warning"
+                      variant="outlined"
+                    />
+                  </Badge>
                 </Box>
               </Box>
 
               {/* Filter Cards */}
               <Box sx={{ mb: 4 }}>
-                <div className="grid grid-cols-1 md:grid-cols-6 gap-[6px]">
+                <div className="grid grid-cols-1 md:grid-cols-5 gap-[6px]">
                   {/* Class Filter */}
                   <Grid item xs={12} sm={6} md={1}>
                     <Card variant="outlined" sx={{ borderRadius: 2 }}>
@@ -656,30 +703,8 @@ export default function ClassReportList() {
                   </Grid>
 
                   {/* Enhanced Date Range Filter */}
-                  <Grid item xs={12} sm={6} md={2} lg={2.5}>
-                    <Card
-                      variant="outlined"
-                      sx={{
-                        minWidth: 400,
-                        borderRadius: 3,
-                        background:
-                          selectedDateRange.startDate || selectedDateRange.endDate
-                            ? `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(
-                                theme.palette.secondary.main,
-                                0.05,
-                              )} 100%)`
-                            : "background.paper",
-                        border:
-                          selectedDateRange.startDate || selectedDateRange.endDate
-                            ? `2px solid ${alpha(theme.palette.primary.main, 0.3)}`
-                            : "1px solid rgba(0, 0, 0, 0.12)",
-                        transition: "all 0.3s ease",
-                        "&:hover": {
-                          boxShadow: `0 8px 25px ${alpha(theme.palette.primary.main, 0.15)}`,
-                          transform: "translateY(-2px)",
-                        },
-                      }}
-                    >
+                  <Grid item xs={12} sm={6} md={6} lg={3}>
+                    <Card variant="outlined" sx={cardStyle}>
                       <CardContent sx={{ p: 3 }}>
                         <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
                           <DateRangeIcon sx={{ color: "primary.main", mr: 1 }} />
@@ -687,31 +712,67 @@ export default function ClassReportList() {
                             Date
                           </Typography>
                         </Box>
+                        <Button
+                          variant="outlined"
+                          startIcon={<DateRange />}
+                          onClick={handleDateRangePickerOpen}
+                          fullWidth
+                          sx={{
+                            borderRadius: 2,
+                            textTransform: "none",
+                            justifyContent: "flex-start",
+                            color: selectedDateRange.startDate ? "primary.main" : "text.secondary",
+                            borderColor: selectedDateRange.startDate ? "primary.main" : "rgba(0, 0, 0, 0.23)",
+                            fontSize: "0.875rem",
+                            py: 1.5,
+                            "&:hover": {
+                              transform: "translateY(-1px)",
+                              boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.2)}`,
+                            },
+                            transition: "all 0.2s ease",
+                          }}
+                        >
+                          {formatDateRangeDisplay()}
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </Grid>
 
-                        {/* Date Range Picker Button */}
-                        <Box sx={{ display: "flex", gap: 2, alignItems: "center", mb: 2 }}>
-                          <Button
-                            variant="outlined"
-                            startIcon={<DateRange />}
-                            onClick={handleDateRangePickerOpen}
-                            fullWidth
-                            sx={{
-                              borderRadius: 2,
-                              textTransform: "none",
-                              justifyContent: "flex-start",
-                              color: selectedDateRange.startDate ? "primary.main" : "text.secondary",
-                              borderColor: selectedDateRange.startDate ? "primary.main" : "rgba(0, 0, 0, 0.23)",
-                              fontSize: "0.875rem",
-                              py: 1.5,
-                              "&:hover": {
-                                transform: "translateY(-1px)",
-                                boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.2)}`,
-                              },
-                              transition: "all 0.2s ease",
-                            }}
-                          >
-                            {formatDateRangeDisplay()}
-                          </Button>
+                  {/* Comments Filter */}
+                  <Grid item xs={12} sm={6} md={6} lg={3}>
+                    <Card variant="outlined" sx={cardStyle}>
+                      <CardContent sx={{ p: 3 }}>
+                        <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+                          <CommentIcon sx={{ color: "warning.main", mr: 1 }} />
+                          <Typography variant="subtitle1" fontWeight={600}>Comments</Typography>
+                        </Box>
+                        <Box sx={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                          <FormControlLabel
+                            control={
+                              <Switch
+                                checked={filters.hasComments}
+                                onChange={handleCommentsFilterToggle}
+                                color="warning"
+                                size="small"
+                              />
+                            }
+                            label={
+                              <Typography variant="body2" fontWeight={500}>
+                                {filters.hasComments ? "Show Only Comments" : "Show All Records"}
+                              </Typography>
+                            }
+                          />
+                          {/* <Box sx={{ mt: 1 }}>
+                            <Typography variant="caption" color="text.secondary" display="block">
+                              Total Comments: {commentsStats.totalComments}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary" display="block">
+                              Reports: {commentsStats.reportsWithComments}
+                            </Typography>
+                            <Typography variant="caption" color="text.secondary" display="block">
+                              Students: {commentsStats.studentsWithComments}
+                            </Typography>
+                          </Box> */}
                         </Box>
                       </CardContent>
                     </Card>
@@ -721,7 +782,7 @@ export default function ClassReportList() {
                 {/* Search and Actions */}
                 <Box sx={{ mt: 2, display: "flex", gap: 2, flexWrap: "wrap" }}>
                   <TextField
-                    placeholder="Search by Student Name..."
+                    placeholder="Search by Student Name or Comments..."
                     variant="outlined"
                     value={searchTerm}
                     onChange={handleSearchChange}
@@ -746,8 +807,9 @@ export default function ClassReportList() {
                       borderColor: "rgba(0, 0, 0, 0.12)",
                       color: "text.secondary",
                     }}
+                    startIcon={<FilterListIcon />}
                   >
-                    Clear Filters
+                    Clear All Filters
                   </Button>
                   {!isMobile && (
                     <>
@@ -875,6 +937,7 @@ export default function ClassReportList() {
                                   {report.studentEvaluations?.map((evaluation: any, index: number) => {
                                     const student = evaluation.studentId
                                     const isAbsent = evaluation?.attendance === "অনুপস্থিত"
+                                    const hasComment = evaluation?.comments && evaluation.comments.trim() !== ""
 
                                     return (
                                       <TableRow
@@ -889,7 +952,8 @@ export default function ClassReportList() {
                                           "&:last-child td": {
                                             borderBottom: 0,
                                           },
-                                          ...(evaluation?.comments && {
+                                          // Enhanced styling for rows with comments
+                                          ...(hasComment && {
                                             background: `linear-gradient(90deg, ${alpha(
                                               theme.palette.warning.light,
                                               0.08,
@@ -1003,7 +1067,7 @@ export default function ClassReportList() {
                                           <Chip
                                             icon={
                                               evaluation?.lessonEvaluation &&
-                                              evaluation?.lessonEvaluation !== "পড়া শিখেনি" ? (
+                                                evaluation?.lessonEvaluation !== "পড়া শিখেনি" ? (
                                                 <CheckCircleIcon sx={{ color: "#651FFF" }} />
                                               ) : (
                                                 <CancelIcon sx={{ color: "#FF1744" }} />
@@ -1015,20 +1079,19 @@ export default function ClassReportList() {
                                               fontWeight: 500,
                                               color:
                                                 evaluation?.lessonEvaluation &&
-                                                evaluation?.lessonEvaluation !== "পড়া শিখেনি"
+                                                  evaluation?.lessonEvaluation !== "পড়া শিখেনি"
                                                   ? "#651FFF"
                                                   : "#FF1744",
                                               bgcolor:
                                                 evaluation?.lessonEvaluation &&
-                                                evaluation?.lessonEvaluation !== "পড়া শিখেনি"
+                                                  evaluation?.lessonEvaluation !== "পড়া শিখেনি"
                                                   ? "#EDE7F6"
                                                   : "#FFEBEE",
-                                              border: `1px solid ${
-                                                evaluation?.lessonEvaluation &&
+                                              border: `1px solid ${evaluation?.lessonEvaluation &&
                                                 evaluation?.lessonEvaluation !== "পড়া শিখেনি"
-                                                  ? "#651FFF"
-                                                  : "#FF1744"
-                                              }`,
+                                                ? "#651FFF"
+                                                : "#FF1744"
+                                                }`,
                                             }}
                                           />
                                         </TableCell>
@@ -1053,11 +1116,10 @@ export default function ClassReportList() {
                                                 evaluation?.handwriting && evaluation?.handwriting !== "লিখেনি"
                                                   ? "#E0F7FA"
                                                   : "#FFEBEE",
-                                              border: `1px solid ${
-                                                evaluation?.handwriting && evaluation?.handwriting !== "লিখেনি"
-                                                  ? "#00BFA6"
-                                                  : "#FF1744"
-                                              }`,
+                                              border: `1px solid ${evaluation?.handwriting && evaluation?.handwriting !== "লিখেনি"
+                                                ? "#00BFA6"
+                                                : "#FF1744"
+                                                }`,
                                             }}
                                           />
                                         </TableCell>
@@ -1069,20 +1131,42 @@ export default function ClassReportList() {
                                           )}
                                         </TableCell>
                                         <TableCell sx={{ py: 1.5 }}>
-                                          <Box
-                                            sx={{
-                                              display: "inline-flex",
-                                              bgcolor: alpha(theme.palette.primary.main, 0.08),
-                                              color: theme.palette.primary.main,
-                                              px: 1.5,
-                                              py: 0.5,
-                                              borderRadius: 1,
-                                              fontWeight: 600,
-                                              fontSize: "0.8125rem",
-                                            }}
-                                          >
-                                            {evaluation.comments}
-                                          </Box>
+                                          {/* Enhanced Comments Display */}
+                                          {hasComment ? (
+                                            <Box
+                                              sx={{
+                                                display: "inline-flex",
+                                                alignItems: "center",
+                                                bgcolor: alpha(theme.palette.warning.main, 0.08),
+                                                color: theme.palette.warning.main,
+                                                px: 1.5,
+                                                py: 0.5,
+                                                borderRadius: 1,
+                                                fontWeight: 600,
+                                                fontSize: "0.8125rem",
+                                                maxWidth: 200,
+                                                border: `1px solid ${alpha(theme.palette.warning.main, 0.3)}`,
+                                              }}
+                                            >
+                                              <CommentIcon sx={{ fontSize: 14, mr: 0.5 }} />
+                                              <Typography
+                                                variant="caption"
+                                                sx={{
+                                                  overflow: "hidden",
+                                                  textOverflow: "ellipsis",
+                                                  whiteSpace: "nowrap",
+                                                  maxWidth: 150,
+                                                }}
+                                                title={evaluation.comments}
+                                              >
+                                                {evaluation.comments}
+                                              </Typography>
+                                            </Box>
+                                          ) : (
+                                            <Typography variant="caption" color="text.secondary">
+                                              No comments
+                                            </Typography>
+                                          )}
                                         </TableCell>
                                         <TableCell>
                                           <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
@@ -1158,7 +1242,7 @@ export default function ClassReportList() {
                             })
                           ) : (
                             <TableRow>
-                              <TableCell colSpan={10} align="center" sx={{ py: 8 }}>
+                              <TableCell colSpan={12} align="center" sx={{ py: 8 }}>
                                 <Box
                                   sx={{
                                     textAlign: "center",
@@ -1168,23 +1252,48 @@ export default function ClassReportList() {
                                     border: `1px dashed ${alpha(theme.palette.primary.main, 0.2)}`,
                                   }}
                                 >
-                                  <SearchIcon
-                                    sx={{ fontSize: 64, color: alpha(theme.palette.primary.main, 0.3), mb: 2 }}
-                                  />
-                                  <Typography
-                                    variant="h6"
-                                    gutterBottom
-                                    sx={{ fontWeight: 600, color: theme.palette.primary.main }}
-                                  >
-                                    No class reports found
-                                  </Typography>
-                                  <Typography
-                                    variant="body2"
-                                    color="text.secondary"
-                                    sx={{ maxWidth: 400, mx: "auto", mb: 2 }}
-                                  >
-                                    Try adjusting your search or filter to find what you&apos;re looking for.
-                                  </Typography>
+                                  {filters.hasComments ? (
+                                    <>
+                                      <CommentIcon
+                                        sx={{ fontSize: 64, color: alpha(theme.palette.warning.main, 0.3), mb: 2 }}
+                                      />
+                                      <Typography
+                                        variant="h6"
+                                        gutterBottom
+                                        sx={{ fontWeight: 600, color: theme.palette.warning.main }}
+                                      >
+                                        No reports with comments found
+                                      </Typography>
+                                      <Typography
+                                        variant="body2"
+                                        color="text.secondary"
+                                        sx={{ maxWidth: 400, mx: "auto", mb: 2 }}
+                                      >
+                                        Try adjusting your search or other filters, or turn off the comments filter to
+                                        see all records.
+                                      </Typography>
+                                    </>
+                                  ) : (
+                                    <>
+                                      <SearchIcon
+                                        sx={{ fontSize: 64, color: alpha(theme.palette.primary.main, 0.3), mb: 2 }}
+                                      />
+                                      <Typography
+                                        variant="h6"
+                                        gutterBottom
+                                        sx={{ fontWeight: 600, color: theme.palette.primary.main }}
+                                      >
+                                        No class reports found
+                                      </Typography>
+                                      <Typography
+                                        variant="body2"
+                                        color="text.secondary"
+                                        sx={{ maxWidth: 400, mx: "auto", mb: 2 }}
+                                      >
+                                        Try adjusting your search or filter to find what you&apos;re looking for.
+                                      </Typography>
+                                    </>
+                                  )}
                                   <Button
                                     variant="outlined"
                                     color="primary"
@@ -1217,6 +1326,15 @@ export default function ClassReportList() {
                       <Typography variant="body2" color="text.secondary">
                         Showing {(page - 1) * rowsPerPage + 1} to {Math.min(page * rowsPerPage, totalCount)} of{" "}
                         {totalCount} entries
+                        {filters.hasComments && (
+                          <Chip
+                            size="small"
+                            icon={<CommentIcon />}
+                            label="Comments Only"
+                            color="warning"
+                            sx={{ ml: 1 }}
+                          />
+                        )}
                       </Typography>
 
                       <Pagination
