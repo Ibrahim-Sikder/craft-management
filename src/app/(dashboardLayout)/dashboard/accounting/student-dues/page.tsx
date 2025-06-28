@@ -24,6 +24,7 @@ import {
   MenuItem,
   InputAdornment,
   IconButton,
+  Container,
 } from "@mui/material"
 import { Search, Download, Warning, Phone, Message, Email } from "@mui/icons-material"
 
@@ -93,7 +94,9 @@ export default function StudentDues() {
   }
 
   return (
-    <Box>
+   <Container maxWidth='xl'>
+
+ <Box>
       {/* Header */}
       <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 4 }}>
         <Box>
@@ -316,5 +319,6 @@ export default function StudentDues() {
         </CardContent>
       </Card>
     </Box>
+   </Container>
   )
 }

@@ -23,7 +23,6 @@ import {
   ReceiptLong,
   Score,
   TableChart,
-  MonetizationOn,
   HomeWork,
   Download,
   Grade,
@@ -380,7 +379,7 @@ export const navigationItems: NavigationItem[] = [
       },
     ],
   },
-  {    
+  {
     title: "Fees",
     icon: (
       <ColorfulIcon color="#F4B400">
@@ -432,8 +431,8 @@ export const navigationItems: NavigationItem[] = [
     roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
     children: [
       {
-        path: "/dashboard/stock/allimg",
-        title: "Setup ",
+        path: "/dashboard/accounting/expense",
+        title: "Expense",
         icon: (
           <ColorfulIcon color="#34A853">
             <Settings />
@@ -442,15 +441,46 @@ export const navigationItems: NavigationItem[] = [
         roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
       },
       {
-        path: "/dashboard/stock/folder",
-        title: "Income / Expense ",
+        path: "/dashboard/accounting/income",
+        title: "Income",
         icon: (
           <ColorfulIcon color="#34A853">
-            <MonetizationOn />
+            <Settings />
           </ColorfulIcon>
         ),
         roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
       },
+      {
+        path: "/dashboard/accounting/salary",
+        title: "Salary",
+        icon: (
+          <ColorfulIcon color="#34A853">
+            <Settings />
+          </ColorfulIcon>
+        ),
+        roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
+      },
+      {
+        path: "/dashboard/accounting/student-dues",
+        title: "Student Dues",
+        icon: (
+          <ColorfulIcon color="#34A853">
+            <Settings />
+          </ColorfulIcon>
+        ),
+        roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
+      },
+      {
+        path: "/dashboard/accounting/fee-collection",
+        title: "Fee Collection ",
+        icon: (
+          <ColorfulIcon color="#34A853">
+            <Settings />
+          </ColorfulIcon>
+        ),
+        roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
+      },
+
     ],
   },
   {
@@ -772,5 +802,5 @@ export const navigationItems: NavigationItem[] = [
     ),
     roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
   },
-  
+
 ]

@@ -126,8 +126,6 @@ export default function ClassReportList() {
   const [expandedReport, setExpandedReport] = useState<string | null>(null)
   const [detailsModalOpen, setDetailsModalOpen] = useState(false)
   const [selectedReportDetails, setSelectedReportDetails] = useState<any | null>(null)
-
-  // Date Range Picker State
   const [dateRangePickerOpen, setDateRangePickerOpen] = useState(false)
   const [selectedDateRange, setSelectedDateRange] = useState<IDateRange>({
     startDate: null,
@@ -136,7 +134,7 @@ export default function ClassReportList() {
 
   const [deleteClassReport] = useDeleteClassReportMutation()
 
-  // API queries - Updated to include hasComments filter
+
   const {
     data: classReport,
     isLoading,
@@ -155,7 +153,7 @@ export default function ClassReportList() {
       handwriting: filters.handwriting,
       startDate: filters.startDate,
       endDate: filters.endDate,
-      hasComments: filters.hasComments, // NEW: Include comments filter
+      hasComments: filters.hasComments,
     },
     {
       refetchOnMountOrArgChange: true,
@@ -193,25 +191,13 @@ export default function ClassReportList() {
 
   const totalCount = classReport?.data?.meta?.total || 0
   const totalPages = Math.ceil(totalCount / rowsPerPage)
-
-  // NEW: Get comments statistics from API response
   const commentsStats = classReport?.data?.meta?.commentsStats || {
     totalComments: 0,
     reportsWithComments: 0,
     studentsWithComments: 0,
   }
 
-  console.log("Pagination Debug:", {
-    currentPage: page,
-    totalPages: totalPages,
-    totalCount: totalCount,
-    reportsOnCurrentPage: reports.length,
-    limit: rowsPerPage,
-    hasNextPage: classReport?.data?.meta?.hasNextPage,
-    hasPrevPage: classReport?.data?.meta?.hasPrevPage,
-    commentsFilter: filters.hasComments,
-    commentsStats: commentsStats,
-  })
+
 
   const classOptions = useMemo(() => {
     return (
@@ -241,8 +227,6 @@ export default function ClassReportList() {
   const hourOptions = ["১ম", "২য়", "৩য়", "৪র্থ", "৫ম", "৬ষ্ঠ", "৭ম", "৮ম"]
   const lessonEvaluationOptions = ["পড়া শিখেছে", "আংশিক শিখেছে", "পড়া শিখেনি", "অনুপস্থিত"]
   const handleWrittenOptions = ["লিখেছে", "আংশিক লিখেছে", "লিখেনি", "কাজ নেই"]
-
-  // Date Range Picker Handlers
   const handleDateRangePickerOpen = () => {
     setDateRangePickerOpen(true)
   }
@@ -373,7 +357,7 @@ export default function ClassReportList() {
       handwriting: "",
       startDate: "",
       endDate: "",
-      hasComments: false, // NEW: Reset comments filter
+      hasComments: false,
     })
     setSelectedDateRange({ startDate: null, endDate: null })
     setSearchTerm("")
@@ -430,26 +414,26 @@ export default function ClassReportList() {
     })
   }, [filteredReports, orderBy, order])
 
-const cardStyle = {
-  width: '100%',
-  borderRadius: 3,
-  background:
-    selectedDateRange.startDate || selectedDateRange.endDate
-      ? `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(
+  const cardStyle = {
+    width: '100%',
+    borderRadius: 3,
+    background:
+      selectedDateRange.startDate || selectedDateRange.endDate
+        ? `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(
           theme.palette.secondary.main,
           0.05,
         )} 100%)`
-      : "background.paper",
-  border:
-    selectedDateRange.startDate || selectedDateRange.endDate
-      ? `2px solid ${alpha(theme.palette.primary.main, 0.3)}`
-      : "1px solid rgba(0, 0, 0, 0.12)",
-  transition: "all 0.3s ease",
-  "&:hover": {
-    boxShadow: `0 8px 25px ${alpha(theme.palette.primary.main, 0.15)}`,
-    transform: "translateY(-2px)",
-  },
-}
+        : "background.paper",
+    border:
+      selectedDateRange.startDate || selectedDateRange.endDate
+        ? `2px solid ${alpha(theme.palette.primary.main, 0.3)}`
+        : "1px solid rgba(0, 0, 0, 0.12)",
+    transition: "all 0.3s ease",
+    "&:hover": {
+      boxShadow: `0 8px 25px ${alpha(theme.palette.primary.main, 0.15)}`,
+      transform: "translateY(-2px)",
+    },
+  }
 
 
   return (

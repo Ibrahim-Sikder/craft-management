@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client"
 
 import { useState } from "react"
@@ -29,8 +30,48 @@ import {
   DialogActions,
   IconButton,
   Container,
+  Fab,
 } from "@mui/material"
-import { Search, Add, Download, TrendingUp, School, CardGiftcard, Event, Edit, Visibility } from "@mui/icons-material"
+import {
+  Search,
+  Add,
+  Download,
+  TrendingUp,
+  School,
+  CardGiftcard,
+  Event,
+  Edit,
+  Visibility,
+  Close,
+} from "@mui/icons-material"
+import { styled } from "@mui/material/styles"
+
+const GradientCard = styled(Card)(({ bgcolor }: { bgcolor: string }) => ({
+  background: bgcolor,
+  color: "white",
+  borderRadius: "20px",
+  transition: "all 0.3s ease-in-out",
+  "&:hover": {
+    transform: "translateY(-8px) scale(1.02)",
+    boxShadow: "0 20px 40px rgba(0,0,0,0.3)",
+  },
+}))
+
+const GlassCard = styled(Card)({
+  background: "rgba(255, 255, 255, 0.95)",
+  backdropFilter: "blur(20px)",
+  borderRadius: "20px",
+  border: "1px solid rgba(255, 255, 255, 0.3)",
+  boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
+})
+
+const StyledDialog = styled(Dialog)(({ theme }) => ({
+  "& .MuiDialog-paper": {
+    borderRadius: "20px",
+    background: "linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)",
+    boxShadow: "0 20px 60px rgba(0, 0, 0, 0.2)",
+  },
+}))
 
 export default function IncomeManagement() {
   const [open, setOpen] = useState(false)
@@ -92,259 +133,436 @@ export default function IncomeManagement() {
   ]
 
   const incomeCategories = [
-    { name: "Tuition Fees", total: 190000, percentage: 68.8, color: "primary" },
-    { name: "Government Grant", total: 50000, percentage: 18.1, color: "success" },
-    { name: "Donations", total: 15000, percentage: 5.4, color: "secondary" },
-    { name: "Admission Fees", total: 12500, percentage: 4.5, color: "warning" },
-    { name: "Events", total: 8000, percentage: 2.9, color: "error" },
+    { name: "Tuition Fees", total: 190000, percentage: 68.8, color: "#2196F3" },
+    { name: "Government Grant", total: 50000, percentage: 18.1, color: "#4CAF50" },
+    { name: "Donations", total: 15000, percentage: 5.4, color: "#9c27b0" },
+    { name: "Admission Fees", total: 12500, percentage: 4.5, color: "#ff9800" },
+    { name: "Events", total: 8000, percentage: 2.9, color: "#e91e63" },
   ]
 
   const getStatusChip = (status: string) => {
     switch (status) {
       case "Received":
-        return <Chip label="প্রাপ্ত" color="success" size="small" />
+        return (
+          <Chip
+            label="প্রাপ্ত"
+            sx={{
+              bgcolor: "#e8f5e8",
+              color: "#2e7d32",
+              fontWeight: 600,
+              borderRadius: "20px",
+            }}
+          />
+        )
       case "Pending":
-        return <Chip label="অপেক্ষমাণ" color="warning" size="small" />
+        return (
+          <Chip
+            label="অপেক্ষমাণ"
+            sx={{
+              bgcolor: "#fff3e0",
+              color: "#f57c00",
+              fontWeight: 600,
+              borderRadius: "20px",
+            }}
+          />
+        )
       case "Overdue":
-        return <Chip label="বিলম্বিত" color="error" size="small" />
+        return (
+          <Chip
+            label="বিলম্বিত"
+            sx={{
+              bgcolor: "#ffebee",
+              color: "#d32f2f",
+              fontWeight: 600,
+              borderRadius: "20px",
+            }}
+          />
+        )
       default:
-        return <Chip label={status} color="default" size="small" />
+        return <Chip label={status} />
     }
   }
 
   return (
-    <Container maxWidth='xl'>
-      {/* Header */}
-      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 4 }}>
-        <Box>
-          <Typography variant="h4" fontWeight={700} gutterBottom>
-            Income Management
-          </Typography>
-          <Typography variant="body1" color="text.secondary">
-            আয় ব্যবস্থাপনা - স্কুলের সকল আয়ের উৎস ও ট্র্যাকিং
-          </Typography>
+    <Container maxWidth="xl">
+      <Box sx={{ py: 4 }}>
+        {/* Header */}
+        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 6 }}>
+          <Box>
+            <Typography
+              variant="h3"
+              sx={{
+                fontWeight: 800,
+                background: "linear-gradient(135deg, #4CAF50 0%, #2196F3 100%)",
+                backgroundClip: "text",
+                WebkitBackgroundClip: "text",
+                WebkitTextFillColor: "transparent",
+                mb: 1,
+              }}
+            >
+              Income Management
+            </Typography>
+            <Typography variant="h6" sx={{ color: "#666", fontWeight: 500 }}>
+              আয় ব্যবস্থাপনা - স্কুলের সকল আয়ের উৎস ও ট্র্যাকিং
+            </Typography>
+          </Box>
+          <Fab
+            variant="extended"
+            onClick={() => setOpen(true)}
+            sx={{
+              background: "linear-gradient(135deg, #4CAF50 0%, #45a049 100%)",
+              color: "white",
+              px: 4,
+              py: 2,
+              borderRadius: "50px",
+              boxShadow: "0 8px 25px rgba(76, 175, 80, 0.3)",
+              "&:hover": {
+                transform: "translateY(-2px)",
+                boxShadow: "0 12px 35px rgba(76, 175, 80, 0.4)",
+              },
+            }}
+          >
+            <Add sx={{ mr: 1 }} />
+            Add Income
+          </Fab>
         </Box>
-        <Button variant="contained" startIcon={<Add />} onClick={() => setOpen(true)} size="large">
-          Add Income
-        </Button>
-      </Box>
 
-      {/* Summary Cards */}
-      <Grid container spacing={3} sx={{ mb: 4 }}>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent sx={{ textAlign: "center" }}>
-              <Avatar sx={{ bgcolor: "success.light", mx: "auto", mb: 2 }}>
-                <TrendingUp />
-              </Avatar>
-              <Typography variant="h4" fontWeight={700} color="success.main">
-                ৳ 2,75,500
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                এই মাসের মোট আয়
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent sx={{ textAlign: "center" }}>
-              <Avatar sx={{ bgcolor: "primary.light", mx: "auto", mb: 2 }}>
-                <School />
-              </Avatar>
-              <Typography variant="h4" fontWeight={700} color="primary.main">
-                ৳ 1,90,000
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                ছাত্র বেতন আয়
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent sx={{ textAlign: "center" }}>
-              <Avatar sx={{ bgcolor: "secondary.light", mx: "auto", mb: 2 }}>
-                <CardGiftcard />
-              </Avatar>
-              <Typography variant="h4" fontWeight={700} color="secondary.main">
-                ৳ 85,500
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                অন্যান্য উৎস
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card>
-            <CardContent sx={{ textAlign: "center" }}>
-              <Avatar sx={{ bgcolor: "warning.light", mx: "auto", mb: 2 }}>
-                <Event />
-              </Avatar>
-              <Typography variant="h4" fontWeight={700} color="warning.main">
-                ৳ 15,000
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                অপেক্ষমাণ আয়
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
+        {/* Summary Cards */}
+        <Grid container spacing={4} sx={{ mb: 6 }}>
+          <Grid item xs={12} sm={6} md={3}>
+            <GradientCard bgcolor="linear-gradient(135deg, #4CAF50 0%, #45a049 100%)">
+              <CardContent sx={{ p: 4 }}>
+                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <Box>
+                    <Typography variant="body2" sx={{ opacity: 0.9, mb: 1 }}>
+                      এই মাসের মোট আয়
+                    </Typography>
+                    <Typography variant="h3" sx={{ fontWeight: 800 }}>
+                      ৳ 2,75,500
+                    </Typography>
+                  </Box>
+                  <Avatar sx={{ bgcolor: "rgba(255,255,255,0.2)", width: 60, height: 60 }}>
+                    <TrendingUp sx={{ fontSize: 30 }} />
+                  </Avatar>
+                </Box>
+              </CardContent>
+            </GradientCard>
+          </Grid>
 
-      {/* Income Categories */}
-      <Card sx={{ mb: 4 }}>
-        <CardContent>
-          <Typography variant="h6" fontWeight={600} gutterBottom>
-            Income by Category
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            ক্যাটেগরি অনুযায়ী আয়ের বিভাজন
-          </Typography>
-          <Grid container spacing={2}>
-            {incomeCategories.map((category, index) => (
-              <Grid item xs={12} sm={6} md={2.4} key={index}>
-                <Paper sx={{ p: 3, textAlign: "center", border: 1, borderColor: "divider" }}>
-                  <Chip label={category.name} color={category.color as any} sx={{ mb: 2 }} />
-                  <Typography variant="h6" fontWeight={700}>
-                    ৳ {category.total.toLocaleString()}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    {category.percentage}%
-                  </Typography>
-                </Paper>
+          <Grid item xs={12} sm={6} md={3}>
+            <GradientCard bgcolor="linear-gradient(135deg, #2196F3 0%, #1976d2 100%)">
+              <CardContent sx={{ p: 4 }}>
+                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <Box>
+                    <Typography variant="body2" sx={{ opacity: 0.9, mb: 1 }}>
+                      ছাত্র বেতন আয়
+                    </Typography>
+                    <Typography variant="h3" sx={{ fontWeight: 800 }}>
+                      ৳ 1,90,000
+                    </Typography>
+                  </Box>
+                  <Avatar sx={{ bgcolor: "rgba(255,255,255,0.2)", width: 60, height: 60 }}>
+                    <School sx={{ fontSize: 30 }} />
+                  </Avatar>
+                </Box>
+              </CardContent>
+            </GradientCard>
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <GradientCard bgcolor="linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%)">
+              <CardContent sx={{ p: 4 }}>
+                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <Box>
+                    <Typography variant="body2" sx={{ opacity: 0.9, mb: 1 }}>
+                      অন্যান্য উৎস
+                    </Typography>
+                    <Typography variant="h3" sx={{ fontWeight: 800 }}>
+                      ৳ 85,500
+                    </Typography>
+                  </Box>
+                  <Avatar sx={{ bgcolor: "rgba(255,255,255,0.2)", width: 60, height: 60 }}>
+                    <CardGiftcard sx={{ fontSize: 30 }} />
+                  </Avatar>
+                </Box>
+              </CardContent>
+            </GradientCard>
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <GradientCard bgcolor="linear-gradient(135deg, #ff9800 0%, #f57c00 100%)">
+              <CardContent sx={{ p: 4 }}>
+                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <Box>
+                    <Typography variant="body2" sx={{ opacity: 0.9, mb: 1 }}>
+                      অপেক্ষমাণ আয়
+                    </Typography>
+                    <Typography variant="h3" sx={{ fontWeight: 800 }}>
+                      ৳ 15,000
+                    </Typography>
+                  </Box>
+                  <Avatar sx={{ bgcolor: "rgba(255,255,255,0.2)", width: 60, height: 60 }}>
+                    <Event sx={{ fontSize: 30 }} />
+                  </Avatar>
+                </Box>
+              </CardContent>
+            </GradientCard>
+          </Grid>
+        </Grid>
+
+        {/* Income Categories */}
+        <GlassCard sx={{ mb: 6 }}>
+          <CardContent sx={{ p: 4 }}>
+            <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
+              Income by Category
+            </Typography>
+            <Typography variant="body2" sx={{ color: "#666", mb: 4 }}>
+              ক্যাটেগরি অনুযায়ী আয়ের বিভাজন
+            </Typography>
+            <Grid container spacing={3}>
+              {incomeCategories.map((category, index) => (
+                <Grid item xs={12} sm={6} md={2.4} key={index}>
+                  <Paper
+                    sx={{
+                      p: 3,
+                      textAlign: "center",
+                      borderRadius: "15px",
+                      border: `2px solid ${category.color}`,
+                      transition: "all 0.3s ease",
+                      "&:hover": {
+                        transform: "translateY(-5px)",
+                        boxShadow: `0 10px 25px ${category.color}40`,
+                      },
+                    }}
+                  >
+                    <Box
+                      sx={{
+                        width: 20,
+                        height: 20,
+                        bgcolor: category.color,
+                        borderRadius: "50%",
+                        mx: "auto",
+                        mb: 2,
+                      }}
+                    />
+                    <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>
+                      {category.name}
+                    </Typography>
+                    <Typography variant="h5" sx={{ fontWeight: 800, mb: 1 }}>
+                      ৳ {category.total.toLocaleString()}
+                    </Typography>
+                    <Typography variant="caption" sx={{ color: "#666" }}>
+                      {category.percentage}%
+                    </Typography>
+                  </Paper>
+                </Grid>
+              ))}
+            </Grid>
+          </CardContent>
+        </GlassCard>
+
+        {/* Income Records */}
+        <GlassCard>
+          <CardContent sx={{ p: 4 }}>
+            <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
+              Income Records
+            </Typography>
+            <Typography variant="body2" sx={{ color: "#666", mb: 4 }}>
+              আয়ের বিস্তারিত রেকর্ড
+            </Typography>
+
+            {/* Filters */}
+            <Grid container spacing={3} sx={{ mb: 4 }}>
+              <Grid item xs={12} md={6}>
+                <TextField
+                  fullWidth
+                  placeholder="আয়ের বিবরণ খুঁজুন..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Search />
+                      </InputAdornment>
+                    ),
+                  }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: "15px",
+                    },
+                  }}
+                />
               </Grid>
-            ))}
-          </Grid>
-        </CardContent>
-      </Card>
+              <Grid item xs={12} md={2}>
+                <FormControl fullWidth>
+                  <InputLabel>Category</InputLabel>
+                  <Select
+                    value={categoryFilter}
+                    label="Category"
+                    onChange={(e) => setCategoryFilter(e.target.value)}
+                    sx={{ borderRadius: "15px" }}
+                  >
+                    <MenuItem value="all">All Categories</MenuItem>
+                    <MenuItem value="tuition">Tuition Fees</MenuItem>
+                    <MenuItem value="grant">Government Grant</MenuItem>
+                    <MenuItem value="donation">Donations</MenuItem>
+                    <MenuItem value="admission">Admission Fees</MenuItem>
+                    <MenuItem value="event">Events</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} md={2}>
+                <FormControl fullWidth>
+                  <InputLabel>Status</InputLabel>
+                  <Select
+                    value={statusFilter}
+                    label="Status"
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    sx={{ borderRadius: "15px" }}
+                  >
+                    <MenuItem value="all">All Status</MenuItem>
+                    <MenuItem value="received">Received</MenuItem>
+                    <MenuItem value="pending">Pending</MenuItem>
+                    <MenuItem value="overdue">Overdue</MenuItem>
+                  </Select>
+                </FormControl>
+              </Grid>
+              <Grid item xs={12} md={2}>
+                <Button
+                  variant="outlined"
+                  fullWidth
+                  startIcon={<Download />}
+                  sx={{
+                    height: "56px",
+                    borderRadius: "15px",
+                    borderWidth: 2,
+                    "&:hover": {
+                      borderWidth: 2,
+                    },
+                  }}
+                >
+                  Export
+                </Button>
+              </Grid>
+            </Grid>
 
-      {/* Income Records */}
-      <Card>
-        <CardContent>
-          <Typography variant="h6" fontWeight={600} gutterBottom>
-            Income Records
-          </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            আয়ের বিস্তারিত রেকর্ড
-          </Typography>
-
-          {/* Filters */}
-          <Grid container spacing={2} sx={{ mb: 3 }}>
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                placeholder="আয়ের বিবরণ খুঁজুন..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Search />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} md={2}>
-              <FormControl fullWidth>
-                <InputLabel>Category</InputLabel>
-                <Select value={categoryFilter} label="Category" onChange={(e) => setCategoryFilter(e.target.value)}>
-                  <MenuItem value="all">All Categories</MenuItem>
-                  <MenuItem value="tuition">Tuition Fees</MenuItem>
-                  <MenuItem value="grant">Government Grant</MenuItem>
-                  <MenuItem value="donation">Donations</MenuItem>
-                  <MenuItem value="admission">Admission Fees</MenuItem>
-                  <MenuItem value="event">Events</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} md={2}>
-              <FormControl fullWidth>
-                <InputLabel>Status</InputLabel>
-                <Select value={statusFilter} label="Status" onChange={(e) => setStatusFilter(e.target.value)}>
-                  <MenuItem value="all">All Status</MenuItem>
-                  <MenuItem value="received">Received</MenuItem>
-                  <MenuItem value="pending">Pending</MenuItem>
-                  <MenuItem value="overdue">Overdue</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} md={2}>
-              <Button variant="outlined" fullWidth startIcon={<Download />} sx={{ height: "56px" }}>
-                Export
-              </Button>
-            </Grid>
-          </Grid>
-
-          {/* Income Table */}
-          <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
-            <Table>
-              <TableHead>
-                <TableRow sx={{ bgcolor: "grey.50" }}>
-                  <TableCell sx={{ fontWeight: 600 }}>Source & Description</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>Amount (পরিমাণ)</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>Category</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>Date (তারিখ)</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
-                  <TableCell sx={{ fontWeight: 600 }}>Actions</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {incomeRecords.map((income) => (
-                  <TableRow key={income.id} hover>
-                    <TableCell>
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                        <income.icon color="action" />
-                        <Box>
-                          <Typography variant="body2" fontWeight={600}>
-                            {income.description}
-                          </Typography>
-                          <Typography variant="caption" color="text.secondary">
-                            {income.source}
-                          </Typography>
-                        </Box>
-                      </Box>
-                    </TableCell>
-                    <TableCell>
-                      <Typography variant="h6" fontWeight={700} color="success.main">
-                        ৳ {income.amount.toLocaleString()}
-                      </Typography>
-                    </TableCell>
-                    <TableCell>
-                      <Chip label={income.category} variant="outlined" size="small" />
-                    </TableCell>
-                    <TableCell>{income.date}</TableCell>
-                    <TableCell>{getStatusChip(income.status)}</TableCell>
-                    <TableCell>
-                      <Box sx={{ display: "flex", gap: 1 }}>
-                        <IconButton size="small" color="primary">
-                          <Edit />
-                        </IconButton>
-                        <IconButton size="small" color="primary">
-                          <Visibility />
-                        </IconButton>
-                      </Box>
-                    </TableCell>
+            {/* Income Table */}
+            <TableContainer
+              component={Paper}
+              sx={{
+                borderRadius: "15px",
+                boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
+              }}
+            >
+              <Table>
+                <TableHead>
+                  <TableRow sx={{ bgcolor: "#f8f9fa" }}>
+                    <TableCell sx={{ fontWeight: 700, fontSize: "1rem" }}>Source & Description</TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: "1rem" }}>Amount (পরিমাণ)</TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: "1rem" }}>Category</TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: "1rem" }}>Date (তারিখ)</TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: "1rem" }}>Status</TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: "1rem" }}>Actions</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        </CardContent>
-      </Card>
+                </TableHead>
+                <TableBody>
+                  {incomeRecords.map((income) => (
+                    <TableRow
+                      key={income.id}
+                      hover
+                      sx={{
+                        "&:hover": {
+                          bgcolor: "#f8f9fa",
+                        },
+                      }}
+                    >
+                      <TableCell>
+                        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                          <Avatar
+                            sx={{
+                              bgcolor: "#e3f2fd",
+                              color: "#1976d2",
+                            }}
+                          >
+                            <income.icon />
+                          </Avatar>
+                          <Box>
+                            <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                              {income.description}
+                            </Typography>
+                            <Typography variant="caption" sx={{ color: "#666" }}>
+                              {income.source}
+                            </Typography>
+                          </Box>
+                        </Box>
+                      </TableCell>
+                      <TableCell>
+                        <Typography variant="h6" sx={{ fontWeight: 800, color: "#4CAF50" }}>
+                          ৳ {income.amount.toLocaleString()}
+                        </Typography>
+                      </TableCell>
+                      <TableCell>
+                        <Chip
+                          label={income.category}
+                          variant="outlined"
+                          sx={{
+                            borderRadius: "20px",
+                            fontWeight: 600,
+                          }}
+                        />
+                      </TableCell>
+                      <TableCell>{income.date}</TableCell>
+                      <TableCell>{getStatusChip(income.status)}</TableCell>
+                      <TableCell>
+                        <Box sx={{ display: "flex", gap: 1 }}>
+                          <IconButton
+                            size="small"
+                            sx={{
+                              bgcolor: "#e3f2fd",
+                              color: "#1976d2",
+                              "&:hover": { bgcolor: "#bbdefb" },
+                            }}
+                          >
+                            <Edit />
+                          </IconButton>
+                          <IconButton
+                            size="small"
+                            sx={{
+                              bgcolor: "#e8f5e8",
+                              color: "#2e7d32",
+                              "&:hover": { bgcolor: "#c8e6c9" },
+                            }}
+                          >
+                            <Visibility />
+                          </IconButton>
+                        </Box>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </TableContainer>
+          </CardContent>
+        </GlassCard>
 
-      {/* Add Income Dialog */}
-      <Dialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
-        <DialogTitle>Add New Income</DialogTitle>
-        <DialogContent>
-          <Box sx={{ pt: 2 }}>
-            <Grid container spacing={2}>
+        {/* Add Income Dialog */}
+        <StyledDialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
+          <DialogTitle sx={{ pb: 2 }}>
+            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+              <Typography variant="h4" sx={{ fontWeight: 800, color: "#333" }}>
+                Add New Income
+              </Typography>
+              <IconButton onClick={() => setOpen(false)}>
+                <Close />
+              </IconButton>
+            </Box>
+          </DialogTitle>
+          <DialogContent sx={{ pb: 3 }}>
+            <Grid container spacing={3} sx={{ mt: 1 }}>
               <Grid item xs={12}>
                 <FormControl fullWidth>
                   <InputLabel>Income Source</InputLabel>
-                  <Select label="Income Source">
+                  <Select label="Income Source" sx={{ borderRadius: "15px" }}>
                     <MenuItem value="tuition">Student Fees (ছাত্র বেতন)</MenuItem>
                     <MenuItem value="grant">Government Grant (সরকারি অনুদান)</MenuItem>
                     <MenuItem value="donation">Donation (দান)</MenuItem>
@@ -354,24 +572,80 @@ export default function IncomeManagement() {
                 </FormControl>
               </Grid>
               <Grid item xs={12}>
-                <TextField fullWidth multiline rows={3} label="Description" placeholder="আয়ের বিবরণ লিখুন..." />
+                <TextField
+                  fullWidth
+                  multiline
+                  rows={3}
+                  label="Description"
+                  placeholder="আয়ের বিবরণ লিখুন..."
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: "15px",
+                    },
+                  }}
+                />
               </Grid>
               <Grid item xs={12}>
-                <TextField fullWidth type="number" label="Amount (৳)" placeholder="পরিমাণ" />
+                <TextField
+                  fullWidth
+                  type="number"
+                  label="Amount (৳)"
+                  placeholder="পরিমাণ"
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: "15px",
+                    },
+                  }}
+                />
               </Grid>
               <Grid item xs={12}>
-                <TextField fullWidth type="date" label="Date" InputLabelProps={{ shrink: true }} />
+                <TextField
+                  fullWidth
+                  type="date"
+                  label="Date"
+                  InputLabelProps={{ shrink: true }}
+                  sx={{
+                    "& .MuiOutlinedInput-root": {
+                      borderRadius: "15px",
+                    },
+                  }}
+                />
               </Grid>
             </Grid>
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpen(false)}>Cancel</Button>
-          <Button variant="contained" onClick={() => setOpen(false)}>
-            Add Income
-          </Button>
-        </DialogActions>
-      </Dialog>
+          </DialogContent>
+          <DialogActions sx={{ p: 3, pt: 0 }}>
+            <Button
+              onClick={() => setOpen(false)}
+              variant="outlined"
+              sx={{
+                borderRadius: "25px",
+                px: 4,
+                py: 1.5,
+                borderWidth: 2,
+                "&:hover": { borderWidth: 2 },
+              }}
+            >
+              Cancel
+            </Button>
+            <Button
+              onClick={() => setOpen(false)}
+              variant="contained"
+              sx={{
+                borderRadius: "25px",
+                px: 4,
+                py: 1.5,
+                background: "linear-gradient(135deg, #4CAF50 0%, #45a049 100%)",
+                boxShadow: "0 4px 15px rgba(76, 175, 80, 0.3)",
+                "&:hover": {
+                  boxShadow: "0 6px 20px rgba(76, 175, 80, 0.4)",
+                },
+              }}
+            >
+              Add Income
+            </Button>
+          </DialogActions>
+        </StyledDialog>
+      </Box>
     </Container>
   )
 }
