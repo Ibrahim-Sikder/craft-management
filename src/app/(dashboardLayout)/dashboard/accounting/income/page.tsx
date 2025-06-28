@@ -45,33 +45,10 @@ import {
   Close,
 } from "@mui/icons-material"
 import { styled } from "@mui/material/styles"
+import { GlassCard, GradientCard, StyledDialog } from "@/style/customeStyle"
+import AddIncomeDialog from "../_components/AddIncomeDialog"
 
-const GradientCard = styled(Card)(({ bgcolor }: { bgcolor: string }) => ({
-  background: bgcolor,
-  color: "white",
-  borderRadius: "20px",
-  transition: "all 0.3s ease-in-out",
-  "&:hover": {
-    transform: "translateY(-8px) scale(1.02)",
-    boxShadow: "0 20px 40px rgba(0,0,0,0.3)",
-  },
-}))
 
-const GlassCard = styled(Card)({
-  background: "rgba(255, 255, 255, 0.95)",
-  backdropFilter: "blur(20px)",
-  borderRadius: "20px",
-  border: "1px solid rgba(255, 255, 255, 0.3)",
-  boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
-})
-
-const StyledDialog = styled(Dialog)(({ theme }) => ({
-  "& .MuiDialog-paper": {
-    borderRadius: "20px",
-    background: "linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)",
-    boxShadow: "0 20px 60px rgba(0, 0, 0, 0.2)",
-  },
-}))
 
 export default function IncomeManagement() {
   const [open, setOpen] = useState(false)
@@ -90,46 +67,7 @@ export default function IncomeManagement() {
       status: "Received",
       icon: School,
     },
-    {
-      id: 2,
-      source: "Government Grant",
-      description: "সরকারি অনুদান - শিক্ষা মন্ত্রণালয়",
-      amount: 50000,
-      date: "2024-01-15",
-      category: "Grant",
-      status: "Received",
-      icon: CardGiftcard,
-    },
-    {
-      id: 3,
-      source: "Admission Fees",
-      description: "নতুন ভর্তি ফি - ৫ জন ছাত্র",
-      amount: 12500,
-      date: "2024-01-20",
-      category: "Admission",
-      status: "Received",
-      icon: School,
-    },
-    {
-      id: 4,
-      source: "Event Income",
-      description: "বার্ষিক ক্রীড়া প্রতিযোগিতা আয়",
-      amount: 8000,
-      date: "2024-01-25",
-      category: "Event",
-      status: "Received",
-      icon: Event,
-    },
-    {
-      id: 5,
-      source: "Donation",
-      description: "স্থানীয় ব্যবসায়ী দান",
-      amount: 15000,
-      date: "2024-01-28",
-      category: "Donation",
-      status: "Pending",
-      icon: CardGiftcard,
-    },
+
   ]
 
   const incomeCategories = [
@@ -545,106 +483,7 @@ export default function IncomeManagement() {
           </CardContent>
         </GlassCard>
 
-        {/* Add Income Dialog */}
-        <StyledDialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
-          <DialogTitle sx={{ pb: 2 }}>
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <Typography variant="h4" sx={{ fontWeight: 800, color: "#333" }}>
-                Add New Income
-              </Typography>
-              <IconButton onClick={() => setOpen(false)}>
-                <Close />
-              </IconButton>
-            </Box>
-          </DialogTitle>
-          <DialogContent sx={{ pb: 3 }}>
-            <Grid container spacing={3} sx={{ mt: 1 }}>
-              <Grid item xs={12}>
-                <FormControl fullWidth>
-                  <InputLabel>Income Source</InputLabel>
-                  <Select label="Income Source" sx={{ borderRadius: "15px" }}>
-                    <MenuItem value="tuition">Student Fees (ছাত্র বেতন)</MenuItem>
-                    <MenuItem value="grant">Government Grant (সরকারি অনুদান)</MenuItem>
-                    <MenuItem value="donation">Donation (দান)</MenuItem>
-                    <MenuItem value="admission">Admission Fees (ভর্তি ফি)</MenuItem>
-                    <MenuItem value="event">Event Income (ইভেন্ট আয়)</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  multiline
-                  rows={3}
-                  label="Description"
-                  placeholder="আয়ের বিবরণ লিখুন..."
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: "15px",
-                    },
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  type="number"
-                  label="Amount (৳)"
-                  placeholder="পরিমাণ"
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: "15px",
-                    },
-                  }}
-                />
-              </Grid>
-              <Grid item xs={12}>
-                <TextField
-                  fullWidth
-                  type="date"
-                  label="Date"
-                  InputLabelProps={{ shrink: true }}
-                  sx={{
-                    "& .MuiOutlinedInput-root": {
-                      borderRadius: "15px",
-                    },
-                  }}
-                />
-              </Grid>
-            </Grid>
-          </DialogContent>
-          <DialogActions sx={{ p: 3, pt: 0 }}>
-            <Button
-              onClick={() => setOpen(false)}
-              variant="outlined"
-              sx={{
-                borderRadius: "25px",
-                px: 4,
-                py: 1.5,
-                borderWidth: 2,
-                "&:hover": { borderWidth: 2 },
-              }}
-            >
-              Cancel
-            </Button>
-            <Button
-              onClick={() => setOpen(false)}
-              variant="contained"
-              sx={{
-                borderRadius: "25px",
-                px: 4,
-                py: 1.5,
-                background: "linear-gradient(135deg, #4CAF50 0%, #45a049 100%)",
-                boxShadow: "0 4px 15px rgba(76, 175, 80, 0.3)",
-                "&:hover": {
-                  boxShadow: "0 6px 20px rgba(76, 175, 80, 0.4)",
-                },
-              }}
-            >
-              Add Income
-            </Button>
-          </DialogActions>
-        </StyledDialog>
+            <AddIncomeDialog open={open} onClose={() => setOpen(false)} />
       </Box>
     </Container>
   )

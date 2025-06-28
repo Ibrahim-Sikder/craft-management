@@ -8,10 +8,38 @@ import {
   alpha,
   Button,
   TextField,
+  Dialog,
 } from "@mui/material";
 import { TeacherStatus } from "@/interface";
 
-// Styled components
+
+export const GradientCard = styled(Card)(({ bgcolor }: { bgcolor: string }) => ({
+  background: bgcolor,
+  color: "white",
+  borderRadius: "20px",
+  transition: "all 0.3s ease-in-out",
+  "&:hover": {
+    transform: "translateY(-8px) scale(1.02)",
+    boxShadow: "0 20px 40px rgba(0,0,0,0.3)",
+  },
+}))
+
+export const GlassCard = styled(Card)({
+  background: "rgba(255, 255, 255, 0.95)",
+  backdropFilter: "blur(20px)",
+  borderRadius: "20px",
+  border: "1px solid rgba(255, 255, 255, 0.3)",
+  boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
+})
+
+export const StyledDialog = styled(Dialog)(({ theme }) => ({
+  "& .MuiDialog-paper": {
+    borderRadius: "20px",
+    background: "linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)",
+    boxShadow: "0 20px 60px rgba(0, 0, 0, 0.2)",
+  },
+}))
+
 export const StyledCard = styled(Card)(({ theme }) => ({
   position: "relative",
   overflow: "visible",
