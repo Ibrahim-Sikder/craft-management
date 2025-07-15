@@ -9,6 +9,7 @@ import {
   Button,
   TextField,
   Dialog,
+  Select,
 } from "@mui/material";
 import { TeacherStatus } from "@/interface";
 
@@ -241,3 +242,63 @@ export const evaluationStle2 = {
   alignItems: "center",
   gap: 1,
 };
+
+
+
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export  const SectionCard = styled(Card)(({ theme, bgcolor }: { theme?: any; bgcolor: string }) => ({
+  background: bgcolor,
+  borderRadius: "20px",
+  border: "none",
+  boxShadow: "0 8px 25px rgba(0, 0, 0, 0.1)",
+  transition: "all 0.3s ease-in-out",
+  "&:hover": {
+    transform: "translateY(-2px)",
+    boxShadow: "0 12px 35px rgba(0, 0, 0, 0.15)",
+  },
+}))
+
+export  const StyledTextField = styled(TextField)({
+  "& .MuiOutlinedInput-root": {
+    borderRadius: "15px",
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
+    transition: "all 0.3s ease-in-out",
+    "&:hover": {
+      backgroundColor: "rgba(255, 255, 255, 0.95)",
+    },
+    "&.Mui-focused": {
+      backgroundColor: "white",
+      "& .MuiOutlinedInput-notchedOutline": {
+        borderWidth: "2px",
+      },
+    },
+  },
+})
+
+export const StyledSelect = styled(Select)({
+  borderRadius: "15px",
+  backgroundColor: "rgba(255, 255, 255, 0.8)",
+  transition: "all 0.3s ease-in-out",
+  "&:hover": {
+    backgroundColor: "rgba(255, 255, 255, 0.95)",
+  },
+  "&.Mui-focused": {
+    backgroundColor: "white",
+  },
+})
+
+export const GradientButton = styled(Button)(({ bgcolor }: { bgcolor: string }) => ({
+  background: bgcolor,
+  borderRadius: "25px",
+  padding: "12px 30px",
+  fontWeight: 700,
+  fontSize: "16px",
+  textTransform: "none",
+  boxShadow: "0 8px 25px rgba(156, 39, 176, 0.3)",
+  transition: "all 0.3s ease-in-out",
+  "&:hover": {
+    transform: "translateY(-2px) scale(1.02)",
+    boxShadow: "0 12px 35px rgba(156, 39, 176, 0.4)",
+  },
+}))

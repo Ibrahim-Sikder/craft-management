@@ -746,17 +746,7 @@ export default function ClassReportList() {
                               </Typography>
                             }
                           />
-                          {/* <Box sx={{ mt: 1 }}>
-                            <Typography variant="caption" color="text.secondary" display="block">
-                              Total Comments: {commentsStats.totalComments}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary" display="block">
-                              Reports: {commentsStats.reportsWithComments}
-                            </Typography>
-                            <Typography variant="caption" color="text.secondary" display="block">
-                              Students: {commentsStats.studentsWithComments}
-                            </Typography>
-                          </Box> */}
+                          
                         </Box>
                       </CardContent>
                     </Card>

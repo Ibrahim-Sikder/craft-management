@@ -15,7 +15,8 @@ import {
   IconButton,
   Typography,
 } from "@mui/material"
-import { Close } from "@mui/icons-material"
+import { Close, Add } from "@mui/icons-material"
+import { useState } from "react"
 
 interface AddExpenseDialogProps {
   open: boolean
@@ -23,6 +24,18 @@ interface AddExpenseDialogProps {
 }
 
 const AddExpenseModal = ({ open, onClose }: AddExpenseDialogProps) => {
+  const [categories, setCategories] = useState<string[]>([""]) // initial one category
+
+  const handleAddCategory = () => {
+    setCategories((prev) => [...prev, ""])
+  }
+
+  const handleCategoryChange = (index: number, value: string) => {
+    const updated = [...categories]
+    updated[index] = value
+    setCategories(updated)
+  }
+
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle sx={{ pb: 2 }}>
@@ -37,18 +50,42 @@ const AddExpenseModal = ({ open, onClose }: AddExpenseDialogProps) => {
       </DialogTitle>
       <DialogContent sx={{ pb: 3 }}>
         <Grid container spacing={3} sx={{ mt: 1 }}>
-          <Grid item xs={12}>
-            <FormControl fullWidth>
-              <InputLabel>Category</InputLabel>
-              <Select label="Category" sx={{ borderRadius: "15px" }}>
-                <MenuItem value="utilities">Utilities (ইউটিলিটি)</MenuItem>
-                <MenuItem value="salary">Salary (বেতন)</MenuItem>
-                <MenuItem value="supplies">Supplies (সরবরাহ)</MenuItem>
-                <MenuItem value="transport">Transport (পরিবহন)</MenuItem>
-                <MenuItem value="maintenance">Maintenance (রক্ষণাবেক্ষণ)</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
+          {/* ✅ Dynamic Categories */}
+          {categories.map((category, index) => (
+            <Grid item xs={12} key={index} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <FormControl fullWidth>
+                <InputLabel>Category</InputLabel>
+                <Select
+                  value={category}
+                  onChange={(e) => handleCategoryChange(index, e.target.value)}
+                  label="Category"
+                  sx={{ borderRadius: "15px" }}
+                >
+                  <MenuItem value="utilities">Utilities (ইউটিলিটি)</MenuItem>
+                  <MenuItem value="salary">Salary (বেতন)</MenuItem>
+                  <MenuItem value="supplies">Supplies (সরবরাহ)</MenuItem>
+                  <MenuItem value="transport">Transport (পরিবহন)</MenuItem>
+                  <MenuItem value="maintenance">Maintenance (রক্ষণাবেক্ষণ)</MenuItem>
+                </Select>
+              </FormControl>
+
+              {/* ✅ Plus Icon only for the first category */}
+              {index === 0 && (
+                <IconButton
+                  onClick={handleAddCategory}
+                  sx={{
+                    background: "linear-gradient(135deg, #f44336 0%, #d32f2f 100%)",
+               
+                    borderRadius: "10px",
+                    color: '#fff'
+                  }}
+                >
+                  <Add />
+                </IconButton>
+              )}
+            </Grid>
+          ))}
+
           <Grid item xs={12}>
             <TextField
               fullWidth

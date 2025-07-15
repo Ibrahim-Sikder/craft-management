@@ -211,24 +211,7 @@ export default function FeeCollection() {
               বেতন আদায় ব্যবস্থাপনা - ছাত্রদের বেতন সংগ্রহ ও ট্র্যাকিং
             </Typography>
           </Box>
-          <Fab
-            variant="extended"
-            sx={{
-              background: "linear-gradient(135deg, #2196F3 0%, #1976d2 100%)",
-              color: "white",
-              px: 4,
-              py: 2,
-              borderRadius: "50px",
-              boxShadow: "0 8px 25px rgba(33, 150, 243, 0.3)",
-              "&:hover": {
-                transform: "translateY(-2px)",
-                boxShadow: "0 12px 35px rgba(33, 150, 243, 0.4)",
-              },
-            }}
-          >
-            <Add sx={{ mr: 1 }} />
-            Collect Fee
-          </Fab>
+         
         </Box>
 
         {/* Summary Cards */}

@@ -1,7 +1,6 @@
-// components/AddIncomeDialog.tsx
 "use client"
 
-import React from "react"
+import React, { useState } from "react"
 import {
   DialogTitle,
   DialogContent,
@@ -17,7 +16,7 @@ import {
   Button,
   Box,
 } from "@mui/material"
-import { Close } from "@mui/icons-material"
+import { Close, Add } from "@mui/icons-material"
 import { StyledDialog } from "@/style/customeStyle"
 
 interface AddIncomeDialogProps {
@@ -26,6 +25,18 @@ interface AddIncomeDialogProps {
 }
 
 export default function AddIncomeDialog({ open, onClose }: AddIncomeDialogProps) {
+  const [incomeSources, setIncomeSources] = useState<string[]>([""])
+
+  const handleAddIncomeSource = () => {
+    setIncomeSources((prev) => [...prev, ""])
+  }
+
+  const handleIncomeSourceChange = (index: number, value: string) => {
+    const updated = [...incomeSources]
+    updated[index] = value
+    setIncomeSources(updated)
+  }
+
   return (
     <StyledDialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <DialogTitle sx={{ pb: 2 }}>
@@ -40,18 +51,41 @@ export default function AddIncomeDialog({ open, onClose }: AddIncomeDialogProps)
       </DialogTitle>
       <DialogContent sx={{ pb: 3 }}>
         <Grid container spacing={3} sx={{ mt: 1 }}>
-          <Grid item xs={12}>
-            <FormControl fullWidth>
-              <InputLabel>Income Source</InputLabel>
-              <Select label="Income Source" sx={{ borderRadius: "15px" }}>
-                <MenuItem value="tuition">Student Fees (ছাত্র বেতন)</MenuItem>
-                <MenuItem value="grant">Government Grant (সরকারি অনুদান)</MenuItem>
-                <MenuItem value="donation">Donation (দান)</MenuItem>
-                <MenuItem value="admission">Admission Fees (ভর্তি ফি)</MenuItem>
-                <MenuItem value="event">Event Income (ইভেন্ট আয়)</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
+          {/* ✅ Dynamic Income Sources */}
+          {incomeSources.map((source, index) => (
+            <Grid item xs={12} key={index} sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+              <FormControl fullWidth>
+                <InputLabel>Income Source</InputLabel>
+                <Select
+                  value={source}
+                  onChange={(e) => handleIncomeSourceChange(index, e.target.value)}
+                  label="Income Source"
+                  sx={{ borderRadius: "15px" }}
+                >
+                  <MenuItem value="tuition">Student Fees (ছাত্র বেতন)</MenuItem>
+                  <MenuItem value="grant">Government Grant (সরকারি অনুদান)</MenuItem>
+                  <MenuItem value="donation">Donation (দান)</MenuItem>
+                  <MenuItem value="admission">Admission Fees (ভর্তি ফি)</MenuItem>
+                  <MenuItem value="event">Event Income (ইভেন্ট আয়)</MenuItem>
+                </Select>
+              </FormControl>
+
+              {/* ✅ Plus Icon (only on the first row) */}
+              {index === 0 && (
+                <IconButton
+                  onClick={handleAddIncomeSource}
+                  sx={{
+                    background: "#f5f5f5",
+                    "&:hover": { background: "#e0e0e0" },
+                    borderRadius: "10px",
+                  }}
+                >
+                  <Add />
+                </IconButton>
+              )}
+            </Grid>
+          ))}
+
           <Grid item xs={12}>
             <TextField
               fullWidth

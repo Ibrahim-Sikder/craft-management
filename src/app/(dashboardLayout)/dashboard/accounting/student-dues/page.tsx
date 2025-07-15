@@ -26,7 +26,7 @@ import {
   IconButton,
   Container,
 } from "@mui/material"
-import { Search, Download, Warning, Phone, Message, Email } from "@mui/icons-material"
+import { Search, Download, Warning, Message, Email } from "@mui/icons-material"
 
 export default function StudentDues() {
   const [searchTerm, setSearchTerm] = useState("")
@@ -108,9 +108,7 @@ export default function StudentDues() {
           </Typography>
         </Box>
         <Box sx={{ display: "flex", gap: 2 }}>
-          <Button variant="outlined" startIcon={<Message />} size="large">
-            Send SMS Reminder
-          </Button>
+        
           <Button variant="contained" startIcon={<Download />} size="large">
             Export Report
           </Button>
@@ -280,9 +278,7 @@ export default function StudentDues() {
                     </TableCell>
                     <TableCell>
                       <Box sx={{ display: "flex", gap: 0.5 }}>
-                        <IconButton size="small" color="primary">
-                          <Phone />
-                        </IconButton>
+                      
                         <IconButton size="small" color="primary">
                           <Message />
                         </IconButton>
@@ -297,25 +293,7 @@ export default function StudentDues() {
             </Table>
           </TableContainer>
 
-          {/* Bulk Actions */}
-          <Card sx={{ mt: 3, bgcolor: "grey.50" }}>
-            <CardContent>
-              <Typography variant="h6" fontWeight={600} gutterBottom>
-                Bulk Actions (একসাথে কাজ)
-              </Typography>
-              <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
-                <Button variant="outlined" startIcon={<Message />}>
-                  Send SMS to All
-                </Button>
-                <Button variant="outlined" startIcon={<Phone />}>
-                  Call High Priority
-                </Button>
-                <Button variant="outlined" startIcon={<Download />}>
-                  Export Due List
-                </Button>
-              </Box>
-            </CardContent>
-          </Card>
+         
         </CardContent>
       </Card>
     </Box>

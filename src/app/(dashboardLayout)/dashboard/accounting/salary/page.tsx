@@ -55,94 +55,7 @@ import {
   Save,
   Preview,
 } from "@mui/icons-material"
-import { styled } from "@mui/material/styles"
-
-const GradientCard = styled(Card)(({ bgcolor }: { bgcolor: string }) => ({
-  background: bgcolor,
-  color: "white",
-  borderRadius: "20px",
-  transition: "all 0.3s ease-in-out",
-  "&:hover": {
-    transform: "translateY(-8px) scale(1.02)",
-    boxShadow: "0 20px 40px rgba(0,0,0,0.3)",
-  },
-}))
-
-const GlassCard = styled(Card)({
-  background: "rgba(255, 255, 255, 0.95)",
-  backdropFilter: "blur(20px)",
-  borderRadius: "20px",
-  border: "1px solid rgba(255, 255, 255, 0.3)",
-  boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
-})
-
-const StyledDialog = styled(Dialog)(({ theme }) => ({
-  "& .MuiDialog-paper": {
-    borderRadius: "25px",
-    background: "linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)",
-    boxShadow: "0 25px 80px rgba(0, 0, 0, 0.15)",
-    maxWidth: "1200px",
-    width: "95vw",
-    maxHeight: "90vh",
-  },
-}))
-
-const SectionCard = styled(Card)(({ theme, bgcolor }: { theme?: any; bgcolor: string }) => ({
-  background: bgcolor,
-  borderRadius: "20px",
-  border: "none",
-  boxShadow: "0 8px 25px rgba(0, 0, 0, 0.1)",
-  transition: "all 0.3s ease-in-out",
-  "&:hover": {
-    transform: "translateY(-2px)",
-    boxShadow: "0 12px 35px rgba(0, 0, 0, 0.15)",
-  },
-}))
-
-const StyledTextField = styled(TextField)({
-  "& .MuiOutlinedInput-root": {
-    borderRadius: "15px",
-    backgroundColor: "rgba(255, 255, 255, 0.8)",
-    transition: "all 0.3s ease-in-out",
-    "&:hover": {
-      backgroundColor: "rgba(255, 255, 255, 0.95)",
-    },
-    "&.Mui-focused": {
-      backgroundColor: "white",
-      "& .MuiOutlinedInput-notchedOutline": {
-        borderWidth: "2px",
-      },
-    },
-  },
-})
-
-const StyledSelect = styled(Select)({
-  borderRadius: "15px",
-  backgroundColor: "rgba(255, 255, 255, 0.8)",
-  transition: "all 0.3s ease-in-out",
-  "&:hover": {
-    backgroundColor: "rgba(255, 255, 255, 0.95)",
-  },
-  "&.Mui-focused": {
-    backgroundColor: "white",
-  },
-})
-
-const GradientButton = styled(Button)(({ bgcolor }: { bgcolor: string }) => ({
-  background: bgcolor,
-  borderRadius: "25px",
-  padding: "12px 30px",
-  fontWeight: 700,
-  fontSize: "16px",
-  textTransform: "none",
-  boxShadow: "0 8px 25px rgba(156, 39, 176, 0.3)",
-  transition: "all 0.3s ease-in-out",
-  "&:hover": {
-    transform: "translateY(-2px) scale(1.02)",
-    boxShadow: "0 12px 35px rgba(156, 39, 176, 0.4)",
-  },
-}))
-
+import { GlassCard, GradientButton, GradientCard, SectionCard, StyledDialog, StyledSelect, StyledTextField } from "@/style/customeStyle"
 export default function SalaryManagement() {
   const [addSalaryModalOpen, setAddSalaryModalOpen] = useState(false)
   const [addEmployeeModalOpen, setAddEmployeeModalOpen] = useState(false)
@@ -684,45 +597,12 @@ export default function SalaryManagement() {
               bgcolor="linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%)"
               startIcon={<Add />}
               onClick={() => setAddSalaryModalOpen(true)}
+              sx={{ color: '#fff' }}
             >
               Add Salary
             </GradientButton>
 
-            <Button
-              variant="outlined"
-              startIcon={<Add />}
-              onClick={() => setAddEmployeeModalOpen(true)}
-              sx={{
-                borderRadius: "25px",
-                px: 3,
-                py: 1.5,
-                borderWidth: 2,
-                fontWeight: 600,
-                "&:hover": { borderWidth: 2 },
-              }}
-            >
-              Add Employee
-            </Button>
 
-            <Fab
-              variant="extended"
-              onClick={() => setPayrollModalOpen(true)}
-              sx={{
-                background: "linear-gradient(135deg, #4caf50 0%, #45a049 100%)",
-                color: "white",
-                px: 4,
-                py: 2,
-                borderRadius: "50px",
-                boxShadow: "0 8px 25px rgba(76, 175, 80, 0.3)",
-                "&:hover": {
-                  transform: "translateY(-2px)",
-                  boxShadow: "0 12px 35px rgba(76, 175, 80, 0.4)",
-                },
-              }}
-            >
-              <Calculate sx={{ mr: 1 }} />
-              Process Payroll
-            </Fab>
           </Box>
         </Box>
 
@@ -809,137 +689,7 @@ export default function SalaryManagement() {
           </Grid>
         </Grid>
 
-        {/* Payroll Summary and Payment Status */}
-        <Grid container spacing={4} sx={{ mb: 6 }}>
-          <Grid item xs={12} md={6}>
-            <GlassCard>
-              <CardContent sx={{ p: 4 }}>
-                <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
-                  Payroll Summary
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#666", mb: 4 }}>
-                  এই মাসের বেতন সারসংক্ষেপ
-                </Typography>
 
-                <Box sx={{ space: 3 }}>
-                  <Paper
-                    sx={{
-                      p: 3,
-                      mb: 2,
-                      borderRadius: "15px",
-                      background: "linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%)",
-                    }}
-                  >
-                    <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                      <Typography>Total Basic Salary</Typography>
-                      <Typography sx={{ fontWeight: 700 }}>৳ 7,50,000</Typography>
-                    </Box>
-                  </Paper>
-                  <Paper
-                    sx={{
-                      p: 3,
-                      mb: 2,
-                      borderRadius: "15px",
-                      background: "linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%)",
-                    }}
-                  >
-                    <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                      <Typography>Total Allowances</Typography>
-                      <Typography sx={{ fontWeight: 700, color: "#4CAF50" }}>৳ 1,85,000</Typography>
-                    </Box>
-                  </Paper>
-                  <Paper
-                    sx={{
-                      p: 3,
-                      mb: 2,
-                      borderRadius: "15px",
-                      background: "linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%)",
-                    }}
-                  >
-                    <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                      <Typography>Total Deductions</Typography>
-                      <Typography sx={{ fontWeight: 700, color: "#f44336" }}>৳ 60,000</Typography>
-                    </Box>
-                  </Paper>
-                  <Paper
-                    sx={{
-                      p: 3,
-                      borderRadius: "15px",
-                      background: "linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%)",
-                      color: "white",
-                    }}
-                  >
-                    <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                      <Typography sx={{ fontWeight: 700 }}>Net Payroll</Typography>
-                      <Typography sx={{ fontWeight: 700, fontSize: "1.25rem" }}>৳ 8,75,000</Typography>
-                    </Box>
-                  </Paper>
-                </Box>
-              </CardContent>
-            </GlassCard>
-          </Grid>
-
-          <Grid item xs={12} md={6}>
-            <GlassCard>
-              <CardContent sx={{ p: 4 }}>
-                <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
-                  Payment Status
-                </Typography>
-                <Typography variant="body2" sx={{ color: "#666", mb: 4 }}>
-                  পেমেন্ট অবস্থা
-                </Typography>
-
-                <Box sx={{ mb: 4 }}>
-                  <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
-                    <Typography variant="body2">Paid Employees</Typography>
-                    <Typography variant="body2">15/25 (60%)</Typography>
-                  </Box>
-                  <LinearProgress
-                    variant="determinate"
-                    value={60}
-                    sx={{
-                      height: 12,
-                      borderRadius: 6,
-                      bgcolor: "#e0e0e0",
-                      "& .MuiLinearProgress-bar": {
-                        bgcolor: "#4CAF50",
-                        borderRadius: 6,
-                      },
-                    }}
-                  />
-                </Box>
-
-                <Box sx={{ mb: 4 }}>
-                  <Box sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}>
-                    <Typography variant="body2">Pending Payments</Typography>
-                    <Typography variant="body2">10/25 (40%)</Typography>
-                  </Box>
-                  <LinearProgress
-                    variant="determinate"
-                    value={40}
-                    sx={{
-                      height: 12,
-                      borderRadius: 6,
-                      bgcolor: "#e0e0e0",
-                      "& .MuiLinearProgress-bar": {
-                        bgcolor: "#ff9800",
-                        borderRadius: 6,
-                      },
-                    }}
-                  />
-                </Box>
-
-                <GradientButton
-                  bgcolor="linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%)"
-                  fullWidth
-                  startIcon={<Payment />}
-                >
-                  Process Pending Payments
-                </GradientButton>
-              </CardContent>
-            </GlassCard>
-          </Grid>
-        </Grid>
 
         {/* Employee Salary Table */}
         <GlassCard>
@@ -1111,7 +861,7 @@ export default function SalaryManagement() {
         </GlassCard>
 
         {/* Add Salary Dialog */}
-        <StyledDialog open={addSalaryModalOpen} onClose={() => setAddSalaryModalOpen(false)} maxWidth={false} fullWidth>
+        <StyledDialog open={addSalaryModalOpen} onClose={() => setAddSalaryModalOpen(false)} maxWidth={false} >
           <DialogTitle sx={{ pb: 2 }}>
             <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <Box>
