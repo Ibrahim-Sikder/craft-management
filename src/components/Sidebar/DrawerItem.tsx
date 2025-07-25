@@ -122,6 +122,67 @@ export const navigationItems: NavigationItem[] = [
     ],
   },
   {
+    title: "Hifz",
+    icon: (
+      <ColorfulIcon color="#0F9D58">
+        <School />
+      </ColorfulIcon>
+    ),
+    roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
+    children: [
+      {
+        title: "Class",
+        icon: (
+          <ColorfulIcon color="#0F9D58">
+            <ClassOutlined />
+          </ColorfulIcon>
+        ),
+        path: "/dashboard/hifz/class/list",
+        roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
+      },
+      {
+        title: "Class Report",
+        icon: (
+          <ColorfulIcon color="#0F9D58">
+            <Class />
+          </ColorfulIcon>
+        ),
+        path: "/dashboard/hifz/class-report/list",
+        roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
+      },
+      {
+        title: "Subject",
+        icon: (
+          <ColorfulIcon color="#0F9D58">
+            <Book />
+          </ColorfulIcon>
+        ),
+        path: "/dashboard/hifz/subject/list",
+        roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
+      },
+      {
+        title: "Student",
+        icon: (
+          <ColorfulIcon color="#0F9D58">
+            <BarChart />
+          </ColorfulIcon>
+        ),
+        path: "/dashboard/hifz/student/list",
+        roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
+      },
+      {
+        title: "Teacher List ",
+        icon: (
+          <ColorfulIcon color="#0F9D58">
+            <Addchart />
+          </ColorfulIcon>
+        ),
+        path: "/dashboard/hifz/teacher/list",
+        roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
+      },
+    ],
+  },
+  {
     title: "Teacher",
     icon: (
       <ColorfulIcon color="#DB4437">

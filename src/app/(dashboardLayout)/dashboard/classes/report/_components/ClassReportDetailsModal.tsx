@@ -41,6 +41,8 @@ interface ClassReportDetailsModalProps {
 }
 
 const ClassReportDetailsModal = ({ open, onClose, data }: ClassReportDetailsModalProps) => {
+
+    console.log('class report data this ', data)
     const theme = useTheme();
     const { reportData, studentEvaluation } = data || {};
     const student = studentEvaluation?.studentId || {};
@@ -119,9 +121,9 @@ const ClassReportDetailsModal = ({ open, onClose, data }: ClassReportDetailsModa
                     <Typography variant="h6" fontWeight={700} gutterBottom>
                         {student.name || "Student Name"}
                     </Typography>
-                    <Chip 
-                        label={`ID: ${student.studentId || "N/A"}`} 
-                        size="small" 
+                    <Chip
+                        label={`ID: ${student.studentId || "N/A"}`}
+                        size="small"
                         sx={{ borderRadius: 2, bgcolor: alpha(theme.palette.primary.main, 0.1) }}
                     />
                 </Box>
@@ -133,7 +135,7 @@ const ClassReportDetailsModal = ({ open, onClose, data }: ClassReportDetailsModa
                             icon={<TodayIcon />}
                             label="Date"
                             value={formatDate(reportData.date)}
-                   color={theme.palette.primary.main}
+                            color={theme.palette.primary.main}
                         />
                     </Grid>
                     <Grid item xs={6} md={3}>
@@ -141,7 +143,7 @@ const ClassReportDetailsModal = ({ open, onClose, data }: ClassReportDetailsModa
                             icon={<WatchLaterIcon />}
                             label="Hour"
                             value={reportData.hour}
-                              color={theme.palette.secondary.main}
+                            color={theme.palette.secondary.main}
                         />
                     </Grid>
                     <Grid item xs={6} md={3}>
@@ -150,8 +152,8 @@ const ClassReportDetailsModal = ({ open, onClose, data }: ClassReportDetailsModa
                             label="Attendance"
                             value={studentEvaluation.attendance}
                             color={
-                                studentEvaluation.attendance === "উপস্থিত" ? 
-                                statusColors.present : statusColors.absent
+                                studentEvaluation.attendance === "উপস্থিত" ?
+                                    statusColors.present : statusColors.absent
                             }
                         />
                     </Grid>
@@ -177,20 +179,20 @@ const ClassReportDetailsModal = ({ open, onClose, data }: ClassReportDetailsModa
                                 label="Lesson Progress"
                                 value={studentEvaluation.lessonEvaluation}
                                 statusColor={
-                                    studentEvaluation.lessonEvaluation === "পড়া শিখেছে" ? 
-                                    statusColors.present :
-                                    studentEvaluation.lessonEvaluation === "আংশিক শিখেছে" ?
-                                    statusColors.partial : statusColors.absent
+                                    studentEvaluation.lessonEvaluation === "পড়া শিখেছে" ?
+                                        statusColors.present :
+                                        studentEvaluation.lessonEvaluation === "আংশিক শিখেছে" ?
+                                            statusColors.partial : statusColors.absent
                                 }
                             />
                             <DetailItem
                                 label="Handwriting"
                                 value={studentEvaluation.handwriting}
                                 statusColor={
-                                    studentEvaluation.handwriting === "লিখেছে" ? 
-                                    statusColors.present :
-                                    studentEvaluation.handwriting === "আংশিক লিখেছে" ?
-                                    statusColors.partial : statusColors.absent
+                                    studentEvaluation.handwriting === "লিখেছে" ?
+                                        statusColors.present :
+                                        studentEvaluation.handwriting === "আংশিক লিখেছে" ?
+                                            statusColors.partial : statusColors.absent
                                 }
                             />
                         </SectionCard>
@@ -217,38 +219,37 @@ const ClassReportDetailsModal = ({ open, onClose, data }: ClassReportDetailsModa
                 </Grid>
 
                 {/* Curriculum Section */}
-                {(reportData.todayLesson || reportData.homeTask) && (
-                    <Box mt={4}>
-                        <SectionCard
-                            icon={<SchoolIcon />}
-                            title="Class Curriculum"
-                            fullWidth
-                        >
-                            <Grid container spacing={3}>
-                                {reportData.todayLesson && (
-                                    <Grid item xs={12} md={6}>
-                                        <Typography variant="subtitle2" gutterBottom>
-                                            Today's Lesson
-                                        </Typography>
-                                        <Typography variant="body2" color="text.secondary">
-                                            {reportData.todayLesson.lessonContent}
-                                        </Typography>
-                                    </Grid>
-                                )}
-                                {reportData.homeTask && (
-                                    <Grid item xs={12} md={6}>
-                                        <Typography variant="subtitle2" gutterBottom>
-                                            Homework Assignment
-                                        </Typography>
-                                        <Typography variant="body2" color="text.secondary">
-                                            {reportData.homeTask.content}
-                                        </Typography>
-                                    </Grid>
-                                )}
+                {/* Curriculum Section - Always Visible */}
+                <Box mt={4}>
+                    <SectionCard
+                        icon={<SchoolIcon />}
+                        title="Class Curriculum"
+                        fullWidth
+                    >
+                        <Grid container spacing={3}>
+                            {/* Today's Lesson */}
+                            <Grid item xs={12} md={6}>
+                                <Typography variant="subtitle2" gutterBottom>
+                                    Today's Lesson
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                    {reportData.todayLesson?.lessonContent || "No lesson provided today."}
+                                </Typography>
                             </Grid>
-                        </SectionCard>
-                    </Box>
-                )}
+
+                            {/* Homework Assignment */}
+                            <Grid item xs={12} md={6}>
+                                <Typography variant="subtitle2" gutterBottom>
+                                    Homework Assignment
+                                </Typography>
+                                <Typography variant="body2" color="text.secondary">
+                                    {reportData.homeTask?.taskContent || "No homework assigned."}
+                                </Typography>
+                            </Grid>
+                        </Grid>
+                    </SectionCard>
+                </Box>
+
             </DialogContent>
 
             <DialogActions sx={{ px: 4, py: 3, borderTop: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
@@ -306,8 +307,8 @@ const SectionCard = ({ icon, title, children, fullWidth }: any) => (
 const DetailItem = ({ label, value, statusColor }: any) => (
     <Box mb={2}>
         <Typography variant="caption" color="text.secondary">{label}</Typography>
-        <Typography 
-            variant="body2" 
+        <Typography
+            variant="body2"
             sx={{
                 fontWeight: 500,
                 color: statusColor,
@@ -316,14 +317,14 @@ const DetailItem = ({ label, value, statusColor }: any) => (
                 gap: 1
             }}
         >
-            <Box 
-                component="span" 
+            <Box
+                component="span"
                 sx={{
                     width: 8,
                     height: 8,
                     bgcolor: statusColor,
                     borderRadius: '50%'
-                }} 
+                }}
             />
             {value}
         </Typography>
