@@ -302,3 +302,13 @@ export const GradientButton = styled(Button)(({ bgcolor }: { bgcolor: string }) 
     boxShadow: "0 12px 35px rgba(156, 39, 176, 0.4)",
   },
 }))
+
+export const cardStyle = {
+                    mb: 2,
+                    borderRadius: "15px",
+                    border: "2px solid #f0f0f0",
+                    "&:hover": {
+                      border: "2px solid #e0e0e0",
+                      boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+                    },
+                  }

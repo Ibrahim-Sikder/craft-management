@@ -14,7 +14,10 @@ export const tagTypesList = [
   "daily-class-report",
   "staff",
   'session',
-  'feedback'
+  'feedback',
+  'income', 
+  'income-category',
+  'expense-category'
   
 ] as const;
 

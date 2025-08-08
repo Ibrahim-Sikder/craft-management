@@ -103,8 +103,6 @@ const departmentsList = [
 export default function TeachersDashboard() {
   const theme = useTheme()
   const router = useRouter()
-
-  // State management
   const [teachers, setTeachers] = useState<Teacher[]>([])
   const [searchQuery, setSearchQuery] = useState("")
   const [tabValue, setTabValue] = useState(0)
@@ -129,7 +127,6 @@ export default function TeachersDashboard() {
     severity: "success",
   })
 
-  // API hooks
   const {
     data: teacherData,
     isLoading,
@@ -140,13 +137,11 @@ export default function TeachersDashboard() {
     searchTerm: searchTerm,
   })
 
-  const [deleteTeacher, { isLoading: isDeleting }] = useDeleteTeacherMutation()
+  const [deleteTeacher] = useDeleteTeacherMutation()
 
-  // Process teacher data when it becomes available
   useEffect(() => {
     if (teacherData && teacherData.data && !isLoading) {
       const formattedTeachers = teacherData.data.map((teacher: any, index: number) => {
-        // Extract department information appropriately
         let department = "Not Specified"
         if (teacher.department) {
           department = teacher.department
@@ -154,19 +149,14 @@ export default function TeachersDashboard() {
           department = teacher.professionalInfo.department
         }
 
-        // Use consistent naming strategy
         const teacherName = teacher.englishName || teacher.name || "Unknown"
-        
-        // Determine status properly
+      
         const status = (teacher.status?.toLowerCase() === "active" || 
                       teacher.additionalInfo?.status?.toLowerCase() === "active") 
                       ? "Active" as TeacherStatus 
                       : "Inactive" as TeacherStatus
-
-        // Calculate experience safely
         const experience = calculateExperience(teacher.joiningDate || teacher.professionalInfo?.joiningDate)
         
-        // Build the teacher object with proper data fallbacks
         return {
           id: index + 1,
           _id: teacher._id,
@@ -179,9 +169,9 @@ export default function TeachersDashboard() {
           subjects: [],
           classes: [],
           experience: experience,
-          rating: "4.5", // Default rating
-          performance: 85, // Default performance
-          students: 120, // Default student count
+          rating: "4.5",
+          performance: 85,
+          students: 120, 
           joinDate: new Date(teacher.joiningDate || teacher.professionalInfo?.joiningDate || teacher.createdAt).toLocaleDateString(),
           qualifications: teacher.designation || teacher.professionalInfo?.designation || "Teacher",
           teacherId: teacher.teacherId || "",
@@ -192,16 +182,15 @@ export default function TeachersDashboard() {
     }
   }, [teacherData, isLoading])
 
-  // Helper function to calculate years of experience
   const calculateExperience = (joiningDate: string | undefined) => {
     if (!joiningDate) return 0
     const joinDate = new Date(joiningDate)
     const now = new Date()
     const yearsDiff = Math.floor((now.getTime() - joinDate.getTime()) / (365 * 24 * 60 * 60 * 1000))
-    return yearsDiff >= 0 ? yearsDiff : 0 // Ensure non-negative
+    return yearsDiff >= 0 ? yearsDiff : 0 
   }
 
-  // Menu handlers
+
   const handleTeacherMenuOpen = (event: React.MouseEvent<HTMLElement>, teacher: Teacher) => {
     setTeacherMenuAnchorEl(event.currentTarget)
     setSelectedTeacher(teacher)
@@ -219,7 +208,6 @@ export default function TeachersDashboard() {
     setAnchorEl(null)
   }
 
-  // Teacher action handlers
   const handleViewTeacher = (teacher: Teacher) => {
     router.push(`/dashboard/teacher/profile/${teacher._id}`)
     handleTeacherMenuClose()
@@ -242,7 +230,7 @@ export default function TeachersDashboard() {
     setDeleteConfirmOpen(false)
 
     try {
-      // Use SweetAlert for confirmation
+
       const result = await Swal.fire({
         title: "Are you sure?",
         text: `You want to delete ${selectedTeacher.name}?`,

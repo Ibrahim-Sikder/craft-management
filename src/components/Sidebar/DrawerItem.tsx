@@ -502,8 +502,28 @@ export const navigationItems: NavigationItem[] = [
         roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
       },
       {
+        path: "/dashboard/accounting/expense/category",
+        title: "Expense Category ",
+        icon: (
+          <ColorfulIcon color="#34A853">
+            <Settings />
+          </ColorfulIcon>
+        ),
+        roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
+      },
+      {
         path: "/dashboard/accounting/income",
         title: "Income",
+        icon: (
+          <ColorfulIcon color="#34A853">
+            <Settings />
+          </ColorfulIcon>
+        ),
+        roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
+      },
+      {
+        path: "/dashboard/accounting/income/category",
+        title: "Income Category",
         icon: (
           <ColorfulIcon color="#34A853">
             <Settings />
