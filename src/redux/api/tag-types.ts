@@ -18,7 +18,8 @@ export const tagTypesList = [
   'income', 
   'income-category',
   'expense-category',
-  'expense'
+  'expense',
+  'salary'
   
 ] as const;
 

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import { styled } from "@mui/material/styles";
 import {
@@ -13,17 +14,18 @@ import {
 } from "@mui/material";
 import { TeacherStatus } from "@/interface";
 
-
-export const GradientCard = styled(Card)(({ bgcolor }: { bgcolor: string }) => ({
-  background: bgcolor,
-  color: "white",
-  borderRadius: "20px",
-  transition: "all 0.3s ease-in-out",
-  "&:hover": {
-    transform: "translateY(-8px) scale(1.02)",
-    boxShadow: "0 20px 40px rgba(0,0,0,0.3)",
-  },
-}))
+export const GradientCard = styled(Card)(
+  ({ bgcolor }: { bgcolor: string }) => ({
+    background: bgcolor,
+    color: "white",
+    borderRadius: "20px",
+    transition: "all 0.3s ease-in-out",
+    "&:hover": {
+      transform: "translateY(-8px) scale(1.02)",
+      boxShadow: "0 20px 40px rgba(0,0,0,0.3)",
+    },
+  })
+);
 
 export const GlassCard = styled(Card)({
   background: "rgba(255, 255, 255, 0.95)",
@@ -31,7 +33,7 @@ export const GlassCard = styled(Card)({
   borderRadius: "20px",
   border: "1px solid rgba(255, 255, 255, 0.3)",
   boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
-})
+});
 
 export const StyledDialog = styled(Dialog)(({ theme }) => ({
   "& .MuiDialog-paper": {
@@ -39,7 +41,7 @@ export const StyledDialog = styled(Dialog)(({ theme }) => ({
     background: "linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)",
     boxShadow: "0 20px 60px rgba(0, 0, 0, 0.2)",
   },
-}))
+}));
 
 export const StyledCard = styled(Card)(({ theme }) => ({
   position: "relative",
@@ -242,24 +244,20 @@ export const evaluationStle2 = {
   alignItems: "center",
   gap: 1,
 };
-
-
-
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-export  const SectionCard = styled(Card)(({ theme, bgcolor }: { theme?: any; bgcolor: string }) => ({
-  background: bgcolor,
-  borderRadius: "20px",
-  border: "none",
-  boxShadow: "0 8px 25px rgba(0, 0, 0, 0.1)",
-  transition: "all 0.3s ease-in-out",
-  "&:hover": {
-    transform: "translateY(-2px)",
-    boxShadow: "0 12px 35px rgba(0, 0, 0, 0.15)",
-  },
-}))
-
-export  const StyledTextField = styled(TextField)({
+export const SectionCard = styled(Card)(
+  ({ theme, bgcolor }: { theme?: any; bgcolor: string }) => ({
+    background: bgcolor,
+    borderRadius: "20px",
+    border: "none",
+    boxShadow: "0 8px 25px rgba(0, 0, 0, 0.1)",
+    transition: "all 0.3s ease-in-out",
+    "&:hover": {
+      transform: "translateY(-2px)",
+      boxShadow: "0 12px 35px rgba(0, 0, 0, 0.15)",
+    },
+  })
+);
+export const StyledTextField = styled(TextField)({
   "& .MuiOutlinedInput-root": {
     borderRadius: "15px",
     backgroundColor: "rgba(255, 255, 255, 0.8)",
@@ -274,8 +272,7 @@ export  const StyledTextField = styled(TextField)({
       },
     },
   },
-})
-
+});
 export const StyledSelect = styled(Select)({
   borderRadius: "15px",
   backgroundColor: "rgba(255, 255, 255, 0.8)",
@@ -286,29 +283,59 @@ export const StyledSelect = styled(Select)({
   "&.Mui-focused": {
     backgroundColor: "white",
   },
-})
+});
 
-export const GradientButton = styled(Button)(({ bgcolor }: { bgcolor: string }) => ({
-  background: bgcolor,
-  borderRadius: "25px",
-  padding: "12px 30px",
-  fontWeight: 700,
-  fontSize: "16px",
-  textTransform: "none",
-  boxShadow: "0 8px 25px rgba(156, 39, 176, 0.3)",
+export const GradientButton = styled(Button)(
+  ({ bgcolor }: { bgcolor: string }) => ({
+    background: bgcolor,
+    borderRadius: "25px",
+    padding: "12px 30px",
+    fontWeight: 700,
+    fontSize: "16px",
+    textTransform: "none",
+    boxShadow: "0 8px 25px rgba(156, 39, 176, 0.3)",
+    transition: "all 0.3s ease-in-out",
+    "&:hover": {
+      transform: "translateY(-2px) scale(1.02)",
+      boxShadow: "0 12px 35px rgba(156, 39, 176, 0.4)",
+    },
+  })
+);
+export const cardStyle = {
+  mb: 2,
+  borderRadius: "15px",
+  border: "2px solid #f0f0f0",
+  "&:hover": {
+    border: "2px solid #e0e0e0",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+  },
+};
+
+export const StyledTextFieldSx = {
+  "& .MuiOutlinedInput-root": {
+    borderRadius: "15px",
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
+    transition: "all 0.3s ease-in-out",
+    "&:hover": {
+      backgroundColor: "rgba(255, 255, 255, 0.95)",
+    },
+    "&.Mui-focused": {
+      backgroundColor: "white",
+      "& .MuiOutlinedInput-notchedOutline": {
+        borderWidth: "2px",
+      },
+    },
+  },
+};
+
+export const StyledSelectSx = {
+  borderRadius: "15px",
+  backgroundColor: "rgba(255, 255, 255, 0.8)",
   transition: "all 0.3s ease-in-out",
   "&:hover": {
-    transform: "translateY(-2px) scale(1.02)",
-    boxShadow: "0 12px 35px rgba(156, 39, 176, 0.4)",
+    backgroundColor: "rgba(255, 255, 255, 0.95)",
   },
-}))
-
-export const cardStyle = {
-                    mb: 2,
-                    borderRadius: "15px",
-                    border: "2px solid #f0f0f0",
-                    "&:hover": {
-                      border: "2px solid #e0e0e0",
-                      boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-                    },
-                  }
+  "&.Mui-focused": {
+    backgroundColor: "white",
+  },
+};
