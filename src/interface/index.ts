@@ -61,7 +61,20 @@ export interface IncomeItem {
   amount: string;
 }
 
-export interface Income {
+export interface TIncome {
+  _id:string;
+ category: {
+    _id: string;
+    name: string;
+  };
+  note: string;
+  incomeDate: Date;
+  paymentMethod: string;
+  status: string;
+  incomeItems: IncomeItem[];
+  totalAmount:number
+}
+export interface TExpense {
   _id:string;
  category: {
     _id: string;

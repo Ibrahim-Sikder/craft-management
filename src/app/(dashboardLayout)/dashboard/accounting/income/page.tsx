@@ -40,7 +40,7 @@ import { GlassCard } from "@/style/customeStyle"
 import { useDeleteIncomeMutation, useGetAllIncomesQuery } from "@/redux/api/incomeApi"
 import AddIncomeModal from "../_components/AddIncomeDialog"
 import Swal from "sweetalert2"
-import { Income } from "@/interface"
+import { TIncome } from "@/interface"
 import { useGetAllIncomeCategoriesQuery } from "@/redux/api/incomeCategoryApi"
 
 export default function IncomeManagement() {
@@ -48,7 +48,7 @@ export default function IncomeManagement() {
   const [searchTerm, setSearchTerm] = useState("")
   const [categoryFilter, setCategoryFilter] = useState("all")
   const [statusFilter, setStatusFilter] = useState("all")
-  const [editData, setEditData] = useState<Income | null>(null)
+  const [editData, setEditData] = useState<TIncome | null>(null)
   const [deleteIncome] = useDeleteIncomeMutation()
   const { data, isLoading } = useGetAllIncomesQuery({})
   const incomeRecords = data?.data?.incomes || []
@@ -163,7 +163,7 @@ export default function IncomeManagement() {
     }
   }
 
-  const handleEdit = (income: Income) => {
+  const handleEdit = (income: TIncome) => {
     setEditData(income)
     setOpen(true)
   }
@@ -357,7 +357,7 @@ export default function IncomeManagement() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    incomeRecords?.map((income: Income) => (
+                    incomeRecords?.map((income: TIncome) => (
                       <TableRow
                         key={income._id}
                         hover

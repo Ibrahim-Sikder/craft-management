@@ -1,323 +1,284 @@
-"\"use client"
-
+/* eslint-disable @typescript-eslint/no-explicit-any */
+"use client"
 import {
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  Grid,
-  TextField,
-  FormControl,
-  InputLabel,
-  Select,
-  MenuItem,
-  Button,
   IconButton,
   Typography,
+  Grid,
+  Button,
   Box,
   Card,
   CardContent,
 } from "@mui/material"
 import { Close, Add, Delete } from "@mui/icons-material"
-import { useState } from "react"
+import CraftForm from "@/components/Forms/Form"
+import CraftSelect from "@/components/Forms/Select"
+import { categoryStatusOptions, paymentOptions } from "@/options"
+import CraftInput from "@/components/Forms/Input"
+import CraftTextArea from "@/components/Forms/TextArea"
+import CraftDatePicker from "@/components/Forms/DatePicker"
+import toast from "react-hot-toast"
+import { useEffect, useMemo, useState } from "react"
 import { cardStyle } from "@/style/customeStyle"
+import CategoryAutoComplete from "@/utils/CategoryAutoComplete"
+import { useCreateExpenseMutation, useGetSingleExpenseQuery, useUpdateExpenseMutation } from "@/redux/api/expenseApi"
+import { useGetAllExpenseCategoriesQuery } from "@/redux/api/expenseCategoryApi"
 
-interface ExpenseItem {
+interface TExpenseItem {
   id: number
-  name: string
+  source: string
   amount: string
 }
 
 interface AddExpenseDialogProps {
   open: boolean
   onClose: () => void
+  id?: string
 }
 
-const AddExpenseModal = ({ open, onClose }: AddExpenseDialogProps) => {
-  const [category, setCategory] = useState<string>("")
-  const [description, setDescription] = useState<string>("")
-  const [paymentMethod, setPaymentMethod] = useState<string>("")
+export default function AddExpenseModal({ id, open, onClose }: AddExpenseDialogProps) {
+  const [createExpense] = useCreateExpenseMutation()
+  const [updateExpense] = useUpdateExpenseMutation()
+  const { data: singleExpense, isLoading: singleExpenseLoading } = useGetSingleExpenseQuery(id)
+  console.log("this is single expense ", singleExpense)
+  const { data: expenseCategories } = useGetAllExpenseCategoriesQuery({})
 
-  // ✅ Multiple expense items with dynamic add/remove
-  const [expenseItems, setExpenseItems] = useState<ExpenseItem[]>([{ id: 1, name: "", amount: "" }])
+  const expenseCategoryOption = useMemo(() => {
+    if (!expenseCategories?.data?.data) return []
+    return expenseCategories.data.data.map((cat: any) => ({
+      title: cat.name,
+      value: cat._id,
+    }))
+  }, [expenseCategories?.data?.data])
 
-  // ✅ Add new expense item
+  const [expenseItems, setExpenseItems] = useState<TExpenseItem[]>([{ id: 1, source: "", amount: "" }])
+
   const handleAddExpenseItem = () => {
     const newId = Math.max(...expenseItems.map((item) => item.id)) + 1
-    setExpenseItems((prev) => [...prev, { id: newId, name: "", amount: "" }])
+    setExpenseItems((prev) => [...prev, { id: newId, source: "", amount: "" }])
   }
 
-  // ✅ Remove expense item
   const handleRemoveExpenseItem = (id: number) => {
     if (expenseItems.length > 1) {
       setExpenseItems((prev) => prev.filter((item) => item.id !== id))
     }
   }
 
-  // ✅ Update expense item
-  const handleExpenseItemChange = (id: number, field: "name" | "amount", value: string) => {
+  const handleExpneseItemChange = (id: number, field: keyof TExpenseItem, value: string) => {
     setExpenseItems((prev) => prev.map((item) => (item.id === id ? { ...item, [field]: value } : item)))
   }
 
-  // ✅ Calculate total amount
-  const getTotalAmount = () => {
-    return expenseItems.reduce((total, item) => {
-      const amount = Number.parseFloat(item.amount) || 0
-      return total + amount
-    }, 0)
+  const handleSubmit = async (data: any) => {
+    const cleanedExpenseItems = expenseItems.map((item) => ({
+      source: item.source,
+      amount: Number(item.amount),
+    }))
+
+    const totalAmount = cleanedExpenseItems.reduce((sum, item) => sum + Number(item.amount || 0), 0)
+
+    const payload = {
+      ...data,
+      expenseItems: cleanedExpenseItems,
+      totalAmount,
+      // Fix: Extract the first category from the array
+      category: data.category && data.category.length > 0 ? data.category[0].value : null,
+    }
+
+    try {
+      if (id) {
+        const res = await updateExpense({ id, data: payload }).unwrap()
+        if (res.success) {
+          toast.success(res.message || "Expense update successfully")
+          onClose()
+        }
+      } else {
+        const res = await createExpense(payload).unwrap()
+        if (res.success) {
+          toast.success(res.message || "Expense created successfully")
+          onClose()
+        }
+      }
+    } catch (error: any) {
+      toast.error(error?.data?.message || "Failed to create Expense")
+    }
   }
 
-  // ✅ Reset form
-  const handleReset = () => {
-    setCategory("")
-    setDescription("")
-    setPaymentMethod("")
-    setExpenseItems([{ id: 1, name: "", amount: "" }])
-  }
+  // Fix: Wrap category in an array since CategoryAutoComplete expects multiple values
+  const defaultValues =
+    id && singleExpense?.data
+      ? {
+          category: singleExpense?.data?.category
+            ? [
+                {
+                  title: singleExpense.data.category.name,
+                  value: singleExpense.data.category._id,
+                },
+              ]
+            : [],
+          paymentMethod: singleExpense.data.paymentMethod,
+          expenseDate: singleExpense.data.expenseDate,
+          note: singleExpense.data.note,
+          expenseItems: singleExpense.data.expenseItems.map((item: any, index: number) => ({
+            id: index + 1,
+            source: item.source,
+            amount: item.amount.toString(),
+          })),
+        }
+      : {
+          category: [],
+          paymentMethod: "",
+          expenseDate: new Date(),
+          note: "",
+          expenseItems: [{ id: 1, source: "", amount: "" }],
+        }
 
-  const handleSubmit = () => {
-
-    handleReset()
-    onClose()
-  }
+  useEffect(() => {
+    if (id && singleExpense?.data) {
+      setExpenseItems(
+        singleExpense.data.expenseItems.map((item: any, index: number) => ({
+          id: index + 1,
+          source: item.source,
+          amount: item.amount.toString(),
+        })),
+      )
+    }
+  }, [id, singleExpense])
 
   return (
-    <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-      <DialogTitle sx={{ pb: 2 }}>
-        <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Typography variant="h4" sx={{ fontWeight: 800, color: "#333" }}>
-            Add New Expense
-          </Typography>
-          <IconButton onClick={onClose}>
-            <Close />
-          </IconButton>
-        </Box>
-      </DialogTitle>
-
-      <DialogContent sx={{ pb: 3 }}>
-        <Grid container spacing={3} sx={{ mt: 1 }}>
-          {/* ✅ Category Selection */}
-          <Grid item xs={12} sm={6}>
-            <FormControl fullWidth>
-              <InputLabel>Category</InputLabel>
-              <Select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-                label="Category"
-                sx={{ borderRadius: "15px" }}
-              >
-                <MenuItem value="utilities">Utilities (ইউটিলিটি)</MenuItem>
-                <MenuItem value="salary">Salary (বেতন)</MenuItem>
-                <MenuItem value="supplies">Supplies (সরবরাহ)</MenuItem>
-                <MenuItem value="transport">Transport (পরিবহন)</MenuItem>
-                <MenuItem value="maintenance">Maintenance (রক্ষণাবেক্ষণ)</MenuItem>
-                <MenuItem value="food">Food (খাবার)</MenuItem>
-                <MenuItem value="books">Books (বই)</MenuItem>
-                <MenuItem value="other">Other (অন্যান্য)</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          {/* ✅ Payment Method */}
-          <Grid item xs={12} sm={6}>
-            <FormControl fullWidth>
-              <InputLabel>Payment Method</InputLabel>
-              <Select
-                value={paymentMethod}
-                onChange={(e) => setPaymentMethod(e.target.value)}
-                label="Payment Method"
-                sx={{ borderRadius: "15px" }}
-              >
-                <MenuItem value="cash">Cash (নগদ)</MenuItem>
-                <MenuItem value="bank">Bank Transfer (ব্যাংক ট্রান্সফার)</MenuItem>
-                <MenuItem value="check">Check (চেক)</MenuItem>
-                <MenuItem value="mobile">Mobile Banking (মোবাইল ব্যাংকিং)</MenuItem>
-              </Select>
-            </FormControl>
-          </Grid>
-
-          {/* ✅ Description */}
-          <Grid item xs={12}>
-            <TextField
-              fullWidth
-              multiline
-              rows={2}
-              label="Description"
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="ব্যয়ের বিবরণ লিখুন..."
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: "15px",
-                },
-              }}
-            />
-          </Grid>
-
-          {/* ✅ Expense Items Section */}
-          <Grid item xs={12}>
-
-
-            {/* ✅ Dynamic Expense Items */}
-            <Box sx={{ maxHeight: "300px", overflowY: "auto" }}>
-              {expenseItems.map((item, index) => (
-                <Card
-                  key={item.id}
-                  sx={cardStyle}
-                >
-                  <CardContent sx={{ p: 2 }}>
-                    <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-                      <Typography variant="subtitle1" sx={{ fontWeight: 600, color: "#555" }}>
-                        Item #{index + 1}
-                      </Typography>
-                      {expenseItems.length > 1 && (
-                        <IconButton
-                          onClick={() => handleRemoveExpenseItem(item.id)}
-                          sx={{
-                            color: "#f44336",
-                            "&:hover": {
-                              backgroundColor: "rgba(244, 67, 54, 0.1)",
-                            },
-                          }}
-                        >
-                          <Delete />
-                        </IconButton>
-                      )}
-                    </Box>
-
-                    <Grid container spacing={2}>
-                      <Grid item xs={12} sm={7}>
-                        <TextField
-                          fullWidth
-                          label="Expense Name"
-                          value={item.name}
-                          onChange={(e) => handleExpenseItemChange(item.id, "name", e.target.value)}
-                          placeholder="ব্যয়ের নাম লিখুন..."
-                          sx={{
-                            "& .MuiOutlinedInput-root": {
-                              borderRadius: "12px",
-                            },
-                          }}
-                        />
-                      </Grid>
-                      <Grid item xs={12} sm={5}>
-                        <TextField
-                          fullWidth
-                          type="number"
-                          label="Amount (৳)"
-                          value={item.amount}
-                          onChange={(e) => handleExpenseItemChange(item.id, "amount", e.target.value)}
-                          placeholder="পরিমাণ"
-                          sx={{
-                            "& .MuiOutlinedInput-root": {
-                              borderRadius: "12px",
-                            },
-                          }}
-                        />
-                      </Grid>
-                    </Grid>
-                  </CardContent>
-                </Card>
-              ))}
-            </Box>
-            <Box display="flex" justifyContent="space-between" alignItems="center" mb={2}>
-              <Typography variant="h6" sx={{ fontWeight: 600, color: "#333" }}>
-                Expense Items (ব্যয়ের তালিকা)
+    <>
+      {singleExpenseLoading ? (
+        <h3>Loading.......</h3>
+      ) : (
+        <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
+          <DialogTitle>
+            <Box display="flex" justifyContent="space-between" alignItems="center">
+              <Typography variant="h5" fontWeight="bold">
+                {id ? "Edit Expense" : "Add New Expense"}
               </Typography>
-              <Button
-                onClick={handleAddExpenseItem}
-                variant="contained"
-                startIcon={<Add />}
-                sx={{
-                  borderRadius: "20px",
-                  background: "linear-gradient(135deg, #4caf50 0%, #45a049 100%)",
-                  boxShadow: "0 4px 15px rgba(76, 175, 80, 0.3)",
-                  "&:hover": {
-                    boxShadow: "0 6px 20px rgba(76, 175, 80, 0.4)",
-                  },
-                }}
-              >
-                Add Item
-              </Button>
+              <IconButton onClick={onClose}>
+                <Close />
+              </IconButton>
             </Box>
-            {/* ✅ Total Amount Display */}
-            <Card
-              sx={{
-                mt: 2,
-                background: "linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%)",
-                borderRadius: "15px",
-              }}
-            >
-              <CardContent sx={{ p: 2 }}>
-                <Box display="flex" justifyContent="space-between" alignItems="center">
-                  <Typography variant="h6" sx={{ fontWeight: 600, color: "#1976d2" }}>
-                    Total Amount (মোট পরিমাণ):
-                  </Typography>
-                  <Typography variant="h5" sx={{ fontWeight: 800, color: "#1976d2" }}>
-                    ৳ {getTotalAmount().toLocaleString()}
-                  </Typography>
-                </Box>
-              </CardContent>
-            </Card>
-          </Grid>
-        </Grid>
-      </DialogContent>
-
-      <DialogActions sx={{ p: 3, pt: 0 }}>
-        <Button
-          onClick={onClose}
-          variant="outlined"
-          sx={{
-            borderRadius: "25px",
-            px: 4,
-            py: 1.5,
-            borderWidth: 2,
-            "&:hover": { borderWidth: 2 },
-          }}
-        >
-          Cancel
-        </Button>
-        <Button
-          onClick={handleReset}
-          variant="outlined"
-          sx={{
-            borderRadius: "25px",
-            px: 4,
-            py: 1.5,
-            borderColor: "#ff9800",
-            color: "#ff9800",
-            "&:hover": {
-              borderColor: "#f57c00",
-              backgroundColor: "rgba(255, 152, 0, 0.1)",
-            },
-          }}
-        >
-          Reset
-        </Button>
-        <Button
-          onClick={handleSubmit}
-          variant="contained"
-          disabled={expenseItems.length === 0 || !category}
-          sx={{
-            borderRadius: "25px",
-            px: 4,
-            py: 1.5,
-            background: "linear-gradient(135deg, #f44336 0%, #d32f2f 100%)",
-            boxShadow: "0 4px 15px rgba(244, 67, 54, 0.3)",
-            "&:hover": {
-              boxShadow: "0 6px 20px rgba(244, 67, 54, 0.4)",
-            },
-            "&:disabled": {
-              background: "#ccc",
-              boxShadow: "none",
-            },
-          }}
-        >
-          Add Expense
-        </Button>
-      </DialogActions>
-    </Dialog>
+          </DialogTitle>
+          <DialogContent>
+            <CraftForm onSubmit={handleSubmit} defaultValues={defaultValues}>
+              <Grid container spacing={2}>
+                <Grid item xs={12} sm={6}>
+                  <CategoryAutoComplete name="category" label="Category" options={expenseCategoryOption} />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <CraftSelect margin="none" name="paymentMethod" label="Payment Method" items={paymentOptions} />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <CraftSelect name="status" label="Status" items={categoryStatusOptions} />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <CraftDatePicker name="expenseDate" label="Expense Date" />
+                </Grid>
+                <Grid item xs={12} sm={12}>
+                  <CraftTextArea name="note" label="Note" />
+                </Grid>
+                <Grid item xs={12}>
+                  {expenseItems.map((item, index) => (
+                    <Card key={item.id} sx={cardStyle}>
+                      <CardContent sx={{ p: 2 }}>
+                        <Box display="flex" justifyContent="space-between" mb={2}>
+                          <Typography fontWeight={600}>Expense Item #{index + 1}</Typography>
+                          {expenseItems.length > 1 && (
+                            <IconButton onClick={() => handleRemoveExpenseItem(item.id)} color="error">
+                              <Delete />
+                            </IconButton>
+                          )}
+                        </Box>
+                        <Grid container spacing={2}>
+                          <Grid item xs={12} sm={6}>
+                            <CraftInput
+                              fullWidth
+                              name={`expenseItems[${index}].source`}
+                              label="Expense Source"
+                              value={item.source}
+                              onChange={(e) => handleExpneseItemChange(item.id, "source", e.target.value)}
+                              sx={{
+                                "& .MuiOutlinedInput-root": {
+                                  borderRadius: "12px",
+                                },
+                              }}
+                            />
+                          </Grid>
+                         
+                          <Grid item xs={12} sm={6}>
+                            <CraftInput
+                              sx={{
+                                "& .MuiOutlinedInput-root": {
+                                  borderRadius: "12px",
+                                },
+                              }}
+                              fullWidth
+                              name={`expenseItems[${index}].amount`}
+                              label="Amount (৳)"
+                              type="number"
+                              value={item.amount}
+                              onChange={(e) => handleExpneseItemChange(item.id, "amount", e.target.value)}
+                            />
+                          </Grid>
+                        </Grid>
+                      </CardContent>
+                    </Card>
+                  ))}
+                  <Box display="flex" justifyContent="space-between" alignItems="center" mt={2}>
+                    <Button
+                      onClick={handleAddExpenseItem}
+                      variant="contained"
+                      startIcon={<Add />}
+                      sx={{
+                        borderRadius: "20px",
+                        background: "linear-gradient(135deg, #4CAF50 0%, #45a049 100%)",
+                        boxShadow: "0 4px 15px rgba(76, 175, 80, 0.3)",
+                        "&:hover": {
+                          boxShadow: "0 6px 20px rgba(76, 175, 80, 0.4)",
+                        },
+                      }}
+                    >
+                      Add Item
+                    </Button>
+                  </Box>
+                </Grid>
+                <Grid item xs={12}>
+                  <Card sx={{ p: 2, backgroundColor: "#f1f8e9" }}>
+                    <CardContent>
+                      <Box display="flex" justifyContent="space-between">
+                        <Typography fontWeight={600}>Total Expense:</Typography>
+                        <Typography fontWeight={700} color="green">
+                          ৳ {expenseItems.reduce((sum, item) => sum + (Number.parseFloat(item.amount) || 0), 0)}
+                        </Typography>
+                      </Box>
+                    </CardContent>
+                  </Card>
+                </Grid>
+              </Grid>
+              <DialogActions sx={{ mt: 3 }}>
+                <Button onClick={onClose} variant="outlined">
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  disabled={expenseItems.length === 0}
+                  sx={{
+                    background: "linear-gradient(135deg, #4CAF50 0%, #45a049 100%)",
+                    color: "#fff",
+                  }}
+                >
+                  {id ? "Update Expense" : "Add Expense"}
+                </Button>
+              </DialogActions>
+            </CraftForm>
+          </DialogContent>
+        </Dialog>
+      )}
+    </>
   )
 }
-
-export default AddExpenseModal

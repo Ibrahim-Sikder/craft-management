@@ -17,7 +17,8 @@ export const tagTypesList = [
   'feedback',
   'income', 
   'income-category',
-  'expense-category'
+  'expense-category',
+  'expense'
   
 ] as const;
 

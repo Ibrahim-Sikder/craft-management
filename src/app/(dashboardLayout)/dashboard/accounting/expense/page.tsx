@@ -1,14 +1,12 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
 import { useState } from "react"
 import {
   Box,
   Grid,
-  Card,
   CardContent,
   Typography,
-  Button,
   TextField,
   Table,
   TableBody,
@@ -24,10 +22,6 @@ import {
   Select,
   MenuItem,
   InputAdornment,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   IconButton,
   Container,
   Fab,
@@ -35,130 +29,164 @@ import {
 import {
   Search,
   Add,
-  Download,
-  Receipt,
-  Bolt,
-  Water,
-  People,
-  MenuBook,
-  DirectionsCar,
+  School,
+  CardGiftcard,
   Edit,
-  Visibility,
-  Close,
-  TrendingDown,
+  MonetizationOn,
+  AccountBalance,
+  Delete,
 } from "@mui/icons-material"
-import { styled } from "@mui/material/styles"
-import { GlassCard, GradientCard, StyledDialog } from "@/style/customeStyle"
+import { GlassCard } from "@/style/customeStyle"
+import Swal from "sweetalert2"
+import { TExpense, TIncome } from "@/interface"
 import AddExpenseModal from "../_components/AddExpenseModal"
+import { useGetAllExpenseCategoriesQuery } from "@/redux/api/expenseCategoryApi"
+import { useDeleteExpenseMutation, useGetAllExpensesQuery } from "@/redux/api/expenseApi"
 
 export default function ExpenseManagement() {
   const [open, setOpen] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
   const [categoryFilter, setCategoryFilter] = useState("all")
   const [statusFilter, setStatusFilter] = useState("all")
+  const [editData, setEditData] = useState<TIncome | null>(null)
+  const [deleteIncome] = useDeleteExpenseMutation()
+  const { data, isLoading } = useGetAllExpensesQuery({})
+  const expenseRecords = data?.data?.expenses || []
+  const { data: expenseCategories } = useGetAllExpenseCategoriesQuery({})
 
-  const expenses = [
-    {
-      id: 1,
-      category: "Utilities",
-      description: "বিদ্যুৎ বিল - জানুয়ারি ২০২৪",
-      amount: 15000,
-      date: "2024-01-15",
-      paymentMethod: "Bank Transfer",
-      status: "Paid",
-      icon: Bolt,
-    },
-    {
-      id: 2,
-      category: "Utilities",
-      description: "পানি বিল - জানুয়ারি ২০২৪",
-      amount: 3500,
-      date: "2024-01-12",
-      paymentMethod: "Cash",
-      status: "Paid",
-      icon: Water,
-    },
-    {
-      id: 3,
-      category: "Salary",
-      description: "শিক্ষক বেতন - জানুয়ারি ২০২৪",
-      amount: 125000,
-      date: "2024-01-31",
-      paymentMethod: "Bank Transfer",
-      status: "Pending",
-      icon: People,
-    },
-    {
-      id: 4,
-      category: "Supplies",
-      description: "স্টেশনারি ক্রয় - বই, কলম, খাতা",
-      amount: 8500,
-      date: "2024-01-10",
-      paymentMethod: "Cash",
-      status: "Paid",
-      icon: MenuBook,
-    },
-    {
-      id: 5,
-      category: "Transport",
-      description: "স্কুল বাস জ্বালানি খরচ",
-      amount: 12000,
-      date: "2024-01-20",
-      paymentMethod: "Cash",
-      status: "Paid",
-      icon: DirectionsCar,
-    },
-  ]
 
-  const expenseCategories = [
-    { name: "Utilities", total: 18500, color: "#2196F3" },
-    { name: "Salary", total: 125000, color: "#4CAF50" },
-    { name: "Supplies", total: 8500, color: "#9c27b0" },
-    { name: "Transport", total: 12000, color: "#ff9800" },
-    { name: "Maintenance", total: 5000, color: "#e91e63" },
-  ]
+  const handleDeleteIncome = async (id: string) => {
+    try {
+      const result = await Swal.fire({
+        title: "Are you sure?",
+        text: `You want to delete this Expense?`,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, delete it!"
+      })
+
+      if (result.isConfirmed) {
+        await deleteIncome(id).unwrap()
+
+        Swal.fire({
+          title: "Deleted!",
+          text: `Expense has been deleted successfully.`,
+          icon: "success"
+        })
+      }
+    } catch (err: any) {
+      Swal.fire({
+        title: "Error!",
+        text: err.data?.message || "Failed to delete Expense",
+        icon: "error"
+      })
+    }
+  }
 
   const getStatusChip = (status: string) => {
-    switch (status) {
-      case "Paid":
+    const statusLower = status?.toLowerCase() || "completed";
+
+    switch (statusLower) {
+      case "received":
+      case "completed":
         return (
           <Chip
-            label="পরিশোধিত"
+            label={status}
             sx={{
               bgcolor: "#e8f5e8",
               color: "#2e7d32",
               fontWeight: 600,
               borderRadius: "20px",
+              textTransform: "capitalize",
             }}
           />
-        )
-      case "Pending":
+        );
+
+      case "pending":
         return (
           <Chip
-            label="অপেক্ষমাণ"
+            label={status}
             sx={{
               bgcolor: "#fff3e0",
               color: "#f57c00",
               fontWeight: 600,
               borderRadius: "20px",
+              textTransform: "capitalize",
             }}
           />
-        )
-      case "Overdue":
+        );
+
+      case "overdue":
         return (
           <Chip
-            label="বিলম্বিত"
+            label={status}
             sx={{
               bgcolor: "#ffebee",
               color: "#d32f2f",
               fontWeight: 600,
               borderRadius: "20px",
+              textTransform: "capitalize",
             }}
           />
-        )
+        );
+
       default:
-        return <Chip label={status} />
+        return (
+          <Chip
+            label={status}
+            sx={{
+              bgcolor: "#e0e0e0",
+              color: "#424242",
+              fontWeight: 600,
+              borderRadius: "20px",
+              textTransform: "capitalize",
+            }}
+          />
+        );
     }
+  };
+
+
+
+  const getIncomeIcon = (category: string) => {
+    const cat = (category || "").toLowerCase()
+    if (cat.includes("student") || cat.includes("ছাত্র") || cat.includes("tuition")) {
+      return <School />
+    } else if (cat.includes("donation") || cat.includes("দান")) {
+      return <CardGiftcard />
+    } else if (cat.includes("grant") || cat.includes("অনুদান")) {
+      return <AccountBalance />
+    } else {
+      return <MonetizationOn />
+    }
+  }
+
+  const handleEdit = (expense: TExpense) => {
+    setEditData(expense)
+    setOpen(true)
+  }
+
+  const handleAddNew = () => {
+    setEditData(null)
+    setOpen(true)
+  }
+
+  const handleClose = () => {
+    setOpen(false)
+    setEditData(null)
+  }
+
+
+  if (isLoading) {
+    return (
+      <Container maxWidth="xl">
+        <Box sx={{ py: 4, textAlign: "center" }}>
+          <Typography variant="h6">Loading expense data...</Typography>
+        </Box>
+      </Container>
+    )
   }
 
   return (
@@ -186,17 +214,17 @@ export default function ExpenseManagement() {
           </Box>
           <Fab
             variant="extended"
-            onClick={() => setOpen(true)}
+            onClick={handleAddNew}
             sx={{
               background: "linear-gradient(135deg, #f44336 0%, #d32f2f 100%)",
               color: "white",
               px: 4,
               py: 2,
               borderRadius: "50px",
-              boxShadow: "0 8px 25px rgba(244, 67, 54, 0.3)",
+              boxShadow: "0 8px 25px rgba(76, 175, 80, 0.3)",
               "&:hover": {
                 transform: "translateY(-2px)",
-                boxShadow: "0 12px 35px rgba(244, 67, 54, 0.4)",
+                boxShadow: "0 12px 35px rgba(76, 175, 80, 0.4)",
               },
             }}
           >
@@ -204,146 +232,13 @@ export default function ExpenseManagement() {
             Add Expense
           </Fab>
         </Box>
-
-        {/* Summary Cards */}
-        <Grid container spacing={4} sx={{ mb: 6 }}>
-          <Grid item xs={12} sm={6} md={3}>
-            <GradientCard bgcolor="linear-gradient(135deg, #f44336 0%, #d32f2f 100%)">
-              <CardContent sx={{ p: 4 }}>
-                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <Box>
-                    <Typography variant="body2" sx={{ opacity: 0.9, mb: 1 }}>
-                      এই মাসের মোট ব্যয়
-                    </Typography>
-                    <Typography variant="h3" sx={{ fontWeight: 800 }}>
-                      ৳ 1,69,000
-                    </Typography>
-                  </Box>
-                  <Avatar sx={{ bgcolor: "rgba(255,255,255,0.2)", width: 60, height: 60 }}>
-                    <Receipt sx={{ fontSize: 30 }} />
-                  </Avatar>
-                </Box>
-              </CardContent>
-            </GradientCard>
-          </Grid>
-
-          <Grid item xs={12} sm={6} md={3}>
-            <GradientCard bgcolor="linear-gradient(135deg, #ff9800 0%, #f57c00 100%)">
-              <CardContent sx={{ p: 4 }}>
-                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <Box>
-                    <Typography variant="body2" sx={{ opacity: 0.9, mb: 1 }}>
-                      অপেক্ষমাণ পেমেন্ট
-                    </Typography>
-                    <Typography variant="h3" sx={{ fontWeight: 800 }}>
-                      ৳ 1,25,000
-                    </Typography>
-                  </Box>
-                  <Avatar sx={{ bgcolor: "rgba(255,255,255,0.2)", width: 60, height: 60 }}>
-                    <TrendingDown sx={{ fontSize: 30 }} />
-                  </Avatar>
-                </Box>
-              </CardContent>
-            </GradientCard>
-          </Grid>
-
-          <Grid item xs={12} sm={6} md={3}>
-            <GradientCard bgcolor="linear-gradient(135deg, #2196F3 0%, #1976d2 100%)">
-              <CardContent sx={{ p: 4 }}>
-                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <Box>
-                    <Typography variant="body2" sx={{ opacity: 0.9, mb: 1 }}>
-                      জানুয়ারি ২০২৪
-                    </Typography>
-                    <Typography variant="h3" sx={{ fontWeight: 800 }}>
-                      ৳ 1,69,000
-                    </Typography>
-                  </Box>
-                  <Avatar sx={{ bgcolor: "rgba(255,255,255,0.2)", width: 60, height: 60 }}>
-                    <Receipt sx={{ fontSize: 30 }} />
-                  </Avatar>
-                </Box>
-              </CardContent>
-            </GradientCard>
-          </Grid>
-
-          <Grid item xs={12} sm={6} md={3}>
-            <GradientCard bgcolor="linear-gradient(135deg, #4CAF50 0%, #45a049 100%)">
-              <CardContent sx={{ p: 4 }}>
-                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <Box>
-                    <Typography variant="body2" sx={{ opacity: 0.9, mb: 1 }}>
-                      দৈনিক গড় ব্যয়
-                    </Typography>
-                    <Typography variant="h3" sx={{ fontWeight: 800 }}>
-                      ৳ 5,452
-                    </Typography>
-                  </Box>
-                  <Avatar sx={{ bgcolor: "rgba(255,255,255,0.2)", width: 60, height: 60 }}>
-                    <Receipt sx={{ fontSize: 30 }} />
-                  </Avatar>
-                </Box>
-              </CardContent>
-            </GradientCard>
-          </Grid>
-        </Grid>
-
-        {/* Category Overview */}
-        <GlassCard sx={{ mb: 6 }}>
-          <CardContent sx={{ p: 4 }}>
-            <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
-              Expense Categories
-            </Typography>
-            <Typography variant="body2" sx={{ color: "#666", mb: 4 }}>
-              ব্যয়ের ক্যাটেগরি অনুযায়ী বিভাজন
-            </Typography>
-            <Grid container spacing={3}>
-              {expenseCategories.map((category, index) => (
-                <Grid item xs={12} sm={6} md={2.4} key={index}>
-                  <Paper
-                    sx={{
-                      p: 3,
-                      textAlign: "center",
-                      borderRadius: "15px",
-                      border: `2px solid ${category.color}`,
-                      transition: "all 0.3s ease",
-                      "&:hover": {
-                        transform: "translateY(-5px)",
-                        boxShadow: `0 10px 25px ${category.color}40`,
-                      },
-                    }}
-                  >
-                    <Box
-                      sx={{
-                        width: 20,
-                        height: 20,
-                        bgcolor: category.color,
-                        borderRadius: "50%",
-                        mx: "auto",
-                        mb: 2,
-                      }}
-                    />
-                    <Typography variant="body2" sx={{ fontWeight: 600, mb: 1 }}>
-                      {category.name}
-                    </Typography>
-                    <Typography variant="h5" sx={{ fontWeight: 800 }}>
-                      ৳ {category.total.toLocaleString()}
-                    </Typography>
-                  </Paper>
-                </Grid>
-              ))}
-            </Grid>
-          </CardContent>
-        </GlassCard>
-
-        {/* Expense List */}
         <GlassCard>
           <CardContent sx={{ p: 4 }}>
             <Typography variant="h5" sx={{ fontWeight: 700, mb: 1 }}>
-              Recent Expenses
+              Expense Records
             </Typography>
             <Typography variant="body2" sx={{ color: "#666", mb: 4 }}>
-              সাম্প্রতিক ব্যয়ের তালিকা
+              আয়ের বিস্তারিত রেকর্ড ({expenseRecords.length} টি এন্ট্রি)
             </Typography>
 
             {/* Filters */}
@@ -351,7 +246,7 @@ export default function ExpenseManagement() {
               <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
-                  placeholder="ব্যয়ের বিবরণ খুঁজুন..."
+                  placeholder="আয়ের বিবরণ খুঁজুন..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   InputProps={{
@@ -377,13 +272,15 @@ export default function ExpenseManagement() {
                     onChange={(e) => setCategoryFilter(e.target.value)}
                     sx={{ borderRadius: "15px" }}
                   >
-                    <MenuItem value="all">All Categories</MenuItem>
-                    <MenuItem value="utilities">Utilities</MenuItem>
-                    <MenuItem value="salary">Salary</MenuItem>
-                    <MenuItem value="supplies">Supplies</MenuItem>
-                    <MenuItem value="transport">Transport</MenuItem>
+                    <MenuItem value="all">All</MenuItem>
+                    {expenseCategories?.data?.data?.map((Expense: any, index: number) => (
+                      <MenuItem key={index} value={Expense._id}>
+                        {Expense.name}
+                      </MenuItem>
+                    ))}
                   </Select>
                 </FormControl>
+
               </Grid>
               <Grid item xs={12} md={2}>
                 <FormControl fullWidth>
@@ -395,32 +292,16 @@ export default function ExpenseManagement() {
                     sx={{ borderRadius: "15px" }}
                   >
                     <MenuItem value="all">All Status</MenuItem>
-                    <MenuItem value="paid">Paid</MenuItem>
+                    <MenuItem value="received">Received</MenuItem>
                     <MenuItem value="pending">Pending</MenuItem>
-                    <MenuItem value="overdue">Overdue</MenuItem>
+                    <MenuItem value="overdue">Cancel</MenuItem>
                   </Select>
                 </FormControl>
               </Grid>
-              <Grid item xs={12} md={2}>
-                <Button
-                  variant="outlined"
-                  fullWidth
-                  startIcon={<Download />}
-                  sx={{
-                    height: "56px",
-                    borderRadius: "15px",
-                    borderWidth: 2,
-                    "&:hover": {
-                      borderWidth: 2,
-                    },
-                  }}
-                >
-                  Export
-                </Button>
-              </Grid>
+
             </Grid>
 
-            {/* Expenses Table */}
+            {/* Expense Table */}
             <TableContainer
               component={Paper}
               sx={{
@@ -431,90 +312,117 @@ export default function ExpenseManagement() {
               <Table>
                 <TableHead>
                   <TableRow sx={{ bgcolor: "#f8f9fa" }}>
-                    <TableCell sx={{ fontWeight: 700, fontSize: "1rem" }}>Category & Description</TableCell>
-                    <TableCell sx={{ fontWeight: 700, fontSize: "1rem" }}>Amount (পরিমাণ)</TableCell>
-                    <TableCell sx={{ fontWeight: 700, fontSize: "1rem" }}>Date (তারিখ)</TableCell>
-                    <TableCell sx={{ fontWeight: 700, fontSize: "1rem" }}>Payment Method</TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: "1rem" }}>Source & Description</TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: "1rem" }}>Amount</TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: "1rem" }}>Category</TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: "1rem" }}>Date</TableCell>
                     <TableCell sx={{ fontWeight: 700, fontSize: "1rem" }}>Status</TableCell>
                     <TableCell sx={{ fontWeight: 700, fontSize: "1rem" }}>Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {expenses.map((expense) => (
-                    <TableRow
-                      key={expense.id}
-                      hover
-                      sx={{
-                        "&:hover": {
-                          bgcolor: "#f8f9fa",
-                        },
-                      }}
-                    >
-                      <TableCell>
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                          <Avatar
-                            sx={{
-                              bgcolor: "#ffebee",
-                              color: "#d32f2f",
-                            }}
-                          >
-                            <expense.icon />
-                          </Avatar>
-                          <Box>
-                            <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                              {expense.description}
-                            </Typography>
-                            <Typography variant="caption" sx={{ color: "#666" }}>
-                              {expense.category}
-                            </Typography>
-                          </Box>
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="h6" sx={{ fontWeight: 800, color: "#f44336" }}>
-                          ৳ {expense.amount.toLocaleString()}
+                  {expenseRecords?.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={6} sx={{ textAlign: "center", py: 4 }}>
+                        <Typography variant="h6" sx={{ color: "#666" }}>
+                          কোন আয়ের রেকর্ড পাওয়া যায়নি
                         </Typography>
                       </TableCell>
-                      <TableCell>{expense.date}</TableCell>
-                      <TableCell>{expense.paymentMethod}</TableCell>
-                      <TableCell>{getStatusChip(expense.status)}</TableCell>
-                      <TableCell>
-                        <Box sx={{ display: "flex", gap: 1 }}>
-                          <IconButton
-                            size="small"
-                            sx={{
-                              bgcolor: "#e3f2fd",
-                              color: "#1976d2",
-                              "&:hover": { bgcolor: "#bbdefb" },
-                            }}
-                          >
-                            <Edit />
-                          </IconButton>
-                          <IconButton
-                            size="small"
-                            sx={{
-                              bgcolor: "#e8f5e8",
-                              color: "#2e7d32",
-                              "&:hover": { bgcolor: "#c8e6c9" },
-                            }}
-                          >
-                            <Visibility />
-                          </IconButton>
-                        </Box>
-                      </TableCell>
                     </TableRow>
-                  ))}
+                  ) : (
+                    expenseRecords?.map((Expense: TIncome) => (
+                      <TableRow
+                        key={Expense._id}
+                        hover
+                        sx={{
+                          "&:hover": {
+                            bgcolor: "#f8f9fa",
+                          },
+                        }}
+
+
+
+
+
+                      >
+                        <TableCell>
+                          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                            <Avatar
+                              sx={{
+                                bgcolor: "#e3f2fd",
+                                color: "#1976d2",
+                              }}
+                            >
+                              {getIncomeIcon(Expense.category?.name || "")}
+                            </Avatar>
+                            <Box>
+
+                              <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                {Expense.category?.name || "Other"}
+                              </Typography>
+
+                            </Box>
+                          </Box>
+                        </TableCell>
+                        <TableCell>
+                          <Typography variant="h6" sx={{ fontWeight: 800, color: "#4CAF50" }}>
+                            ৳ {(Expense.totalAmount || 0).toLocaleString()}
+                          </Typography>
+                        </TableCell>
+                        <TableCell>
+                          <Chip
+                            label={Expense.category?.name || "Other"}
+                            variant="outlined"
+                            sx={{
+                              borderRadius: "20px",
+                              fontWeight: 600,
+                            }}
+                          />
+                        </TableCell>
+                        <TableCell>
+                          {new Date(Expense.incomeDate).toLocaleDateString("en-GB")}
+                        </TableCell>
+                        <TableCell>
+                          {getStatusChip(Expense.status || "completed")}
+                        </TableCell>
+                        <TableCell>
+                          <Box sx={{ display: "flex", gap: 1 }}>
+                            <IconButton
+                              onClick={() => handleEdit(Expense)}
+                              size="small"
+                              sx={{
+                                bgcolor: "#e3f2fd",
+                                color: "#1976d2",
+                                "&:hover": { bgcolor: "#bbdefb" },
+                              }}
+                            >
+                              <Edit />
+                            </IconButton>
+                            <IconButton
+                              onClick={() => handleDeleteIncome(Expense._id)}
+                              size="small"
+                              sx={{
+                                bgcolor: "#fdecea",
+                                color: "#d32f2f",
+                                "&:hover": {
+                                  bgcolor: "#f8d7da",
+                                },
+                              }}
+                            >
+                              <Delete />
+                            </IconButton>
+                          </Box>
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
                 </TableBody>
               </Table>
             </TableContainer>
           </CardContent>
         </GlassCard>
 
-        {/* Add Expense Dialog */}
-        <StyledDialog open={open} onClose={() => setOpen(false)} maxWidth="sm" fullWidth>
-         <AddExpenseModal open={open} onClose={() => setOpen(false)} />
-
-        </StyledDialog>
+        <AddExpenseModal open={open} onClose={handleClose} id={editData?._id} />
       </Box>
     </Container>
   )
