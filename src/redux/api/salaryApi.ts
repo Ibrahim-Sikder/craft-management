@@ -2,15 +2,14 @@ import { baseApi } from "./baseApi";
 
 export const salaryApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-  createSalary: build.mutation({
-  query: (data) => ({
-    url: "/salary",
-    method: "POST",
-    body: data,
-  }),
-  invalidatesTags: ["salary"],
-}),
-
+    createSalary: build.mutation({
+      query: (data) => ({
+        url: "/salary",
+        method: "POST",
+        data,
+      }),
+      invalidatesTags: ["salary"],
+    }),
 
     getAllSalaries: build.query({
       query: ({ limit, page, searchTerm }) => ({

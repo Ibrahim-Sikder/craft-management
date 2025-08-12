@@ -1,13 +1,11 @@
-
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
 import { useState } from "react"
 import {
   Box,
-  Grid,
   CardContent,
   Typography,
-  Button,
   Table,
   TableBody,
   TableCell,
@@ -18,30 +16,66 @@ import {
   Chip,
   Avatar,
   Container,
+  CircularProgress,
+  IconButton,
 } from "@mui/material"
 import {
   Add,
+  Edit,
+  Delete,
 } from "@mui/icons-material"
-import { GlassCard, GradientButton} from "@/style/customeStyle"
+import { GlassCard, GradientButton } from "@/style/customeStyle"
 import AddSalaryModal from "./__components/AddSalaryModal"
+import { useDeleteSalaryMutation, useGetAllSalariesQuery } from "@/redux/api/salaryApi"
+import Swal from "sweetalert2"
 
 export default function SalaryManagement() {
   const [addSalaryModalOpen, setAddSalaryModalOpen] = useState(false)
-  const employees = [
-    {
-      id: 1,
-      name: "মোঃ আব্দুল করিম",
-      designation: "প্রধান শিক্ষক",
-      department: "Administration",
-      basicSalary: 45000,
-      allowances: 8000,
-      deductions: 2000,
-      netSalary: 51000,
-      status: "Paid",
-      payDate: "2024-01-31",
-    },
-    // ... other employees
-  ];
+  const [editingSalaryId, setEditingSalaryId] = useState<string | null>(null)
+  const { data, isLoading, refetch } = useGetAllSalariesQuery({})
+  const [deleteSalary] = useDeleteSalaryMutation()
+
+  const handleDeleteSalary = async (id: string) => {
+    try {
+      const result = await Swal.fire({
+        title: "Are you sure?",
+        text: `You want to delete this salary?`,
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, delete it!",
+        cancelButtonText: "Cancel"
+      })
+
+      if (result.isConfirmed) {
+        await deleteSalary(id).unwrap()
+        Swal.fire({
+          title: "Deleted!",
+          text: `Salary has been deleted successfully.`,
+          icon: "success"
+        })
+        refetch() // Refresh the data after deletion
+      }
+    } catch (err: any) {
+      Swal.fire({
+        title: "Error!",
+        text: err.data?.message || "Failed to delete salary",
+        icon: "error"
+      })
+    }
+  }
+
+  const handleEditSalary = (id: string) => {
+    setEditingSalaryId(id)
+    setAddSalaryModalOpen(true)
+  }
+
+  const handleCloseModal = () => {
+    setAddSalaryModalOpen(false)
+    setEditingSalaryId(null)
+    refetch() // Refresh data after any modal operation
+  }
 
   const getStatusChip = (status: string) => {
     switch (status) {
@@ -123,18 +157,16 @@ export default function SalaryManagement() {
             <GradientButton
               bgcolor="linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%)"
               startIcon={<Add />}
-              onClick={() => setAddSalaryModalOpen(true)}
+              onClick={() => {
+                setEditingSalaryId(null)
+                setAddSalaryModalOpen(true)
+              }}
               sx={{ color: '#fff' }}
             >
               Add Salary
             </GradientButton>
           </Box>
         </Box>
-
-        {/* Summary Cards */}
-        <Grid container spacing={4} sx={{ mb: 6 }}>
-          {/* ... summary cards code remains the same ... */}
-        </Grid>
 
         {/* Employee Salary Table */}
         <GlassCard>
@@ -145,11 +177,6 @@ export default function SalaryManagement() {
             <Typography variant="body2" sx={{ color: "#666", mb: 4 }}>
               কর্মচারীদের বেতনের বিস্তারিত তথ্য
             </Typography>
-
-            {/* Filters */}
-            <Grid container spacing={3} sx={{ mb: 4 }}>
-              {/* ... filters code remains the same ... */}
-            </Grid>
 
             {/* Employee Table */}
             <TableContainer
@@ -172,86 +199,114 @@ export default function SalaryManagement() {
                   </TableRow>
                 </TableHead>
                 <TableBody>
-                  {employees.map((employee) => (
-                    <TableRow
-                      key={employee.id}
-                      hover
-                      sx={{
-                        "&:hover": {
-                          bgcolor: "#f8f9fa",
-                        },
-                      }}
-                    >
-                      <TableCell>
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                          <Avatar sx={{ bgcolor: "#9c27b0" }}>{employee.name.charAt(0)}</Avatar>
-                          <Box>
-                            <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                              {employee.name}
-                            </Typography>
-                            <Typography variant="caption" sx={{ color: "#666" }}>
-                              {employee.designation} - {employee.department}
-                            </Typography>
-                          </Box>
-                        </Box>
-                      </TableCell>
-                      <TableCell>৳ {employee.basicSalary.toLocaleString()}</TableCell>
-                      <TableCell>
-                        <Typography sx={{ color: "#4CAF50", fontWeight: 600 }}>
-                          ৳ {employee.allowances.toLocaleString()}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography sx={{ color: "#f44336", fontWeight: 600 }}>
-                          ৳ {employee.deductions.toLocaleString()}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Typography variant="h6" sx={{ fontWeight: 800 }}>
-                          ৳ {employee.netSalary.toLocaleString()}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>{getStatusChip(employee.status)}</TableCell>
-                      <TableCell>
-                        <Box sx={{ display: "flex", gap: 1 }}>
-                          <Button
-                            size="small"
-                            variant="contained"
-                            sx={{
-                              background: "linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%)",
-                              borderRadius: "20px",
-                              px: 2,
-                              fontWeight: 600,
-                            }}
-                          >
-                            Pay
-                          </Button>
-                          <Button
-                            size="small"
-                            variant="outlined"
-                            sx={{
-                              borderRadius: "20px",
-                              px: 2,
-                              fontWeight: 600,
-                            }}
-                          >
-                            Details
-                          </Button>
-                        </Box>
+                  {isLoading ? (
+                    <TableRow>
+                      <TableCell colSpan={7} sx={{ textAlign: "center", py: 4 }}>
+                        <CircularProgress />
                       </TableCell>
                     </TableRow>
-                  ))}
+                  ) : data?.data?.salaries?.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={7} sx={{ textAlign: "center", py: 4 }}>
+                        No salary records found
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    data?.data?.salaries?.map((employee: any) => {
+                      // Calculate total allowances
+                      const totalAllowances =
+                        (employee.foodAllowance || 0) +
+                        (employee.medicalAllowance || 0) +
+                        (employee.transportAllowance || 0) +
+                        (employee.otherAllowances || 0);
+
+                      // Calculate total deductions
+                      const totalDeductions =
+                        (employee.otherDeductions || 0) +
+                        (employee.providentFund || 0) +
+                        (employee.incomeTax || 0);
+
+                      return (
+                        <TableRow
+                          key={employee._id}
+                          hover
+                          sx={{
+                            "&:hover": {
+                              bgcolor: "#f8f9fa",
+                            },
+                          }}
+                        >
+                          <TableCell>
+                            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                              <Avatar sx={{ bgcolor: "#9c27b0" }}>
+                                {employee.employee?.name?.charAt(0) || 'U'}
+                              </Avatar>
+                              <Box>
+                                <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                                  {employee.employee?.name || 'Unknown'}
+                                </Typography>
+                                <Typography variant="body2" sx={{ color: "#666", fontSize: "0.8rem" }}>
+                                  {employee.employee?.position || 'No position'}
+                                </Typography>
+                              </Box>
+                            </Box>
+                          </TableCell>
+                          <TableCell>৳ {employee.basicSalary?.toLocaleString() || 0}</TableCell>
+                          <TableCell>
+                            <Typography sx={{ color: "#4CAF50", fontWeight: 600 }}>
+                              ৳ {totalAllowances.toLocaleString()}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography sx={{ color: "#f44336", fontWeight: 600 }}>
+                              ৳ {totalDeductions.toLocaleString()}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            <Typography variant="h6" sx={{ fontWeight: 800 }}>
+                              ৳ {employee.netSalary?.toLocaleString() || 0}
+                            </Typography>
+                          </TableCell>
+                          <TableCell>
+                            {getStatusChip(employee.status || "Pending")}
+                          </TableCell>
+                          <TableCell>
+                            <Box sx={{ display: "flex", gap: 1 }}>
+                              <IconButton
+                                onClick={() => handleEditSalary(employee._id)}
+                                sx={{
+                                  color: "#1976d2",
+                                  '&:hover': { backgroundColor: 'rgba(25, 118, 210, 0.1)' }
+                                }}
+                              >
+                                <Edit />
+                              </IconButton>
+                              <IconButton
+                                onClick={() => handleDeleteSalary(employee._id)}
+                                sx={{
+                                  color: "#d32f2f",
+                                  '&:hover': { backgroundColor: 'rgba(211, 47, 47, 0.1)' }
+                                }}
+                              >
+                                <Delete />
+                              </IconButton>
+                            </Box>
+                          </TableCell>
+                        </TableRow>
+                      )
+                    })
+                  )}
                 </TableBody>
               </Table>
             </TableContainer>
           </CardContent>
         </GlassCard>
 
-        {/* Add Salary Dialog Component */}
+        {/* Add/Edit Salary Dialog */}
         <AddSalaryModal
           open={addSalaryModalOpen}
-          onClose={() => setAddSalaryModalOpen(false)}
-          employees={employees}
+          onClose={handleCloseModal}
+          salaryId={editingSalaryId}
         />
       </Container>
     </Box>
