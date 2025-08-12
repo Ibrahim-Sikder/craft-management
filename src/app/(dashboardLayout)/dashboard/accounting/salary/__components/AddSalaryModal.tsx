@@ -45,8 +45,6 @@ interface AddSalaryDialogProps {
 const AddSalaryModal = ({ open, onClose, salaryId }: AddSalaryDialogProps) => {
     const [createSalary] = useCreateSalaryMutation();
     const [updateSalary] = useUpdateSalaryMutation();
-
-    // Skip query when no salaryId (create mode)
     const { data: singleSalary, isLoading } = useGetSingleSalaryQuery(
         { id: salaryId! },
         { skip: !salaryId }
@@ -72,17 +70,12 @@ const AddSalaryModal = ({ open, onClose, salaryId }: AddSalaryDialogProps) => {
             notes: data.notes || "",
 
         };
-
-        console.log('submit data', submitData)
-
         try {
             let res;
             if (salaryId) {
-                // Update existing salary
                 res = await updateSalary({ id: salaryId, data: submitData }).unwrap();
                 console.log('response', res)
             } else {
-                // Create new salary
                 res = await createSalary(submitData).unwrap();
             }
 
@@ -99,7 +92,6 @@ const AddSalaryModal = ({ open, onClose, salaryId }: AddSalaryDialogProps) => {
         }
     };
 
-    // Default values for form
     const defaultValues = {
         employee: singleSalary?.data?.employee ?? '', // Fixed for employee selection
         basicSalary: singleSalary?.data?.basicSalary ?? '',

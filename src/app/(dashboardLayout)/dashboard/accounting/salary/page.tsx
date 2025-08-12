@@ -33,6 +33,8 @@ export default function SalaryManagement() {
   const [addSalaryModalOpen, setAddSalaryModalOpen] = useState(false)
   const [editingSalaryId, setEditingSalaryId] = useState<string | null>(null)
   const { data, isLoading, refetch } = useGetAllSalariesQuery({})
+  const allSalaries = data?.data?.salaries || []
+  console.log('all salary', allSalaries)
   const [deleteSalary] = useDeleteSalaryMutation()
 
   const handleDeleteSalary = async (id: string) => {
@@ -55,7 +57,7 @@ export default function SalaryManagement() {
           text: `Salary has been deleted successfully.`,
           icon: "success"
         })
-        refetch() // Refresh the data after deletion
+        refetch()
       }
     } catch (err: any) {
       Swal.fire({
@@ -74,7 +76,7 @@ export default function SalaryManagement() {
   const handleCloseModal = () => {
     setAddSalaryModalOpen(false)
     setEditingSalaryId(null)
-    refetch() // Refresh data after any modal operation
+    refetch()
   }
 
   const getStatusChip = (status: string) => {
@@ -212,19 +214,8 @@ export default function SalaryManagement() {
                       </TableCell>
                     </TableRow>
                   ) : (
-                    data?.data?.salaries?.map((employee: any) => {
-                      // Calculate total allowances
-                      const totalAllowances =
-                        (employee.foodAllowance || 0) +
-                        (employee.medicalAllowance || 0) +
-                        (employee.transportAllowance || 0) +
-                        (employee.otherAllowances || 0);
+                    allSalaries?.map((employee: any) => {
 
-                      // Calculate total deductions
-                      const totalDeductions =
-                        (employee.otherDeductions || 0) +
-                        (employee.providentFund || 0) +
-                        (employee.incomeTax || 0);
 
                       return (
                         <TableRow
@@ -239,27 +230,25 @@ export default function SalaryManagement() {
                           <TableCell>
                             <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
                               <Avatar sx={{ bgcolor: "#9c27b0" }}>
-                                {employee.employee?.name?.charAt(0) || 'U'}
+                                {employee.employee?.charAt(0) || 'U'}
                               </Avatar>
                               <Box>
                                 <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                                  {employee.employee?.name || 'Unknown'}
+                                  {employee.employee || 'Unknown'}
                                 </Typography>
-                                <Typography variant="body2" sx={{ color: "#666", fontSize: "0.8rem" }}>
-                                  {employee.employee?.position || 'No position'}
-                                </Typography>
+                               
                               </Box>
                             </Box>
                           </TableCell>
                           <TableCell>৳ {employee.basicSalary?.toLocaleString() || 0}</TableCell>
                           <TableCell>
                             <Typography sx={{ color: "#4CAF50", fontWeight: 600 }}>
-                              ৳ {totalAllowances.toLocaleString()}
+                              ৳
                             </Typography>
                           </TableCell>
                           <TableCell>
                             <Typography sx={{ color: "#f44336", fontWeight: 600 }}>
-                              ৳ {totalDeductions.toLocaleString()}
+                              ৳
                             </Typography>
                           </TableCell>
                           <TableCell>
