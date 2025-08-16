@@ -17,7 +17,7 @@ type TInputProps = {
   rows?: number;
   disabled?: boolean;
   value?: string;
-  defaultValue?: string; // Add defaultValue to props
+  defaultValue?: string;
   autoFocus?: boolean;
   onChange?: (event: ChangeEvent<HTMLInputElement>) => void;
   startAdornment?: React.ReactNode;
