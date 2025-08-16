@@ -238,7 +238,7 @@ export default function ExpenseManagement() {
               Expense Records
             </Typography>
             <Typography variant="body2" sx={{ color: "#666", mb: 4 }}>
-              আয়ের বিস্তারিত রেকর্ড ({expenseRecords.length} টি এন্ট্রি)
+            খরচের বিস্তারিত রেকর্ড ({expenseRecords.length} টি এন্ট্রি)
             </Typography>
 
             {/* Filters */}
@@ -246,7 +246,7 @@ export default function ExpenseManagement() {
               <Grid item xs={12} md={6}>
                 <TextField
                   fullWidth
-                  placeholder="আয়ের বিবরণ খুঁজুন..."
+                  placeholder="খরচের বিবরণ খুঁজুন..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   InputProps={{

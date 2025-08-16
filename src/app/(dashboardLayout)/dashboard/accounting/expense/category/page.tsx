@@ -140,7 +140,7 @@ export default function IncomeCategoryPage() {
                                         },
                                     }}
                                 >
-                                    Create Income Category
+                                    Create Expense Category
                                 </Button>
                             </div>
                         </div>

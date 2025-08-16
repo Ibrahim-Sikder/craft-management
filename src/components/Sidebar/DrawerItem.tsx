@@ -370,44 +370,45 @@ export const navigationItems: NavigationItem[] = [
   },
   {
     title: "Feedback",
+    path: "/dashboard/feedback/complaints",
     icon: (
       <ColorfulIcon color="#F4B400">
         <FactCheck />
       </ColorfulIcon>
     ),
     roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
-    children: [
-      {
-        path: "/dashboard/feedback/complaints",
-        title: "Complaints",
-        icon: (
-          <ColorfulIcon color="#F4B400">
-            <ListAlt />
-          </ColorfulIcon>
-        ),
-        roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
-      },
-      {
-        path: "/dashboard/feedback/idea",
-        title: "Idea",
-        icon: (
-          <ColorfulIcon color="#F4B400">
-            <AddCircle />
-          </ColorfulIcon>
-        ),
-        roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
-      },
-      {
-        path: "/dashboard/feedback/suggestion",
-        title: "Suggestion",
-        icon: (
-          <ColorfulIcon color="#F4B400">
-            <AddCircle />
-          </ColorfulIcon>
-        ),
-        roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
-      },
-    ],
+    // children: [
+    //   {
+    //     path: "/dashboard/feedback/complaints",
+    //     title: "Complaints",
+    //     icon: (
+    //       <ColorfulIcon color="#F4B400">
+    //         <ListAlt />
+    //       </ColorfulIcon>
+    //     ),
+    //     roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
+    //   },
+    //   {
+    //     path: "/dashboard/feedback/idea",
+    //     title: "Idea",
+    //     icon: (
+    //       <ColorfulIcon color="#F4B400">
+    //         <AddCircle />
+    //       </ColorfulIcon>
+    //     ),
+    //     roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
+    //   },
+    //   {
+    //     path: "/dashboard/feedback/suggestion",
+    //     title: "Suggestion",
+    //     icon: (
+    //       <ColorfulIcon color="#F4B400">
+    //         <AddCircle />
+    //       </ColorfulIcon>
+    //     ),
+    //     roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
+    //   },
+    // ],
   },
   {
     title: "Meal Report",

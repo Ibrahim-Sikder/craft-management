@@ -22,7 +22,7 @@ const ExpenseCategoryModal = ({ open, setOpen, categoryId }: CategoryProps) => {
   const [updateExpenseCategory] = useUpdateExpenseCategoryMutation();
 
   const handleSubmit = async (data: FieldValues) => {
-    const toastId = toast.loading(categoryId ? "Updating Income Category..." : "Creating Income Category...");
+    const toastId = toast.loading(categoryId ? "Updating Expense Category..." : "Creating Expense Category...");
     setLoading(true);
 
     try {
@@ -56,7 +56,7 @@ const ExpenseCategoryModal = ({ open, setOpen, categoryId }: CategoryProps) => {
       {isLoading ? (
         <h3>Loading.........</h3>
       ) : (
-        <CraftModal sx={{ width: "40%", margin: "0 auto" }} open={open} setOpen={setOpen} title="Create Income Category">
+        <CraftModal sx={{ width: "40%", margin: "0 auto" }} open={open} setOpen={setOpen} title="Create Expense Category">
           <CraftForm onSubmit={handleSubmit} defaultValues={defaultValues}>
             <Grid container spacing={2}>
               <Grid item xs={12}>
