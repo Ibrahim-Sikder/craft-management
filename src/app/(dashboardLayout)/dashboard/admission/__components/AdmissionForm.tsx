@@ -3,7 +3,7 @@
 /* eslint-disable react/no-unescaped-entities */
 "use client"
 
-import { useMemo, useState } from "react"
+import { useMemo } from "react"
 import { useRouter } from "next/navigation"
 import {
   Box,
@@ -51,8 +51,9 @@ import toast from "react-hot-toast"
 import CraftCheckbox from "@/components/Forms/CraftCheckbox"
 
 type TProps = {
-  id: string;
-}
+  id?: string | string[];
+};
+
 const AdmissionForm = ({ id }: TProps) => {
   const router = useRouter()
   const { data: classData } = useGetAllClassesQuery({ limit: 1000 })
