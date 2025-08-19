@@ -65,13 +65,7 @@ export default function HifzSubjectManagementPage() {
   })
 
   const [deleteSubject, { isLoading: isDeleting }] = useDeleteHifzSubjectMutation()
-
   const subjects = subjectData?.data?.data || []
-
-  const handleRefresh = () => {
-    refetch()
-  }
-
   const handleChangePage = (event: unknown, newPage: number) => {
     setPage(newPage)
   }
@@ -179,22 +173,7 @@ export default function HifzSubjectManagementPage() {
                 </Box>
               </Box>
               <Box className="flex gap-2">
-                <Button
-                  variant="outlined"
-                  startIcon={<RefreshIcon />}
-                  onClick={handleRefresh}
-                  sx={{ 
-                    borderRadius: 2,
-                    borderColor: "#1a936f",
-                    color: "#1a936f",
-                    "&:hover": {
-                      borderColor: "#166c54",
-                      backgroundColor: "rgba(26, 147, 111, 0.04)"
-                    }
-                  }}
-                >
-                  Refresh
-                </Button>
+                
                 <Button
                   variant="contained"
                   startIcon={<AddIcon />}

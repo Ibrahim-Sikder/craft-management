@@ -22,6 +22,8 @@ export const tagTypesList = [
   "salary",
   "admission",
   "hifz-subject",
+  'hifz-class',
+  
 ] as const;
 
 export type TagType = (typeof tagTypesList)[number];

@@ -1,621 +1,592 @@
+/* eslint-disable react/jsx-key */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
+import type React from "react"
 import { useState } from "react"
 import {
   Box,
+  Container,
   Typography,
-  Button,
-  Card,
-  CardContent,
-  Grid,
   TextField,
+  Button,
+  Paper,
+  Grid,
+  InputAdornment,
   Dialog,
-  DialogTitle,
-  DialogContent,
   DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Fade,
+  Tooltip,
+  IconButton,
+  alpha,
+  CardMedia,
+  CardContent,
   Avatar,
   Chip,
-  IconButton,
-  MenuItem,
-  Select,
-  FormControl,
-  InputLabel,
-  Fab,
-  Tabs,
-  Tab,
-  InputAdornment,
-  Divider,
-  LinearProgress,
+  useTheme,
+  CircularProgress,
 } from "@mui/material"
-import { Add, Edit, Delete, Search, Class, Schedule, Groups, School, AccessTime, LocationOn } from "@mui/icons-material"
 
-interface ClassData {
-  id: number
-  name: string
-  level: string
-  section: string
-  teacher: string
-  teacherAvatar: string
-  students: number
-  maxCapacity: number
-  schedule: string
-  room: string
-  startTime: string
-  endTime: string
-  days: string[]
-  subject: string
-  status: "Active" | "Inactive" | "Completed"
-  progress: number
-  description: string
+import {
+  Add as AddIcon,
+  Search as SearchIcon,
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+  Refresh as RefreshIcon,
+  School,
+  Group,
+  MenuBook,
+  Person,
+} from "@mui/icons-material"
+
+import Link from "next/link"
+import { useDeleteClassMutation, useGetAllClassesQuery } from "@/redux/api/classApi"
+import { motion } from "framer-motion"
+import HifzClassForm from "../../__components/HifzClassForm"
+import { useDeleteHifzClassMutation, useGetAllHifzClassesQuery } from "@/redux/api/hifzClassApi"
+
+// Islamic-inspired color palette
+const islamicColors = {
+  primary: '#1a936f', // Deep green
+  secondary: '#c45c3e', // Terracotta
+  accent: '#88d498', // Light green
+  background: '#f8f5e6', // Parchment
+  gold: '#d4af37', // Gold for accents
+  text: '#2d2d2d', // Dark text
+  lightText: '#5c5c5c', // Light text
 }
 
-const initialClasses: ClassData[] = [
-  {
-    id: 1,
-    name: "Hifz Beginners",
-    level: "Level 1",
-    section: "A",
-    teacher: "Qari Muhammad Hassan",
-    teacherAvatar: "/placeholder.svg?height=40&width=40",
-    students: 25,
-    maxCapacity: 30,
-    schedule: "Morning",
-    room: "Room 101",
-    startTime: "08:00",
-    endTime: "10:00",
-    days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday"],
-    subject: "Quran Memorization",
-    status: "Active",
-    progress: 65,
-    description: "Foundation level Hifz class for new students",
-  },
-  {
-    id: 2,
-    name: "Advanced Hifz",
-    level: "Level 3",
-    section: "B",
-    teacher: "Qaria Fatima Bibi",
-    teacherAvatar: "/placeholder.svg?height=40&width=40",
-    students: 20,
-    maxCapacity: 25,
-    schedule: "Evening",
-    room: "Room 201",
-    startTime: "16:00",
-    endTime: "18:00",
-    days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"],
-    subject: "Advanced Memorization",
-    status: "Active",
-    progress: 85,
-    description: "Advanced level for students completing their Hifz",
-  },
-  {
-    id: 3,
-    name: "Tajweed Mastery",
-    level: "Level 2",
-    section: "C",
-    teacher: "Hafiz Ahmed Ali",
-    teacherAvatar: "/placeholder.svg?height=40&width=40",
-    students: 18,
-    maxCapacity: 20,
-    schedule: "Afternoon",
-    room: "Room 102",
-    startTime: "14:00",
-    endTime: "15:30",
-    days: ["Monday", "Wednesday", "Friday"],
-    subject: "Tajweed",
-    status: "Active",
-    progress: 72,
-    description: "Specialized class for perfecting Quranic recitation",
-  },
-]
+// Department colors with Islamic-inspired palette
+const departmentColors: Record<string, string> = {
+  'Quran Memorization': '#1a936f',
+  'Tajweed': '#88d498',
+  'Tafsir': '#c45c3e',
+  'Arabic Language': '#3a7bd5',
+  'Islamic Studies': '#d4af37',
+  'Fiqh': '#6a11cb',
+  'Hadith': '#fc4a1a',
+  'Seerah': '#00b09b',
+  'Not Specified': '#888888',
+}
 
-export default function Classes() {
-  const [classes, setClasses] = useState<ClassData[]>(initialClasses)
-  const [open, setOpen] = useState(false)
-  const [editingClass, setEditingClass] = useState<ClassData | null>(null)
+// Custom Card Component with Islamic design
+const StyledCard = ({ children, ...props }: any) => (
+  <Paper
+    elevation={0}
+    sx={{
+      borderRadius: '16px',
+      overflow: 'hidden',
+      border: '1px solid',
+      borderColor: alpha(islamicColors.primary, 0.1),
+      background: `linear-gradient(to bottom, #ffffff, ${alpha(islamicColors.background, 0.5)})`,
+      boxShadow: '0 8px 16px rgba(0, 0, 0, 0.05)',
+      transition: 'all 0.3s ease',
+      position: 'relative',
+      '&:before': {
+        content: '""',
+        position: 'absolute',
+        top: 0,
+        left: 0,
+        right: 0,
+        height: '4px',
+        background: `linear-gradient(90deg, ${islamicColors.primary}, ${islamicColors.secondary})`,
+      },
+      '&:hover': {
+        transform: 'translateY(-4px)',
+        boxShadow: '0 12px 24px rgba(0, 0, 0, 0.1)',
+      },
+      ...props.sx,
+    }}
+    {...props}
+  >
+    {children}
+  </Paper>
+)
+
+// Department Chip with updated style
+const DepartmentChip = ({ label, ...props }: any) => (
+  <Chip
+    label={label}
+    size="small"
+    sx={{
+      backgroundColor: alpha(departmentColors[label] || departmentColors["Not Specified"], 0.1),
+      color: departmentColors[label] || departmentColors["Not Specified"],
+      fontWeight: 500,
+      borderRadius: '8px',
+      '& .MuiChip-label': { px: 1.5 },
+      ...props.sx,
+    }}
+    {...props}
+  />
+)
+
+export default function ClassesListPage() {
+  const [page, setPage] = useState(0)
+  const [rowsPerPage, setRowsPerPage] = useState(10)
   const [searchTerm, setSearchTerm] = useState("")
-  const [tabValue, setTabValue] = useState(0)
-  const [formData, setFormData] = useState({
-    name: "",
-    level: "",
-    section: "",
-    teacher: "",
-    maxCapacity: "",
-    schedule: "",
-    room: "",
-    startTime: "",
-    endTime: "",
-    days: [] as string[],
-    subject: "",
-    description: "",
+  const [selectedClass, setSelectedClass] = useState<any | null>(null)
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
+  const [deleteHifzClass] = useDeleteHifzClassMutation()
+  const [formOpen, setFormOpen] = useState(false)
+  const [editingClassId, setEditingClassId] = useState<string | null>(null)
+
+  const {
+    data: hifzClassData,
+    isLoading,
+    refetch,
+  } = useGetAllHifzClassesQuery({
+    limit: rowsPerPage,
+    page: page + 1,
+    searchTerm: searchTerm,
   })
 
-  const handleOpen = (classData?: ClassData) => {
-    if (classData) {
-      setEditingClass(classData)
-      setFormData({
-        name: classData.name,
-        level: classData.level,
-        section: classData.section,
-        teacher: classData.teacher,
-        maxCapacity: classData.maxCapacity.toString(),
-        schedule: classData.schedule,
-        room: classData.room,
-        startTime: classData.startTime,
-        endTime: classData.endTime,
-        days: classData.days,
-        subject: classData.subject,
-        description: classData.description,
-      })
-    } else {
-      setEditingClass(null)
-      setFormData({
-        name: "",
-        level: "",
-        section: "",
-        teacher: "",
-        maxCapacity: "",
-        schedule: "",
-        room: "",
-        startTime: "",
-        endTime: "",
-        days: [],
-        subject: "",
-        description: "",
-      })
-    }
-    setOpen(true)
+  const handleRefresh = () => {
+    refetch()
   }
 
-  const handleClose = () => {
-    setOpen(false)
-    setEditingClass(null)
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchTerm(event.target.value)
+    setPage(0)
   }
 
-  const handleSubmit = () => {
-    if (editingClass) {
-      setClasses(
-        classes.map((c) =>
-          c.id === editingClass.id
-            ? {
-              ...c,
-              ...formData,
-              maxCapacity: Number.parseInt(formData.maxCapacity),
-            }
-            : c,
-        ),
-      )
-    } else {
-      const newClass: ClassData = {
-        id: Date.now(),
-        ...formData,
-        maxCapacity: Number.parseInt(formData.maxCapacity),
-        students: 0,
-        teacherAvatar: "/placeholder.svg?height=40&width=40",
-        status: "Active",
-        progress: 0,
+  const handleDeleteConfirm = async () => {
+    if (selectedClass?._id) {
+      try {
+        await deleteHifzClass(selectedClass._id).unwrap()
+        refetch()
+      } catch (error) {
+        console.error("Error deleting class:", error)
       }
-      setClasses([...classes, newClass])
     }
-    handleClose()
+    setDeleteDialogOpen(false)
+    setSelectedClass(null)
   }
 
-  const handleDelete = (id: number) => {
-    setClasses(classes.filter((c) => c.id !== id))
+  const handleDeleteCancel = () => {
+    setDeleteDialogOpen(false)
   }
 
-  const filteredClasses = classes.filter(
-    (classData) =>
-      classData.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      classData.teacher.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      classData.subject.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Active":
-        return "success"
-      case "Inactive":
-        return "warning"
-      case "Completed":
-        return "primary"
-      default:
-        return "default"
-    }
+  const handleEditClick = (id: string) => {
+    setEditingClassId(id)
+    setFormOpen(true)
   }
 
-  const ClassCard = ({ classData }: { classData: ClassData }) => (
-    <Card sx={{ height: "100%", position: "relative", overflow: "visible", width: '70%' }}>
-      <Box
-        sx={{
-          background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
-          height: 100,
-          position: "relative",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-center",
-          px: 3,
-          color: "white",
-        }}
-      >
-        <Box>
-          <Typography variant="h6" fontWeight="bold">
-            {classData.name}
-          </Typography>
-          <Typography variant="body2" sx={{ opacity: 0.9 }}>
-            {classData.level} - Section {classData.section}
-          </Typography>
-        </Box>
-        <Chip
-          label={classData.status}
-          color={getStatusColor(classData.status) as any}
-          size="small"
-          sx={{ backgroundColor: "rgba(255,255,255,0.2)", color: "white" }}
-        />
-      </Box>
+  const handleAddClick = () => {
+    setEditingClassId(null)
+    setFormOpen(true)
+  }
 
-      <CardContent sx={{ pt: 3 }}>
-        <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-          <Avatar src={classData.teacherAvatar} sx={{ mr: 2 }} />
-          <Box>
-            <Typography variant="body2" fontWeight="medium">
-              {classData.teacher}
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              Class Teacher
-            </Typography>
-          </Box>
-        </Box>
+  const handleCloseForm = () => {
+    setFormOpen(false)
+    setEditingClassId(null)
+  }
 
-        <Box sx={{ mb: 2 }}>
-          <Box display="flex" justifyContent="space-between" alignItems="center" mb={1}>
-            <Typography variant="body2" fontWeight="medium">
-              Class Progress
-            </Typography>
-            <Typography variant="body2" fontWeight="bold" color="primary">
-              {classData.progress}%
-            </Typography>
-          </Box>
-          <LinearProgress variant="determinate" value={classData.progress} sx={{ height: 8, borderRadius: 4 }} />
-        </Box>
-
-        <Grid container spacing={2} sx={{ mb: 2 }}>
-          <Grid item xs={6}>
-            <Box sx={{ textAlign: "center" }}>
-              <Typography variant="h6" color="primary" fontWeight="bold">
-                {classData.students}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                Students
-              </Typography>
-            </Box>
-          </Grid>
-          <Grid item xs={6}>
-            <Box sx={{ textAlign: "center" }}>
-              <Typography variant="h6" color="secondary" fontWeight="bold">
-                {classData.maxCapacity}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                Capacity
-              </Typography>
-            </Box>
-          </Grid>
-        </Grid>
-
-        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 2 }}>
-          <Chip icon={<Schedule />} label={classData.schedule} size="small" />
-          <Chip icon={<LocationOn />} label={classData.room} size="small" color="primary" />
-          <Chip
-            icon={<AccessTime />}
-            label={`${classData.startTime}-${classData.endTime}`}
-            size="small"
-            color="secondary"
-          />
-        </Box>
-
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          {classData.description}
-        </Typography>
-
-        <Divider sx={{ my: 2 }} />
-
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <Typography variant="body2" color="text.secondary">
-            {classData.subject}
-          </Typography>
-          <Box>
-            <IconButton size="small" onClick={() => handleOpen(classData)} color="primary">
-              <Edit />
-            </IconButton>
-            <IconButton size="small" onClick={() => handleDelete(classData.id)} color="error">
-              <Delete />
-            </IconButton>
-          </Box>
-        </Box>
-      </CardContent>
-    </Card>
-  )
-
-
+  const classes = hifzClassData?.data?.data || []
 
   return (
-    <Box maxWidth='xl' width='100%'>
-      {/* Header */}
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" fontWeight="bold" gutterBottom>
-          Classes Management
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
-          Organize and manage your Hifz classes efficiently
-        </Typography>
+    <>
+      <Box sx={{
+        flexGrow: 1,
+        bgcolor: islamicColors.background,
+        minHeight: "100vh",
+        backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23${islamicColors.primary.replace('#', '')}' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E")`,
+        py: 4,
+      }}>
+        <Container maxWidth="xl" sx={{ mt: 0, mb: 4 }}>
+          <Fade in={true} timeout={800}>
+            <Box>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  mb: 4,
+                  flexWrap: "wrap",
+                  gap: 2,
+                  background: `linear-gradient(135deg, ${alpha(islamicColors.primary, 0.1)} 0%, ${alpha(islamicColors.secondary, 0.1)} 100%)`,
+                  p: 3,
+                  borderRadius: '16px',
+                  border: `1px solid ${alpha(islamicColors.primary, 0.1)}`,
+                }}
+              >
+                <Box>
+                  <Typography variant="h3" component="h1" sx={{
+                    fontWeight: 700,
+                    color: islamicColors.primary,
+                    mb: 1,
+                  }}>
+                    Hifz Classes
+                  </Typography>
+                  <Typography variant="body1" sx={{ color: islamicColors.lightText }}>
+                    Manage and organize your Quran memorization classes
+                  </Typography>
+                </Box>
+                <Box sx={{ display: "flex", gap: 2 }}>
+                  <Button
+                    variant="outlined"
+                    startIcon={<RefreshIcon />}
+                    onClick={handleRefresh}
+                    sx={{
+                      borderRadius: '12px',
+                      borderColor: alpha(islamicColors.primary, 0.3),
+                      color: islamicColors.primary,
+                      '&:hover': {
+                        borderColor: islamicColors.primary,
+                        backgroundColor: alpha(islamicColors.primary, 0.04)
+                      }
+                    }}
+                  >
+                    Refresh
+                  </Button>
+                  <Button
+                    variant="contained"
+                    startIcon={<AddIcon />}
+                    onClick={handleAddClick}
+                    sx={{
+                      borderRadius: '12px',
+                      background: `linear-gradient(135deg, ${islamicColors.primary} 0%, ${islamicColors.secondary} 100%)`,
+                      boxShadow: '0 4px 12px rgba(0,0,0,0.1)',
+                      '&:hover': {
+                        boxShadow: '0 6px 16px rgba(0,0,0,0.15)',
+                        background: `linear-gradient(135deg, ${islamicColors.secondary} 0%, ${islamicColors.primary} 100%)`,
+                      }
+                    }}
+                  >
+                    Add New Hifz Class
+                  </Button>
+                </Box>
+              </Box>
+
+              <StyledCard sx={{ mb: 4, overflow: "hidden" }}>
+                <Box sx={{ p: 3, borderBottom: `1px solid ${alpha(islamicColors.primary, 0.1)}` }}>
+                  <Grid container spacing={2} alignItems="center">
+                    <Grid item xs={12} md={6}>
+                      <TextField
+                        fullWidth
+                        placeholder="Search Hifz classes by name, section or teacher..."
+                        variant="outlined"
+                        value={searchTerm}
+                        onChange={handleSearchChange}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <SearchIcon sx={{ color: alpha(islamicColors.primary, 0.7) }} />
+                            </InputAdornment>
+                          ),
+                          sx: {
+                            borderRadius: '12px',
+                            bgcolor: "background.paper",
+                            "& .MuiOutlinedInput-notchedOutline": {
+                              borderColor: alpha(islamicColors.primary, 0.2),
+                            },
+                            "&:hover .MuiOutlinedInput-notchedOutline": {
+                              borderColor: alpha(islamicColors.primary, 0.4),
+                            },
+                          },
+                        }}
+                      />
+                    </Grid>
+                    <Grid item xs={12} md={6} sx={{ display: 'flex', justifyContent: 'flex-end' }}>
+                      <Typography variant="body2" sx={{ color: islamicColors.lightText }}>
+                        {classes.length} {classes.length === 1 ? 'class' : 'classes'} found
+                      </Typography>
+                    </Grid>
+                  </Grid>
+                </Box>
+
+                {isLoading ? (
+                  <Box sx={{ display: 'flex', justifyContent: 'center', p: 6 }}>
+                    <CircularProgress sx={{ color: islamicColors.primary }} />
+                  </Box>
+                ) : classes.length === 0 ? (
+                  <Box sx={{ textAlign: 'center', p: 6 }}>
+                    <School sx={{ fontSize: 64, color: alpha(islamicColors.primary, 0.3), mb: 2 }} />
+                    <Typography variant="h6" sx={{ color: islamicColors.lightText, mb: 1 }}>
+                      No classes found
+                    </Typography>
+                    <Typography variant="body2" sx={{ color: alpha(islamicColors.lightText, 0.7), mb: 3 }}>
+                      {searchTerm ? 'Try a different search term' : 'Get started by creating your first class'}
+                    </Typography>
+                    {!searchTerm && (
+                      <Button
+                        variant="contained"
+                        startIcon={<AddIcon />}
+                        onClick={handleAddClick}
+                        sx={{
+                          borderRadius: '12px',
+                          background: `linear-gradient(135deg, ${islamicColors.primary} 0%, ${islamicColors.secondary} 100%)`,
+                        }}
+                      >
+                        Create First Class
+                      </Button>
+                    )}
+                  </Box>
+                ) : (
+                  <Box sx={{ p: 3 }}>
+                    <Grid container spacing={3}>
+                      {classes.map((classItem: any, index: any) => (
+                        <Grid item xs={12} sm={6} md={4} lg={3} key={classItem.id}>
+                          <motion.div
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ duration: 0.4, delay: index * 0.05 }}
+                          >
+                            <StyledCard>
+                              <Box sx={{ position: "relative" }}>
+                                <CardMedia
+                                  component="div"
+                                  sx={{
+                                    height: 100,
+                                    background: `linear-gradient(135deg, ${departmentColors[classItem.department] || departmentColors["Not Specified"]} 0%, ${alpha(departmentColors[classItem.department] || departmentColors["Not Specified"], 0.7)} 100%)`,
+                                    position: "relative",
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    overflow: 'hidden',
+                                  }}
+                                >
+                                  <Box
+                                    component="span"
+                                    sx={{
+                                      position: 'absolute',
+                                      top: 0,
+                                      left: 0,
+                                      right: 0,
+                                      bottom: 0,
+                                      backgroundImage: `url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h20L0 20z' fill='%23ffffff' fill-opacity='0.1'/%3E%3C/svg%3E")`,
+                                    }}
+                                  />
+                                  <Typography
+                                    variant="h4"
+                                    sx={{
+                                      color: 'white',
+                                      fontWeight: 700,
+                                      textShadow: '2px 2px 4px rgba(0,0,0,0.2)',
+                                      zIndex: 1,
+                                    }}
+                                  >
+                                    {classItem?.name}
+                                  </Typography>
+                                </CardMedia>
+                                <Box
+                                  sx={{
+                                    position: "absolute",
+                                    top: 80,
+                                    left: "50%",
+                                    transform: "translateX(-50%)",
+                                    zIndex: 1,
+                                  }}
+                                >
+                                  <Avatar
+                                    sx={{
+                                      width: 60,
+                                      height: 60,
+                                      border: "4px solid white",
+                                      background: `linear-gradient(135deg, ${islamicColors.primary} 0%, ${islamicColors.secondary} 100%)`,
+                                      boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
+                                      fontSize: '24px',
+                                      fontWeight: 'bold',
+                                    }}
+                                  >
+                                    {classItem?.name?.charAt(0)}
+                                  </Avatar>
+                                </Box>
+                              </Box>
+                              <CardContent sx={{ pt: 5, pb: 2 }}>
+                                <Box sx={{ textAlign: "center", mb: 2 }}>
+                                  <Typography variant="h6" fontWeight={600} gutterBottom sx={{ color: islamicColors.text }}>
+                                    {classItem?.name}
+                                  </Typography>
+
+                                  {classItem.sections && classItem.sections.length > 0 && (
+                                    <Box sx={{ mb: 1.5 }}>
+                                      <Typography variant="body2" sx={{ color: islamicColors.lightText, mb: 0.5 }}>
+                                        Sections:
+                                      </Typography>
+                                      <Box sx={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 0.5 }}>
+                                        {classItem.sections.map((section: any) => (
+                                          <Chip
+                                            key={section._id}
+                                            label={section.name}
+                                            size="small"
+                                            sx={{
+                                              backgroundColor: alpha(islamicColors.accent, 0.2),
+                                              color: islamicColors.primary,
+                                              fontSize: '0.7rem',
+                                              height: '24px',
+                                            }}
+                                          />
+                                        ))}
+                                      </Box>
+                                    </Box>
+                                  )}
+
+                                  {classItem.department && (
+                                    <Box sx={{ mb: 1.5 }}>
+                                      <Typography variant="body2" sx={{ color: islamicColors.lightText, mb: 0.5 }}>
+                                        Department:
+                                      </Typography>
+                                      <DepartmentChip
+                                        label={classItem.department}
+                                        sx={{ mx: 'auto' }}
+                                      />
+                                    </Box>
+                                  )}
+                                </Box>
+                                <Box sx={{ mb: 2 }}>
+                                  <Box sx={{ display: "flex", alignItems: "center", mb: 1.5 }}>
+                                    <Group fontSize="small" sx={{ color: islamicColors.primary, mr: 1.5 }} />
+                                    <Typography variant="body2" sx={{ color: islamicColors.lightText }}>
+                                      Students: <Box component="span" sx={{ color: islamicColors.text, fontWeight: 500 }}>{classItem.studentCount || 0}</Box>
+                                    </Typography>
+                                  </Box>
+                                  <Box sx={{ display: "flex", alignItems: "center", mb: 1.5 }}>
+                                    <MenuBook fontSize="small" sx={{ color: islamicColors.primary, mr: 1.5 }} />
+                                    <Typography variant="body2" sx={{ color: islamicColors.lightText }}>
+                                      Subjects: <Box component="span" sx={{ color: islamicColors.text, fontWeight: 500 }}>{classItem.subjectCount || 0}</Box>
+                                    </Typography>
+                                  </Box>
+                                  <Box sx={{ display: "flex", alignItems: "center", mb: 1.5 }}>
+                                    <Person fontSize="small" sx={{ color: islamicColors.primary, mr: 1.5 }} />
+                                    <Typography variant="body2" sx={{ color: islamicColors.lightText }}>
+                                      Teachers: <Box component="span" sx={{ color: islamicColors.text, fontWeight: 500 }}>{classItem.teacherCount || 0}</Box>
+                                    </Typography>
+                                  </Box>
+                                </Box>
+                              </CardContent>
+                              <Box sx={{
+                                position: "absolute",
+                                top: 8,
+                                right: 8,
+                                zIndex: 1,
+                              }}>
+                                <Tooltip title="Edit Class">
+                                  <IconButton
+                                    onClick={() => handleEditClick(classItem._id)}
+                                    size="small"
+                                    sx={{
+                                      color: alpha(islamicColors.secondary, 0.9),
+                                      bgcolor: alpha(islamicColors.secondary, 0.1),
+                                      mr: 1,
+                                      "&:hover": {
+                                        bgcolor: alpha(islamicColors.secondary, 0.2),
+                                      },
+                                    }}
+                                  >
+                                    <EditIcon fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+                                <Tooltip title="Delete Class">
+                                  <IconButton
+                                    size="small"
+                                    onClick={(e) => {
+                                      setSelectedClass(classItem)
+                                      setDeleteDialogOpen(true)
+                                    }}
+                                    sx={{
+                                      color: alpha('#f44336', 0.9),
+                                      bgcolor: alpha('#f44336', 0.1),
+                                      "&:hover": {
+                                        bgcolor: alpha('#f44336', 0.2),
+                                      },
+                                    }}
+                                  >
+                                    <DeleteIcon fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+                              </Box>
+                            </StyledCard>
+                          </motion.div>
+                        </Grid>
+                      ))}
+                    </Grid>
+                  </Box>
+                )}
+              </StyledCard>
+            </Box>
+          </Fade>
+        </Container>
       </Box>
-
-      {/* Search and Actions */}
-      <Card sx={{ mb: 3 }}>
-        <CardContent>
-          <Box display="flex" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={2}>
-            <TextField
-              placeholder="Search classes..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Search />
-                  </InputAdornment>
-                ),
-              }}
-              sx={{ minWidth: 300 }}
-            />
-            <Button
-              variant="contained"
-              startIcon={<Add />}
-              onClick={() => handleOpen()}
-              sx={{
-                background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
-                px: 3,
-                py: 1.5,
-              }}
-            >
-              Add New Class
-            </Button>
-          </Box>
-        </CardContent>
-      </Card>
-
-      {/* View Toggle */}
-      <Box sx={{ mb: 3 }}>
-        <Tabs value={tabValue} onChange={(e, newValue) => setTabValue(newValue)}>
-          <Tab label="Card View" />
-        </Tabs>
-      </Box>
-
-      {/* Content */}
-      {
-        <Grid container spacing={3}>
-          {filteredClasses.map((classData) => (
-            <Grid item xs={12} sm={6} md={4} key={classData.id}>
-              <ClassCard classData={classData} />
-            </Grid>
-          ))}
-        </Grid>
-      }
-
-      {/* Floating Action Button */}
-      <Fab
-        color="primary"
-        aria-label="add"
-        onClick={() => handleOpen()}
-        sx={{
-          position: "fixed",
-          bottom: 16,
-          right: 16,
-          background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+      {/* Delete Confirmation Dialog */}
+      <Dialog
+        open={deleteDialogOpen}
+        onClose={handleDeleteCancel}
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            width: "100%",
+            maxWidth: 480,
+            border: `1px solid ${alpha(islamicColors.primary, 0.1)}`,
+            background: `linear-gradient(to bottom, #ffffff, ${alpha(islamicColors.background, 0.5)})`,
+            '&:before': {
+              content: '""',
+              position: 'absolute',
+              top: 0,
+              left: 0,
+              right: 0,
+              height: '4px',
+              background: `linear-gradient(90deg, ${islamicColors.primary}, ${islamicColors.secondary})`,
+            },
+          },
         }}
       >
-        <Add />
-      </Fab>
-
-      {/* Add/Edit Dialog */}
-      <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
-        <DialogTitle
-          sx={{
-            background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
-            color: "white",
-            fontWeight: "bold",
-          }}
-        >
-          {editingClass ? "Edit Class" : "Add New Class"}
+        <DialogTitle sx={{ pb: 1 }}>
+          <Typography variant="h6" component="div" sx={{ fontWeight: 600, color: islamicColors.primary }}>
+            Delete Class
+          </Typography>
         </DialogTitle>
-        <DialogContent sx={{ mt: 2 }}>
-          <Grid container spacing={3}>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Class Name"
-                value={formData.name}
-                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Class />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth>
-                <InputLabel>Level</InputLabel>
-                <Select
-                  value={formData.level}
-                  label="Level"
-                  onChange={(e) => setFormData({ ...formData, level: e.target.value })}
-                >
-                  <MenuItem value="Level 1">Level 1 - Beginners</MenuItem>
-                  <MenuItem value="Level 2">Level 2 - Intermediate</MenuItem>
-                  <MenuItem value="Level 3">Level 3 - Advanced</MenuItem>
-                  <MenuItem value="Level 4">Level 4 - Expert</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth>
-                <InputLabel>Section</InputLabel>
-                <Select
-                  value={formData.section}
-                  label="Section"
-                  onChange={(e) => setFormData({ ...formData, section: e.target.value })}
-                >
-                  <MenuItem value="A">Section A</MenuItem>
-                  <MenuItem value="B">Section B</MenuItem>
-                  <MenuItem value="C">Section C</MenuItem>
-                  <MenuItem value="D">Section D</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth>
-                <InputLabel>Teacher</InputLabel>
-                <Select
-                  value={formData.teacher}
-                  label="Teacher"
-                  onChange={(e) => setFormData({ ...formData, teacher: e.target.value })}
-                >
-                  <MenuItem value="Qari Muhammad Hassan">Qari Muhammad Hassan</MenuItem>
-                  <MenuItem value="Qaria Fatima Bibi">Qaria Fatima Bibi</MenuItem>
-                  <MenuItem value="Hafiz Ahmed Ali">Hafiz Ahmed Ali</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Max Capacity"
-                type="number"
-                value={formData.maxCapacity}
-                onChange={(e) => setFormData({ ...formData, maxCapacity: e.target.value })}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Groups />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth>
-                <InputLabel>Schedule</InputLabel>
-                <Select
-                  value={formData.schedule}
-                  label="Schedule"
-                  onChange={(e) => setFormData({ ...formData, schedule: e.target.value })}
-                >
-                  <MenuItem value="Morning">Morning</MenuItem>
-                  <MenuItem value="Afternoon">Afternoon</MenuItem>
-                  <MenuItem value="Evening">Evening</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Room"
-                value={formData.room}
-                onChange={(e) => setFormData({ ...formData, room: e.target.value })}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <LocationOn />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Subject"
-                value={formData.subject}
-                onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <School />
-                    </InputAdornment>
-                  ),
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="Start Time"
-                type="time"
-                value={formData.startTime}
-                onChange={(e) => setFormData({ ...formData, startTime: e.target.value })}
-                InputLabelProps={{ shrink: true }}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                fullWidth
-                label="End Time"
-                type="time"
-                value={formData.endTime}
-                onChange={(e) => setFormData({ ...formData, endTime: e.target.value })}
-                InputLabelProps={{ shrink: true }}
-              />
-            </Grid>
-            <Grid item xs={12}>
-              <FormControl fullWidth>
-                <InputLabel>Days</InputLabel>
-                <Select
-                  multiple
-                  value={formData.days}
-                  label="Days"
-                  onChange={(e) => setFormData({ ...formData, days: e.target.value as string[] })}
-                >
-                  <MenuItem value="Monday">Monday</MenuItem>
-                  <MenuItem value="Tuesday">Tuesday</MenuItem>
-                  <MenuItem value="Wednesday">Wednesday</MenuItem>
-                  <MenuItem value="Thursday">Thursday</MenuItem>
-                  <MenuItem value="Friday">Friday</MenuItem>
-                  <MenuItem value="Saturday">Saturday</MenuItem>
-                  <MenuItem value="Sunday">Sunday</MenuItem>
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12}>
-              <TextField
-                fullWidth
-                label="Description"
-                multiline
-                rows={3}
-                value={formData.description}
-                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              />
-            </Grid>
-          </Grid>
+        <DialogContent>
+          <DialogContentText sx={{ color: islamicColors.text }}>
+            Are you sure you want to delete the class &#34;{selectedClass?.name}&#34;? This action cannot be
+            undone.
+          </DialogContentText>
         </DialogContent>
-        <DialogActions sx={{ p: 3 }}>
-          <Button onClick={handleClose} variant="outlined">
+        <DialogActions sx={{ px: 3, pb: 3 }}>
+          <Button
+            onClick={handleDeleteCancel}
+            variant="outlined"
+            color="inherit"
+            sx={{
+              borderColor: alpha(islamicColors.primary, 0.3),
+              color: islamicColors.text,
+              borderRadius: '8px',
+              '&:hover': {
+                borderColor: islamicColors.primary,
+                backgroundColor: alpha(islamicColors.primary, 0.04)
+              }
+            }}
+          >
             Cancel
           </Button>
           <Button
-            onClick={handleSubmit}
+            onClick={handleDeleteConfirm}
             variant="contained"
+            color="error"
             sx={{
-              background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
-              px: 3,
+              ml: 2,
+              borderRadius: '8px',
+              background: `linear-gradient(135deg, #f44336 0%, #d32f2f 100%)`,
+              '&:hover': {
+                background: `linear-gradient(135deg, #d32f2f 0%, #c62828 100%)`,
+              }
             }}
           >
-            {editingClass ? "Update" : "Add"} Class
+            Delete
           </Button>
         </DialogActions>
       </Dialog>
-    </Box>
+
+      {formOpen && (
+        <HifzClassForm
+          open={formOpen}
+          setOpen={handleCloseForm}
+          id={editingClassId}
+        />
+      )}
+    </>
   )
 }
