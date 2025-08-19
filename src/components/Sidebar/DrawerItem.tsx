@@ -370,7 +370,7 @@ export const navigationItems: NavigationItem[] = [
   },
   {
     title: "Feedback",
-    path: "/dashboard/feedback/complaints",
+    path: "/dashboard/feedback",
     icon: (
       <ColorfulIcon color="#F4B400">
         <FactCheck />
