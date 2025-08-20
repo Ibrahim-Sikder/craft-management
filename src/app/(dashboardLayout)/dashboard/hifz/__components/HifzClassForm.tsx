@@ -6,18 +6,12 @@ import {
     Box,
     Typography,
     Button,
-    Paper,
-    Card,
     CardContent,
     Grid,
     alpha,
     Fade,
     Zoom,
-    styled,
-    keyframes,
     ThemeProvider,
-
-    useTheme,
 } from "@mui/material"
 import {
     Save as SaveIcon,
@@ -29,57 +23,12 @@ import CraftForm from "@/components/Forms/Form"
 import CraftInputWithIcon from "@/components/Forms/inputWithIcon"
 import { theme } from "@/lib/Theme/Theme"
 import toast from "react-hot-toast"
-import { useCreateClassMutation, useGetSingleClassQuery, useUpdateClassMutation } from "@/redux/api/classApi"
 import type { FieldValues } from "react-hook-form"
-import { useState } from "react"
 import CraftModal from "@/components/Shared/Modal"
 import { useCreateHifzClassMutation, useGetSingleHifzClassQuery, useUpdateHifzClassMutation } from "@/redux/api/hifzClassApi"
-
-// Islamic-inspired color palette
-const islamicColors = {
-    primary: '#1a936f', // Deep green
-    secondary: '#c45c3e', // Terracotta
-    accent: '#88d498', // Light green
-    background: '#f8f5e6', // Parchment
-    gold: '#d4af37', // Gold for accents
-    text: '#2d2d2d', // Dark text
-    lightText: '#5c5c5c', // Light text
-}
-
-// Animation for subtle movement
-const floatAnimation = keyframes`
-  0% { transform: translateY(0px); }
-  50% { transform: translateY(-5px); }
-  100% { transform: translateY(0px); }
-`
+import { customStyle, floatAnimation, hifzBox, islamicColors, StyledCard, StyledPaper } from "@/style/customeStyle"
 
 
-const StyledPaper = styled(Paper)({
-    borderRadius: '16px',
-    overflow: "hidden",
-    position: "relative",
-    border: `1px solid ${alpha(islamicColors.primary, 0.1)}`,
-    background: `linear-gradient(to bottom, #ffffff, ${alpha(islamicColors.background, 0.5)})`,
-    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.08)',
-    '&:before': {
-        content: '""',
-        position: 'absolute',
-        top: 0,
-        left: 0,
-        right: 0,
-        height: '4px',
-        background: `linear-gradient(90deg, ${islamicColors.primary}, ${islamicColors.secondary})`,
-    },
-})
-
-const StyledCard = styled(Card)({
-    position: "relative",
-    border: `1px solid ${alpha(islamicColors.primary, 0.1)}`,
-    overflow: "visible",
-    borderRadius: '16px',
-    background: `linear-gradient(to bottom, #ffffff, ${alpha(islamicColors.background, 0.3)})`,
-    boxShadow: '0 5px 20px rgba(0, 0, 0, 0.05)',
-})
 
 export default function HifzClassForm({ id, open, setOpen }: any) {
 
@@ -87,9 +36,6 @@ export default function HifzClassForm({ id, open, setOpen }: any) {
 
     const [createHifzClass, { isSuccess }] = useCreateHifzClassMutation()
     const [updateHifzClass] = useUpdateHifzClassMutation()
-
-
-
 
     const handleSubmit = async (data: FieldValues) => {
 
@@ -122,6 +68,7 @@ export default function HifzClassForm({ id, open, setOpen }: any) {
         name: singleClass?.data?.name || "",
     }
 
+
     return (
         <CraftModal open={open}
             setOpen={setOpen}
@@ -131,15 +78,7 @@ export default function HifzClassForm({ id, open, setOpen }: any) {
 
             <ThemeProvider theme={theme}>
                 <CraftForm onSubmit={handleSubmit} defaultValues={defaultValue}>
-                    <Box sx={{
-                        width: '100%',
-
-                        display: 'flex',
-                        justifyContent: 'center',
-                        backgroundColor: islamicColors.background,
-                        backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23${islamicColors.primary.replace('#', '')}' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E")`,
-                        py: 4,
-                    }}>
+                    <Box sx={customStyle}>
                         <Box sx={{
                             width: '100%',
                             maxWidth: '800px',
@@ -148,24 +87,7 @@ export default function HifzClassForm({ id, open, setOpen }: any) {
                             <Fade in={true} timeout={800}>
                                 <Box>
                                     <StyledPaper>
-                                        <Box sx={{
-                                            p: 3,
-                                            background: `linear-gradient(135deg, ${islamicColors.primary} 0%, ${islamicColors.secondary} 100%)`,
-                                            color: "white",
-                                            borderRadius: '16px 16px 0 0',
-                                            textAlign: "center",
-                                            position: 'relative',
-                                            overflow: 'hidden',
-                                            '&:before': {
-                                                content: '""',
-                                                position: 'absolute',
-                                                top: 0,
-                                                left: 0,
-                                                right: 0,
-                                                bottom: 0,
-                                                backgroundImage: `url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h20L0 20z' fill='%23ffffff' fill-opacity='0.1'/%3E%3C/svg%3E")`,
-                                            }
-                                        }}>
+                                        <Box sx={hifzBox}>
                                             <Box sx={{ position: 'relative', zIndex: 1 }}>
                                                 <Box sx={{
                                                     animation: `${floatAnimation} 4s ease-in-out infinite`,

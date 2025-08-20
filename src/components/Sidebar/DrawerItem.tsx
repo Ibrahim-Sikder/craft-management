@@ -167,17 +167,17 @@ export const navigationItems: NavigationItem[] = [
             <BarChart />
           </ColorfulIcon>
         ),
-        path: "/dashboard/hifz/student/list",
+        path: "/dashboard/student/list",
         roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
       },
       {
-        title: "Teacher List ",
+        title: "Teacher List",
         icon: (
           <ColorfulIcon color="#0F9D58">
             <Addchart />
           </ColorfulIcon>
         ),
-        path: "/dashboard/hifz/teacher/list",
+        path: "/dashboard/teacher/list",
         roles: ["admin", "teacher", "student", "super_admin", 'class_teacher'],
       },
     ],
