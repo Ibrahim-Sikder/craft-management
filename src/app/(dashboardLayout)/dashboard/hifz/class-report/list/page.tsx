@@ -1,887 +1,345 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
+import type React from "react"
 import { useState } from "react"
 import {
   Box,
-  Typography,
-  Button,
   Card,
   CardContent,
+  Typography,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
+  Button,
   Paper,
-  TextField,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
   IconButton,
-  Fab,
-  Grid,
   Chip,
+  TextField,
+  InputAdornment,
+  Grid,
   Avatar,
-  Divider,
+  Tooltip,
 } from "@mui/material"
 import {
-  Print,
-  Download,
-  Edit,
-  Save,
-  Add,
-  Close,
-  Visibility,
-  Delete,
-  Assignment,
-  CalendarToday,
-  School,
+  Add as AddIcon,
+  Visibility as ViewIcon,
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+  Search as SearchIcon,
+  Download as DownloadIcon,
+  Print as PrintIcon,
 } from "@mui/icons-material"
 
-interface StudentReportData {
-  id: number
-  studentName: string
-  class: string
-  section: string
-  month: string
-  year: string
-  weeklyChallenge: {
-    quranVerse: string
-    hadithNumber: string
-    tajweedRules: string
-  }
-  dailyData: Array<{
+interface ReportData {
+  id: string
+  studentInfo: {
+    studentName: string
+    studentId: string
+    class: string
     date: string
     day: string
-    quran: { page: string; performance: string; hadith: string; doa: string; tajweed: string; percent: string }
-    revision: { page: string; performance: string; hadith: string; doa: string; tajweed: string; percent: string }
-  }>
-  teacherSignature: string
-  total: string
-  createdDate: string
+  }
+  createdAt: string
+  status: "completed" | "pending" | "reviewed"
 }
 
-const initialReports: StudentReportData[] = [
-  {
-    id: 1,
-    studentName: "আহমেদ আলী খান",
-    class: "হিফজ-১",
-    section: "ক",
-    month: "জানুয়ারি",
-    year: "২০২৪",
-    weeklyChallenge: {
-      quranVerse: "সূরা আল-বাকারাহ",
-      hadithNumber: "হাদীস নং ১-৫",
-      tajweedRules: "মাদ্দ ও গুন্নাহ",
-    },
-    dailyData: [
-      {
-        date: "০১",
-        day: "শনিবার",
-        quran: { page: "১", performance: "৮৫%", hadith: "১", doa: "২", tajweed: "৯০%", percent: "৮৮%" },
-        revision: { page: "৫", performance: "৮০%", hadith: "২", doa: "১", tajweed: "৮৫%", percent: "৮২%" },
+interface HifzReportListProps {
+  onAddNew: () => void
+  onViewReport: (id: string) => void
+}
+
+const HifzReportList: React.FC<HifzReportListProps> = ({ onAddNew, onViewReport }) => {
+  const [searchTerm, setSearchTerm] = useState("")
+
+  // Sample data - in real app this would come from API/database
+  const [reports] = useState<ReportData[]>([
+    {
+      id: "1",
+      studentInfo: {
+        studentName: "মোহাম্মদ আব্দুল্লাহ",
+        studentId: "HF001",
+        class: "হিফয-১",
+        date: "2024-01-15",
+        day: "সোমবার",
       },
-      {
-        date: "০২",
-        day: "রবিবার",
-        quran: { page: "২", performance: "৯০%", hadith: "১", doa: "২", tajweed: "৯২%", percent: "৯১%" },
-        revision: { page: "৬", performance: "৮৫%", hadith: "২", doa: "১", tajweed: "৮৮%", percent: "৮৬%" },
+      createdAt: "2024-01-15T10:30:00Z",
+      status: "completed",
+    },
+    {
+      id: "2",
+      studentInfo: {
+        studentName: "ফাতিমা খাতুন",
+        studentId: "HF002",
+        class: "হিফয-২",
+        date: "2024-01-15",
+        day: "সোমবার",
       },
-    ],
-    teacherSignature: "কারী মুহাম্মদ হাসান",
-    total: "৮৭%",
-    createdDate: "২০২ৄ-০১-২৫",
-  },
-  {
-    id: 2,
-    studentName: "ফাতিমা খাতুন",
-    class: "হিফজ-২",
-    section: "খ",
-    month: "জানুয়ারি",
-    year: "২০২৪",
-    weeklyChallenge: {
-      quranVerse: "সূরা আল-ইমরান",
-      hadithNumber: "হাদীস নং ৬-১০",
-      tajweedRules: "ইখফা ও ইদগাম",
+      createdAt: "2024-01-15T11:15:00Z",
+      status: "reviewed",
     },
-    dailyData: [],
-    teacherSignature: "কারিয়া ফাতিমা বিবি",
-    total: "৯২%",
-    createdDate: "২০২৪-০১-২৫",
-  },
-]
-
-export default function ClassReportFormat() {
-  const [reports, setReports] = useState<StudentReportData[]>(initialReports)
-  const [open, setOpen] = useState(false)
-  const [editMode, setEditMode] = useState(false)
-  const [currentReport, setCurrentReport] = useState<StudentReportData | null>(null)
-  const [viewMode, setViewMode] = useState(false)
-
-  const createNewReport = (): StudentReportData => ({
-    id: Date.now(),
-    studentName: "",
-    class: "",
-    section: "",
-    month: "",
-    year: "২০২৪",
-    weeklyChallenge: {
-      quranVerse: "",
-      hadithNumber: "",
-      tajweedRules: "",
+    {
+      id: "3",
+      studentInfo: {
+        studentName: "মুহাম্মদ ইব্রাহিম",
+        studentId: "HF003",
+        class: "নূরানী-৩",
+        date: "2024-01-16",
+        day: "মঙ্গলবার",
+      },
+      createdAt: "2024-01-16T09:45:00Z",
+      status: "pending",
     },
-    dailyData: ["শনিবার", "রবিবার", "সোমবার", "মঙ্গলবার", "বুধবার", "বৃহস্পতিবার", "শুক্রবার"].map((day, index) => ({
-      date: "",
-      day,
-      quran: { page: "", performance: "", hadith: "", doa: "", tajweed: "", percent: "" },
-      revision: { page: "", performance: "", hadith: "", doa: "", tajweed: "", percent: "" },
-    })),
-    teacherSignature: "",
-    total: "",
-    createdDate: new Date().toLocaleDateString("bn-BD"),
-  })
+    {
+      id: "4",
+      studentInfo: {
+        studentName: "আয়েশা সিদ্দিকা",
+        studentId: "HF004",
+        class: "নাযেরা-১",
+        date: "2024-01-16",
+        day: "মঙ্গলবার",
+      },
+      createdAt: "2024-01-16T14:20:00Z",
+      status: "completed",
+    },
+  ])
 
-  const handleOpen = (report?: StudentReportData) => {
-    if (report) {
-      setCurrentReport({ ...report })
-      setViewMode(true)
-    } else {
-      setCurrentReport(createNewReport())
-      setViewMode(false)
-    }
-    setEditMode(!report)
-    setOpen(true)
-  }
-
-  const handleClose = () => {
-    setOpen(false)
-    setCurrentReport(null)
-    setEditMode(false)
-    setViewMode(false)
-  }
-
-  const handleSave = () => {
-    if (currentReport) {
-      const existingIndex = reports.findIndex((r) => r.id === currentReport.id)
-      if (existingIndex >= 0) {
-        const newReports = [...reports]
-        newReports[existingIndex] = currentReport
-        setReports(newReports)
-      } else {
-        setReports([...reports, currentReport])
-      }
-    }
-    setEditMode(false)
-  }
-
-  const handleDelete = (id: number) => {
-    setReports(reports.filter((r) => r.id !== id))
-  }
-
-  const updateCurrentReport = (field: string, value: any) => {
-    if (currentReport) {
-      setCurrentReport({ ...currentReport, [field]: value })
-    }
-  }
-
-  const updateDailyData = (dayIndex: number, section: "quran" | "revision", field: string, value: string) => {
-    if (currentReport) {
-      const newDailyData = [...currentReport.dailyData]
-      newDailyData[dayIndex] = {
-        ...newDailyData[dayIndex],
-        [section]: {
-          ...newDailyData[dayIndex][section],
-          [field]: value,
-        },
-      }
-      setCurrentReport({ ...currentReport, dailyData: newDailyData })
-    }
-  }
-
-  const ReportModal = () => (
-    <Dialog open={open} onClose={handleClose} maxWidth="xl" fullWidth>
-      <DialogTitle
-        sx={{
-          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-          color: "white",
-          fontWeight: "bold",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        <Box display="flex" alignItems="center">
-          <Assignment sx={{ mr: 2 }} />
-          <Typography variant="h6">
-            {viewMode ? "ক্লাস রিপোর্ট দেখুন" : editMode ? "ক্লাস রিপোর্ট সম্পাদনা" : "নতুন ক্লাস রিপোর্ট"}
-          </Typography>
-        </Box>
-        <IconButton onClick={handleClose} sx={{ color: "white" }}>
-          <Close />
-        </IconButton>
-      </DialogTitle>
-
-      <DialogContent sx={{ p: 0 }}>
-        {currentReport && (
-          <Box sx={{ p: 3, backgroundColor: "#f8f9fa" }}>
-            {/* Header Section */}
-            <Card sx={{ mb: 3, borderRadius: 3, boxShadow: "0 8px 32px rgba(0,0,0,0.1)" }}>
-              <CardContent sx={{ textAlign: "center", py: 4 }}>
-                <Box
-                  sx={{
-                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                    borderRadius: 2,
-                    p: 3,
-                    mb: 3,
-                    color: "white",
-                  }}
-                >
-                  <Typography variant="h4" fontWeight="bold" gutterBottom>
-                    জামিয়াত ইসলামিয়াশন ইনস্টিটিউট
-                  </Typography>
-                  <Typography variant="h6" sx={{ opacity: 0.9 }}>
-                    কার্যক্রম ও পূর্ণাঙ্গ ছাত্রদের মাসিক রিপোর্ট
-                  </Typography>
-                </Box>
-
-                {editMode && (
-                  <Grid container spacing={2} sx={{ mb: 3 }}>
-                    <Grid item xs={12} sm={6} md={3}>
-                      <TextField
-                        fullWidth
-                        label="ছাত্রের নাম"
-                        value={currentReport.studentName}
-                        onChange={(e) => updateCurrentReport("studentName", e.target.value)}
-                        size="small"
-                      />
-                    </Grid>
-                    <Grid item xs={12} sm={6} md={2}>
-                      <TextField
-                        fullWidth
-                        label="শ্রেণী"
-                        value={currentReport.class}
-                        onChange={(e) => updateCurrentReport("class", e.target.value)}
-                        size="small"
-                      />
-                    </Grid>
-                    <Grid item xs={12} sm={6} md={2}>
-                      <TextField
-                        fullWidth
-                        label="শাখা"
-                        value={currentReport.section}
-                        onChange={(e) => updateCurrentReport("section", e.target.value)}
-                        size="small"
-                      />
-                    </Grid>
-                    <Grid item xs={12} sm={6} md={2}>
-                      <TextField
-                        fullWidth
-                        label="মাস"
-                        value={currentReport.month}
-                        onChange={(e) => updateCurrentReport("month", e.target.value)}
-                        size="small"
-                      />
-                    </Grid>
-                    <Grid item xs={12} sm={6} md={3}>
-                      <TextField
-                        fullWidth
-                        label="বছর"
-                        value={currentReport.year}
-                        onChange={(e) => updateCurrentReport("year", e.target.value)}
-                        size="small"
-                      />
-                    </Grid>
-                  </Grid>
-                )}
-
-                {!editMode && (
-                  <Box sx={{ mb: 2 }}>
-                    <Chip
-                      label={`${currentReport.studentName} - ${currentReport.class} (${currentReport.section})`}
-                      color="primary"
-                      sx={{ mr: 2, mb: 1 }}
-                    />
-                    <Chip label={`${currentReport.month} ${currentReport.year}`} color="secondary" sx={{ mb: 1 }} />
-                  </Box>
-                )}
-              </CardContent>
-            </Card>
-
-            {/* Report Table */}
-            <TableContainer
-              component={Paper}
-              sx={{
-                borderRadius: 3,
-                overflow: "hidden",
-                boxShadow: "0 8px 32px rgba(0,0,0,0.1)",
-                border: "2px solid #e0e0e0",
-              }}
-            >
-              <Table sx={{ minWidth: 1000 }}>
-                {/* Main Header */}
-                <TableHead>
-                  <TableRow sx={{ background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)" }}>
-                    <TableCell
-                      sx={{
-                        color: "white",
-                        fontWeight: "bold",
-                        fontSize: "16px",
-                        textAlign: "center",
-                        border: "1px solid rgba(255,255,255,0.2)",
-                        py: 2,
-                      }}
-                    >
-                      ছাত্রের নাম:
-                    </TableCell>
-                    <TableCell
-                      colSpan={3}
-                      sx={{
-                        color: "white",
-                        fontWeight: "bold",
-                        fontSize: "16px",
-                        textAlign: "center",
-                        border: "1px solid rgba(255,255,255,0.2)",
-                      }}
-                    >
-                      সাপ্তাহিক চ্যালেঞ্জ:
-                    </TableCell>
-                    <TableCell
-                      sx={{
-                        color: "white",
-                        fontWeight: "bold",
-                        fontSize: "16px",
-                        textAlign: "center",
-                        border: "1px solid rgba(255,255,255,0.2)",
-                      }}
-                    >
-                      মাস:
-                    </TableCell>
-                  </TableRow>
-                </TableHead>
-
-                {/* Sub Headers */}
-                <TableHead>
-                  <TableRow sx={{ background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)" }}>
-                    <TableCell
-                      rowSpan={2}
-                      sx={{
-                        color: "white",
-                        fontWeight: "bold",
-                        textAlign: "center",
-                        border: "1px solid rgba(255,255,255,0.2)",
-                        verticalAlign: "middle",
-                        fontSize: "14px",
-                        minWidth: "80px",
-                      }}
-                    >
-                      তারিখ
-                    </TableCell>
-                    <TableCell
-                      rowSpan={2}
-                      sx={{
-                        color: "white",
-                        fontWeight: "bold",
-                        textAlign: "center",
-                        border: "1px solid rgba(255,255,255,0.2)",
-                        verticalAlign: "middle",
-                        fontSize: "14px",
-                        minWidth: "100px",
-                      }}
-                    >
-                      বার
-                    </TableCell>
-                    <TableCell
-                      colSpan={3}
-                      sx={{
-                        color: "white",
-                        fontWeight: "bold",
-                        textAlign: "center",
-                        border: "1px solid rgba(255,255,255,0.2)",
-                        fontSize: "14px",
-                      }}
-                    >
-                      মুখস্থ বিষয়াবলী
-                    </TableCell>
-                    <TableCell
-                      colSpan={6}
-                      sx={{
-                        color: "white",
-                        fontWeight: "bold",
-                        textAlign: "center",
-                        border: "1px solid rgba(255,255,255,0.2)",
-                        fontSize: "14px",
-                      }}
-                    >
-                      কার্যক্রম
-                    </TableCell>
-                    <TableCell
-                      colSpan={6}
-                      sx={{
-                        color: "white",
-                        fontWeight: "bold",
-                        textAlign: "center",
-                        border: "1px solid rgba(255,255,255,0.2)",
-                        fontSize: "14px",
-                      }}
-                    >
-                      রিভিশন (সংখ্যা)
-                    </TableCell>
-                    <TableCell
-                      rowSpan={2}
-                      sx={{
-                        color: "white",
-                        fontWeight: "bold",
-                        textAlign: "center",
-                        border: "1px solid rgba(255,255,255,0.2)",
-                        verticalAlign: "middle",
-                        fontSize: "14px",
-                        minWidth: "120px",
-                      }}
-                    >
-                      শিক্ষকের স্বাক্ষর
-                    </TableCell>
-                    <TableCell
-                      rowSpan={2}
-                      sx={{
-                        color: "white",
-                        fontWeight: "bold",
-                        textAlign: "center",
-                        border: "1px solid rgba(255,255,255,0.2)",
-                        verticalAlign: "middle",
-                        fontSize: "14px",
-                        minWidth: "80px",
-                      }}
-                    >
-                      মোট
-                    </TableCell>
-                  </TableRow>
-                  <TableRow sx={{ background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)" }}>
-                    {[
-                      "কুরআন নম্বর / সূরার নাম",
-                      "হাদীস নম্বর",
-                      "তাজবীদের নিয়ম",
-                      "পৃষ্ঠা",
-                      "পরিমান",
-                      "হাদীস/দুয়া",
-                      "দোয়া",
-                      "তাজবীদ",
-                      "কুরআন (%)",
-                      "পৃষ্ঠা",
-                      "পরিমান",
-                      "হাদীস/দুয়া",
-                      "দোয়া",
-                      "তাজবীদ",
-                      "কুরআন (%)",
-                    ].map((header, index) => (
-                      <TableCell
-                        key={index}
-                        sx={{
-                          color: "white",
-                          fontWeight: "bold",
-                          textAlign: "center",
-                          border: "1px solid rgba(255,255,255,0.2)",
-                          fontSize: "11px",
-                          minWidth: "70px",
-                        }}
-                      >
-                        {header}
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                </TableHead>
-
-                <TableBody>
-                  {/* Student Info Row */}
-                  <TableRow sx={{ backgroundColor: "#f8f9fa" }}>
-                    <TableCell colSpan={2} sx={{ border: "1px solid #ddd", p: 1 }}>
-                      {editMode ? (
-                        <TextField
-                          fullWidth
-                          size="small"
-                          value={currentReport.studentName}
-                          onChange={(e) => updateCurrentReport("studentName", e.target.value)}
-                          placeholder="ছাত্রের নাম"
-                          sx={{ "& .MuiOutlinedInput-root": { fontSize: "14px", fontWeight: "bold" } }}
-                        />
-                      ) : (
-                        <Typography variant="body2" fontWeight="bold" sx={{ fontSize: "14px" }}>
-                          {currentReport.studentName}
-                        </Typography>
-                      )}
-                    </TableCell>
-                    <TableCell sx={{ border: "1px solid #ddd", p: 1 }}>
-                      {editMode ? (
-                        <TextField
-                          fullWidth
-                          size="small"
-                          value={currentReport.weeklyChallenge.quranVerse}
-                          onChange={(e) =>
-                            updateCurrentReport("weeklyChallenge", {
-                              ...currentReport.weeklyChallenge,
-                              quranVerse: e.target.value,
-                            })
-                          }
-                          sx={{ "& .MuiOutlinedInput-root": { fontSize: "12px" } }}
-                        />
-                      ) : (
-                        <Typography variant="body2" sx={{ fontSize: "12px" }}>
-                          {currentReport.weeklyChallenge.quranVerse}
-                        </Typography>
-                      )}
-                    </TableCell>
-                    <TableCell sx={{ border: "1px solid #ddd", p: 1 }}>
-                      {editMode ? (
-                        <TextField
-                          fullWidth
-                          size="small"
-                          value={currentReport.weeklyChallenge.hadithNumber}
-                          onChange={(e) =>
-                            updateCurrentReport("weeklyChallenge", {
-                              ...currentReport.weeklyChallenge,
-                              hadithNumber: e.target.value,
-                            })
-                          }
-                          sx={{ "& .MuiOutlinedInput-root": { fontSize: "12px" } }}
-                        />
-                      ) : (
-                        <Typography variant="body2" sx={{ fontSize: "12px" }}>
-                          {currentReport.weeklyChallenge.hadithNumber}
-                        </Typography>
-                      )}
-                    </TableCell>
-                    <TableCell sx={{ border: "1px solid #ddd", p: 1 }}>
-                      {editMode ? (
-                        <TextField
-                          fullWidth
-                          size="small"
-                          value={currentReport.weeklyChallenge.tajweedRules}
-                          onChange={(e) =>
-                            updateCurrentReport("weeklyChallenge", {
-                              ...currentReport.weeklyChallenge,
-                              tajweedRules: e.target.value,
-                            })
-                          }
-                          sx={{ "& .MuiOutlinedInput-root": { fontSize: "12px" } }}
-                        />
-                      ) : (
-                        <Typography variant="body2" sx={{ fontSize: "12px" }}>
-                          {currentReport.weeklyChallenge.tajweedRules}
-                        </Typography>
-                      )}
-                    </TableCell>
-                    <TableCell colSpan={11} sx={{ border: "1px solid #ddd", backgroundColor: "#e3f2fd", p: 1 }}>
-                      <Typography variant="body2" textAlign="center" fontWeight="bold" color="primary">
-                        {editMode ? (
-                          <TextField
-                            fullWidth
-                            size="small"
-                            value={`${currentReport.month} ${currentReport.year}`}
-                            onChange={(e) => {
-                              const [month, year] = e.target.value.split(" ")
-                              updateCurrentReport("month", month || "")
-                              updateCurrentReport("year", year || "")
-                            }}
-                            sx={{ "& .MuiOutlinedInput-root": { fontSize: "12px" } }}
-                          />
-                        ) : (
-                          `${currentReport.month} ${currentReport.year} - মাসিক রিপোর্ট কার্ড`
-                        )}
-                      </Typography>
-                    </TableCell>
-                  </TableRow>
-
-                  {/* Daily Data Rows */}
-                  {currentReport.dailyData.map((dayData, dayIndex) => (
-                    <TableRow key={dayIndex} sx={{ "&:nth-of-type(even)": { backgroundColor: "#fafafa" } }}>
-                      <TableCell sx={{ border: "1px solid #ddd", p: 1, textAlign: "center" }}>
-                        {editMode ? (
-                          <TextField
-                            size="small"
-                            value={dayData.date}
-                            onChange={(e) => {
-                              const newDailyData = [...currentReport.dailyData]
-                              newDailyData[dayIndex] = { ...newDailyData[dayIndex], date: e.target.value }
-                              updateCurrentReport("dailyData", newDailyData)
-                            }}
-                            sx={{ width: "60px", "& .MuiOutlinedInput-root": { fontSize: "12px" } }}
-                          />
-                        ) : (
-                          <Typography variant="body2" sx={{ fontSize: "12px" }}>
-                            {dayData.date}
-                          </Typography>
-                        )}
-                      </TableCell>
-                      <TableCell
-                        sx={{
-                          border: "1px solid #ddd",
-                          p: 1,
-                          textAlign: "center",
-                          fontWeight: "bold",
-                          fontSize: "12px",
-                        }}
-                      >
-                        {dayData.day}
-                      </TableCell>
-                      <TableCell sx={{ border: "1px solid #ddd", p: 1 }}></TableCell>
-                      <TableCell sx={{ border: "1px solid #ddd", p: 1 }}></TableCell>
-                      <TableCell sx={{ border: "1px solid #ddd", p: 1 }}></TableCell>
-                      {/* Quran Data */}
-                      {Object.keys(dayData.quran).map((field, fieldIndex) => (
-                        <TableCell key={`quran-${fieldIndex}`} sx={{ border: "1px solid #ddd", p: 1 }}>
-                          {editMode ? (
-                            <TextField
-                              size="small"
-                              value={(dayData.quran as any)[field]}
-                              onChange={(e) => updateDailyData(dayIndex, "quran", field, e.target.value)}
-                              sx={{ width: "60px", "& .MuiOutlinedInput-root": { fontSize: "11px" } }}
-                            />
-                          ) : (
-                            <Typography variant="body2" sx={{ fontSize: "11px" }}>
-                              {(dayData.quran as any)[field]}
-                            </Typography>
-                          )}
-                        </TableCell>
-                      ))}
-                      {/* Revision Data */}
-                      {Object.keys(dayData.revision).map((field, fieldIndex) => (
-                        <TableCell key={`revision-${fieldIndex}`} sx={{ border: "1px solid #ddd", p: 1 }}>
-                          {editMode ? (
-                            <TextField
-                              size="small"
-                              value={(dayData.revision as any)[field]}
-                              onChange={(e) => updateDailyData(dayIndex, "revision", field, e.target.value)}
-                              sx={{ width: "60px", "& .MuiOutlinedInput-root": { fontSize: "11px" } }}
-                            />
-                          ) : (
-                            <Typography variant="body2" sx={{ fontSize: "11px" }}>
-                              {(dayData.revision as any)[field]}
-                            </Typography>
-                          )}
-                        </TableCell>
-                      ))}
-                      <TableCell sx={{ border: "1px solid #ddd", p: 1 }}></TableCell>
-                      <TableCell sx={{ border: "1px solid #ddd", p: 1 }}></TableCell>
-                    </TableRow>
-                  ))}
-
-                  {/* Total Row */}
-                  <TableRow sx={{ backgroundColor: "#e8f5e8" }}>
-                    <TableCell
-                      colSpan={2}
-                      sx={{ border: "1px solid #ddd", p: 1, textAlign: "center", fontWeight: "bold" }}
-                    >
-                      সর্বমোট (মোট শেষা হয়েছে)
-                    </TableCell>
-                    <TableCell colSpan={13} sx={{ border: "1px solid #ddd", p: 1 }}></TableCell>
-                    <TableCell sx={{ border: "1px solid #ddd", p: 1 }}>
-                      {editMode ? (
-                        <TextField
-                          fullWidth
-                          size="small"
-                          value={currentReport.total}
-                          onChange={(e) => updateCurrentReport("total", e.target.value)}
-                          sx={{ "& .MuiOutlinedInput-root": { fontSize: "12px" } }}
-                        />
-                      ) : (
-                        <Typography variant="body2" fontWeight="bold" sx={{ fontSize: "12px" }}>
-                          {currentReport.total}
-                        </Typography>
-                      )}
-                    </TableCell>
-                    <TableCell sx={{ border: "1px solid #ddd", p: 1 }}>
-                      {editMode ? (
-                        <TextField
-                          fullWidth
-                          size="small"
-                          value={currentReport.teacherSignature}
-                          onChange={(e) => updateCurrentReport("teacherSignature", e.target.value)}
-                          placeholder="শিক্ষকের নাম"
-                          sx={{ "& .MuiOutlinedInput-root": { fontSize: "12px" } }}
-                        />
-                      ) : (
-                        <Typography variant="body2" sx={{ fontSize: "12px" }}>
-                          {currentReport.teacherSignature}
-                        </Typography>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </Box>
-        )}
-      </DialogContent>
-
-      <DialogActions sx={{ p: 3, backgroundColor: "#f8f9fa" }}>
-        <Button onClick={handleClose} variant="outlined" startIcon={<Close />}>
-          বন্ধ করুন
-        </Button>
-        {editMode ? (
-          <Button
-            onClick={handleSave}
-            variant="contained"
-            startIcon={<Save />}
-            sx={{ background: "linear-gradient(135deg, #4caf50 0%, #45a049 100%)" }}
-          >
-            সংরক্ষণ করুন
-          </Button>
-        ) : (
-          <Button
-            onClick={() => setEditMode(true)}
-            variant="contained"
-            startIcon={<Edit />}
-            sx={{ background: "linear-gradient(135deg, #2196f3 0%, #1976d2 100%)" }}
-          >
-            সম্পাদনা করুন
-          </Button>
-        )}
-        <Button variant="outlined" startIcon={<Print />} onClick={() => window.print()}>
-          প্রিন্ট করুন
-        </Button>
-        <Button variant="outlined" startIcon={<Download />}>
-          ডাউনলোড করুন
-        </Button>
-      </DialogActions>
-    </Dialog>
+  const filteredReports = reports.filter(
+    (report) =>
+      report.studentInfo.studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      report.studentInfo.studentId.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      report.studentInfo.class.toLowerCase().includes(searchTerm.toLowerCase()),
   )
 
-  const ReportCard = ({ report }: { report: StudentReportData }) => (
-    <Card sx={{ height: "100%", position: "relative", overflow: "visible", width: '70%' }}>
-      <Box
-        sx={{
-          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-          height: 100,
-          position: "relative",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          px: 3,
-          color: "white",
-        }}
-      >
-        <Box>
-          <Typography variant="h6" fontWeight="bold">
-            {report.studentName}
-          </Typography>
-          <Typography variant="body2" sx={{ opacity: 0.9 }}>
-            {report.class} - {report.section}
-          </Typography>
-        </Box>
-        <Chip
-          label={report.total}
-          size="small"
-          sx={{ backgroundColor: "rgba(255,255,255,0.2)", color: "white", fontWeight: "bold" }}
-        />
-      </Box>
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "completed":
+        return "success"
+      case "reviewed":
+        return "primary"
+      case "pending":
+        return "warning"
+      default:
+        return "default"
+    }
+  }
 
-      <CardContent sx={{ pt: 3 }}>
-        <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-          <Avatar sx={{ mr: 2, bgcolor: "primary.main" }}>
-            <School />
-          </Avatar>
-          <Box>
-            <Typography variant="body2" fontWeight="medium">
-              {report.teacherSignature}
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              শিক্ষক
-            </Typography>
-          </Box>
-        </Box>
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case "completed":
+        return "সম্পন্ন"
+      case "reviewed":
+        return "পর্যালোচিত"
+      case "pending":
+        return "অপেক্ষমাণ"
+      default:
+        return status
+    }
+  }
 
-        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1, mb: 2 }}>
-          <Chip icon={<CalendarToday />} label={`${report.month} ${report.year}`} size="small" color="primary" />
-          <Chip label={report.weeklyChallenge.quranVerse} size="small" color="secondary" />
-        </Box>
-
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
-          তৈরি: {report.createdDate}
-        </Typography>
-
-        <Divider sx={{ my: 2 }} />
-
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-          <Typography variant="body2" color="text.secondary">
-            মোট স্কোর: {report.total}
-          </Typography>
-          <Box>
-            <IconButton size="small" onClick={() => handleOpen(report)} color="primary">
-              <Visibility />
-            </IconButton>
-            <IconButton size="small" onClick={() => handleDelete(report.id)} color="error">
-              <Delete />
-            </IconButton>
-          </Box>
-        </Box>
-      </CardContent>
-    </Card>
-  )
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString)
+    return date.toLocaleDateString("bn-BD", {
+      year: "numeric",
+      month: "long",
+      day: "numeric",
+    })
+  }
 
   return (
-    <Box maxWidth='xl' width='100%'>
+    <Box sx={{ p: 3, maxWidth: 1400, mx: "auto" }}>
       {/* Header */}
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" fontWeight="bold" gutterBottom>
-          ক্লাস রিপোর্ট ফরম্যাট
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
-          ছাত্রদের দৈনিক অগ্রগতি ট্র্যাক করুন এবং মাসিক রিপোর্ট তৈরি করুন
-        </Typography>
-      </Box>
-
-      {/* Action Buttons */}
-      <Card sx={{ mb: 3, }} >
-        <CardContent>
-          <Box display="flex" justifyContent="space-between" alignItems="center" flexWrap="wrap" gap={2}>
-            <Typography variant="h6" fontWeight="bold">
-              সংরক্ষিত রিপোর্টসমূহ ({reports.length})
-            </Typography>
-            <Button
-              variant="contained"
-              startIcon={<Add />}
-              onClick={() => handleOpen()}
-              sx={{
-                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                px: 3,
-                py: 1.5,
-              }}
-            >
-              নতুন রিপোর্ট তৈরি করুন
-            </Button>
-          </Box>
+      <Card sx={{ mb: 3, background: "linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)", color: "white" }}>
+        <CardContent sx={{ textAlign: "center", py: 3 }}>
+          <Typography variant="h4" sx={{ fontWeight: "bold", mb: 1 }}>
+            ক্রাফট ইন্টারন্যাশনাল ইনস্টিটিউট
+          </Typography>
+          <Typography variant="h6" sx={{ opacity: 0.9, mb: 2 }}>
+            হিফয শিক্ষার্থীদের রিপোর্ট তালিকা
+          </Typography>
+          <Chip label={`মোট রিপোর্ট: ${reports.length}`} sx={{ bgcolor: "rgba(255,255,255,0.2)", color: "white" }} />
         </CardContent>
       </Card>
 
-      {/* Reports Grid */}
-      <Grid container spacing={3}>
-        {reports.map((report) => (
-          <Grid item xs={12} sm={6} md={4} key={report.id}>
-            <ReportCard report={report} />
+      {/* Controls */}
+      <Card sx={{ mb: 3 }}>
+        <CardContent>
+          <Grid container spacing={3} alignItems="center">
+            <Grid item xs={12} md={6}>
+              <TextField
+                fullWidth
+                placeholder="শিক্ষার্থীর নাম, আইডি বা ক্লাস দিয়ে খুঁজুন..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                InputProps={{
+                  startAdornment: (
+                    <InputAdornment position="start">
+                      <SearchIcon color="action" />
+                    </InputAdornment>
+                  ),
+                }}
+                variant="outlined"
+              />
+            </Grid>
+            <Grid item xs={12} md={6} sx={{ display: "flex", gap: 2, justifyContent: "flex-end" }}>
+              <Button variant="contained" startIcon={<AddIcon />} onClick={onAddNew} size="large" sx={{ px: 3 }}>
+                নতুন রিপোর্ট
+              </Button>
+              <Button variant="outlined" startIcon={<DownloadIcon />} size="large">
+                এক্সপোর্ট
+              </Button>
+            </Grid>
           </Grid>
-        ))}
+        </CardContent>
+      </Card>
+
+      {/* Statistics Cards */}
+      <Grid container spacing={3} sx={{ mb: 3 }}>
+        <Grid item xs={12} md={3}>
+          <Card sx={{ bgcolor: "#e8f5e8", border: "1px solid #4caf50" }}>
+            <CardContent sx={{ textAlign: "center" }}>
+              <Typography variant="h4" sx={{ color: "#2e7d32", fontWeight: "bold" }}>
+                {reports.filter((r) => r.status === "completed").length}
+              </Typography>
+              <Typography variant="body2" sx={{ color: "#2e7d32" }}>
+                সম্পন্ন রিপোর্ট
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} md={3}>
+          <Card sx={{ bgcolor: "#e3f2fd", border: "1px solid #2196f3" }}>
+            <CardContent sx={{ textAlign: "center" }}>
+              <Typography variant="h4" sx={{ color: "#1976d2", fontWeight: "bold" }}>
+                {reports.filter((r) => r.status === "reviewed").length}
+              </Typography>
+              <Typography variant="body2" sx={{ color: "#1976d2" }}>
+                পর্যালোচিত রিপোর্ট
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} md={3}>
+          <Card sx={{ bgcolor: "#fff3e0", border: "1px solid #ff9800" }}>
+            <CardContent sx={{ textAlign: "center" }}>
+              <Typography variant="h4" sx={{ color: "#f57c00", fontWeight: "bold" }}>
+                {reports.filter((r) => r.status === "pending").length}
+              </Typography>
+              <Typography variant="body2" sx={{ color: "#f57c00" }}>
+                অপেক্ষমাণ রিপোর্ট
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12} md={3}>
+          <Card sx={{ bgcolor: "#f3e5f5", border: "1px solid #9c27b0" }}>
+            <CardContent sx={{ textAlign: "center" }}>
+              <Typography variant="h4" sx={{ color: "#7b1fa2", fontWeight: "bold" }}>
+                {reports.length}
+              </Typography>
+              <Typography variant="body2" sx={{ color: "#7b1fa2" }}>
+                মোট রিপোর্ট
+              </Typography>
+            </CardContent>
+          </Card>
+        </Grid>
       </Grid>
 
-      {/* Floating Action Button */}
-      <Fab
-        color="primary"
-        aria-label="add"
-        onClick={() => handleOpen()}
-        sx={{
-          position: "fixed",
-          bottom: 16,
-          right: 16,
-          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-        }}
-      >
-        <Add />
-      </Fab>
+      {/* Reports Table */}
+      <Card>
+        <CardContent>
+          <Typography variant="h6" sx={{ mb: 3, color: "primary.main", fontWeight: "bold" }}>
+            রিপোর্ট তালিকা ({filteredReports.length})
+          </Typography>
 
-      {/* Report Modal */}
-      <ReportModal />
+          <TableContainer component={Paper} sx={{ border: "1px solid #e0e0e0" }}>
+            <Table>
+              <TableHead>
+                <TableRow sx={{ bgcolor: "#f5f5f5" }}>
+                  <TableCell sx={{ fontWeight: "bold" }}>শিক্ষার্থী</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>আইডি</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>ক্লাস</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>তারিখ</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>বার</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>স্ট্যাটাস</TableCell>
+                  <TableCell sx={{ fontWeight: "bold" }}>তৈরি হয়েছে</TableCell>
+                  <TableCell sx={{ fontWeight: "bold", textAlign: "center" }}>অ্যাকশন</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {filteredReports.map((report) => (
+                  <TableRow key={report.id} hover>
+                    <TableCell>
+                      <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                        <Avatar sx={{ bgcolor: "primary.main", width: 40, height: 40 }}>
+                          {report.studentInfo.studentName.charAt(0)}
+                        </Avatar>
+                        <Typography variant="body2" sx={{ fontWeight: "medium" }}>
+                          {report.studentInfo.studentName}
+                        </Typography>
+                      </Box>
+                    </TableCell>
+                    <TableCell>
+                      <Chip label={report.studentInfo.studentId} size="small" variant="outlined" color="primary" />
+                    </TableCell>
+                    <TableCell>{report.studentInfo.class}</TableCell>
+                    <TableCell>{formatDate(report.studentInfo.date)}</TableCell>
+                    <TableCell>{report.studentInfo.day}</TableCell>
+                    <TableCell>
+                      <Chip
+                        label={getStatusText(report.status)}
+                        color={getStatusColor(report.status) as any}
+                        size="small"
+                      />
+                    </TableCell>
+                    <TableCell>{formatDate(report.createdAt)}</TableCell>
+                    <TableCell>
+                      <Box sx={{ display: "flex", gap: 1, justifyContent: "center" }}>
+                        <Tooltip title="দেখুন">
+                          <IconButton size="small" color="primary" onClick={() => onViewReport(report.id)}>
+                            <ViewIcon />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="সম্পাদনা">
+                          <IconButton size="small" color="secondary">
+                            <EditIcon />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="প্রিন্ট">
+                          <IconButton size="small" color="info">
+                            <PrintIcon />
+                          </IconButton>
+                        </Tooltip>
+                        <Tooltip title="মুছুন">
+                          <IconButton size="small" color="error">
+                            <DeleteIcon />
+                          </IconButton>
+                        </Tooltip>
+                      </Box>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
+
+          {filteredReports.length === 0 && (
+            <Box sx={{ textAlign: "center", py: 4 }}>
+              <Typography variant="h6" color="text.secondary">
+                কোনো রিপোর্ট পাওয়া যায়নি
+              </Typography>
+              <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                নতুন রিপোর্ট তৈরি করতে নতুন রিপোর্ট বাটনে ক্লিক করুন
+              </Typography>
+            </Box>
+          )}
+        </CardContent>
+      </Card>
     </Box>
   )
 }
+
+export default HifzReportList
