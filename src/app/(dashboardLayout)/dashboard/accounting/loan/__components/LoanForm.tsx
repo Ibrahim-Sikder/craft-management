@@ -33,13 +33,9 @@ interface LoanFormProps {
   onClose: () => void
   loanId?: string
 }
-
-// Component to handle conditional rendering based on loan type
 const LoanTypeDependentFields = () => {
   const { watch, setValue } = useFormContext()
   const loanType = watch("loan_type")
-
-  // Clear fields when loan type changes
   useEffect(() => {
     if (loanType === "taken") {
       setValue("borrowerName", "")
@@ -72,7 +68,7 @@ const LoanForm = ({ loanId, open, onClose }: LoanFormProps) => {
   const [updateLoan] = useUpdateLoanMutation()
   const { data: singleLoan, isLoading } = useGetSingleLoanQuery(
     loanId!,
-    { skip: !loanId } // don't call API if no loanId
+    { skip: !loanId }
   )
 
   const handleSubmit = async (data: FieldValues) => {

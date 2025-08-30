@@ -23,13 +23,6 @@ import {
   LinearProgress,
   Avatar,
   Stack,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  MenuItem,
-  Paper,
-  Alert,
   Pagination,
 } from "@mui/material"
 import {
@@ -47,7 +40,6 @@ import {
 } from "@mui/icons-material"
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts"
 import LoanForm from "./__components/LoanForm"
-import { Loan } from "@/types"
 import Swal from "sweetalert2"
 import { useDeleteLoanMutation, useGetAllLoansQuery } from "@/redux/api/loanApi"
 
@@ -62,7 +54,6 @@ const LoanDashboard = () => {
   const [formOpen, setFormOpen] = useState(false)
   const [editingLoanId, setEditingLoanId] = useState<string | undefined>(undefined)
 
-  // Map API response to expected Loan format
   useEffect(() => {
     if (loanData?.data?.data) {
       setLoans(loanData.data.data)
@@ -77,7 +68,6 @@ const LoanDashboard = () => {
   const totalLoansTaken = loansTaken.reduce((sum, loan) => sum + loan.loan_amount, 0)
   const netPosition = totalLoansGiven - totalLoansTaken
 
-  const activeLoans = loans.filter((loan) => loan.status === "active").length
   const totalMonthlyPayments = loans
     .filter((loan) => loan.status === "active")
     .reduce((sum, loan) => sum + (loan.monthly_installment || 0), 0)
@@ -148,10 +138,6 @@ const LoanDashboard = () => {
     setFormOpen(true)
   }
 
-  const handleFormSuccess = () => {
-    setFormOpen(false)
-    refetch()
-  }
 
   const getStatusColor = (status: string) => {
     switch (status) {

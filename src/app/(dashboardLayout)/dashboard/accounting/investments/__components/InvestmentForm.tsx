@@ -1,322 +1,298 @@
-'use client'
-
-import React from "react"
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import {
     Dialog,
     DialogTitle,
     DialogContent,
     DialogActions,
-    Typography,
     Paper,
-    Grid,
-    TextField,
-    MenuItem,
+    Typography,
     Box,
+    Grid,
     Button,
 } from "@mui/material"
 import {
-    TrendingUp as TrendingUpIcon,
-    Save as SaveIcon,
+    AccountBalanceWallet as AccountBalanceWalletIcon,
     Cancel as CancelIcon,
+    Save as SaveIcon,
 } from "@mui/icons-material"
+import CraftForm from "@/components/Forms/Form"
+import CraftSelect from "@/components/Forms/Select"
+import CraftInput from "@/components/Forms/Input"
+import CraftDatePicker from "@/components/Forms/DatePicker"
+import { FieldValues, useFormContext } from "react-hook-form"
+import {
+    useCreateInvestmentMutation,
+    useUpdateInvestmentMutation,
+    useGetSingleInvestmentQuery,
+} from "@/redux/api/investmentApi"
+import toast from "react-hot-toast"
+import { useEffect, useRef } from "react"
 
-type InvestmentStatus = "ACTIVE" | "MATURED" | "CLOSED"
-
-interface Investment {
-    id: string
-    name: string
-    type: string
-    principalAmount: number
-    currentValue: number
-    maturityDate?: Date
-    interestRate?: number
-    status: InvestmentStatus
-    createdAt: Date
-}
-
-interface InvestmentFormDialogProps {
+interface InvestmentFormProps {
     open: boolean
     onClose: () => void
-    editingInvestment: Investment | null
-    setEditingInvestment: React.Dispatch<React.SetStateAction<Investment | null>>
-    handleSaveInvestment: (investmentData: Omit<Investment, "id" | "createdAt">) => void
-    formatCurrency: (amount: number) => string
+    investmentId?: string
 }
 
-const InvestmentFormDialog: React.FC<InvestmentFormDialogProps> = ({
-    open,
-    onClose,
-    editingInvestment,
-    setEditingInvestment,
-    handleSaveInvestment,
-    formatCurrency
-}) => {
+const InvestmentCategoryDependentFields = () => {
+    const { watch, setValue } = useFormContext()
+    const investmentCategory = watch("investmentCategory")
+    const isInitialMount = useRef(true)
+
+    useEffect(() => {
+        if (isInitialMount.current) {
+            isInitialMount.current = false
+            return
+        }
+
+        if (investmentCategory === "outgoing") {
+            setValue("investorName", "")
+            setValue("investorContact", "")
+            setValue("incomingType", "")
+            setValue("returnPolicy", "")
+        } else if (investmentCategory === "incoming") {
+            setValue("investmentTo", "")
+            setValue("investmentType", "")
+        }
+    }, [investmentCategory, setValue])
+
+    if (investmentCategory === "outgoing") {
+        return (
+            <>
+                <Grid item xs={12} md={6}>
+                    <CraftInput
+                        fullWidth
+                        name="investmentTo"
+                        label="Investment To (Company/Person)"
+                        required
+                    />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                    <CraftSelect
+                        fullWidth
+                        label="Investment Type"
+                        name="investmentType"
+                        items={["fixed_deposit", "share", "bond", "others"]}
+                        required
+                    />
+                </Grid>
+            </>
+        )
+    }
+
+    if (investmentCategory === "incoming") {
+        return (
+            <>
+                <Grid item xs={12} md={6}>
+                    <CraftInput
+                        fullWidth
+                        name="investorName"
+                        label="Investor Name"
+                        required
+                    />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                    <CraftInput
+                        fullWidth
+                        name="investorContact"
+                        label="Investor Contact"
+                        required
+                    />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                    <CraftSelect
+                        fullWidth
+                        label="Incoming Type"
+                        name="incomingType"
+                        items={["donation_fund", "share", "partnership", "others"]}
+                        required
+                    />
+                </Grid>
+                <Grid item xs={12} md={6}>
+                    <CraftInput
+                        fullWidth
+                        name="returnPolicy"
+                        label="Return Policy"
+                        multiline
+                        rows={3}
+                    />
+                </Grid>
+            </>
+        )
+    }
+
+    return null
+}
+
+const InvestmentForm = ({ investmentId, open, onClose }: InvestmentFormProps) => {
+    const [createInvestment] = useCreateInvestmentMutation()
+    const [updateInvestment] = useUpdateInvestmentMutation()
+    const { data: singleInvestment, isLoading } = useGetSingleInvestmentQuery(
+        investmentId!,
+        { skip: !investmentId }
+    )
+
+    const handleSubmit = async (data: FieldValues) => {
+        console.log('raw data', data)
+        try {
+            let res
+
+            const submitData = {
+                ...data,
+                investmentAmount: Number(data.investmentAmount),
+                returnRate: data.returnRate ? Number(data.returnRate) : undefined,
+            }
+
+            if (investmentId) {
+                res = await updateInvestment({ id: investmentId, data: submitData }).unwrap()
+            } else {
+                res = await createInvestment(submitData).unwrap()
+            }
+
+            if (res.success) {
+                toast.success(res.message || (investmentId ? "Investment updated successfully!" : "Investment added successfully!"))
+                onClose()
+            } else {
+                toast.error(res.message || "Operation failed!")
+            }
+        } catch (error) {
+            console.error("Failed to submit Investment:", error)
+            toast.error("Something went wrong!")
+        }
+    }
+
+    const defaultValues = {
+        investmentCategory: singleInvestment?.data?.investmentCategory || "",
+        investmentTo: singleInvestment?.data?.investmentTo || "",
+        investmentType: singleInvestment?.data?.investmentType || "",
+        investorName: singleInvestment?.data?.investorName || "",
+        investorContact: singleInvestment?.data?.investorContact || "",
+        incomingType: singleInvestment?.data?.incomingType || "",
+        returnPolicy: singleInvestment?.data?.returnPolicy || "",
+        investmentAmount: singleInvestment?.data?.investmentAmount || "",
+        investmentDate: singleInvestment?.data?.investmentDate || "",
+        maturityDate: singleInvestment?.data?.maturityDate || "",
+        returnRate: singleInvestment?.data?.returnRate || "",
+        status: singleInvestment?.data?.status || "active",
+    }
+
     return (
-        <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-            <DialogTitle
-                sx={{
-                    background: "linear-gradient(135deg, #F59E0B 0%, #D97706 100%)",
-                    color: "white",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 2,
-                }}
-            >
-                <TrendingUpIcon />
-                <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                    {editingInvestment ? "Edit Investment" : "New Investment"}
-                </Typography>
-            </DialogTitle>
-
-            <DialogContent sx={{ p: 4 }}>
-                <Box sx={{ mb: 4 }}>
-                    {/* Investment Form */}
-                    <Paper sx={{ p: 3, borderRadius: 3, boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }}>
-                        <Typography variant="h6" sx={{ fontWeight: 600, mb: 3, color: "#1F2937" }}>
-                            Investment Details
-                        </Typography>
-                        <Grid container spacing={3}>
-                            <Grid item xs={12} md={6}>
-                                <TextField
-                                    fullWidth
-                                    label="Investment Name"
-                                    value={editingInvestment?.name || ""}
-                                    onChange={(e) =>
-                                        setEditingInvestment({
-                                            ...editingInvestment!,
-                                            name: e.target.value,
-                                        })
-                                    }
-                                    required
-                                    sx={{
-                                        "& .MuiOutlinedInput-root": {
-                                            borderRadius: 2,
-                                            "&:hover fieldset": { borderColor: "#F59E0B" },
-                                            "&.Mui-focused fieldset": { borderColor: "#F59E0B" },
-                                        },
-                                    }}
-                                />
-                            </Grid>
-                            <Grid item xs={12} md={6}>
-                                <TextField
-                                    fullWidth
-                                    label="Investment Type"
-                                    select
-                                    value={editingInvestment?.type || ""}
-                                    onChange={(e) =>
-                                        setEditingInvestment({
-                                            ...editingInvestment!,
-                                            type: e.target.value,
-                                        })
-                                    }
-                                    required
-                                    sx={{
-                                        "& .MuiOutlinedInput-root": {
-                                            borderRadius: 2,
-                                            "&:hover fieldset": { borderColor: "#F59E0B" },
-                                            "&.Mui-focused fieldset": { borderColor: "#F59E0B" },
-                                        },
-                                    }}
-                                >
-                                    <MenuItem value="Fixed Deposit">Fixed Deposit</MenuItem>
-                                    <MenuItem value="Mutual Fund">Mutual Fund</MenuItem>
-                                    <MenuItem value="Government Bond">Government Bond</MenuItem>
-                                    <MenuItem value="Corporate Bond">Corporate Bond</MenuItem>
-                                    <MenuItem value="Stock Investment">Stock Investment</MenuItem>
-                                    <MenuItem value="Real Estate">Real Estate</MenuItem>
-                                    <MenuItem value="Education Fund">Education Fund</MenuItem>
-                                    <MenuItem value="Emergency Fund">Emergency Fund</MenuItem>
-                                    <MenuItem value="Other">Other</MenuItem>
-                                </TextField>
-                            </Grid>
-                            <Grid item xs={12} md={6}>
-                                <TextField
-                                    fullWidth
-                                    label="Principal Amount (₹)"
-                                    type="number"
-                                    value={editingInvestment?.principalAmount || ""}
-                                    onChange={(e) =>
-                                        setEditingInvestment({
-                                            ...editingInvestment!,
-                                            principalAmount: Number(e.target.value),
-                                        })
-                                    }
-                                    inputProps={{ min: 0, step: 0.01 }}
-                                    required
-                                    sx={{
-                                        "& .MuiOutlinedInput-root": {
-                                            borderRadius: 2,
-                                            "&:hover fieldset": { borderColor: "#F59E0B" },
-                                            "&.Mui-focused fieldset": { borderColor: "#F59E0B" },
-                                        },
-                                    }}
-                                />
-                            </Grid>
-                            <Grid item xs={12} md={6}>
-                                <TextField
-                                    fullWidth
-                                    label="Current Value (₹)"
-                                    type="number"
-                                    value={editingInvestment?.currentValue || ""}
-                                    onChange={(e) =>
-                                        setEditingInvestment({
-                                            ...editingInvestment!,
-                                            currentValue: Number(e.target.value),
-                                        })
-                                    }
-                                    inputProps={{ min: 0, step: 0.01 }}
-                                    required
-                                    sx={{
-                                        "& .MuiOutlinedInput-root": {
-                                            borderRadius: 2,
-                                            "&:hover fieldset": { borderColor: "#F59E0B" },
-                                            "&.Mui-focused fieldset": { borderColor: "#F59E0B" },
-                                        },
-                                    }}
-                                />
-                            </Grid>
-                            <Grid item xs={12} md={6}>
-                                <TextField
-                                    fullWidth
-                                    label="Interest Rate (%)"
-                                    type="number"
-                                    value={editingInvestment?.interestRate || ""}
-                                    onChange={(e) =>
-                                        setEditingInvestment({
-                                            ...editingInvestment!,
-                                            interestRate: Number(e.target.value),
-                                        })
-                                    }
-                                    inputProps={{ min: 0, step: 0.01 }}
-                                    sx={{
-                                        "& .MuiOutlinedInput-root": {
-                                            borderRadius: 2,
-                                            "&:hover fieldset": { borderColor: "#F59E0B" },
-                                            "&.Mui-focused fieldset": { borderColor: "#F59E0B" },
-                                        },
-                                    }}
-                                />
-                            </Grid>
-                            <Grid item xs={12} md={6}>
-                                <TextField
-                                    fullWidth
-                                    label="Maturity Date"
-                                    type="date"
-                                    value={
-                                        editingInvestment?.maturityDate
-                                            ? new Date(editingInvestment.maturityDate).toISOString().split("T")[0]
-                                            : ""
-                                    }
-                                    onChange={(e) =>
-                                        setEditingInvestment({
-                                            ...editingInvestment!,
-                                            maturityDate: new Date(e.target.value),
-                                        })
-                                    }
-                                    InputLabelProps={{ shrink: true }}
-                                    sx={{
-                                        "& .MuiOutlinedInput-root": {
-                                            borderRadius: 2,
-                                            "&:hover fieldset": { borderColor: "#F59E0B" },
-                                            "&.Mui-focused fieldset": { borderColor: "#F59E0B" },
-                                        },
-                                    }}
-                                />
-                            </Grid>
-                        </Grid>
-                    </Paper>
-
-                    {/* Investment Performance */}
-                    {editingInvestment?.principalAmount && editingInvestment?.currentValue && (
-                        <Paper sx={{ p: 3, mt: 3, borderRadius: 3, boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }}>
-                            <Typography variant="h6" sx={{ fontWeight: 600, mb: 3, color: "#1F2937" }}>
-                                Performance Summary
+        <>
+            {isLoading ? (
+                <h2>Loading...</h2>
+            ) : (
+                <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
+                    <CraftForm onSubmit={handleSubmit} defaultValues={defaultValues}>
+                        <DialogTitle
+                            sx={{
+                                background: "linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)",
+                                color: "white",
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 2,
+                            }}
+                        >
+                            <AccountBalanceWalletIcon />
+                            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                                {investmentId ? "Edit Investment" : "New Investment"}
                             </Typography>
-                            <Grid container spacing={3}>
-                                <Grid item xs={12} md={4}>
-                                    <Box sx={{ textAlign: "center", p: 2, bgcolor: "#F9FAFB", borderRadius: 2 }}>
-                                        <Typography variant="h5" sx={{ fontWeight: 700, color: "#059669" }}>
-                                            {(
-                                                ((editingInvestment.currentValue - editingInvestment.principalAmount) /
-                                                    editingInvestment.principalAmount) *
-                                                100
-                                            ).toFixed(2)}
-                                            %
-                                        </Typography>
-                                        <Typography variant="body2" sx={{ color: "#6B7280", fontWeight: 500 }}>
-                                            Return Rate
-                                        </Typography>
-                                    </Box>
-                                </Grid>
-                                <Grid item xs={12} md={4}>
-                                    <Box sx={{ textAlign: "center", p: 2, bgcolor: "#F9FAFB", borderRadius: 2 }}>
-                                        <Typography variant="h5" sx={{ fontWeight: 700, color: "#1F2937" }}>
-                                            {formatCurrency(editingInvestment.currentValue - editingInvestment.principalAmount)}
-                                        </Typography>
-                                        <Typography variant="body2" sx={{ color: "#6B7280", fontWeight: 500 }}>
-                                            Profit/Loss
-                                        </Typography>
-                                    </Box>
-                                </Grid>
-                                <Grid item xs={12} md={4}>
-                                    <Box sx={{ textAlign: "center", p: 2, bgcolor: "#F9FAFB", borderRadius: 2 }}>
-                                        <Typography
-                                            variant="h5"
-                                            sx={{
-                                                fontWeight: 700,
-                                                color:
-                                                    editingInvestment.currentValue >= editingInvestment.principalAmount
-                                                        ? "#059669"
-                                                        : "#DC2626",
-                                            }}
-                                        >
-                                            {editingInvestment.currentValue >= editingInvestment.principalAmount
-                                                ? "Profitable"
-                                                : "Loss"}
-                                        </Typography>
-                                        <Typography variant="body2" sx={{ color: "#6B7280", fontWeight: 500 }}>
-                                            Status
-                                        </Typography>
-                                    </Box>
-                                </Grid>
-                            </Grid>
-                        </Paper>
-                    )}
-                </Box>
-            </DialogContent>
+                        </DialogTitle>
 
-            <DialogActions sx={{ p: 3, bgcolor: "#F9FAFB" }}>
-                <Button
-                    onClick={onClose}
-                    startIcon={<CancelIcon />}
-                    variant="outlined"
-                    sx={{
-                        borderColor: "#D1D5DB",
-                        color: "#6B7280",
-                        "&:hover": { borderColor: "#9CA3AF", bgcolor: "#F3F4F6" },
-                    }}
-                >
-                    Cancel
-                </Button>
-                <Button
-                    onClick={() => {
-                        if (editingInvestment) {
-                            handleSaveInvestment(editingInvestment)
-                        }
-                    }}
-                    startIcon={<SaveIcon />}
-                    variant="contained"
-                    sx={{
-                        bgcolor: "#F59E0B",
-                        "&:hover": { bgcolor: "#D97706" },
-                        fontWeight: 600,
-                    }}
-                >
-                    {editingInvestment ? "Update" : "Create"} Investment
-                </Button>
-            </DialogActions>
-        </Dialog>
+                        <DialogContent sx={{ p: 4 }}>
+                            <Box sx={{ mb: 4 }}>
+                                <Paper sx={{ p: 3, borderRadius: 3, boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }}>
+                                    <Typography variant="h6" sx={{ fontWeight: 600, mb: 3, color: "#1F2937" }}>
+                                        Investment Details
+                                    </Typography>
+                                    <Grid container spacing={3}>
+                                        <Grid item xs={12} md={6}>
+                                            <CraftSelect
+                                                fullWidth
+                                                label="Investment Category"
+                                                name="investmentCategory"
+                                                items={["outgoing", "incoming"]}
+                                                required
+                                            />
+                                        </Grid>
+
+                                        <InvestmentCategoryDependentFields />
+
+                                        <Grid item xs={12} md={6}>
+                                            <CraftInput
+                                                fullWidth
+                                                name="investmentAmount"
+                                                label="Investment Amount"
+                                                type="number"
+                                                required
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} md={6}>
+                                            <CraftInput
+                                                fullWidth
+                                                name="returnRate"
+                                                label="Return Rate (%)"
+                                                type="number"
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} md={6}>
+                                            <CraftDatePicker
+                                                fullWidth
+                                                name="investmentDate"
+                                                label="Investment Date"
+                                                required
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} md={6}>
+                                            <CraftDatePicker
+                                                fullWidth
+                                                name="maturityDate"
+                                                label="Maturity Date"
+                                            />
+                                        </Grid>
+                                        <Grid item xs={12} md={6}>
+                                            <CraftSelect
+                                                fullWidth
+                                                label="Status"
+                                                name="status"
+                                                items={["active", "closed", "withdrawn"]}
+                                            />
+                                        </Grid>
+                                    </Grid>
+                                </Paper>
+                            </Box>
+                        </DialogContent>
+
+                        <DialogActions sx={{ p: 3, bgcolor: "#F9FAFB" }}>
+                            <Button
+                                onClick={onClose}
+                                startIcon={<CancelIcon />}
+                                variant="outlined"
+                                sx={{
+                                    borderColor: "#D1D5DB",
+                                    color: "#6B7280",
+                                    "&:hover": { borderColor: "#9CA3AF", bgcolor: "#F3F4F6" },
+                                }}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                type="submit"
+                                startIcon={<SaveIcon />}
+                                variant="contained"
+                                sx={{
+                                    bgcolor: "#3B82F6",
+                                    "&:hover": { bgcolor: "#1D4ED8" },
+                                    fontWeight: 600,
+                                }}
+                            >
+                                {investmentId ? "Update" : "Create"} Investment
+                            </Button>
+                        </DialogActions>
+                    </CraftForm>
+                </Dialog>
+            )}
+        </>
     )
 }
 
-export default InvestmentFormDialog
+export default InvestmentForm

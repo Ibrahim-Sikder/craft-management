@@ -1,8 +1,8 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
-import React, { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Box,
   Card,
@@ -26,10 +26,7 @@ import {
   Paper,
   Menu,
   MenuItem,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
+  Pagination,
 } from "@mui/material"
 import {
   Search as SearchIcon,
@@ -43,99 +40,85 @@ import {
   MoreVert as MoreVertIcon,
   FilterList as FilterListIcon,
   GetApp as GetAppIcon,
-  CheckCircle as CheckCircleIcon,
-  Warning as WarningIcon,
-  Save as SaveIcon,
-  Cancel as CancelIcon,
 } from "@mui/icons-material"
 import { PieChart, Pie, Cell, ResponsiveContainer, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip } from "recharts"
-import InvestmentFormDialog from "./__components/InvestmentForm"
+import InvestmentForm from "./__components/InvestmentForm"
+import Swal from "sweetalert2"
+import { useDeleteInvestmentMutation, useGetAllInvestmentsQuery } from "@/redux/api/investmentApi"
+import { formatCurrency } from "@/utils/formaters"
+import { formatDate } from "@/utils/formateDate"
 
-// Define types
-type InvestmentStatus = "ACTIVE" | "MATURED" | "CLOSED"
-
+// Define types based on your backend response
 interface Investment {
-  id: string
-  name: string
-  type: string
-  principalAmount: number
-  currentValue: number
-  maturityDate?: Date
-  interestRate?: number
-  status: InvestmentStatus
-  createdAt: Date
+  _id: string
+  investmentCategory: string
+  investmentTo: string
+  investmentType: string
+  investorName: string
+  investorContact: string
+  incomingType: string
+  returnPolicy: string
+  investmentAmount: number
+  investmentDate: string
+  maturityDate: string
+  returnRate: number
+  status: string
+  createdAt: string
+  updatedAt: string
 }
 
-// Sample data
-const initialInvestments: Investment[] = [
-  {
-    id: "1",
-    name: "Tech Growth Fund",
-    type: "Mutual Fund",
-    principalAmount: 500000,
-    currentValue: 650000,
-    maturityDate: new Date(2025, 11, 15),
-    interestRate: 12.5,
-    status: "ACTIVE",
-    createdAt: new Date(2023, 0, 15),
-  },
-  {
-    id: "2",
-    name: "Government Bonds",
-    type: "Government Bond",
-    principalAmount: 300000,
-    currentValue: 315000,
-    maturityDate: new Date(2024, 5, 20),
-    interestRate: 5.0,
-    status: "ACTIVE",
-    createdAt: new Date(2022, 8, 10),
-  },
-  {
-    id: "3",
-    name: "Real Estate Investment",
-    type: "Real Estate",
-    principalAmount: 1000000,
-    currentValue: 1250000,
-    maturityDate: new Date(2030, 2, 10),
-    interestRate: 8.2,
-    status: "ACTIVE",
-    createdAt: new Date(2021, 3, 22),
-  },
-  {
-    id: "4",
-    name: "Fixed Deposit",
-    type: "Fixed Deposit",
-    principalAmount: 200000,
-    currentValue: 212000,
-    maturityDate: new Date(2023, 11, 5),
-    interestRate: 6.0,
-    status: "MATURED",
-    createdAt: new Date(2022, 11, 5),
-  },
-]
+interface InvestmentApiResponse {
+  data: {
+    investments: Investment[]
+    meta: {
+      page: number
+      limit: number
+      total: number
+      totalPage: number
+    }
+  }
+  message: string
+  success: boolean
+}
 
 const COLORS = ["#F59E0B", "#EC4899", "#8B5CF6", "#10B981", "#3B82F6"]
 
 export default function FinanceDashboard() {
-  const [investments, setInvestments] = useState<Investment[]>(initialInvestments)
-  const [investmentFormOpen, setInvestmentFormOpen] = useState(false)
-  const [editingInvestment, setEditingInvestment] = useState<Investment | null>(null)
+  const [page, setPage] = useState(1)
+  const [limit] = useState(10)
+  const { data: investmentResponse, isLoading, refetch } = useGetAllInvestmentsQuery({ page, limit })
+  const [deleteInvestment] = useDeleteInvestmentMutation()
+  const [investments, setInvestments] = useState<Investment[]>([])
   const [searchTerm, setSearchTerm] = useState("")
   const [statusFilter, setStatusFilter] = useState<string>("ALL")
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [selectedItem, setSelectedItem] = useState<{ type: "investment"; id: string } | null>(null)
+  const [investmentFormOpen, setInvestmentFormOpen] = useState(false)
+  const [editingInvestmentId, setEditingInvestmentId] = useState<string | null>(null)
+
+  // Map API response to state
+  useEffect(() => {
+    if (investmentResponse?.data?.investments) {
+      setInvestments(investmentResponse.data.investments)
+    }
+  }, [investmentResponse])
+
+  console.log('invest', investmentResponse)
 
   // Calculate metrics for investments
-  const totalInvestmentValue = investments.reduce((sum, inv) => sum + inv.currentValue, 0)
-  const totalPrincipal = investments.reduce((sum, inv) => sum + inv.principalAmount, 0)
-  const totalReturns = totalInvestmentValue - totalPrincipal
-  const avgROI = totalPrincipal > 0 ? (totalReturns / totalPrincipal) * 100 : 0
-  const activeInvestments = investments.filter((inv) => inv.status === "ACTIVE").length
+  const totalInvestmentValue = investments.reduce((sum, inv) => sum + inv.investmentAmount, 0)
+  const totalReturns = investments.reduce((sum, inv) => {
+    const returns = (inv.investmentAmount * inv.returnRate) / 100
+    return sum + returns
+  }, 0)
+  const avgROI = totalInvestmentValue > 0 ? (totalReturns / totalInvestmentValue) * 100 : 0
+  const activeInvestments = investments.filter((inv) => inv.status === "active").length
 
   // Prepare chart data
   const investmentTypeDistribution = investments.reduce(
     (acc, inv) => {
-      acc[inv.type] = (acc[inv.type] || 0) + inv.currentValue
+      const type = inv.investmentCategory === "outgoing" ? inv.investmentType : inv.incomingType
+      acc[type] = (acc[type] || 0) + inv.investmentAmount
       return acc
     },
     {} as Record<string, number>,
@@ -146,57 +129,69 @@ export default function FinanceDashboard() {
     value,
   }))
 
-  const investmentPerformanceData = investments.map((inv) => ({
-    name: inv.name.substring(0, 15) + (inv.name.length > 15 ? "..." : ""),
-    principal: inv.principalAmount,
-    current: inv.currentValue,
-    returns: inv.currentValue - inv.principalAmount,
-  }))
+  const investmentPerformanceData = investments.map((inv) => {
+    const returns = (inv.investmentAmount * inv.returnRate) / 100
+    return {
+      name: (inv.investmentCategory === "outgoing" ? inv.investmentTo : inv.investorName)?.substring(0, 15) +
+        ((inv.investmentCategory === "outgoing" ? inv.investmentTo : inv.investorName)?.length > 15 ? "..." : ""),
+      principal: inv.investmentAmount,
+      current: inv.investmentAmount + returns,
+      returns: returns,
+    }
+  })
 
   // Filter investments
   const filteredInvestments = investments.filter((investment) => {
-    const matchesSearch =
-      investment.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      investment.type.toLowerCase().includes(searchTerm.toLowerCase())
+    const name = investment.investmentCategory === "outgoing"
+      ? investment.investmentTo
+      : investment.investorName
+    const matchesSearch = name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      investment.investmentType?.toLowerCase().includes(searchTerm.toLowerCase())
     const matchesStatus = statusFilter === "ALL" || investment.status === statusFilter
     return matchesSearch && matchesStatus
   })
 
+
+  const handleDelete = async (id: string) => {
+    try {
+      const result = await Swal.fire({
+        title: "Are you sure?",
+        text: "You want to delete this investment?",
+        icon: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#3085d6",
+        cancelButtonColor: "#d33",
+        confirmButtonText: "Yes, delete it!"
+      })
+
+      if (result.isConfirmed) {
+        await deleteInvestment(id).unwrap()
+        refetch()
+
+        Swal.fire({
+          title: "Deleted!",
+          text: "Investment has been deleted successfully.",
+          icon: "success"
+        })
+      }
+    } catch (err: any) {
+      Swal.fire({
+        title: "Error!",
+        text: err.data?.message || "Failed to delete investment",
+        icon: "error"
+      })
+    }
+  }
+
   // Handlers for investments
   const handleAddInvestment = () => {
-    setEditingInvestment(null)
+    setEditingInvestmentId(null)
     setInvestmentFormOpen(true)
   }
 
-  const handleEditInvestment = (investment: Investment) => {
-    setEditingInvestment(investment)
+  const handleEditInvestment = (id: string) => {
+    setEditingInvestmentId(id)
     setInvestmentFormOpen(true)
-  }
-
-  const handleDeleteInvestment = (id: string) => {
-    setInvestments(investments.filter((investment) => investment.id !== id))
-  }
-
-  const handleSaveInvestment = (investmentData: Omit<Investment, "id" | "createdAt">) => {
-    if (editingInvestment) {
-      // Update existing investment
-      setInvestments(
-        investments.map((investment) =>
-          investment.id === editingInvestment.id
-            ? { ...investmentData, id: editingInvestment.id, createdAt: editingInvestment.createdAt }
-            : investment
-        )
-      )
-    } else {
-      // Add new investment
-      const newInvestment = {
-        ...investmentData,
-        id: Math.max(...investments.map((i) => parseInt(i.id))) + 1 + "",
-        createdAt: new Date(),
-      }
-      setInvestments([...investments, newInvestment as Investment])
-    }
-    setInvestmentFormOpen(false)
   }
 
   // Context menu handlers
@@ -210,56 +205,25 @@ export default function FinanceDashboard() {
     setSelectedItem(null)
   }
 
-  const handleContextEdit = () => {
-    if (selectedItem) {
-      const investment = investments.find((i) => i.id === selectedItem.id)
-      if (investment) handleEditInvestment(investment)
-    }
-    handleMenuClose()
-  }
 
-  const handleContextDelete = () => {
-    if (selectedItem) {
-      handleDeleteInvestment(selectedItem.id)
-    }
-    handleMenuClose()
-  }
+
 
   // Helper functions
   const getStatusColor = (status: string) => {
     switch (status) {
-      case "ACTIVE":
+      case "active":
         return "success"
-      case "MATURED":
+      case "closed":
         return "info"
-      case "CLOSED":
+      case "withdrawn":
         return "default"
       default:
         return "default"
     }
   }
 
-  const getROIColor = (roi: number) => {
-    if (roi > 10) return "#10B981"
-    if (roi > 5) return "#F59E0B"
-    return "#EF4444"
-  }
 
-  const formatCurrency = (amount: number) => {
-    return new Intl.NumberFormat("en-IN", {
-      style: "currency",
-      currency: "INR",
-      maximumFractionDigits: 0,
-    }).format(amount)
-  }
 
-  const formatDate = (date: Date) => {
-    return new Intl.DateTimeFormat("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    }).format(new Date(date))
-  }
 
   return (
     <Box sx={{ p: 3, backgroundColor: "#F9FAFB", minHeight: "100vh", width: '100%' }}>
@@ -330,14 +294,14 @@ export default function FinanceDashboard() {
               <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <Box>
                   <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
-                    {formatCurrency(totalPrincipal)}
+                    {formatCurrency(totalReturns)}
                   </Typography>
                   <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                    Total Principal
+                    Total Returns
                   </Typography>
                 </Box>
                 <Avatar sx={{ bgcolor: "rgba(255,255,255,0.2)", width: 56, height: 56 }}>
-                  <AccountBalanceIcon sx={{ fontSize: 28 }} />
+                  <TrendingUpIcon sx={{ fontSize: 28 }} />
                 </Avatar>
               </Box>
             </CardContent>
@@ -357,13 +321,13 @@ export default function FinanceDashboard() {
               <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <Box>
                   <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
-                    {formatCurrency(totalReturns)}
+                    {avgROI.toFixed(1)}%
                   </Typography>
                   <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                    Total Returns
+                    Average ROI
                   </Typography>
                 </Box>
-                <Avatar sx={{ bgcolor: "rgba(255,255,255,0.2)", width: 56, height: 56 }}>
+                <Avatar sx={{ bgcolor: "rgarea(255,255,255,0.2)", width: 56, height: 56 }}>
                   <TrendingUpIcon sx={{ fontSize: 28 }} />
                 </Avatar>
               </Box>
@@ -384,14 +348,14 @@ export default function FinanceDashboard() {
               <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <Box>
                   <Typography variant="h4" sx={{ fontWeight: 700, mb: 1 }}>
-                    {avgROI.toFixed(1)}%
+                    {activeInvestments}
                   </Typography>
                   <Typography variant="body2" sx={{ opacity: 0.9 }}>
-                    Average ROI
+                    Active Investments
                   </Typography>
                 </Box>
                 <Avatar sx={{ bgcolor: "rgba(255,255,255,0.2)", width: 56, height: 56 }}>
-                  <TrendingUpIcon sx={{ fontSize: 28 }} />
+                  <AccountBalanceIcon sx={{ fontSize: 28 }} />
                 </Avatar>
               </Box>
             </CardContent>
@@ -399,43 +363,7 @@ export default function FinanceDashboard() {
         </Grid>
       </Grid>
 
-      {/* Filters */}
-      <Paper sx={{ borderRadius: 3, boxShadow: "0 4px 20px rgba(0,0,0,0.08)", mb: 3, p: 3 }}>
-        <Grid container spacing={3} alignItems="center">
-          <Grid item xs={12} md={8}>
-            <TextField
-              fullWidth
-              placeholder="Search investments..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <SearchIcon sx={{ color: "#9CA3AF" }} />
-                  </InputAdornment>
-                ),
-              }}
-              sx={{
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: 2,
-                  "&:hover fieldset": { borderColor: "#F59E0B" },
-                  "&.Mui-focused fieldset": { borderColor: "#F59E0B" },
-                },
-              }}
-            />
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <Stack direction="row" spacing={1} justifyContent="flex-end">
-              <Button startIcon={<FilterListIcon />} variant="outlined" size="small">
-                Filter
-              </Button>
-              <Button startIcon={<GetAppIcon />} variant="outlined" size="small">
-                Export
-              </Button>
-            </Stack>
-          </Grid>
-        </Grid>
-      </Paper>
+
 
       {/* Investment Charts */}
       <Grid container spacing={3} sx={{ mb: 4 }}>
@@ -487,7 +415,33 @@ export default function FinanceDashboard() {
           </Card>
         </Grid>
       </Grid>
+      <Paper sx={{ borderRadius: 3, boxShadow: "0 4px 20px rgba(0,0,0,0.08)", mb: 3, p: 3 }}>
+        <Grid container spacing={3} alignItems="center">
+          <Grid item xs={12} md={8}>
+            <TextField
+              fullWidth
+              placeholder="Search investments..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon sx={{ color: "#9CA3AF" }} />
+                  </InputAdornment>
+                ),
+              }}
+              sx={{
+                "& .MuiOutlinedInput-root": {
+                  borderRadius: 2,
+                  "&:hover fieldset": { borderColor: "#F59E0B" },
+                  "&.Mui-focused fieldset": { borderColor: "#F59E0B" },
+                },
+              }}
+            />
+          </Grid>
 
+        </Grid>
+      </Paper>
       {/* Investment Table */}
       <Card sx={{ borderRadius: 3, boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }}>
         <CardContent sx={{ p: 0 }}>
@@ -497,143 +451,131 @@ export default function FinanceDashboard() {
                 <TableRow sx={{ bgcolor: "#F9FAFB" }}>
                   <TableCell sx={{ fontWeight: 600, color: "#374151" }}>Investment</TableCell>
                   <TableCell sx={{ fontWeight: 600, color: "#374151" }}>Type</TableCell>
-                  <TableCell sx={{ fontWeight: 600, color: "#374151" }}>Principal</TableCell>
-                  <TableCell sx={{ fontWeight: 600, color: "#374151" }}>Current Value</TableCell>
-                  <TableCell sx={{ fontWeight: 600, color: "#374151" }}>Returns</TableCell>
-                  <TableCell sx={{ fontWeight: 600, color: "#374151" }}>ROI</TableCell>
+                  <TableCell sx={{ fontWeight: 600, color: "#374151" }}>Amount</TableCell>
+                  <TableCell sx={{ fontWeight: 600, color: "#374151" }}>Return Rate</TableCell>
+                  <TableCell sx={{ fontWeight: 600, color: "#374151" }}>Expected Returns</TableCell>
+                  <TableCell sx={{ fontWeight: 600, color: "#374151" }}>Investment Date</TableCell>
                   <TableCell sx={{ fontWeight: 600, color: "#374151" }}>Status</TableCell>
                   <TableCell sx={{ fontWeight: 600, color: "#374151" }}>Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {filteredInvestments.map((investment) => {
-                  const returns = investment.currentValue - investment.principalAmount
-                  const roi = (returns / investment.principalAmount) * 100
+                {isLoading ? (
+                  <TableRow>
+                    <TableCell colSpan={8} align="center" sx={{ py: 3 }}>
+                      <LinearProgress />
+                    </TableCell>
+                  </TableRow>
+                ) : filteredInvestments.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={8} align="center" sx={{ py: 3 }}>
+                      <Typography variant="body2" sx={{ color: "#6B7280" }}>
+                        No investments found
+                      </Typography>
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredInvestments.map((investment) => {
+                    const returns = (investment.investmentAmount * investment.returnRate) / 100
+                    const name = investment.investmentCategory === "outgoing"
+                      ? investment.investmentTo
+                      : investment.investorName
 
-                  return (
-                    <TableRow key={investment.id} sx={{ "&:hover": { bgcolor: "#F9FAFB" } }}>
-                      <TableCell>
-                        <Box>
-                          <Typography variant="body2" sx={{ fontWeight: 600, color: "#1F2937" }}>
-                            {investment.name}
-                          </Typography>
-                          <Typography variant="caption" sx={{ color: "#6B7280" }}>
-                            {investment.maturityDate
-                              ? `Matures: ${formatDate(investment.maturityDate)}`
-                              : "No maturity date"}
-                          </Typography>
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={investment.type}
-                          size="small"
-                          sx={{
-                            bgcolor: "rgba(245, 158, 11, 0.1)",
-                            color: "#D97706",
-                            fontWeight: 500,
-                          }}
-                        />
-                      </TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>
-                        {formatCurrency(investment.principalAmount)}
-                      </TableCell>
-                      <TableCell sx={{ fontWeight: 600, color: "#059669" }}>
-                        {formatCurrency(investment.currentValue)}
-                      </TableCell>
-                      <TableCell>
-                        <Typography
-                          variant="body2"
-                          sx={{
-                            fontWeight: 600,
-                            color: returns >= 0 ? "#059669" : "#DC2626",
-                          }}
-                        >
-                          {returns >= 0 ? "+" : ""}
-                          {formatCurrency(returns)}
-                        </Typography>
-                      </TableCell>
-                      <TableCell>
-                        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                          <Typography
-                            variant="body2"
+                    return (
+                      <TableRow key={investment._id} sx={{ "&:hover": { bgcolor: "#F9FAFB" } }}>
+                        <TableCell>
+                          <Box>
+                            <Typography variant="body2" sx={{ fontWeight: 600, color: "#1F2937" }}>
+                              {name}
+                            </Typography>
+                            <Typography variant="caption" sx={{ color: "#6B7280" }}>
+                              {investment.investmentCategory}
+                            </Typography>
+                          </Box>
+                        </TableCell>
+                        <TableCell>
+                          <Chip
+                            label={investment.investmentCategory === "outgoing"
+                              ? investment.investmentType
+                              : investment.incomingType}
+                            size="small"
                             sx={{
-                              fontWeight: 600,
-                              color: getROIColor(roi),
-                            }}
-                          >
-                            {roi.toFixed(1)}%
-                          </Typography>
-                          <LinearProgress
-                            variant="determinate"
-                            value={Math.min(roi, 20) * 5}
-                            sx={{
-                              width: 40,
-                              height: 4,
-                              borderRadius: 2,
-                              bgcolor: "#E5E7EB",
-                              "& .MuiLinearProgress-bar": {
-                                bgcolor: getROIColor(roi),
-                              },
+                              bgcolor: "rgba(245, 158, 11, 0.1)",
+                              color: "#D97706",
+                              fontWeight: 500,
                             }}
                           />
-                        </Box>
-                      </TableCell>
-                      <TableCell>
-                        <Chip
-                          label={investment.status}
-                          size="small"
-                          color={getStatusColor(investment.status) as any}
-                          variant="filled"
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <Box sx={{ display: "flex", gap: 1 }}>
-                          <IconButton
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>
+                          {formatCurrency(investment.investmentAmount)}
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: 600 }}>
+                          {investment.returnRate}%
+                        </TableCell>
+                        <TableCell sx={{ fontWeight: 600, color: "#059669" }}>
+                          {formatCurrency(returns)}
+                        </TableCell>
+                        <TableCell>
+                          {formatDate(investment.investmentDate)}
+                        </TableCell>
+                        <TableCell>
+                          <Chip
+                            label={investment.status.toUpperCase()}
                             size="small"
-                            onClick={() => handleEditInvestment(investment)}
-                            sx={{ color: "#6B7280", "&:hover": { color: "#F59E0B" } }}
-                          >
-                            <EditIcon fontSize="small" />
-                          </IconButton>
-                          <IconButton
-                            size="small"
-                            onClick={(e) => handleMenuClick(e, "investment", investment.id)}
-                            sx={{ color: "#6B7280", "&:hover": { color: "#DC2626" } }}
-                          >
-                            <MoreVertIcon fontSize="small" />
-                          </IconButton>
-                        </Box>
-                      </TableCell>
-                    </TableRow>
-                  )
-                })}
+                            color={getStatusColor(investment.status) as any}
+                            variant="filled"
+                          />
+                        </TableCell>
+                        <TableCell>
+                          <Box sx={{ display: "flex", gap: 1 }}>
+                            <IconButton
+                              size="small"
+                              onClick={() => handleEditInvestment(investment._id)}
+                              sx={{ color: "#6B7280", "&:hover": { color: "#F59E0B" } }}
+                            >
+                              <EditIcon fontSize="small" />
+                            </IconButton>
+                            <IconButton
+                              size="small"
+                              onClick={() => handleDelete(investment._id)}
+                              sx={{ color: "#6B7280", "&:hover": { color: "#DC2626" } }}
+                            >
+                              <DeleteIcon fontSize="small" />
+                            </IconButton>
+                          </Box>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })
+                )}
               </TableBody>
             </Table>
           </TableContainer>
         </CardContent>
       </Card>
 
-      {/* Context Menu */}
-      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleMenuClose}>
-        <MenuItem onClick={handleContextEdit}>
-          <EditIcon sx={{ mr: 1 }} fontSize="small" />
-          Edit
-        </MenuItem>
-        <MenuItem onClick={handleContextDelete} sx={{ color: "#DC2626" }}>
-          <DeleteIcon sx={{ mr: 1 }} fontSize="small" />
-          Delete
-        </MenuItem>
-      </Menu>
-      <InvestmentFormDialog
+      {/* Pagination */}
+      {investmentResponse?.data?.meta && (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
+          <Pagination
+            count={investmentResponse.data.meta.totalPage}
+            page={page}
+            onChange={(event, value) => setPage(value)}
+            color="primary"
+            showFirstButton
+            showLastButton
+          />
+        </Box>
+      )}
+
+
+
+      {/* Investment Form */}
+      <InvestmentForm
         open={investmentFormOpen}
         onClose={() => setInvestmentFormOpen(false)}
-        editingInvestment={editingInvestment}
-        setEditingInvestment={setEditingInvestment}
-        handleSaveInvestment={handleSaveInvestment}
-        formatCurrency={formatCurrency}
+        investmentId={editingInvestmentId || undefined}
       />
-
     </Box>
   )
 }
