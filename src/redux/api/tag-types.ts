@@ -23,6 +23,7 @@ export const tagTypesList = [
   "admission",
   "hifz-subject",
   'hifz-class',
+  'loan'
   
 ] as const;
 

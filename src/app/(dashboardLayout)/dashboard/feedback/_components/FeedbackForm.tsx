@@ -83,10 +83,8 @@ const FeedbackFormModal: React.FC<FeedbackFormModalProps> = ({ open, onClose, pr
 
             let res;
             if (feedbackId) {
-                // Update existing feedback
                 res = await updateFeedback({ id: feedbackId, data: payload }).unwrap()
             } else {
-                // Create new feedback
                 res = await createFeedback(payload).unwrap()
             }
 

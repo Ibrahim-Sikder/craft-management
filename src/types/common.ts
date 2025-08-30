@@ -45,3 +45,16 @@ export type IGenericErrorMessage = {
   path: string | number;
   message: string;
 };
+
+export type Loan = {
+  id: string | number
+  borrowerLender: string
+  type: "GIVEN" | "TAKEN"
+  principalAmount: number
+  remainingAmount: number
+  interestRate: number
+  startDate: Date
+  maturityDate: Date
+  monthlyPayment?: number
+  status: "ACTIVE" | "PAID" | "OVERDUE" | string
+}
