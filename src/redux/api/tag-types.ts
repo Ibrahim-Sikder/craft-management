@@ -13,7 +13,18 @@ export const tagTypesList = [
   "section",
   "daily-class-report",
   "staff",
-  'session',
+  "session",
+  "feedback",
+  "income",
+  "income-category",
+  "expense-category",
+  "expense",
+  "salary",
+  "admission",
+  "hifz-subject",
+  'hifz-class',
+  'loan',
+  'investment'
   
 ] as const;
 

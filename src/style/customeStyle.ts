@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { styled } from "@mui/material/styles";
+import { keyframes, styled } from "@mui/material/styles";
 import {
   Box,
   Card,
@@ -8,10 +9,41 @@ import {
   alpha,
   Button,
   TextField,
+  Dialog,
+  Select,
+  Paper,
 } from "@mui/material";
 import { TeacherStatus } from "@/interface";
 
-// Styled components
+export const GradientCard = styled(Card)(
+  ({ bgcolor }: { bgcolor: string }) => ({
+    background: bgcolor,
+    color: "white",
+    borderRadius: "20px",
+    transition: "all 0.3s ease-in-out",
+    "&:hover": {
+      transform: "translateY(-8px) scale(1.02)",
+      boxShadow: "0 20px 40px rgba(0,0,0,0.3)",
+    },
+  })
+);
+
+export const GlassCard = styled(Card)({
+  background: "rgba(255, 255, 255, 0.95)",
+  backdropFilter: "blur(20px)",
+  borderRadius: "20px",
+  border: "1px solid rgba(255, 255, 255, 0.3)",
+  boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
+});
+
+export const StyledDialog = styled(Dialog)(({ theme }) => ({
+  "& .MuiDialog-paper": {
+    borderRadius: "20px",
+    background: "linear-gradient(135deg, #ffffff 0%, #f8f9fa 100%)",
+    boxShadow: "0 20px 60px rgba(0, 0, 0, 0.2)",
+  },
+}));
+
 export const StyledCard = styled(Card)(({ theme }) => ({
   position: "relative",
   overflow: "visible",
@@ -212,4 +244,189 @@ export const evaluationStle2 = {
   display: "flex",
   alignItems: "center",
   gap: 1,
+};
+export const SectionCard = styled(Card)(
+  ({ theme, bgcolor }: { theme?: any; bgcolor: string }) => ({
+    background: bgcolor,
+    borderRadius: "20px",
+    border: "none",
+    boxShadow: "0 8px 25px rgba(0, 0, 0, 0.1)",
+    transition: "all 0.3s ease-in-out",
+    "&:hover": {
+      transform: "translateY(-2px)",
+      boxShadow: "0 12px 35px rgba(0, 0, 0, 0.15)",
+    },
+  })
+);
+export const StyledTextField = styled(TextField)({
+  "& .MuiOutlinedInput-root": {
+    borderRadius: "15px",
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
+    transition: "all 0.3s ease-in-out",
+    "&:hover": {
+      backgroundColor: "rgba(255, 255, 255, 0.95)",
+    },
+    "&.Mui-focused": {
+      backgroundColor: "white",
+      "& .MuiOutlinedInput-notchedOutline": {
+        borderWidth: "2px",
+      },
+    },
+  },
+});
+export const StyledSelect = styled(Select)({
+  borderRadius: "15px",
+  backgroundColor: "rgba(255, 255, 255, 0.8)",
+  transition: "all 0.3s ease-in-out",
+  "&:hover": {
+    backgroundColor: "rgba(255, 255, 255, 0.95)",
+  },
+  "&.Mui-focused": {
+    backgroundColor: "white",
+  },
+});
+
+export const GradientButton = styled(Button)(
+  ({ bgcolor }: { bgcolor: string }) => ({
+    background: bgcolor,
+    borderRadius: "25px",
+    padding: "12px 30px",
+    fontWeight: 700,
+    fontSize: "16px",
+    textTransform: "none",
+    boxShadow: "0 8px 25px rgba(156, 39, 176, 0.3)",
+    transition: "all 0.3s ease-in-out",
+    "&:hover": {
+      transform: "translateY(-2px) scale(1.02)",
+      boxShadow: "0 12px 35px rgba(156, 39, 176, 0.4)",
+    },
+  })
+);
+export const cardStyle = {
+  mb: 2,
+  borderRadius: "15px",
+  border: "2px solid #f0f0f0",
+  "&:hover": {
+    border: "2px solid #e0e0e0",
+    boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
+  },
+};
+
+export const StyledTextFieldSx = {
+  "& .MuiOutlinedInput-root": {
+    borderRadius: "15px",
+    backgroundColor: "rgba(255, 255, 255, 0.8)",
+    transition: "all 0.3s ease-in-out",
+    "&:hover": {
+      backgroundColor: "rgba(255, 255, 255, 0.95)",
+    },
+    "&.Mui-focused": {
+      backgroundColor: "white",
+      "& .MuiOutlinedInput-notchedOutline": {
+        borderWidth: "2px",
+      },
+    },
+  },
+};
+
+export const StyledSelectSx = {
+  borderRadius: "15px",
+  backgroundColor: "rgba(255, 255, 255, 0.8)",
+  transition: "all 0.3s ease-in-out",
+  "&:hover": {
+    backgroundColor: "rgba(255, 255, 255, 0.95)",
+  },
+  "&.Mui-focused": {
+    backgroundColor: "white",
+  },
+};
+
+export const islamicColors = {
+  primary: "#1a936f",
+  secondary: "#c45c3e",
+  accent: "#88d498",
+  background: "#f8f5e6",
+  gold: "#d4af37",
+  text: "#2d2d2d",
+  lightText: "#5c5c5c",
+};
+export const departmentColors: Record<string, string> = {
+  "Quran Memorization": "#1a936f",
+  Tajweed: "#88d498",
+  Tafsir: "#c45c3e",
+  "Arabic Language": "#3a7bd5",
+  "Islamic Studies": "#d4af37",
+  Fiqh: "#6a11cb",
+  Hadith: "#fc4a1a",
+  Seerah: "#00b09b",
+  "Not Specified": "#888888",
+};
+
+export const floatAnimation = keyframes`
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+  100% { transform: translateY(0px); }
+`;
+
+export const StyledPaper = styled(Paper)({
+  borderRadius: "16px",
+  overflow: "hidden",
+  position: "relative",
+  border: `1px solid ${alpha(islamicColors.primary, 0.1)}`,
+  background: `linear-gradient(to bottom, #ffffff, ${alpha(islamicColors.background, 0.5)})`,
+  boxShadow: "0 10px 30px rgba(0, 0, 0, 0.08)",
+  "&:before": {
+    content: '""',
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: "4px",
+    background: `linear-gradient(90deg, ${islamicColors.primary}, ${islamicColors.secondary})`,
+  },
+});
+
+export const hifzCard = styled(Card)({
+  position: "relative",
+  border: `1px solid ${alpha(islamicColors.primary, 0.1)}`,
+  overflow: "visible",
+  borderRadius: "16px",
+  background: `linear-gradient(to bottom, #ffffff, ${alpha(islamicColors.background, 0.3)})`,
+  boxShadow: "0 5px 20px rgba(0, 0, 0, 0.05)",
+});
+export const customStyle = {
+  width: "100%",
+
+  display: "flex",
+  justifyContent: "center",
+  backgroundColor: islamicColors.background,
+  backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23${islamicColors.primary.replace("#", "")}' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E")`,
+  py: 4,
+};
+
+export const hifzBox = {
+  p: 3,
+  background: `linear-gradient(135deg, ${islamicColors.primary} 0%, ${islamicColors.secondary} 100%)`,
+  color: "white",
+  borderRadius: "16px 16px 0 0",
+  textAlign: "center",
+  position: "relative",
+  overflow: "hidden",
+  "&:before": {
+    content: '""',
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundImage: `url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h20L0 20z' fill='%23ffffff' fill-opacity='0.1'/%3E%3C/svg%3E")`,
+  },
+};
+
+export const hifzBG = {
+  flexGrow: 1,
+  bgcolor: islamicColors.background,
+  minHeight: "100vh",
+  backgroundImage: `url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM34 90c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm56-76c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zM12 86c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm28-65c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm23-11c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-6 60c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm29 22c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zM32 63c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm57-13c2.76 0 5-2.24 5-5s-2.24-5-5-5-5 2.24-5 5 2.24 5 5 5zm-9-21c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM60 91c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM35 41c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.105 0 2-.895 2-2s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='%23${islamicColors.primary.replace("#", "")}' fill-opacity='0.05' fill-rule='evenodd'/%3E%3C/svg%3E")`,
+  py: 4,
 };

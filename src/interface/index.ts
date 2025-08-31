@@ -54,3 +54,36 @@ export interface Filters {
   date: string;
   hour: string;
 }
+
+export interface IncomeItem {
+  source: string;
+  description: string;
+  amount: string;
+}
+
+export interface TIncome {
+  _id:string;
+ category: {
+    _id: string;
+    name: string;
+  };
+  note: string;
+  incomeDate: Date;
+  paymentMethod: string;
+  status: string;
+  incomeItems: IncomeItem[];
+  totalAmount:number
+}
+export interface TExpense {
+  _id:string;
+ category: {
+    _id: string;
+    name: string;
+  };
+  note: string;
+  incomeDate: Date;
+  paymentMethod: string;
+  status: string;
+  incomeItems: IncomeItem[];
+  totalAmount:number
+}

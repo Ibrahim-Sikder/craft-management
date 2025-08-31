@@ -56,7 +56,6 @@ import { useRouter } from "next/navigation"
 import { useGetAllMetaQuery } from "@/redux/api/metaApi"
 
 const StatCard = ({ icon, title, value, trend, trendValue, color }: any) => {
-  const theme = useTheme()
   const isPositive = trend === "up"
 
   return (
@@ -208,7 +207,6 @@ const DashboardHome = () => {
     websiteVisits: 1243,
   })
 
-  // Update stats when metaData is available
   useEffect(() => {
     if (metaData) {
       setStats(prevStats => ({
