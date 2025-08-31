@@ -152,12 +152,6 @@ const LoanDashboard = () => {
     }
   }
 
-  const getCompletionPercentage = (loan: any) => {
-    // For now, we'll assume no payments have been made
-    // You might want to add payment tracking in the future
-    return 0
-  }
-
   return (
     <>
       <Box sx={{ p: 3, width: '100%' }}>

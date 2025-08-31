@@ -1,4 +1,3 @@
-// utils/formatters.ts
 
 export const formatCurrency = (amount: number, withDecimals = false) => {
   return new Intl.NumberFormat("en-BD", {
