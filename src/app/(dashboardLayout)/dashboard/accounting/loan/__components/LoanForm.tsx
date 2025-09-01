@@ -1,69 +1,25 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Paper,
-  Typography,
-  Box,
-  Grid,
-  Button,
-} from "@mui/material"
-import {
-  AccountBalanceWallet as AccountBalanceWalletIcon,
-  Cancel as CancelIcon,
-  Save as SaveIcon,
-} from "@mui/icons-material"
+// components/LoanForm.tsx
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, Grid, Paper } from "@mui/material"
+// import { CancelIcon, SaveIcon, AccountBalanceWalletIcon } from "@mui/icons-material"
 import CraftForm from "@/components/Forms/Form"
 import CraftSelect from "@/components/Forms/Select"
 import CraftInput from "@/components/Forms/Input"
 import CraftDatePicker from "@/components/Forms/DatePicker"
-import { FieldValues, useFormContext } from "react-hook-form"
-import {
-  useCreateLoanMutation,
-  useUpdateLoanMutation,
-  useGetSingleLoanQuery,
-} from "@/redux/api/loanApi"
+import { FieldValues } from "react-hook-form"
+import { useCreateLoanMutation, useUpdateLoanMutation, useGetSingleLoanQuery } from "@/redux/api/loanApi"
 import toast from "react-hot-toast"
-import { useEffect } from "react"
+import LinearProgress from "@mui/material/LinearProgress"
+import Box from "@mui/material/Box"
 
 interface LoanFormProps {
+  loanId?: string
   open: boolean
   onClose: () => void
-  loanId?: string
-}
-const LoanTypeDependentFields = () => {
-  const { watch, setValue } = useFormContext()
-  const loanType = watch("loan_type")
-  useEffect(() => {
-    if (loanType === "taken") {
-      setValue("borrowerName", "")
-    } else if (loanType === "given") {
-      setValue("lenderName", "")
-    }
-  }, [loanType, setValue])
-
-  if (loanType === "taken") {
-    return (
-      <Grid item xs={12} md={6}>
-        <CraftInput fullWidth name="lenderName" label="Lender Name" />
-      </Grid>
-    )
-  }
-
-  if (loanType === "given") {
-    return (
-      <Grid item xs={12} md={6}>
-        <CraftInput fullWidth name="borrowerName" label="Borrower Name" />
-      </Grid>
-    )
-  }
-
-  return null
+  refetch: () => void
 }
 
-const LoanForm = ({ loanId, open, onClose }: LoanFormProps) => {
+const LoanForm = ({ loanId, open, onClose, refetch }: LoanFormProps) => {
   const [createLoan] = useCreateLoanMutation()
   const [updateLoan] = useUpdateLoanMutation()
   const { data: singleLoan, isLoading } = useGetSingleLoanQuery(
@@ -79,8 +35,9 @@ const LoanForm = ({ loanId, open, onClose }: LoanFormProps) => {
         ...data,
         loan_amount: Number(data.loan_amount),
         interest_rate: Number(data.interest_rate),
-        monthly_installment: Number(data.monthly_installment),
+        monthly_installment: data.monthly_installment ? Number(data.monthly_installment) : undefined,
       }
+      
       if (loanId) {
         res = await updateLoan({ id: loanId, data: submitData }).unwrap()
       } else {
@@ -89,35 +46,38 @@ const LoanForm = ({ loanId, open, onClose }: LoanFormProps) => {
 
       if (res.success) {
         toast.success(res.message || (loanId ? "Loan updated successfully!" : "Loan added successfully!"))
+        refetch()
         onClose()
       } else {
         toast.error(res.message || "Operation failed!")
       }
-    } catch (error) {
+
+    } catch (error: any) {
       console.error("Failed to submit Loan:", error)
-      toast.error("Something went wrong!")
+      toast.error(error.data?.message || "Something went wrong!")
     }
   }
 
   const defaultValues = {
     loan_type: singleLoan?.data?.loan_type || "",
-    party: singleLoan?.data?.party || "",
+    lenderName: singleLoan?.data?.lenderName || "",
+    borrowerName: singleLoan?.data?.borrowerName || "",
+    contactNumber: singleLoan?.data?.contactNumber || "",
     loan_amount: singleLoan?.data?.loan_amount || "",
     interest_rate: singleLoan?.data?.interest_rate || "",
-    loan_date: singleLoan?.data?.loan_date || "",
+    loan_date: singleLoan?.data?.loan_date || new Date(),
     repayment_start_date: singleLoan?.data?.repayment_start_date || "",
     repayment_end_date: singleLoan?.data?.repayment_end_date || "",
     monthly_installment: singleLoan?.data?.monthly_installment || "",
     status: singleLoan?.data?.status || "active",
-    lenderName: singleLoan?.data?.lenderName || "",
-    borrowerName: singleLoan?.data?.borrowerName || "",
-    contactNumber: singleLoan?.data?.contactNumber || "",
   }
 
   return (
     <>
-      {isLoading ? (
-        <h2>Loading...</h2>
+      {isLoading && loanId ? (
+        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
+          <LinearProgress sx={{ width: '100%' }} />
+        </Box>
       ) : (
         <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
           <CraftForm onSubmit={handleSubmit} defaultValues={defaultValues}>
@@ -130,7 +90,7 @@ const LoanForm = ({ loanId, open, onClose }: LoanFormProps) => {
                 gap: 2,
               }}
             >
-              <AccountBalanceWalletIcon />
+              {/* <AccountBalanceWalletIcon/> */}
               <Typography variant="h6" sx={{ fontWeight: 600 }}>
                 {loanId ? "Edit Loan" : "New Loan"}
               </Typography>
@@ -148,39 +108,98 @@ const LoanForm = ({ loanId, open, onClose }: LoanFormProps) => {
                         fullWidth
                         label="Loan Type"
                         name="loan_type"
-                        items={["taken", "given"]}
+                        items={['taken','given']}
+                        
                       />
                     </Grid>
 
-                    <LoanTypeDependentFields />
+                    <Grid item xs={12} md={6}>
+                      <CraftInput 
+                        fullWidth 
+                        name="contactNumber" 
+                        label="Contact Number" 
+                         
+                      />
+                    </Grid>
 
                     <Grid item xs={12} md={6}>
-                      <CraftInput type="number" fullWidth name="contactNumber" label="Contact Number" />
+                      <CraftInput 
+                        fullWidth 
+                        name="lenderName" 
+                        label="Lender Name" 
+                         
+                      />
                     </Grid>
+
                     <Grid item xs={12} md={6}>
-                      <CraftInput fullWidth name="loan_amount" label="Loan Amount" />
+                      <CraftInput 
+                        fullWidth 
+                        name="borrowerName" 
+                        label="Borrower Name" 
+                         
+                      />
                     </Grid>
+
                     <Grid item xs={12} md={6}>
-                      <CraftInput fullWidth name="interest_rate" label="Interest Rate (%)" type="number" />
+                      <CraftInput 
+                        fullWidth 
+                        name="loan_amount" 
+                        label="Loan Amount" 
+                        type="number"
+                         
+                      />
                     </Grid>
+
                     <Grid item xs={12} md={6}>
-                      <CraftInput fullWidth name="monthly_installment" label="Monthly Installment" type="number" />
+                      <CraftInput 
+                        fullWidth 
+                        name="interest_rate" 
+                        label="Interest Rate (%)" 
+                        type="number"
+                         
+                      />
                     </Grid>
+
                     <Grid item xs={12} md={6}>
-                      <CraftDatePicker fullWidth name="loan_date" label="Loan Date" />
+                      <CraftDatePicker 
+                        fullWidth 
+                        name="loan_date" 
+                        label="Loan Date" 
+                         
+                      />
                     </Grid>
+
                     <Grid item xs={12} md={6}>
-                      <CraftDatePicker fullWidth name="repayment_start_date" label="Repayment Start Date" />
+                      <CraftDatePicker 
+                        fullWidth 
+                        name="repayment_start_date" 
+                        label="Repayment Start Date" 
+                      />
                     </Grid>
+
                     <Grid item xs={12} md={6}>
-                      <CraftDatePicker fullWidth name="repayment_end_date" label="Repayment End Date" />
+                      <CraftDatePicker 
+                        fullWidth 
+                        name="repayment_end_date" 
+                        label="Repayment End Date" 
+                      />
                     </Grid>
+
+                    <Grid item xs={12} md={6}>
+                      <CraftInput 
+                        fullWidth 
+                        name="monthly_installment" 
+                        label="Monthly Installment" 
+                        type="number"
+                      />
+                    </Grid>
+
                     <Grid item xs={12} md={6}>
                       <CraftSelect
                         fullWidth
                         label="Status"
                         name="status"
-                        items={["active", "paid", "defaulted"]}
+                        items={['active', 'paid']}
                       />
                     </Grid>
                   </Grid>
@@ -191,19 +210,19 @@ const LoanForm = ({ loanId, open, onClose }: LoanFormProps) => {
             <DialogActions sx={{ p: 3, bgcolor: "#F9FAFB" }}>
               <Button
                 onClick={onClose}
-                startIcon={<CancelIcon />}
+                // startIcon={<CancelIcon />}
                 variant="outlined"
                 sx={{
                   borderColor: "#D1D5DB",
                   color: "#6B7280",
-                  "&:hover": { borderColor: "#9CA3AF", bgcolor: "#F3F4F6" },
+                  "&:hover" : { borderColor: "#9CA3AF", bgcolor: "#F3F4F6" },
                 }}
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
-                startIcon={<SaveIcon />}
+                // startIcon={<SaveIcon />}
                 variant="contained"
                 sx={{
                   bgcolor: "#EC4899",

@@ -12,16 +12,16 @@ export const loanApi = baseApi.injectEndpoints({
     }),
 
     getAllLoans: build.query({
-      query: ({ limit, page, searchTerm }) => ({
+      query: ({ limit, page, searchTerm, status, type }) => ({
         url: "/loan",
         method: "GET",
-        params: { page, limit, searchTerm },
+        params: { page, limit, searchTerm, status, type },
       }),
       providesTags: ["loan"],
     }),
 
     getSingleLoan: build.query({
-      query: ( id ) => ({
+      query: (id) => ({
         url: `/loan/${id}`,
         method: "GET",
       }),
@@ -44,6 +44,43 @@ export const loanApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["loan"],
     }),
+
+    // New endpoints for loan management
+    addRepayment: build.mutation({
+      query: ({ id, data }) => ({
+        url: `/loan/${id}/repayments`,
+        method: "POST",
+        data,
+      }),
+      invalidatesTags: ["loan"],
+    }),
+
+    transferLoan: build.mutation({
+      query: ({ id, data }) => ({
+        url: `/loan/${id}/transfer`,
+        method: "POST",
+        data,
+      }),
+      invalidatesTags: ["loan"],
+    }),
+
+    getLoanAmortization: build.query({
+      query: (id) => ({
+        url: `/loan/${id}/amortization`,
+        method: "GET",
+      }),
+      providesTags: ["loan"],
+    }),
+
+    // Export loans
+    exportLoans: build.mutation({
+      query: (filters) => ({
+        url: "/loan/export",
+        method: "POST",
+        data: filters,
+        // responseHandler: (response) => response.blob(),
+      }),
+    }),
   }),
 });
 
@@ -53,4 +90,8 @@ export const {
   useGetSingleLoanQuery,
   useUpdateLoanMutation,
   useDeleteLoanMutation,
+  useAddRepaymentMutation,
+  useTransferLoanMutation,
+  useGetLoanAmortizationQuery,
+  useExportLoansMutation,
 } = loanApi;
