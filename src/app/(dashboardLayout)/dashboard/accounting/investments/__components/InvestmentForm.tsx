@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // components/InvestmentForm.tsx
 import {
     Dialog,
@@ -163,7 +165,7 @@ const ReturnHistoryTab = ({ investmentId }: { investmentId?: string }) => {
                 toast.success("Return added successfully!")
                 append({ date: new Date(), amount: 0, type: "interest", note: "" })
             }
-        } catch (error) {
+        } catch (error:any) {
             toast.error("Failed to add return")
         }
     }
