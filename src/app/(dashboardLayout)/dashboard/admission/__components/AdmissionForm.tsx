@@ -94,7 +94,8 @@ const AdmissionForm = ({ id }: TProps) => {
         motherNameBangla: data.motherNameBangla || "",
         studentName: data.studentName || "",
         mobileNo: data.mobileNo || "",
-
+        admissionFee: Number(data.admissionFee),
+        monthlyFee: Number(data.monthlyFee),
         session: data.session || "",
 
         dateOfBirth,

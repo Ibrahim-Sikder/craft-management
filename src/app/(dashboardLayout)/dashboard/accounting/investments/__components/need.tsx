@@ -132,7 +132,7 @@
 //                             <Grid item xs={12} md={6}>
 //                                 <TextField
 //                                     fullWidth
-//                                     label="Principal Amount (₹)"
+//                                     label="Principal Amount (৳)"
 //                                     type="number"
 //                                     value={editingInvestment?.principalAmount || ""}
 //                                     onChange={(e) =>
@@ -155,7 +155,7 @@
 //                             <Grid item xs={12} md={6}>
 //                                 <TextField
 //                                     fullWidth
-//                                     label="Current Value (₹)"
+//                                     label="Current Value (৳)"
 //                                     type="number"
 //                                     value={editingInvestment?.currentValue || ""}
 //                                     onChange={(e) =>

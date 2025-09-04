@@ -114,7 +114,7 @@ const AddPaymentDialog = ({ open, onClose, loanId, refetch }: AddPaymentDialogPr
                 Remaining Balance
               </Typography>
               <Typography variant="h5" sx={{ color: "#065F46", fontWeight: 700 }}>
-                ₹{remainingBalance.toLocaleString()}
+                ৳{remainingBalance.toLocaleString()}
               </Typography>
             </Box>
             <AccountBalanceWallet sx={{ color: "#059669", fontSize: 32 }} />

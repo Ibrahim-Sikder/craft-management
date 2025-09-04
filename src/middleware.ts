@@ -11,6 +11,7 @@ const roleBasedPrivateRoutes = {
   admin: [/^\/dashboard(\/.*)?$/],
   teacher: [/^\/dashboard(\/.*)?$/],
   super_admin: [/^\/dashboard(\/.*)?$/],
+  accountant: [/^\/dashboard(\/.*)?$/],
 };
 
 type Role = keyof typeof roleBasedPrivateRoutes;
@@ -29,7 +30,7 @@ export async function middleware(request: NextRequest) {
   let decodedData = null;
   try {
     decodedData = jwtDecode(accessToken) as any;
-  } catch (error:any) {
+  } catch (error: any) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 

@@ -112,7 +112,7 @@ const LoanTable = ({
                           }}
                         />
                       </TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>₹{loan.loan_amount.toLocaleString()}</TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>৳{loan.loan_amount.toLocaleString()}</TableCell>
                       <TableCell>
                         <Box sx={{ display: 'flex', alignItems: 'center' }}>
                           <Box sx={{ width: '100%', mr: 1 }}>
@@ -131,7 +131,7 @@ const LoanTable = ({
                           </Box>
                           <Box sx={{ minWidth: 35 }}>
                             <Typography variant="body2" color="textSecondary">
-                              ₹{loan.remainingBalance?.toLocaleString()}
+                              ৳{loan.remainingBalance?.toLocaleString()}
                             </Typography>
                           </Box>
                         </Box>

@@ -1,17 +1,30 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// components/AmortizationDialog.tsx
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, Grid, Paper, TableContainer, Table, TableHead, TableRow, TableCell, TableBody, LinearProgress, Box } from "@mui/material"
-import { useGetLoanAmortizationQuery } from "@/redux/api/loanApi"
+// components/PerformanceDialog.tsx
+import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, Grid, Paper, LinearProgress, Box } from "@mui/material"
+import { Analytics as AnalyticsIcon } from "@mui/icons-material"
+import { useGetInvestmentPerformanceQuery } from "@/redux/api/investmentApi"
 
-interface AmortizationDialogProps {
+interface PerformanceDialogProps {
   open: boolean
   onClose: () => void
-  loanId: string
+  investmentId: string
 }
 
-const AmortizationDialog = ({ open, onClose, loanId }: AmortizationDialogProps) => {
-  const { data: amortizationData, isLoading } = useGetLoanAmortizationQuery(loanId, { skip: !open || !loanId })
-  console.log(amortizationData)
+const PerformanceDialog = ({ open, onClose, investmentId }: PerformanceDialogProps) => {
+  const { data: performanceData, isLoading } = useGetInvestmentPerformanceQuery(investmentId, { skip: !open || !investmentId })
+  
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('en-IN', {
+      style: 'currency',
+      currency: 'INR',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(value)
+  }
+
+  const formatPercentage = (value: number) => {
+    return `${value.toFixed(2)}%`
+  }
+  
   return (
     <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
       <DialogTitle
@@ -23,9 +36,9 @@ const AmortizationDialog = ({ open, onClose, loanId }: AmortizationDialogProps) 
           gap: 2,
         }}
       >
-      
+        <AnalyticsIcon />
         <Typography variant="h6" sx={{ fontWeight: 600 }}>
-          Loan Amortization Schedule
+          Investment Performance
         </Typography>
       </DialogTitle>
 
@@ -34,17 +47,17 @@ const AmortizationDialog = ({ open, onClose, loanId }: AmortizationDialogProps) 
           <Box sx={{ display: 'flex', justifyContent: 'center', py: 4 }}>
             <LinearProgress sx={{ width: '100%' }} />
           </Box>
-        ) : amortizationData?.data ? (
+        ) : performanceData?.data ? (
           <>
             <Box sx={{ mb: 4 }}>
               <Grid container spacing={3}>
                 <Grid item xs={12} md={4}>
                   <Paper sx={{ p: 2, textAlign: 'center', bgcolor: '#F0F9FF', borderRadius: 2 }}>
                     <Typography variant="h6" sx={{ fontWeight: 600, color: "#3B82F6" }}>
-                      Total Payment
+                      Current Value
                     </Typography>
                     <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                      ৳{amortizationData.data.totalPayment?.toLocaleString()}
+                      {formatCurrency(performanceData.data.currentValue)}
                     </Typography>
                   </Paper>
                 </Grid>
@@ -52,10 +65,10 @@ const AmortizationDialog = ({ open, onClose, loanId }: AmortizationDialogProps) 
                 <Grid item xs={12} md={4}>
                   <Paper sx={{ p: 2, textAlign: 'center', bgcolor: '#F0FDF4', borderRadius: 2 }}>
                     <Typography variant="h6" sx={{ fontWeight: 600, color: "#10B981" }}>
-                      Total Interest
+                      Total Returns
                     </Typography>
                     <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                      ৳{amortizationData.data.totalInterest?.toLocaleString()}
+                      {formatCurrency(performanceData.data.totalReturns)}
                     </Typography>
                   </Paper>
                 </Grid>
@@ -63,44 +76,45 @@ const AmortizationDialog = ({ open, onClose, loanId }: AmortizationDialogProps) 
                 <Grid item xs={12} md={4}>
                   <Paper sx={{ p: 2, textAlign: 'center', bgcolor: '#FDF4FF', borderRadius: 2 }}>
                     <Typography variant="h6" sx={{ fontWeight: 600, color: "#A855F7" }}>
-                      Number of Payments
+                      ROI
                     </Typography>
                     <Typography variant="h5" sx={{ fontWeight: 700 }}>
-                      {amortizationData.data.amortizationSchedule?.length}
+                      {formatPercentage(performanceData.data.roi)}
                     </Typography>
                   </Paper>
                 </Grid>
               </Grid>
             </Box>
             
-            <TableContainer component={Paper} sx={{ borderRadius: 2 }}>
-              <Table>
-                <TableHead sx={{ bgcolor: '#F9FAFB' }}>
-                  <TableRow>
-                    <TableCell sx={{ fontWeight: 600 }}>Payment Date</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }} align="right">Payment</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }} align="right">Principal</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }} align="right">Interest</TableCell>
-                    <TableCell sx={{ fontWeight: 600 }} align="right">Remaining Balance</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {amortizationData.data.amortizationSchedule?.map((payment: any, index: number) => (
-                    <TableRow key={index} hover>
-                      <TableCell>{new Date(payment.date).toLocaleDateString()}</TableCell>
-                      <TableCell align="right">৳{payment.payment?.toFixed(2)}</TableCell>
-                      <TableCell align="right">৳{payment.principal?.toFixed(2)}</TableCell>
-                      <TableCell align="right">৳{payment.interest?.toFixed(2)}</TableCell>
-                      <TableCell align="right">৳{payment.balance?.toFixed(2)}</TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
+            <Box sx={{ mb: 4 }}>
+              <Grid container spacing={3}>
+                <Grid item xs={12} md={6}>
+                  <Paper sx={{ p: 2, textAlign: 'center', bgcolor: '#FFFBEB', borderRadius: 2 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 600, color: "#F59E0B" }}>
+                      Annualized Return
+                    </Typography>
+                    <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                      {formatPercentage(performanceData.data.annualizedReturn)}
+                    </Typography>
+                  </Paper>
+                </Grid>
+                
+                <Grid item xs={12} md={6}>
+                  <Paper sx={{ p: 2, textAlign: 'center', bgcolor: '#FEF2F2', borderRadius: 2 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 600, color: "#EF4444" }}>
+                      Days Held
+                    </Typography>
+                    <Typography variant="h5" sx={{ fontWeight: 700 }}>
+                      {performanceData.data.daysHeld}
+                    </Typography>
+                  </Paper>
+                </Grid>
+              </Grid>
+            </Box>
           </>
         ) : (
           <Typography variant="body2" sx={{ py: 3, textAlign: 'center', color: "#6B7280" }}>
-            No amortization data available
+            No performance data available
           </Typography>
         )}
       </DialogContent>
@@ -122,4 +136,4 @@ const AmortizationDialog = ({ open, onClose, loanId }: AmortizationDialogProps) 
   )
 }
 
-export default AmortizationDialog
+export default PerformanceDialog

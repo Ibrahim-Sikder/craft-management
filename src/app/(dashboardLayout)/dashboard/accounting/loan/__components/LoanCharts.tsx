@@ -31,7 +31,7 @@ const LoanCharts = ({ loanTypeData, monthlyPaymentData }: LoanChartsProps) => {
                     <Cell key={`cell-${index}`} fill={entry.color} />
                   ))}
                 </Pie>
-                <RechartsTooltip formatter={(value: number) => [`₹${value.toLocaleString()}`, "Amount"]} />
+                <RechartsTooltip formatter={(value: number) => [`৳${value.toLocaleString()}`, "Amount"]} />
               </PieChart>
             </ResponsiveContainer>
           </CardContent>
@@ -49,7 +49,7 @@ const LoanCharts = ({ loanTypeData, monthlyPaymentData }: LoanChartsProps) => {
                 <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
                 <XAxis dataKey="name" tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} />
-                <RechartsTooltip formatter={(value: number) => [`₹${value.toLocaleString()}`, "Monthly Payment"]} />
+                <RechartsTooltip formatter={(value: number) => [`৳${value.toLocaleString()}`, "Monthly Payment"]} />
                 <Bar dataKey="payment" fill="#EC4899" name="Monthly Payment" />
               </BarChart>
             </ResponsiveContainer>
