@@ -94,7 +94,7 @@ export default function TodayLesson({ open, onClose, onSave, id }: TodayLessonPr
               label="আজকের পাঠের বিষয়বস্তু"
               placeholder="আজকের পাঠের বিষয়বস্তু লিখুন..."
               minRows={8}
-              required
+              
             />
           </Box>
         </DialogContent>

@@ -10,7 +10,7 @@ interface ITASDatepickerProps {
   name: string;
   size?: "small" | "medium";
   label?: React.ReactNode;
-  required?: boolean;
+  ?: boolean;
   fullWidth?: boolean;
   margin?: "none" | "normal" | "dense";
   sx?: SxProps;
@@ -23,7 +23,7 @@ const CraftDatePicker = ({
   name,
   size = "medium",
   label,
-  required,
+  ,
   fullWidth = true,
   margin = "normal",
   sx,
@@ -52,7 +52,7 @@ const CraftDatePicker = ({
               // maxDate={disableFuture ? dayjs() : undefined}
               slotProps={{
                 textField: {
-                  required: required,
+                  : ,
                   size: size,
                   sx: {
                     ...sx,

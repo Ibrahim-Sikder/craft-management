@@ -7,7 +7,7 @@ type TTagsInputProps = {
   label?: string;
   placeholder?: string;
   sx?: SxProps;
-  required?: boolean;
+  ?: boolean;
   disabled?: boolean;
   options?: string[];
 };
@@ -17,7 +17,7 @@ const CraftTagsInput = ({
   label,
   placeholder = "Type and press enter",
   sx,
-  required,
+  ,
   disabled,
   options = [],
 }: TTagsInputProps) => {
@@ -28,7 +28,7 @@ const CraftTagsInput = ({
       <Controller
         name={name}
         control={control}
-        rules={{ required }}
+        rules={{  }}
         render={({ field, fieldState: { error } }) => (
           <Autocomplete
             multiple

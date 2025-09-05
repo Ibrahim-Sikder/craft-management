@@ -67,7 +67,7 @@ const AddReturnDialog = ({ open, onClose, investmentId, refetch }: AddReturnDial
                 name="amount"
                 label="Amount"
                 type="number"
-                required
+                
               />
             </Grid>
 
@@ -78,7 +78,7 @@ const AddReturnDialog = ({ open, onClose, investmentId, refetch }: AddReturnDial
                 label="Return Type"
                 items={['interest', 'principal', 'dividend', 'capital_gain'
                 ]}
-                required
+                
               />
             </Grid>
 
@@ -87,7 +87,7 @@ const AddReturnDialog = ({ open, onClose, investmentId, refetch }: AddReturnDial
                 fullWidth
                 name="date"
                 label="Return Date"
-                required
+                
               />
             </Grid>
 

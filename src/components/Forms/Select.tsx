@@ -8,7 +8,7 @@ interface ITextField {
   size?: "small" | "medium";
   placeholder?: string;
   label?: string;
-  required?: boolean;
+  ?: boolean;
   fullWidth?: boolean;
   sx?: SxProps;
   items: string[];
@@ -25,7 +25,7 @@ const CraftSelect = ({
   label,
   size = "medium",
   margin = "normal",
-  required,
+  ,
   fullWidth = true,
   sx,
   onChange,
@@ -49,7 +49,7 @@ const CraftSelect = ({
           size={size}
           select
           label={label}
-          required={required}
+          ={}
           fullWidth={fullWidth}
           error={isError}
           margin={margin}

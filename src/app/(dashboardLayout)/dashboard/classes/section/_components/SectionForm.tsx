@@ -118,7 +118,7 @@ export default function SectionForm({ id }: { id?: string }) {
                         }}
                         fullWidth
                         placeholder="e.g., Section A, Morning Batch"
-                        required
+                        
                       />
                     </Box>
 

@@ -512,7 +512,7 @@ const GradingPage = () => {
                 fullWidth
                 value={systemFormData.name}
                 onChange={handleSystemInputChange}
-                required
+                
               />
             </Grid>
             <Grid item xs={12}>
@@ -592,7 +592,7 @@ const GradingPage = () => {
                 fullWidth
                 value={gradeFormData.name}
                 onChange={handleGradeInputChange}
-                required
+                
               />
             </Grid>
             <Grid item xs={12} md={6}>
@@ -603,7 +603,7 @@ const GradingPage = () => {
                 fullWidth
                 value={gradeFormData.minMarks}
                 onChange={handleGradeInputChange}
-                required
+                
               />
             </Grid>
             <Grid item xs={12} md={6}>
@@ -614,7 +614,7 @@ const GradingPage = () => {
                 fullWidth
                 value={gradeFormData.maxMarks}
                 onChange={handleGradeInputChange}
-                required
+                
               />
             </Grid>
             <Grid item xs={12} md={6}>
@@ -625,7 +625,7 @@ const GradingPage = () => {
                 fullWidth
                 value={gradeFormData.gpa}
                 onChange={handleGradeInputChange}
-                required
+                
                 inputProps={{ step: 0.1 }}
               />
             </Grid>

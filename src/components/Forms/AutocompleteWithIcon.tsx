@@ -26,7 +26,7 @@ type TStateProps = {
   label?: React.ReactNode;
   fullWidth?: boolean
   sx?: SxProps
-  required?: boolean
+  ?: boolean
   options: Option[]
   size?: "small" | "medium"
   multiple?: boolean
@@ -53,7 +53,7 @@ const CraftIntAutoCompleteWithIcon = ({
   label = "Autocomplete",
   fullWidth = true,
   sx,
-  required,
+  ,
   options,
   margin = "normal",
   multiple = true,
@@ -126,7 +126,7 @@ const CraftIntAutoCompleteWithIcon = ({
               label={label}
               placeholder={placeholder}
               fullWidth={fullWidth}
-              required={required}
+              ={}
               margin={margin}
               error={!!error}
               helperText={error?.message}

@@ -66,7 +66,7 @@ export default function AddClassPage() {
                   name="className"
                   value={formData.className}
                   onChange={handleChange}
-                  required
+                  
                   variant="outlined"
                 />
               </Grid>
@@ -77,7 +77,7 @@ export default function AddClassPage() {
                   name="classCode"
                   value={formData.classCode}
                   onChange={handleChange}
-                  required
+                  
                   variant="outlined"
                 />
               </Grid>

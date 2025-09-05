@@ -315,7 +315,7 @@ export default function UserForm({ id }: any) {
                                                         name="name"
                                                         label="Full Name"
                                                         placeholder="Enter user's full name"
-                                                        required
+                                                        
                                                         fullWidth
                                                     />
                                                 </Grid>
@@ -324,7 +324,7 @@ export default function UserForm({ id }: any) {
                                                         name="email"
                                                         label="Email Address"
                                                         placeholder="Enter user's email address"
-                                                        required
+                                                        
                                                         fullWidth
                                                     />
                                                 </Grid>

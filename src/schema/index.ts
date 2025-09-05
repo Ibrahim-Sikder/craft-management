@@ -23,15 +23,15 @@ export enum StudentType {
 export const teacherSchema = z.object({
 
   teacherSerial: z.string({
-    required_error: "Teacher Serial is required",
+    required_error: "Teacher Serial is ",
   }),
   smartIdCard: z.string().optional(),
   name: z.string({
-    required_error: "Name is required",
+    required_error: "Name is ",
   }),
   englishName: z.string().optional(),
   phone: z.string({
-    required_error: "Phone number is required",
+    required_error: "Phone number is ",
   }),
   email: z.string().email("Invalid email address").optional(),
   dateOfBirth: z.string().optional(),
@@ -150,15 +150,15 @@ export const teacherSchema = z.object({
 
 export const studentSchema = z.object({
   // smartIdCard: z.string().optional(),
-  // name: z.string({ required_error: 'Name is required' }),
-  // birthDate: z.string({ required_error: 'Birth date is required' }),
+  // name: z.string({ required_error: 'Name is ' }),
+  // birthDate: z.string({ required_error: 'Birth date is ' }),
   // birthRegistrationNo: z.string().optional(),
   // gender: z.enum([Gender.MALE, Gender.FEMALE, Gender.OTHER], {
-  //   required_error: 'Gender is required',
+  //   required_error: 'Gender is ',
   // }),
-  // mobile: z.string({ required_error: 'Mobile number is required' }),
+  // mobile: z.string({ required_error: 'Mobile number is ' }),
   // bloodGroup: z.string().optional(),
-  // studentPhoto: z.string({required_error:'Student photo is required!'}).optional(),
+  // studentPhoto: z.string({required_error:'Student photo is !'}).optional(),
   // // Family Information
   // fatherName: z.string().optional(),
   // motherName: z.string().optional(),
@@ -168,19 +168,19 @@ export const studentSchema = z.object({
   // nidFatherMotherGuardian: z.string().optional(),
   // email: z.string().email("Invalid email address").optional(),
   // // Address Information
-  // permanentAddress: z.string({ required_error: 'Permanent address is required' }).optional(),
-  // permanentDistrict: z.string({ required_error: 'Permanent district is required' }).optional(),
-  // permanentThana: z.string({ required_error: 'Permanent thana is required' }).optional(),
+  // permanentAddress: z.string({ required_error: 'Permanent address is ' }).optional(),
+  // permanentDistrict: z.string({ required_error: 'Permanent district is ' }).optional(),
+  // permanentThana: z.string({ required_error: 'Permanent thana is ' }).optional(),
   // sameAsPermanent: z.boolean().default(false),
   // presentAddress: z.string().optional(),
   // presentDistrict: z.string().optional(),
   // presentThana: z.string().optional(),
 
   // // Academic Information
-  // section: z.array(z.string(z.string({required_error:'Section is required!'}))),
-  // className: z.array(z.string({ required_error: 'Class name is required' })),
-  // activeSession: z.array(z.string({ required_error: 'Active session is required' })),
-  // studentClassRoll: z.string({ required_error: 'Student class roll is required' }),
+  // section: z.array(z.string(z.string({required_error:'Section is !'}))),
+  // className: z.array(z.string({ required_error: 'Class name is ' })),
+  // activeSession: z.array(z.string({ required_error: 'Active session is ' })),
+  // studentClassRoll: z.string({ required_error: 'Student class roll is ' }),
   // batch: z.string().optional(),
 
   // status: z.enum([StudentStatus.ACTIVE, StudentStatus.INACTIVE, StudentStatus.GRADUATED]).default(StudentStatus.ACTIVE),
@@ -203,38 +203,38 @@ export const studentSchema = z.object({
   // sendAttendanceSMS: z.boolean().default(false),
 
   birthRegistrationNo: z.string({
-    required_error: "Birth registration number is required",
+    required_error: "Birth registration number is ",
   }),
-  gender: z.string({ required_error: "Gender  is required" }),
-  birthDate: z.string({ required_error: "birthDate  is required" }),
-  name: z.string({ required_error: "name is required" }),
-  fatherName: z.string({ required_error: "Father's name is required" }),
-  motherName: z.string({ required_error: "Mother's name is required" }),
-  guardianMobile: z.string({ required_error: "Guardian mobile is required" }),
+  gender: z.string({ required_error: "Gender  is " }),
+  birthDate: z.string({ required_error: "birthDate  is " }),
+  name: z.string({ required_error: "name is " }),
+  fatherName: z.string({ required_error: "Father's name is " }),
+  motherName: z.string({ required_error: "Mother's name is " }),
+  guardianMobile: z.string({ required_error: "Guardian mobile is " }),
   permanentAddress: z.string({
-    required_error: "Permanent address is required",
+    required_error: "Permanent address is ",
   }),
-  className: z.array(z.string()).nonempty("At least one class is required"),
-  section: z.array(z.string()).nonempty("At least one section is required"),
+  className: z.array(z.string()).nonempty("At least one class is "),
+  section: z.array(z.string()).nonempty("At least one section is "),
   activeSession: z
     .array(z.string())
-    .nonempty("At least one session is required"),
-  // studentPhoto: z.string({ required_error: "Student photo is required" }),
+    .nonempty("At least one session is "),
+  // studentPhoto: z.string({ required_error: "Student photo is " }),
 });
 export const staffSchema = z.object({
   name: z.string({
-    required_error: "Name is required",
+    required_error: "Name is ",
   }),
   gender: z.string({
-    required_error: "Name is required",
+    required_error: "Name is ",
   }),
   studentType: z.nativeEnum(StudentType, {
-    required_error: 'Student type is required',
+    required_error: 'Student type is ',
   }),
 
   email: z
     .string({
-      required_error: "Email is required",
+      required_error: "Email is ",
     })
     .email("Invalid email format"),
   dateOfBirth: z.coerce.date().optional(),

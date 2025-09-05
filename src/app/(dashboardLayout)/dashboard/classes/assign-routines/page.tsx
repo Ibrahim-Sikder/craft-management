@@ -234,15 +234,15 @@ export default function ClassRoutineNew() {
   const validateForm = () => {
     const newErrors: Record<string, string> = {}
 
-    if (!formData.class) newErrors.class = "Class is required"
-    if (!formData.subject) newErrors.subject = "Subject is required"
-    if (!formData.teacher) newErrors.teacher = "Teacher is required"
-    if (!formData.room) newErrors.room = "Room is required"
+    if (!formData.class) newErrors.class = "Class is "
+    if (!formData.subject) newErrors.subject = "Subject is "
+    if (!formData.teacher) newErrors.teacher = "Teacher is "
+    if (!formData.room) newErrors.room = "Room is "
     if (formData.days.length === 0) newErrors.days = "At least one day must be selected"
-    if (!formData.timeSlot) newErrors.timeSlot = "Time slot is required"
-    if (!formData.session) newErrors.session = "Session is required"
-    if (!formData.startDate) newErrors.startDate = "Start date is required"
-    if (!formData.endDate) newErrors.endDate = "End date is required"
+    if (!formData.timeSlot) newErrors.timeSlot = "Time slot is "
+    if (!formData.session) newErrors.session = "Session is "
+    if (!formData.startDate) newErrors.startDate = "Start date is "
+    if (!formData.endDate) newErrors.endDate = "End date is "
     if (formData.startDate && formData.endDate && formData.startDate > formData.endDate) {
       newErrors.endDate = "End date must be after start date"
     }
@@ -495,7 +495,7 @@ export default function ClassRoutineNew() {
                                   label="Class"
                                   error={!!errors.class}
                                   helperText={errors.class}
-                                  required
+                                  
                                   InputProps={{
                                     ...params.InputProps,
                                     startAdornment: (
@@ -535,7 +535,7 @@ export default function ClassRoutineNew() {
                                   label="Subject"
                                   error={!!errors.subject}
                                   helperText={errors.subject}
-                                  required
+                                  
                                   InputProps={{
                                     ...params.InputProps,
                                     startAdornment: (
@@ -577,7 +577,7 @@ export default function ClassRoutineNew() {
                                   label="Academic Session"
                                   error={!!errors.session}
                                   helperText={errors.session}
-                                  required
+                                  
                                   InputProps={{
                                     ...params.InputProps,
                                     startAdornment: (
@@ -627,7 +627,7 @@ export default function ClassRoutineNew() {
                                   label="Teacher"
                                   error={!!errors.teacher}
                                   helperText={errors.teacher}
-                                  required
+                                  
                                   InputProps={{
                                     ...params.InputProps,
                                     startAdornment: (
@@ -672,7 +672,7 @@ export default function ClassRoutineNew() {
                                   label="Room"
                                   error={!!errors.room}
                                   helperText={errors.room}
-                                  required
+                                  
                                   InputProps={{
                                     ...params.InputProps,
                                     startAdornment: (
@@ -784,7 +784,7 @@ export default function ClassRoutineNew() {
                                 label="Time Slot"
                                 error={!!errors.timeSlot}
                                 helperText={errors.timeSlot}
-                                required
+                                
                                 InputProps={{
                                   ...params.InputProps,
                                   startAdornment: (
@@ -855,7 +855,7 @@ export default function ClassRoutineNew() {
                             InputLabelProps={{ shrink: true }}
                             error={!!errors.startDate}
                             helperText={errors.startDate}
-                            required
+                            
                             InputProps={{
                               startAdornment: (
                                 <EventIcon color="error" sx={{ mr: 1 }} />
@@ -874,7 +874,7 @@ export default function ClassRoutineNew() {
                             InputLabelProps={{ shrink: true }}
                             error={!!errors.endDate}
                             helperText={errors.endDate}
-                            required
+                            
                             InputProps={{
                               startAdornment: (
                                 <EventIcon color="error" sx={{ mr: 1 }} />

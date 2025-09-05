@@ -9,7 +9,7 @@ type TTextareaProps = {
   minRows?: number;
   maxRows?: number;
   sx?: SxProps;
-  required?: boolean;
+  ?: boolean;
   variant?: "outlined" | "filled" | "standard";
   margin?: "none" | "normal" | "dense";
   disabled?: boolean;
@@ -27,7 +27,7 @@ const CraftTextArea = ({
   minRows = 2,
   maxRows,
   sx,
-  required,
+  ,
   variant = "outlined",
   margin = "normal",
   disabled,
@@ -43,7 +43,7 @@ const CraftTextArea = ({
       <Controller
         name={name}
         control={control}
-        rules={{ required }}
+        rules={{  }}
         render={({ field, fieldState: { error } }) => (
           <TextField
             {...field}

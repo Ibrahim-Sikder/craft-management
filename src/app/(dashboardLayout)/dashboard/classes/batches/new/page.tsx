@@ -181,17 +181,17 @@ export default function NewBatchPage() {
     const newErrors: Record<string, string> = {}
 
     if (step === 0) {
-      if (!formData.name) newErrors.name = "Batch name is required"
-      if (!formData.batchId) newErrors.batchId = "Batch ID is required"
-      if (!formData.subject) newErrors.subject = "Subject is required"
+      if (!formData.name) newErrors.name = "Batch name is "
+      if (!formData.batchId) newErrors.batchId = "Batch ID is "
+      if (!formData.subject) newErrors.subject = "Subject is "
     } else if (step === 1) {
-      if (!formData.classId) newErrors.classId = "Class is required"
-      if (!formData.section) newErrors.section = "Section is required"
-      if (!formData.branch) newErrors.branch = "Branch is required"
+      if (!formData.classId) newErrors.classId = "Class is "
+      if (!formData.section) newErrors.section = "Section is "
+      if (!formData.branch) newErrors.branch = "Branch is "
     } else if (step === 2) {
-      if (!formData.teacher) newErrors.teacher = "Teacher is required"
-      if (!formData.startDate) newErrors.startDate = "Start date is required"
-      if (!formData.capacity) newErrors.capacity = "Capacity is required"
+      if (!formData.teacher) newErrors.teacher = "Teacher is "
+      if (!formData.startDate) newErrors.startDate = "Start date is "
+      if (!formData.capacity) newErrors.capacity = "Capacity is "
     }
 
     setErrors(newErrors)
@@ -288,7 +288,7 @@ export default function NewBatchPage() {
         <Grid container spacing={3}>
           <Grid item xs={12} md={6}>
             <TextField
-              required
+              
               fullWidth
               id="name"
               name="name"
@@ -311,7 +311,7 @@ export default function NewBatchPage() {
 
           <Grid item xs={12} md={6}>
             <TextField
-              required
+              
               fullWidth
               id="batchId"
               name="batchId"
@@ -342,7 +342,7 @@ export default function NewBatchPage() {
           </Grid>
 
           <Grid item xs={12}>
-            <FormControl fullWidth required error={!!errors.subject}>
+            <FormControl fullWidth  error={!!errors.subject}>
               <InputLabel id="subject-label">Subject</InputLabel>
               <Select
                 labelId="subject-label"
@@ -397,7 +397,7 @@ export default function NewBatchPage() {
       content: (
         <Grid container spacing={3}>
           <Grid item xs={12} md={4}>
-            <FormControl fullWidth required error={!!errors.classId}>
+            <FormControl fullWidth  error={!!errors.classId}>
               <InputLabel id="class-label">Class</InputLabel>
               <Select
                 labelId="class-label"
@@ -418,7 +418,7 @@ export default function NewBatchPage() {
           </Grid>
 
           <Grid item xs={12} md={4}>
-            <FormControl fullWidth required error={!!errors.section}>
+            <FormControl fullWidth  error={!!errors.section}>
               <InputLabel id="section-label">Section</InputLabel>
               <Select
                 labelId="section-label"
@@ -439,7 +439,7 @@ export default function NewBatchPage() {
           </Grid>
 
           <Grid item xs={12} md={4}>
-            <FormControl fullWidth required error={!!errors.branch}>
+            <FormControl fullWidth  error={!!errors.branch}>
               <InputLabel id="branch-label">Branch</InputLabel>
               <Select
                 labelId="branch-label"
@@ -493,7 +493,7 @@ export default function NewBatchPage() {
       content: (
         <Grid container spacing={3}>
           <Grid item xs={12} md={6}>
-            <FormControl fullWidth required error={!!errors.teacher}>
+            <FormControl fullWidth  error={!!errors.teacher}>
               <InputLabel id="teacher-label">Teacher</InputLabel>
               <Select
                 labelId="teacher-label"
@@ -552,7 +552,7 @@ export default function NewBatchPage() {
 
           <Grid item xs={12} md={6}>
             <TextField
-              required
+              
               fullWidth
               id="capacity"
               name="capacity"
@@ -575,7 +575,7 @@ export default function NewBatchPage() {
 
           <Grid item xs={12} md={6}>
             <TextField
-              required
+              
               fullWidth
               id="startDate"
               name="startDate"
@@ -940,7 +940,7 @@ export default function NewBatchPage() {
             </Typography>
           </Box>
           <Typography variant="body1" sx={{ opacity: 0.9, maxWidth: 700 }}>
-            Create a new batch by filling in the required information. Follow the steps to complete the process.
+            Create a new batch by filling in the  information. Follow the steps to complete the process.
           </Typography>
         </Container>
       </Box>
@@ -1071,7 +1071,7 @@ export default function NewBatchPage() {
             <Typography variant="body2" sx={{ color: "#1b5e20" }}>
               Creating a batch is the first step in organizing your classes. After creating a batch, you can enroll
               students, assign teachers, create schedules, and track academic progress. Make sure to fill in all
-              required fields for optimal results.
+               fields for optimal results.
             </Typography>
           </Box>
         </Paper>

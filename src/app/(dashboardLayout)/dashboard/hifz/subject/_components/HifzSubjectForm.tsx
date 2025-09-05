@@ -150,7 +150,7 @@ export default function HifzSubjectForm({ id, open, setOpen }: any) {
                                             name="name"
                                             label="Subject Name"
                                             placeholder="Enter subject name (e.g., Juz Amma, Surah Al-Baqarah)"
-                                            required
+                                            
                                             fullWidth
                                             InputProps={{
                                                 startAdornment: <MenuBook sx={{ color: "primary.main", mr: 1 }} />,

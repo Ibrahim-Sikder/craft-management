@@ -12,7 +12,7 @@ type TAutocompleteProps = {
     fullWidth?: boolean;
     sx?: SxProps;
     disabled?: boolean;
-    required?: boolean;
+    ?: boolean;
     multiple?: boolean;
     margin?: "none" | "normal" | "dense";
     defaultValue?: { title: string }[];
@@ -26,7 +26,7 @@ export const CraftMultipleValue = ({
     fullWidth = true,
     sx,
     disabled = false,
-    required = false,
+     = false,
     multiple = true,
     margin = 'normal',
     defaultValue = []
@@ -53,7 +53,7 @@ export const CraftMultipleValue = ({
                             {...params}
                             label={label}
                             placeholder={placeholder}
-                            required={required}
+                            ={}
                             fullWidth={fullWidth}
                             sx={sx}
                             error={!!fieldState.error}

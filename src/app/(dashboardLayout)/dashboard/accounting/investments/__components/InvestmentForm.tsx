@@ -67,7 +67,7 @@ const InvestmentCategoryDependentFields = () => {
             fullWidth
             name="investmentTo"
             label="Investment To (Company/Person)"
-            required
+            
           />
         </Grid>
         <Grid item xs={12} md={6}>
@@ -76,7 +76,7 @@ const InvestmentCategoryDependentFields = () => {
             label="Investment Type"
             name="investmentType"
             items={["fixed_deposit", "share", "bond", "others"]}
-            required
+            
           />
         </Grid>
       </>
@@ -91,7 +91,7 @@ const InvestmentCategoryDependentFields = () => {
             fullWidth
             name="investorName"
             label="Investor Name"
-            required
+            
           />
         </Grid>
         <Grid item xs={12} md={6}>
@@ -99,7 +99,7 @@ const InvestmentCategoryDependentFields = () => {
             fullWidth
             name="investorContact"
             label="Investor Contact"
-            required
+            
           />
         </Grid>
         <Grid item xs={12} md={6}>
@@ -108,7 +108,7 @@ const InvestmentCategoryDependentFields = () => {
             label="Incoming Type"
             name="incomingType"
             items={["donation_fund", "share", "partnership", "others"]}
-            required
+            
           />
         </Grid>
         <Grid item xs={12} md={6}>
@@ -226,7 +226,7 @@ const handleSubmit = async (data: FieldValues) => {
                         label="Investment Category"
                         name="investmentCategory"
                         items={["outgoing", "incoming"]}
-                        required
+       
                       />
                     </Grid>
 
@@ -238,7 +238,7 @@ const handleSubmit = async (data: FieldValues) => {
                         name="investmentAmount"
                         label="Investment Amount"
                         type="number"
-                        required
+                        
                       />
                     </Grid>
                     <Grid item xs={12} md={6}>
@@ -254,7 +254,7 @@ const handleSubmit = async (data: FieldValues) => {
                         fullWidth
                         name="investmentDate"
                         label="Investment Date"
-                        required
+                        
                       />
                     </Grid>
                     <Grid item xs={12} md={6}>

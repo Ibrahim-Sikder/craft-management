@@ -73,7 +73,7 @@ const AdmissionForm = ({ id }: TProps) => {
   const handleSubmit = async (data: any) => {
     try {
       if (!data || Object.keys(data).length === 0) {
-        toast.error("Please fill in all required fields")
+        toast.error("Please fill in all  fields")
         return
       }
       const dateOfBirth = data.dateOfBirth

@@ -156,7 +156,7 @@ export default function HifzClassForm({ id, open, setOpen }: any) {
                                                                     label="Class Name"
                                                                     variant="outlined"
                                                                     placeholder="Enter class name (e.g., Hifz Level 1, Juz Amma)"
-                                                                    required
+                                                                    
                                                                     InputProps={{
                                                                         startAdornment: (
                                                                             <ClassIcon

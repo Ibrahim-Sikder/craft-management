@@ -8,7 +8,7 @@ interface ITextField {
   size?: "small" | "medium";
   placeholder?: string;
   label?: React.ReactNode;
-  required?: boolean;
+  ?: boolean;
   fullWidth?: boolean;
   sx?: SxProps;
   items: string[];
@@ -24,7 +24,7 @@ const CraftSelectWithIcon = ({
   label,
   size = "small",
   margin = "normal",
-  required,
+  ,
   fullWidth = true,
   sx,
   onChange,
@@ -49,7 +49,7 @@ const CraftSelectWithIcon = ({
           label={label}
           disabled={disabled}
           placeholder={placeholder}
-          required={required}
+          ={}
           fullWidth={fullWidth}
           error={isError}
           margin={margin}

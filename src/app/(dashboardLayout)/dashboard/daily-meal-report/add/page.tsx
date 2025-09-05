@@ -428,7 +428,7 @@ export default function MealReportForm() {
         setDebugInfo(null)
 
         if (!date) {
-            setError("Date is required")
+            setError("Date is ")
             setLoading(false)
             return
         }
@@ -439,13 +439,13 @@ export default function MealReportForm() {
 
         // Validate according to schema requirements
         if (selectedStudents.length === 0) {
-            setError("At least one student is required")
+            setError("At least one student is ")
             setLoading(false)
             return
         }
 
         if (selectedTeachers.length === 0) {
-            setError("At least one teacher is required")
+            setError("At least one teacher is ")
             setLoading(false)
             return
         }
@@ -635,13 +635,13 @@ export default function MealReportForm() {
                                 InputLabelProps={{
                                     shrink: true,
                                 }}
-                                required
+                                
                                 error={error?.includes("Date")}
                                 helperText={error?.includes("Date") ? error : ""}
                             />
                         </Grid>
                         <Grid item xs={12} md={4}>
-                            <FormControl fullWidth variant="outlined" required error={error?.includes("Meal type")}>
+                            <FormControl fullWidth variant="outlined"  error={error?.includes("Meal type")}>
                                 <InputLabel>Default Meal Types</InputLabel>
                                 <Select
                                     multiple

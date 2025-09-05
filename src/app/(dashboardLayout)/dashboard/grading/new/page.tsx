@@ -487,7 +487,7 @@ export default function GradingSystem() {
                                 value={formData.name}
                                 onChange={handleInputChange}
                                 variant="outlined"
-                                required
+                                
                                 InputProps={{
                                   startAdornment: (
                                     <InputAdornment position="start">
@@ -506,7 +506,7 @@ export default function GradingSystem() {
                                 value={formData.totalMarks}
                                 onChange={handleInputChange}
                                 variant="outlined"
-                                required
+                                
                                 InputProps={{
                                   startAdornment: (
                                     <InputAdornment position="start">
@@ -532,7 +532,7 @@ export default function GradingSystem() {
                                 value={formData.passMarks}
                                 onChange={handleInputChange}
                                 variant="outlined"
-                                required
+                                
                                 InputProps={{
                                   startAdornment: (
                                     <InputAdornment position="start">
@@ -541,7 +541,7 @@ export default function GradingSystem() {
                                   ),
                                   endAdornment: (
                                     <InputAdornment position="end">
-                                      <Tooltip title="Minimum marks required to pass">
+                                      <Tooltip title="Minimum marks  to pass">
                                         <InfoIcon fontSize="small" color="action" />
                                       </Tooltip>
                                     </InputAdornment>
@@ -771,7 +771,7 @@ export default function GradingSystem() {
                                       value={grade.letterGrade}
                                       onChange={(e) => handleGradeChange(grade.id, "letterGrade", e.target.value)}
                                       variant="outlined"
-                                      required
+                                      
                                       InputProps={{
                                         startAdornment: (
                                           <InputAdornment position="start">
@@ -801,7 +801,7 @@ export default function GradingSystem() {
                                           handleGradeChange(grade.id, "markRangeStart", Number(e.target.value))
                                         }
                                         variant="outlined"
-                                        required
+                                        
                                         InputProps={{
                                           inputProps: { min: 0, max: formData.totalMarks },
                                         }}
@@ -816,7 +816,7 @@ export default function GradingSystem() {
                                           handleGradeChange(grade.id, "markRangeEnd", Number(e.target.value))
                                         }
                                         variant="outlined"
-                                        required
+                                        
                                         InputProps={{
                                           inputProps: { min: 0, max: formData.totalMarks },
                                         }}
@@ -833,7 +833,7 @@ export default function GradingSystem() {
                                         handleGradeChange(grade.id, "gradePoint", Number(e.target.value))
                                       }
                                       variant="outlined"
-                                      required
+                                      
                                       inputProps={{ step: "0.1", min: 0 }}
                                     />
                                   </Grid>

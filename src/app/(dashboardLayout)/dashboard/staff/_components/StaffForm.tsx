@@ -241,7 +241,7 @@ export default function StaffForm({ id }: TeacherFormProps = {}) {
     const handleSubmit = async (data: any) => {
         console.log(data)
         if (!data.name) {
-            toast.error("Name is required!");
+            toast.error("Name is !");
             return;
         } 
 
@@ -1076,8 +1076,8 @@ export default function StaffForm({ id }: TeacherFormProps = {}) {
                     </Box>
                     <Typography variant="body1" sx={{ opacity: 0.9, maxWidth: 700 }}>
                         {id
-                            ? "Update Staff information by modifying the required fields."
-                            : "Register a new Staff by filling in the required information. Follow the steps to complete the registration process."}
+                            ? "Update Staff information by modifying the  fields."
+                            : "Register a new Staff by filling in the  information. Follow the steps to complete the registration process."}
                     </Typography>
                 </Container>
             </Box>
@@ -1214,7 +1214,7 @@ export default function StaffForm({ id }: TeacherFormProps = {}) {
                         </Typography>
                         <Typography variant="body2" sx={{ color: "#1b5e20" }}>
                             Registering a Staff is the first step in the onboarding process. After registration, you can manage the
-                            Staff's professional records, attendance, and salary payments. Make sure to fill in all required fields
+                            Staff's professional records, attendance, and salary payments. Make sure to fill in all  fields
                             marked with an asterisk (*) for successful registration.
                         </Typography>
                     </Box>

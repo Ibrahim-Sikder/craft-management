@@ -1084,8 +1084,8 @@
 //           </Box>
 //           <Typography variant="body1" sx={{ opacity: 0.9, maxWidth: 700 }}>
 //             {id
-//               ? "Update student information by modifying the required fields."
-//               : "Register a new student by filling in the required information. Follow the steps to complete the registration process."}
+//               ? "Update student information by modifying the  fields."
+//               : "Register a new student by filling in the  information. Follow the steps to complete the registration process."}
 //           </Typography>
 //         </Container>
 //       </Box>
@@ -1223,7 +1223,7 @@
 //             </Typography>
 //             <Typography variant="body2" sx={{ color: "#1b5e20" }}>
 //               Registering a student is the first step in the enrollment process. After registration, you can manage the
-//               student's academic records, attendance, and fee payments. Make sure to fill in all required fields marked
+//               student's academic records, attendance, and fee payments. Make sure to fill in all  fields marked
 //               with an asterisk (*) for successful registration.
 //             </Typography>
 //           </Box>

@@ -9,7 +9,7 @@ import { Dayjs } from "dayjs";
 interface ControlledTimePickerProps {
   name: string;
   label?: string;
-  required?: boolean;
+  ?: boolean;
   disabled?: boolean;
   fullWidth?: boolean;
 }
@@ -17,7 +17,7 @@ interface ControlledTimePickerProps {
 const CraftTimePicker: React.FC<ControlledTimePickerProps> = ({
   name,
   label = "Select Time",
-  required = false,
+   = false,
   disabled = false,
   fullWidth = true,
 }) => {
@@ -37,7 +37,7 @@ const CraftTimePicker: React.FC<ControlledTimePickerProps> = ({
             disabled={disabled}
             slotProps={{
               textField: {
-                required,
+                ,
                 fullWidth, // ✅ properly passed here
                 error: !!error,
                 helperText: error ? error.message : null,
