@@ -354,7 +354,7 @@ export default function ClassReportForm({ id }: any) {
                 data.classes = { label: data.classes, value: data.classes }
               }
             } else if (data.classes && (!data.classes.label || !data.classes.value)) {
-              // Ensure object has  properties
+              // Ensure object has required properties
               data.classes = {
                 label: data.classes.label || data.classes.value || data.classes,
                 value: data.classes.value || data.classes.label || data.classes,

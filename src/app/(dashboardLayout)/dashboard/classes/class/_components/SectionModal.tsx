@@ -115,7 +115,7 @@ const SectionModal = ({ onClose, open }: any) => {
                                         }}
                                         fullWidth
                                         placeholder="e.g., Section A, Morning Batch"
-                                        
+                                        required
                                     />
                                     <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 2 }}>
                                         <Button

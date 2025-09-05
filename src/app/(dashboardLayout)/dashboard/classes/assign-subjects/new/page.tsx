@@ -446,7 +446,7 @@
 //       let filledFields = 0
 //       let totalFields = 0
 
-//       //  fields
+//       // Required fields
 //       const requiredFields = ["subject", "class", "teacher"]
 //       requiredFields.forEach((field) => {
 //         totalFields++
@@ -2266,7 +2266,7 @@ useEffect(() => {
     let filledFields = 0
     let totalFields = 0
 
-    //  fields
+    // Required fields
     const requiredFields: (keyof FormData)[] = ["subject", "class", "teacher"]
     requiredFields.forEach((field) => {
       totalFields++

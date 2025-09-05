@@ -135,7 +135,7 @@ const sampleRoutines = [
     endDate: "2024-06-30",
     color: "#10b981",
     textColor: "#ffffff",
-    notes: "Safety goggles ",
+    notes: "Safety goggles required",
     isRecurring: true,
     isActive: true,
   },

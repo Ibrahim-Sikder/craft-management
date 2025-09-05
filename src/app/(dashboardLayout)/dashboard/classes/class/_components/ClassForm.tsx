@@ -264,7 +264,7 @@
 //                                     label="Class Name"
 //                                     variant="outlined"
 //                                     placeholder="Enter class name"
-//                                     
+//                                     required
 //                                     InputProps={{
 //                                       startAdornment: (
 //                                         <ClassIcon
@@ -634,7 +634,7 @@ export default function ClassForm({ id }: ClassProps) {
                                 label="Class Name"
                                 variant="outlined"
                                 placeholder="Enter class name"
-                                
+                                required
                                 InputProps={{
                                   startAdornment: (
                                     <ClassIcon
@@ -1027,7 +1027,7 @@ export default function ClassForm({ id }: ClassProps) {
 //                                     label="Class Name"
 //                                     variant="outlined"
 //                                     placeholder="Enter class name"
-//                                     
+//                                     required
 //                                     InputProps={{
 //                                       startAdornment: (
 //                                         <ClassIcon

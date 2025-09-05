@@ -14,7 +14,7 @@ type TAutocompleteControllerProps = {
     fullWidth?: boolean;
     sx?: SxProps;
     disabled?: boolean;
-    ?: boolean;
+    required?: boolean;
     multiple?: boolean;
     margin?: "none" | "normal" | "dense";
     size?: 'small' | 'medium'

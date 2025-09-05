@@ -241,7 +241,7 @@ const FeedbackFormModal: React.FC<FeedbackFormModalProps> = ({ open, onClose, pr
                                         </Grid>
 
                                         <Grid item xs={12} md={6}>
-                                            <FormControl fullWidth >
+                                            <FormControl fullWidth required>
                                                 <InputLabel>Priority</InputLabel>
                                                 <Select
                                                     value={formData.priority}

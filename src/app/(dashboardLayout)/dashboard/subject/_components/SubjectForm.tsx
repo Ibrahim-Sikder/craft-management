@@ -118,7 +118,7 @@ export default function SubjectForm({ id }: any) {
                               name="name"
                               label="Subject Name"
                               placeholder="Write Subject Name"
-                              
+                              required
                               fullWidth
                               InputProps={{
                                 startAdornment: <MenuBook sx={{ color: "primary.main", mr: 1 }} />,

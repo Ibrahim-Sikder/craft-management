@@ -79,7 +79,7 @@ const NoticeBoardPage = () => {
       id: 1,
       title: "Annual Sports Day 2024",
       content:
-        "We are excited to announce our Annual Sports Day will be held on March 15th, 2024. All students are  to participate in various sporting events. Registration forms are available at the school office.",
+        "We are excited to announce our Annual Sports Day will be held on March 15th, 2024. All students are required to participate in various sporting events. Registration forms are available at the school office.",
       category: "Sports",
       author: "Principal",
       authorAvatar: "/placeholder.svg?height=40&width=40",

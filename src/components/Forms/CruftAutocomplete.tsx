@@ -22,7 +22,7 @@ type TStateProps = {
   label?: string
   fullWidth?: boolean
   sx?: SxProps
-  ?: boolean
+  required?: boolean
   options: Option[]
   size?: "small" | "medium"
   multiple?: boolean
@@ -48,7 +48,7 @@ const CraftIntAutoComplete = ({
   label = "Autocomplete",
   fullWidth = true,
   sx,
-  ,
+  required,
   options,
   margin = "normal",
   multiple = true,
@@ -135,7 +135,7 @@ const CraftIntAutoComplete = ({
               label={label}
               placeholder={placeholder}
               fullWidth={fullWidth}
-              ={}
+              required={required}
               disabled={disabled}
               margin={margin}
               error={!!error}

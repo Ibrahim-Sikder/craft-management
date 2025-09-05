@@ -847,7 +847,7 @@ const ExamsPage = () => {
                 fullWidth
                 value={formData.name}
                 onChange={handleInputChange}
-                
+                required
                 variant="outlined"
                 InputProps={{
                   sx: {
@@ -857,7 +857,7 @@ const ExamsPage = () => {
               />
             </Grid>
             <Grid item xs={12} md={6}>
-              <FormControl fullWidth >
+              <FormControl fullWidth required>
                 <InputLabel>Exam Type</InputLabel>
                 <Select
                   name="examType"
@@ -875,7 +875,7 @@ const ExamsPage = () => {
               </FormControl>
             </Grid>
             <Grid item xs={12} md={6}>
-              <FormControl fullWidth >
+              <FormControl fullWidth required>
                 <InputLabel>Classes</InputLabel>
                 <Select
                   name="classes"
@@ -908,7 +908,7 @@ const ExamsPage = () => {
                 fullWidth
                 value={formData.startDate}
                 onChange={handleInputChange}
-                
+                required
                 InputLabelProps={{ shrink: true }}
                 InputProps={{
                   sx: {
@@ -925,7 +925,7 @@ const ExamsPage = () => {
                 fullWidth
                 value={formData.endDate}
                 onChange={handleInputChange}
-                
+                required
                 InputLabelProps={{ shrink: true }}
                 InputProps={{
                   sx: {

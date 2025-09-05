@@ -87,7 +87,7 @@
 //                                             name: e.target.value,
 //                                         })
 //                                     }
-//                                     
+//                                     required
 //                                     sx={{
 //                                         "& .MuiOutlinedInput-root": {
 //                                             borderRadius: 2,
@@ -109,7 +109,7 @@
 //                                             type: e.target.value,
 //                                         })
 //                                     }
-//                                     
+//                                     required
 //                                     sx={{
 //                                         "& .MuiOutlinedInput-root": {
 //                                             borderRadius: 2,
@@ -142,7 +142,7 @@
 //                                         })
 //                                     }
 //                                     inputProps={{ min: 0, step: 0.01 }}
-//                                     
+//                                     required
 //                                     sx={{
 //                                         "& .MuiOutlinedInput-root": {
 //                                             borderRadius: 2,
@@ -165,7 +165,7 @@
 //                                         })
 //                                     }
 //                                     inputProps={{ min: 0, step: 0.01 }}
-//                                     
+//                                     required
 //                                     sx={{
 //                                         "& .MuiOutlinedInput-root": {
 //                                             borderRadius: 2,

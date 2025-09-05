@@ -66,7 +66,7 @@ const TransferDialog = ({ open, onClose, loanId, refetch }: TransferDialogProps)
                 fullWidth
                 name="borrowerName"
                 label="New Borrower Name"
-                
+                required
               />
             </Grid>
             
@@ -75,7 +75,7 @@ const TransferDialog = ({ open, onClose, loanId, refetch }: TransferDialogProps)
                 fullWidth
                 name="contactNumber"
                 label="Contact Number"
-                
+                required
               />
             </Grid>
             
@@ -85,7 +85,7 @@ const TransferDialog = ({ open, onClose, loanId, refetch }: TransferDialogProps)
                 name="interest_rate"
                 label="Interest Rate (%)"
                 type="number"
-                
+                required
               />
             </Grid>
             
@@ -94,7 +94,7 @@ const TransferDialog = ({ open, onClose, loanId, refetch }: TransferDialogProps)
                 fullWidth
                 name="repayment_start_date"
                 label="Repayment Start Date"
-                
+                required
               />
             </Grid>
             
@@ -103,7 +103,7 @@ const TransferDialog = ({ open, onClose, loanId, refetch }: TransferDialogProps)
                 fullWidth
                 name="repayment_end_date"
                 label="Repayment End Date"
-                
+                required
               />
             </Grid>
           </Grid>

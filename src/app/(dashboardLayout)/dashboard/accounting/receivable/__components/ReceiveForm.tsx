@@ -285,7 +285,7 @@ export default function AccountsReceivableManagement() {
     const validationErrors: string[] = []
 
     if (!formData.studentName.trim()) {
-      validationErrors.push("Student name is ")
+      validationErrors.push("Student name is required")
     }
 
     if (!formData.amount || Number.parseFloat(formData.amount) <= 0) {
@@ -293,11 +293,11 @@ export default function AccountsReceivableManagement() {
     }
 
     if (!formData.dueDate) {
-      validationErrors.push("Due date is ")
+      validationErrors.push("Due date is required")
     }
 
     if (!formData.description.trim()) {
-      validationErrors.push("Description is ")
+      validationErrors.push("Description is required")
     }
 
     return validationErrors
@@ -684,7 +684,7 @@ export default function AccountsReceivableManagement() {
                         <TextField
                           {...params}
                           label="Student Name"
-                          
+                          required
                           error={errors.some((e) => e.includes("Student name"))}
                         />
                       )}
@@ -718,7 +718,7 @@ export default function AccountsReceivableManagement() {
                       value={formData.amount}
                       onChange={(e) => setFormData({ ...formData, amount: e.target.value })}
                       inputProps={{ min: 0, step: 0.01 }}
-                      
+                      required
                       error={errors.some((e) => e.includes("Amount"))}
                     />
                   </Grid>
@@ -730,7 +730,7 @@ export default function AccountsReceivableManagement() {
                       value={formData.dueDate}
                       onChange={(e) => setFormData({ ...formData, dueDate: e.target.value })}
                       InputLabelProps={{ shrink: true }}
-                      
+                      required
                       error={errors.some((e) => e.includes("Due date"))}
                     />
                   </Grid>
@@ -792,7 +792,7 @@ export default function AccountsReceivableManagement() {
                       value={formData.description}
                       onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                       placeholder="Describe the fee or service..."
-                      
+                      required
                       error={errors.some((e) => e.includes("Description"))}
                     />
                   </Grid>

@@ -182,7 +182,7 @@
 //       let filledFields = 0
 //       let totalFields = 0
 
-//       //  fields
+//       // Required fields
 //       const requiredFields = ["teacher", "class", "subjects"]
 //       requiredFields.forEach((field) => {
 //         totalFields++
@@ -1497,7 +1497,7 @@ export default function AssignClassTeacher() {
       let filledFields = 0
       let totalFields = 0
 
-      //  fields
+      // Required fields
       const requiredFields = ["teacher", "class", "subjects"]
       requiredFields.forEach((field) => {
         totalFields++

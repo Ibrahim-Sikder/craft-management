@@ -97,9 +97,9 @@ export default function TodayTask({ open, onClose, onSave, id }: TodayTaskProps)
                   label="বাড়ির কাজের বিষয়বস্তু"
                   placeholder="বাড়ির কাজের বিষয়বস্তু লিখুন..."
                   minRows={6}
-                  
+                  required
                 />
-                <CraftDatePicker name="dueDate" label="জমা দেওয়ার তারিখ"  />
+                <CraftDatePicker name="dueDate" label="জমা দেওয়ার তারিখ" required />
               </Box>
             </DialogContent>
             <DialogActions sx={{ p: 2, justifyContent: "space-between" }}>

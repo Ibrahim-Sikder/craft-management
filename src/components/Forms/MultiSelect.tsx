@@ -37,7 +37,7 @@ interface TMultiSelectProps {
   label: string;
   items: { category: string; subcategories?: string[] }[];
   size?: "small" | "medium";
-  ?: boolean;
+  required?: boolean;
   fullWidth?: boolean;
   sx?: SxProps;
 }

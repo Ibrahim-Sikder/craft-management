@@ -299,15 +299,15 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
 
     // Validation
     if (!data.name) {
-      toast.error("Teacher name is !")
+      toast.error("Teacher name is required!")
       setIsSubmitting(false)
       return
     } else if (!data.phone) {
-      toast.error("Phone number is !")
+      toast.error("Phone number is required!")
       setIsSubmitting(false)
       return
     } else if (!data.email) {
-      toast.error("Email is !")
+      toast.error("Email is required!")
       setIsSubmitting(false)
       return
     }

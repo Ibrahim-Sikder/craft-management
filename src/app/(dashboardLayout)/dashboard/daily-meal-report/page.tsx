@@ -444,7 +444,7 @@ export default function MealReport() {
         if (backendMealTypes.length === 0) {
           setSnackbar({
             open: true,
-            message: "At least one meal type is ",
+            message: "At least one meal type is required",
             severity: "error",
           })
           return
@@ -457,7 +457,7 @@ export default function MealReport() {
         const updateData = {
           id: reportId,
           data: {
-            // Include the date field  by the backend validation
+            // Include the date field required by the backend validation
             date: selectedDate,
             // We need to update either students or teachers array based on person type
             [person.type === "student" ? "students" : "teachers"]: [

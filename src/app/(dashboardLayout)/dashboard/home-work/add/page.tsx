@@ -266,7 +266,7 @@ export default function HomeworkAdd() {
               fullWidth
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              
+              required
               placeholder="Enter a descriptive title for the homework"
               InputProps={{
                 startAdornment: <Assignment sx={{ mr: 1, color: "text.secondary" }} />,

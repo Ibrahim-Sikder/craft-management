@@ -10,7 +10,7 @@ type TInputProps = {
   fullWidth?: boolean;
   sx?: SxProps;
   placeholder?: string;
-  ?: boolean;
+  required?: boolean;
   variant?: "outlined" | "filled" | "standard";
   margin?: "none" | "normal" | "dense";
   multiline?: boolean;
@@ -32,7 +32,7 @@ const CraftInput = ({
   sx,
   disabled,
   placeholder,
-  ,
+  required,
   variant = "outlined",
   margin = "normal",
   multiline = false,
@@ -64,7 +64,7 @@ const CraftInput = ({
           fullWidth={fullWidth}
           sx={{ ...sx }}
           placeholder={placeholder}
-          ={}
+          required={required}
           margin={margin}
           error={!!error?.message}
           helperText={error?.message}

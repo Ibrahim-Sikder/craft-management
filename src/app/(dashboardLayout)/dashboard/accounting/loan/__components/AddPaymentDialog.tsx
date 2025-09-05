@@ -137,7 +137,7 @@ const AddPaymentDialog = ({ open, onClose, loanId, refetch }: AddPaymentDialogPr
                 name="amount"
                 label="Amount"
                 type="number"
-                
+                required
 
               // inputProps={{
               //   max: paymentType === "principal" ? remainingBalance : undefined
@@ -151,7 +151,7 @@ const AddPaymentDialog = ({ open, onClose, loanId, refetch }: AddPaymentDialogPr
                 name="type"
                 label="Payment Type"
                 items={['principal', 'interest', 'extra']}
-                
+                required
                 onChange={handleTypeChange}
               />
             </Grid>
@@ -161,7 +161,7 @@ const AddPaymentDialog = ({ open, onClose, loanId, refetch }: AddPaymentDialogPr
                 fullWidth
                 name="date"
                 label="Payment Date"
-                
+                required
               />
             </Grid>
 

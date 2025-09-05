@@ -619,7 +619,7 @@ export default function ExamCategoryPage() {
                                 value={formData.name}
                                 onChange={handleInputChange}
                                 variant="outlined"
-                                
+                                required
                                 placeholder="e.g., Midterm Examination, Final Examination, Quiz"
                                 InputProps={{
                                   startAdornment: (
@@ -661,7 +661,7 @@ export default function ExamCategoryPage() {
                                 value={formData.totalMarks}
                                 onChange={handleInputChange}
                                 variant="outlined"
-                                
+                                required
                                 InputProps={{
                                   startAdornment: (
                                     <InputAdornment position="start">
@@ -688,7 +688,7 @@ export default function ExamCategoryPage() {
                                 value={formData.passMarks}
                                 onChange={handleInputChange}
                                 variant="outlined"
-                                
+                                required
                                 InputProps={{
                                   startAdornment: (
                                     <InputAdornment position="start">
@@ -697,7 +697,7 @@ export default function ExamCategoryPage() {
                                   ),
                                   endAdornment: (
                                     <InputAdornment position="end">
-                                      <Tooltip title="Minimum marks  to pass">
+                                      <Tooltip title="Minimum marks required to pass">
                                         <InfoIcon fontSize="small" color="action" />
                                       </Tooltip>
                                     </InputAdornment>
@@ -1083,7 +1083,7 @@ export default function ExamCategoryPage() {
                                 value={formData.name}
                                 onChange={handleInputChange}
                                 variant="outlined"
-                                
+                                required
                                 placeholder="e.g., Midterm Examination, Final Examination, Quiz"
                               />
                             </Grid>
@@ -1153,7 +1153,7 @@ export default function ExamCategoryPage() {
                                 value={formData.totalMarks}
                                 onChange={handleInputChange}
                                 variant="outlined"
-                                
+                                required
                               />
                             </Grid>
 
@@ -1166,7 +1166,7 @@ export default function ExamCategoryPage() {
                                 value={formData.passMarks}
                                 onChange={handleInputChange}
                                 variant="outlined"
-                                
+                                required
                               />
                             </Grid>
 
