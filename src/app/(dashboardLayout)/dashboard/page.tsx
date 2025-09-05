@@ -611,8 +611,8 @@ const DashboardHome = () => {
   const { data, isLoading } = useGetAllMetaQuery({})
   const { data: accountingData, isLoading: accountingLoading } = useGetAccountingReportQuery({})
   const metaData = data?.data
-  const accountingReport = accountingData?.data
-
+  const accountingReport = accountingData?.data?.data
+  console.log(accountingReport)
   // Toggle sidebar
   const toggleSidebar = () => {
     setSidebarOpen(!sidebarOpen)
