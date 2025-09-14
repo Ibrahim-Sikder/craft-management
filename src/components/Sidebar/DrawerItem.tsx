@@ -166,6 +166,16 @@ export const navigationItems: NavigationItem[] = [
         roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
       },
       {
+        title: "Weekly Target",
+        icon: (
+          <ColorfulIcon color="#9C27B0">
+            <ClassOutlined />
+          </ColorfulIcon>
+        ),
+        path: "/dashboard/hifz/weeklytarget",
+        roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+      },
+      {
         title: "Class Reports",
         icon: (
           <ColorfulIcon color="#9C27B0">
