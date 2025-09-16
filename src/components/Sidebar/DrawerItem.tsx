@@ -60,6 +60,9 @@ import {
   ManageAccounts,
   PersonAdd,
   FormatListBulleted,
+  Backup,
+  Delete,
+  Web,
 } from "@mui/icons-material";
 import { ColorfulIcon } from "./ColorfulIcon";
 import { NavigationItem } from "@/types/common";
@@ -75,6 +78,80 @@ export const navigationItems: NavigationItem[] = [
     path: "/dashboard",
     roles: ["admin", "teacher", "student", "super_admin", "class_teacher", 'accountant'],
   },
+  // Website
+  {
+    title: "Website",
+    icon: (
+      <ColorfulIcon color="#2a52be">
+        <Web />
+      </ColorfulIcon>
+      
+    ),
+    roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+    children: [
+      {
+        title: "Sections",
+        icon: (
+          <ColorfulIcon color="#2a52be ">
+            <ClassOutlined />
+          </ColorfulIcon>
+        ),
+        path: "/dashboard/classes/section/list",
+        roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+      },
+      {
+        title: "Classes",
+        icon: (
+          <ColorfulIcon color="#2a52be ">
+            <Class />
+          </ColorfulIcon>
+        ),
+        path: "/dashboard/classes/class",
+        roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+      },
+      {
+        title: "Subjects",
+        icon: (
+          <ColorfulIcon color="#2a52be ">
+            <Subject />
+          </ColorfulIcon>
+        ),
+        path: "/dashboard/subject",
+        roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+      },
+      {
+        title: "Class Reports",
+        icon: (
+          <ColorfulIcon color="#2a52be ">
+            <BarChart />
+          </ColorfulIcon>
+        ),
+        path: "/dashboard/classes/report/list",
+        roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+      },
+      {
+        title: "New Report",
+        icon: (
+          <ColorfulIcon color="#2a52be ">
+            <Addchart />
+          </ColorfulIcon>
+        ),
+        path: "/dashboard/classes/report/new",
+        roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+      },
+      {
+        title: "Class Routine",
+        icon: (
+          <ColorfulIcon color="#2a52be ">
+            <Schedule />
+          </ColorfulIcon>
+        ),
+        path: "/dashboard/class-routine",
+        roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+      },
+    ],
+  },
+  // Academic
   {
     title: "Academic",
     icon: (
@@ -146,6 +223,7 @@ export const navigationItems: NavigationItem[] = [
       },
     ],
   },
+  // Hifz Program
   {
     title: "Hifz Program",
     icon: (
@@ -217,6 +295,7 @@ export const navigationItems: NavigationItem[] = [
       },
     ],
   },
+  // People
   {
     title: "People",
     icon: (
@@ -318,6 +397,7 @@ export const navigationItems: NavigationItem[] = [
       },
     ],
   },
+  // Attendance
   {
     title: "Attendance",
     icon: (
@@ -328,6 +408,7 @@ export const navigationItems: NavigationItem[] = [
     path: "/dashboard/attendance",
     roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
   },
+  // Communications
   {
     title: "Communications",
     icon: (
@@ -369,6 +450,7 @@ export const navigationItems: NavigationItem[] = [
       },
     ],
   },
+  // Meal Management
   {
     title: "Meal Management",
     icon: (
@@ -400,6 +482,7 @@ export const navigationItems: NavigationItem[] = [
       },
     ],
   },
+  // Fees Management
   {
     title: "Fees Management",
     icon: (
@@ -431,6 +514,7 @@ export const navigationItems: NavigationItem[] = [
       },
     ],
   },
+  // Accounting
   {
     title: "Accounting",
     icon: (
@@ -562,6 +646,7 @@ export const navigationItems: NavigationItem[] = [
       },
     ],
   },
+  // Homework
   {
     title: "Homework",
     icon: (
@@ -572,6 +657,7 @@ export const navigationItems: NavigationItem[] = [
     path: "/dashboard/home-work",
     roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
   },
+  // Examinations
   {
     title: "Examinations",
     icon: (
@@ -623,6 +709,7 @@ export const navigationItems: NavigationItem[] = [
       },
     ],
   },
+  // result
   {
     title: "Results",
     icon: (
@@ -704,6 +791,7 @@ export const navigationItems: NavigationItem[] = [
       },
     ],
   },
+  // admission
   {
     title: "Admissions",
     icon: (
@@ -714,6 +802,7 @@ export const navigationItems: NavigationItem[] = [
     path: "/dashboard/admission",
     roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
   },
+  // user management
   {
     title: "User Management",
     icon: (
@@ -724,6 +813,7 @@ export const navigationItems: NavigationItem[] = [
     path: "/dashboard/user-management",
     roles: ["admin", "super_admin"],
   },
+  // system
   {
     title: "System",
     icon: (
@@ -751,6 +841,26 @@ export const navigationItems: NavigationItem[] = [
           </ColorfulIcon>
         ),
         path: "/dashboard/security",
+        roles: ["admin", "super_admin"],
+      },
+      {
+        title: "Trash",
+        icon: (
+          <ColorfulIcon color="#37474F">
+            <Delete />
+          </ColorfulIcon>
+        ),
+        path: "/dashboard/trash",
+        roles: ["admin", "super_admin"],
+      },
+      {
+        title: "Backup",
+        icon: (
+          <ColorfulIcon color="#37474F">
+            <Backup />
+          </ColorfulIcon>
+        ),
+        path: "/dashboard/backup",
         roles: ["admin", "super_admin"],
       },
     ],
