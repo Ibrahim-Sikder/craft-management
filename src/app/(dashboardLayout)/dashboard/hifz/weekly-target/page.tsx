@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
 import { useState } from "react"
@@ -206,25 +207,28 @@ function ReportsTable({ reports, onView, onSort, sortConfig }) {
   )
 }
 
+type Report = typeof mockReports[number];
+type SortKey = keyof Report;
+
 export default function HifzWeeklyReportsList() {
-  const [reports] = useState(mockReports)
+  const [reports] = useState<Report[]>(mockReports)
   const [selectedTab, setSelectedTab] = useState(0)
   const [searchQuery, setSearchQuery] = useState("")
-  const [selectedReport, setSelectedReport] = useState(null)
+  const [selectedReport, setSelectedReport] = useState<Report | null>(null)
   const [viewDialogOpen, setViewDialogOpen] = useState(false)
-  const [sortConfig, setSortConfig] = useState({ key: 'date', direction: 'desc' })
+  const [sortConfig, setSortConfig] = useState<{ key: SortKey, direction: 'asc' | 'desc' }>({ key: 'date', direction: 'desc' })
 
-  const handleTabChange = (event, newValue) => {
+  const handleTabChange = ( newValue: any) => {
     setSelectedTab(newValue)
   }
 
-  const handleViewReport = (report) => {
+  const handleViewReport = (report: Report) => {
     setSelectedReport(report)
     setViewDialogOpen(true)
   }
 
-  const handleSort = (key) => {
-    let direction = 'asc'
+  const handleSort = (key: SortKey) => {
+    let direction: 'asc' | 'desc' = 'asc'
     if (sortConfig.key === key && sortConfig.direction === 'asc') {
       direction = 'desc'
     }
@@ -241,10 +245,11 @@ export default function HifzWeeklyReportsList() {
   })
 
   const sortedReports = [...filteredReports].sort((a, b) => {
-    if (a[sortConfig.key] < b[sortConfig.key]) {
+    const key = sortConfig.key
+    if (a[key] < b[key]) {
       return sortConfig.direction === 'asc' ? -1 : 1
     }
-    if (a[sortConfig.key] > b[sortConfig.key]) {
+    if (a[key] > b[key]) {
       return sortConfig.direction === 'asc' ? 1 : -1
     }
     return 0

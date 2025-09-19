@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client"
 
@@ -19,13 +20,9 @@ import {
   Paper,
 } from "@mui/material"
 
-interface NazeraReportProps {
-  studentName: string
-  reportDate: string
-  month: string
-}
 
-export function NazeraReport({ studentName, reportDate, month }: NazeraReportProps) {
+
+ function NazeraReport({ studentName, reportDate, month }: any) {
   const [weeklyTarget, setWeeklyTarget] = useState("")
   const [dailyEntries, setDailyEntries] = useState({
     saturday: {

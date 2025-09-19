@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client"
 
@@ -18,13 +19,8 @@ import {
     Grid,
 } from "@mui/material"
 
-interface QaidaNooraniReportProps {
-    studentName: string
-    reportDate: string
-    month: string
-}
 
-export function QaidaNooraniReport({ studentName, reportDate, month }: QaidaNooraniReportProps) {
+ function QaidaNooraniReport({ studentName, reportDate, month }:any) {
     const [weeklyTarget, setWeeklyTarget] = useState("")
     const [dailyEntries, setDailyEntries] = useState({
         saturday: {

@@ -1,15 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client"
 
 import { useState } from "react"
 import { Card, CardContent, CardHeader, TextField, Typography, Box, Grid, Paper } from "@mui/material"
 
-interface HifzWeeklyReportProps {
-  studentName: string
-  reportDate: string
-  month: string
-}
 
-export function HifzWeeklyReport({ studentName, reportDate, month }: HifzWeeklyReportProps) {
+ function HifzWeeklyReport({ studentName, reportDate, month }: any) {
   const [weeklyEntries, setWeeklyEntries] = useState([
     {
       weeklyTarget: "",

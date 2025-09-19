@@ -8,20 +8,16 @@ import {
   AssignmentTurnedIn,
   Grading,
   SupervisorAccount,
-
   Settings,
   Class,
   Subject,
   BarChart,
   CloudUpload,
   Category,
-
   ReceiptLong,
   Score,
   TableChart,
-
   Download,
-
   Event,
   TableRows,
   Message,
@@ -34,7 +30,6 @@ import {
   Book,
   NotificationAdd,
   DeveloperBoard,
-
   TrendingUp,
   TrendingDown,
   AccountTree,
@@ -63,6 +58,64 @@ import {
   Backup,
   Delete,
   Web,
+  List,
+  PlaylistAddCheck,
+  TrackChanges,
+  AutoAwesome,
+  ImportContacts,
+  LibraryBooks,
+  TrendingFlat,
+  Task,
+  Flag,
+  CalendarMonth,
+  DateRange,
+  ViewList,
+  PostAdd,
+  LibraryAdd,
+  AccountCircle,
+  Group,
+  RecentActors,
+  Fastfood,
+  LunchDining,
+  Restaurant,
+  LocalAtm,
+  Payment,
+  RequestQuote,
+  Finance,
+  Receipt,
+  AccountBox,
+  HowToReg,
+  AdminPanelSettings,
+  Database,
+  SecurityUpdateGood,
+  AutoDelete,
+  CloudSync,
+  Description,
+  Analytics,
+  Report,
+  Assessment,
+  Timeline,
+  WorkHistory,
+  TaskAlt,
+  Checklist,
+  GradingOutlined,
+  FactCheck,
+  SchoolOutlined,
+  GroupWork,
+  PeopleAlt,
+  Badge,
+  Person,
+  LocalPolice,
+  HistoryEdu,
+  AutoStories,
+  CollectionsBookmark,
+  PictureAsPdf,
+  Sms,
+  HowToApp,
+  PersonPin,
+  SystemUpdateAlt,
+  VpnKey,
+  StorageOutlined
 } from "@mui/icons-material";
 import { ColorfulIcon } from "./ColorfulIcon";
 import { NavigationItem } from "@/types/common";
@@ -85,15 +138,14 @@ export const navigationItems: NavigationItem[] = [
       <ColorfulIcon color="#2a52be">
         <Web />
       </ColorfulIcon>
-      
     ),
     roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
     children: [
       {
         title: "Sections",
         icon: (
-          <ColorfulIcon color="#2a52be ">
-            <ClassOutlined />
+          <ColorfulIcon color="#2a52be">
+            <ViewList />
           </ColorfulIcon>
         ),
         path: "/dashboard/classes/section/list",
@@ -102,7 +154,7 @@ export const navigationItems: NavigationItem[] = [
       {
         title: "Classes",
         icon: (
-          <ColorfulIcon color="#2a52be ">
+          <ColorfulIcon color="#2a52be">
             <Class />
           </ColorfulIcon>
         ),
@@ -112,7 +164,7 @@ export const navigationItems: NavigationItem[] = [
       {
         title: "Subjects",
         icon: (
-          <ColorfulIcon color="#2a52be ">
+          <ColorfulIcon color="#2a52be">
             <Subject />
           </ColorfulIcon>
         ),
@@ -122,8 +174,8 @@ export const navigationItems: NavigationItem[] = [
       {
         title: "Class Reports",
         icon: (
-          <ColorfulIcon color="#2a52be ">
-            <BarChart />
+          <ColorfulIcon color="#2a52be">
+            <Analytics />
           </ColorfulIcon>
         ),
         path: "/dashboard/classes/report/list",
@@ -132,8 +184,8 @@ export const navigationItems: NavigationItem[] = [
       {
         title: "New Report",
         icon: (
-          <ColorfulIcon color="#2a52be ">
-            <Addchart />
+          <ColorfulIcon color="#2a52be">
+            <PostAdd />
           </ColorfulIcon>
         ),
         path: "/dashboard/classes/report/new",
@@ -142,8 +194,8 @@ export const navigationItems: NavigationItem[] = [
       {
         title: "Class Routine",
         icon: (
-          <ColorfulIcon color="#2a52be ">
-            <Schedule />
+          <ColorfulIcon color="#2a52be">
+            <CalendarMonth />
           </ColorfulIcon>
         ),
         path: "/dashboard/class-routine",
@@ -165,7 +217,7 @@ export const navigationItems: NavigationItem[] = [
         title: "Sections",
         icon: (
           <ColorfulIcon color="#0F9D58">
-            <ClassOutlined />
+            <ViewList />
           </ColorfulIcon>
         ),
         path: "/dashboard/classes/section/list",
@@ -195,7 +247,7 @@ export const navigationItems: NavigationItem[] = [
         title: "Class Reports",
         icon: (
           <ColorfulIcon color="#0F9D58">
-            <BarChart />
+            <Analytics />
           </ColorfulIcon>
         ),
         path: "/dashboard/classes/report/list",
@@ -205,7 +257,7 @@ export const navigationItems: NavigationItem[] = [
         title: "New Report",
         icon: (
           <ColorfulIcon color="#0F9D58">
-            <Addchart />
+            <PostAdd />
           </ColorfulIcon>
         ),
         path: "/dashboard/classes/report/new",
@@ -215,7 +267,7 @@ export const navigationItems: NavigationItem[] = [
         title: "Class Routine",
         icon: (
           <ColorfulIcon color="#0F9D58">
-            <Schedule />
+            <CalendarMonth />
           </ColorfulIcon>
         ),
         path: "/dashboard/class-routine",
@@ -228,13 +280,13 @@ export const navigationItems: NavigationItem[] = [
     title: "Hifz Program",
     icon: (
       <ColorfulIcon color="#9C27B0">
-        <MenuBook />
+        <AutoStories />
       </ColorfulIcon>
     ),
     roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
     children: [
       {
-        title: " Classes",
+        title: "Classes",
         icon: (
           <ColorfulIcon color="#9C27B0">
             <ClassOutlined />
@@ -247,27 +299,27 @@ export const navigationItems: NavigationItem[] = [
         title: "Hifz Subjects",
         icon: (
           <ColorfulIcon color="#9C27B0">
-            <Book />
+            <LibraryBooks />
           </ColorfulIcon>
         ),
         path: "/dashboard/hifz/subject/list",
         roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
       },
       {
-        title: " Daily Report List",
+        title: "Daily Report List",
         icon: (
           <ColorfulIcon color="#9C27B0">
-            <ClassOutlined />
+            <Description />
           </ColorfulIcon>
         ),
         path: "/dashboard/hifz/daily-report",
         roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
       },
       {
-        title: " Daily Report Add",
+        title: "Daily Report Add",
         icon: (
           <ColorfulIcon color="#9C27B0">
-            <ClassOutlined />
+            <PostAdd />
           </ColorfulIcon>
         ),
         path: "/dashboard/hifz/daily-report/add",
@@ -277,32 +329,29 @@ export const navigationItems: NavigationItem[] = [
         title: "Weekly Target List",
         icon: (
           <ColorfulIcon color="#9C27B0">
-            <ClassOutlined />
+            <TrackChanges />
           </ColorfulIcon>
         ),
         path: "/dashboard/hifz/weeklytarget",
         roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
       },
       {
-        title: "Weekly Target Add ",
+        title: "Weekly Target Add",
         icon: (
           <ColorfulIcon color="#9C27B0">
-            <ClassOutlined />
+            <PlaylistAddCheck />
           </ColorfulIcon>
         ),
         path: "/dashboard/hifz/weeklytarget/add",
         roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
       },
-
-
-
     ],
   },
   {
     title: "Nazera",
     icon: (
-      <ColorfulIcon color="#9C27B0">
-        <MenuBook />
+      <ColorfulIcon color="#FF6B35">
+        <ImportContacts />
       </ColorfulIcon>
     ),
     roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
@@ -310,8 +359,8 @@ export const navigationItems: NavigationItem[] = [
       {
         title: "Daily Report List",
         icon: (
-          <ColorfulIcon color="#9C27B0">
-            <ClassOutlined />
+          <ColorfulIcon color="#FF6B35">
+            <Description />
           </ColorfulIcon>
         ),
         path: "/dashboard/nazera/daily-report",
@@ -320,8 +369,8 @@ export const navigationItems: NavigationItem[] = [
       {
         title: "Daily Report Add",
         icon: (
-          <ColorfulIcon color="#9C27B0">
-            <ClassOutlined />
+          <ColorfulIcon color="#FF6B35">
+            <PostAdd />
           </ColorfulIcon>
         ),
         path: "/dashboard/nazera/daily-report/add",
@@ -330,8 +379,8 @@ export const navigationItems: NavigationItem[] = [
       {
         title: "Weekly Report List",
         icon: (
-          <ColorfulIcon color="#9C27B0">
-            <ClassOutlined />
+          <ColorfulIcon color="#FF6B35">
+            <Assessment />
           </ColorfulIcon>
         ),
         path: "/dashboard/nazera/weekly-report/list",
@@ -340,8 +389,8 @@ export const navigationItems: NavigationItem[] = [
       {
         title: "Weekly Report Add",
         icon: (
-          <ColorfulIcon color="#9C27B0">
-            <ClassOutlined />
+          <ColorfulIcon color="#FF6B35">
+            <LibraryAdd />
           </ColorfulIcon>
         ),
         path: "/dashboard/nazera/weekly-report/add",
@@ -350,10 +399,10 @@ export const navigationItems: NavigationItem[] = [
     ],
   },
   {
-    title: "Qaida ",
+    title: "Qaida",
     icon: (
-      <ColorfulIcon color="#9C27B0">
-        <MenuBook />
+      <ColorfulIcon color="#00ACC1">
+        <CollectionsBookmark />
       </ColorfulIcon>
     ),
     roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
@@ -361,8 +410,8 @@ export const navigationItems: NavigationItem[] = [
       {
         title: "Daily Report List",
         icon: (
-          <ColorfulIcon color="#9C27B0">
-            <ClassOutlined />
+          <ColorfulIcon color="#00ACC1">
+            <Description />
           </ColorfulIcon>
         ),
         path: "/dashboard/qaida-noorani/qaida-noorani-report/list",
@@ -371,8 +420,8 @@ export const navigationItems: NavigationItem[] = [
       {
         title: "Daily Report Add",
         icon: (
-          <ColorfulIcon color="#9C27B0">
-            <ClassOutlined />
+          <ColorfulIcon color="#00ACC1">
+            <PostAdd />
           </ColorfulIcon>
         ),
         path: "/dashboard/qaida-noorani/qaida-noorani-report/add",
@@ -381,8 +430,8 @@ export const navigationItems: NavigationItem[] = [
       {
         title: "Weekly Report Add",
         icon: (
-          <ColorfulIcon color="#9C27B0">
-            <ClassOutlined />
+          <ColorfulIcon color="#00ACC1">
+            <PlaylistAddCheck />
           </ColorfulIcon>
         ),
         path: "/dashboard/qaida-noorani/weekly-report/add",
@@ -391,8 +440,8 @@ export const navigationItems: NavigationItem[] = [
       {
         title: "Weekly Report List",
         icon: (
-          <ColorfulIcon color="#9C27B0">
-            <ClassOutlined />
+          <ColorfulIcon color="#00ACC1">
+            <TrackChanges />
           </ColorfulIcon>
         ),
         path: "/dashboard/qaida-noorani/weekly-report/list",
@@ -405,7 +454,7 @@ export const navigationItems: NavigationItem[] = [
     title: "People",
     icon: (
       <ColorfulIcon color="#DB4437">
-        <Groups />
+        <Group />
       </ColorfulIcon>
     ),
     roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
@@ -414,7 +463,7 @@ export const navigationItems: NavigationItem[] = [
         title: "Teachers",
         icon: (
           <ColorfulIcon color="#FF5722">
-            <SupervisorAccount />
+            <SchoolOutlined />
           </ColorfulIcon>
         ),
         children: [
@@ -454,7 +503,7 @@ export const navigationItems: NavigationItem[] = [
         title: "Staff",
         icon: (
           <ColorfulIcon color="#7B1FA2">
-            <CoPresent />
+            <Badge />
           </ColorfulIcon>
         ),
         children: [
@@ -484,7 +533,7 @@ export const navigationItems: NavigationItem[] = [
         title: "Students",
         icon: (
           <ColorfulIcon color="#1976D2">
-            <School />
+            <PeopleAlt />
           </ColorfulIcon>
         ),
         children: [
@@ -560,7 +609,7 @@ export const navigationItems: NavigationItem[] = [
     title: "Meal Management",
     icon: (
       <ColorfulIcon color="#E91E63">
-        <RestaurantMenu />
+        <Restaurant />
       </ColorfulIcon>
     ),
     roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
@@ -592,7 +641,7 @@ export const navigationItems: NavigationItem[] = [
     title: "Fees Management",
     icon: (
       <ColorfulIcon color="#009688">
-        <Payments />
+        <Payment />
       </ColorfulIcon>
     ),
     roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
@@ -624,7 +673,7 @@ export const navigationItems: NavigationItem[] = [
     title: "Accounting",
     icon: (
       <ColorfulIcon color="#2E7D32">
-        <AccountBalance />
+        <Finance />
       </ColorfulIcon>
     ),
     roles: ["admin", "super_admin", 'accountant'],
@@ -672,7 +721,7 @@ export const navigationItems: NavigationItem[] = [
             title: "Expense Records",
             icon: (
               <ColorfulIcon color="#D32F2F">
-                <ReceiptIcon />
+                <Receipt />
               </ColorfulIcon>
             ),
             roles: ["admin", "super_admin"],
@@ -734,7 +783,7 @@ export const navigationItems: NavigationItem[] = [
         title: "Student Dues",
         icon: (
           <ColorfulIcon color="#C2185B">
-            <Money />
+            <RequestQuote />
           </ColorfulIcon>
         ),
         roles: ["admin", "super_admin"],
@@ -767,7 +816,7 @@ export const navigationItems: NavigationItem[] = [
     title: "Examinations",
     icon: (
       <ColorfulIcon color="#673AB7">
-        <AssignmentTurnedIn />
+        <FactCheck />
       </ColorfulIcon>
     ),
     roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
@@ -807,7 +856,7 @@ export const navigationItems: NavigationItem[] = [
         title: "Exam Routines",
         icon: (
           <ColorfulIcon color="#673AB7">
-            <Event />
+            <DateRange />
           </ColorfulIcon>
         ),
         roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
@@ -879,7 +928,7 @@ export const navigationItems: NavigationItem[] = [
         title: "Download Marksheet",
         icon: (
           <ColorfulIcon color="#0097A7">
-            <Download />
+            <PictureAsPdf />
           </ColorfulIcon>
         ),
         roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
@@ -889,7 +938,7 @@ export const navigationItems: NavigationItem[] = [
         title: "Send Result SMS",
         icon: (
           <ColorfulIcon color="#0097A7">
-            <Message />
+            <Sms />
           </ColorfulIcon>
         ),
         roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
@@ -901,7 +950,7 @@ export const navigationItems: NavigationItem[] = [
     title: "Admissions",
     icon: (
       <ColorfulIcon color="#5D4037">
-        <AppRegistration />
+        <HowToApp />
       </ColorfulIcon>
     ),
     path: "/dashboard/admission",
@@ -912,7 +961,7 @@ export const navigationItems: NavigationItem[] = [
     title: "User Management",
     icon: (
       <ColorfulIcon color="#546E7A">
-        <ManageAccounts />
+        <AdminPanelSettings />
       </ColorfulIcon>
     ),
     path: "/dashboard/user-management",
@@ -942,7 +991,7 @@ export const navigationItems: NavigationItem[] = [
         title: "Security",
         icon: (
           <ColorfulIcon color="#37474F">
-            <Security />
+            <VpnKey />
           </ColorfulIcon>
         ),
         path: "/dashboard/security",
@@ -952,7 +1001,7 @@ export const navigationItems: NavigationItem[] = [
         title: "Trash",
         icon: (
           <ColorfulIcon color="#37474F">
-            <Delete />
+            <AutoDelete />
           </ColorfulIcon>
         ),
         path: "/dashboard/trash",
@@ -962,7 +1011,7 @@ export const navigationItems: NavigationItem[] = [
         title: "Backup",
         icon: (
           <ColorfulIcon color="#37474F">
-            <Backup />
+            <CloudSync />
           </ColorfulIcon>
         ),
         path: "/dashboard/backup",

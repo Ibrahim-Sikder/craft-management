@@ -20,7 +20,7 @@ import {
 } from "@mui/material"
 import { Search, FilterList, Visibility, Download, CalendarToday, Person, Description } from "@mui/icons-material"
 
-export function ReportsList() {
+ function ReportsList() {
   const [searchTerm, setSearchTerm] = useState("")
   const [filterCategory, setFilterCategory] = useState("all")
   const [filterType, setFilterType] = useState("all")
@@ -201,7 +201,7 @@ export function ReportsList() {
                         }}
                       />
                       <Chip label={`${report.type} Report`} variant="outlined" size="small" />
-                      <Chip label={report.status} color={getStatusColor(report.status) as any} size="small" />
+                      <Chip label={report.status} color={getStatusColor(report.status) } size="small" />
                     </Box>
                   </Box>
                 </Box>
@@ -248,3 +248,5 @@ export function ReportsList() {
     </Box>
   )
 }
+
+export default ReportsList
