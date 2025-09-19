@@ -1,389 +1,427 @@
-// /* eslint-disable @typescript-eslint/no-explicit-any */
 // "use client"
 
-// import type React from "react"
 // import { useState } from "react"
 // import {
-//   Box,
 //   Card,
 //   CardContent,
+//   CardHeader,
+//   TextField,
 //   Typography,
+//   Box,
+//   Grid,
 //   Table,
 //   TableBody,
 //   TableCell,
 //   TableContainer,
 //   TableHead,
 //   TableRow,
-//   TextField,
-//   Button,
 //   Paper,
-//   Grid,
-//   FormControl,
-//   InputLabel,
-//   Select,
-//   MenuItem,
-//   IconButton,
-//   Chip,
 // } from "@mui/material"
-// import { Save as SaveIcon, ArrowBack as ArrowBackIcon } from "@mui/icons-material"
 
-// interface ReportRow {
-//   id: string
-//   section: string
-//   lesson: string
-//   dailyFoundation: string
-//   weeklyFoundation: string
-//   teacherSignature: string
+// interface HifzReportProps {
+//   studentName: string
+//   reportDate: string
+//   month: string
 // }
 
-// interface HifzReportFormProps {
-//   onBack: () => void
-//   onSave: (data: any) => void
-// }
-
-// const HifzReportForm: React.FC<HifzReportFormProps> = ({ onBack, onSave }) => {
-//   const [studentInfo, setStudentInfo] = useState({
-//     studentName: "",
-//     studentId: "",
-//     class: "",
-//     date: new Date().toISOString().split("T")[0],
-//     day: "",
+// export function HifzReport({ studentName, reportDate, month }: HifzReportProps) {
+//   const [weeklyTarget, setWeeklyTarget] = useState("")
+//   const [dailyEntries, setDailyEntries] = useState({
+//     saturday: {
+//       sabakSeven: { para: "", page: "" },
+//       sabakAmukta: { para: "", page: "" },
+//       tilawaAmount: "",
+//       teacherSignature: "",
+//       thursdayWeeklyRevision: "",
+//     },
+//     sunday: {
+//       sabakSeven: { para: "", page: "" },
+//       sabakAmukta: { para: "", page: "" },
+//       tilawaAmount: "",
+//       teacherSignature: "",
+//       thursdayWeeklyRevision: "",
+//     },
+//     monday: {
+//       sabakSeven: { para: "", page: "" },
+//       sabakAmukta: { para: "", page: "" },
+//       tilawaAmount: "",
+//       teacherSignature: "",
+//       thursdayWeeklyRevision: "",
+//     },
+//     tuesday: {
+//       sabakSeven: { para: "", page: "" },
+//       sabakAmukta: { para: "", page: "" },
+//       tilawaAmount: "",
+//       teacherSignature: "",
+//       thursdayWeeklyRevision: "",
+//     },
+//     wednesday: {
+//       sabakSeven: { para: "", page: "" },
+//       sabakAmukta: { para: "", page: "" },
+//       tilawaAmount: "",
+//       teacherSignature: "",
+//       thursdayWeeklyRevision: "",
+//     },
+//     thursday: {
+//       sabakSeven: { para: "", page: "" },
+//       sabakAmukta: { para: "", page: "" },
+//       tilawaAmount: "",
+//       teacherSignature: "",
+//       thursdayWeeklyRevision: "",
+//     },
+//     friday: {
+//       sabakSeven: { para: "", page: "" },
+//       sabakAmukta: { para: "", page: "" },
+//       tilawaAmount: "",
+//       teacherSignature: "",
+//       thursdayWeeklyRevision: "",
+//     },
 //   })
 
-//   const [reportRows, setReportRows] = useState<ReportRow[]>([
-//     // Sabak Jama section
-//     { id: "1", section: "সবক জমা", lesson: "দোয়া সংখ্যা", dailyFoundation: "", weeklyFoundation: "", teacherSignature: "" },
-//     { id: "2", section: "", lesson: "হালিল সংখ্যা", dailyFoundation: "", weeklyFoundation: "", teacherSignature: "" },
-//     { id: "3", section: "", lesson: "তাজভীদের বিষয়", dailyFoundation: "", weeklyFoundation: "", teacherSignature: "" },
-//     { id: "4", section: "", lesson: "মাসায়েলের বিষয়", dailyFoundation: "", weeklyFoundation: "", teacherSignature: "" },
+//   const days = [
+//     { key: "saturday", name: "Saturday", bangla: "শনিবার" },
+//     { key: "sunday", name: "Sunday", bangla: "রবিবার" },
+//     { key: "monday", name: "Monday", bangla: "সোমবার" },
+//     { key: "tuesday", name: "Tuesday", bangla: "মঙ্গলবার" },
+//     { key: "wednesday", name: "Wednesday", bangla: "বুধবার" },
+//     { key: "thursday", name: "Thursday", bangla: "বৃহস্পতিবার" },
+//     { key: "friday", name: "Friday", bangla: "শুক্রবার" },
+//   ]
 
-//     // Nurani/Qaida section
-//     {
-//       id: "5",
-//       section: "নূরানী/কায়েদা",
-//       lesson: "কায়েদার পৃষ্ঠা নং",
-//       dailyFoundation: "",
-//       weeklyFoundation: "",
-//       teacherSignature: "",
-//     },
-
-//     // Ampara section
-//     {
-//       id: "6",
-//       section: "আমপারা",
-//       lesson: "আয়া পারার পৃষ্ঠা নং/পারার নাম",
-//       dailyFoundation: "",
-//       weeklyFoundation: "",
-//       teacherSignature: "",
-//     },
-
-//     // Nazera section
-//     {
-//       id: "7",
-//       section: "নাযেরা",
-//       lesson: "পারা ও পৃষ্ঠা নং",
-//       dailyFoundation: "",
-//       weeklyFoundation: "",
-//       teacherSignature: "",
-//     },
-//     {
-//       id: "8",
-//       section: "",
-//       lesson: "সবক পারা ও পৃষ্ঠা নং",
-//       dailyFoundation: "",
-//       weeklyFoundation: "",
-//       teacherSignature: "",
-//     },
-//     {
-//       id: "9",
-//       section: "",
-//       lesson: "সাত সবক পারা ও পৃষ্ঠা নং",
-//       dailyFoundation: "",
-//       weeklyFoundation: "",
-//       teacherSignature: "",
-//     },
-
-//     // Hifz: Sabki section
-//     {
-//       id: "10",
-//       section: "হিফয: সবকী",
-//       lesson: "আমুখতা পারা ও পৃষ্ঠা নং",
-//       dailyFoundation: "",
-//       weeklyFoundation: "",
-//       teacherSignature: "",
-//     },
-//     { id: "11", section: "", lesson: "দৈনিক ভিত্তাওয়াত", dailyFoundation: "", weeklyFoundation: "", teacherSignature: "" },
-//     { id: "12", section: "", lesson: "সাপ্তাহিক পরীক্ষা", dailyFoundation: "", weeklyFoundation: "", teacherSignature: "" },
-
-//     // Hifz: Doharani section
-//     {
-//       id: "13",
-//       section: "হিফয: দোহরানী",
-//       lesson: "আমুখতা পারা ও পৃষ্ঠা নং",
-//       dailyFoundation: "",
-//       weeklyFoundation: "",
-//       teacherSignature: "",
-//     },
-//     { id: "14", section: "", lesson: "দৈনিক ভিত্তাওয়াত", dailyFoundation: "", weeklyFoundation: "", teacherSignature: "" },
-//   ])
-
-//   const days = ["শনিবার", "রবিবার", "সোমবার", "মঙ্গলবার", "বুধবার", "বৃহস্পতিবার", "শুক্রবার"]
-
-//   const handleStudentInfoChange = (field: string, value: string) => {
-//     setStudentInfo((prev) => ({ ...prev, [field]: value }))
-//   }
-
-//   const handleRowChange = (id: string, field: keyof ReportRow, value: string) => {
-//     setReportRows((prev) => prev.map((row) => (row.id === id ? { ...row, [field]: value } : row)))
-//   }
-
-//   const handleSave = () => {
-//     const reportData = {
-//       studentInfo,
-//       reportRows,
-//       createdAt: new Date().toISOString(),
-//     }
-//     onSave(reportData)
-//   }
-
-//   const getSectionColor = (section: string) => {
-//     switch (section) {
-//       case "সবক জমা":
-//         return "#e3f2fd"
-//       case "নূরানী/কায়েদা":
-//         return "#f3e5f5"
-//       case "আমপারা":
-//         return "#e8f5e8"
-//       case "নাযেরা":
-//         return "#fff3e0"
-//       case "হিফয: সবকী":
-//         return "#fce4ec"
-//       case "হিফয: দোহরানী":
-//         return "#e0f2f1"
-//       default:
-//         return "#ffffff"
-//     }
+//   const updateDayEntry = (day: string, section: string, field: string, value: string) => {
+//     setDailyEntries((prev) => ({
+//       ...prev,
+//       [day]: {
+//         ...prev[day as keyof typeof prev],
+//         [section]:
+//           section === "sabakSeven" || section === "sabakAmukta"
+//             ? { ...prev[day as keyof typeof prev][section as "sabakSeven" | "sabakAmukta"], [field]: value }
+//             : value,
+//       },
+//     }))
 //   }
 
 //   return (
-//     <Box sx={{ p: 3, maxWidth: 1200, mx: "auto" }}>
-//       {/* Header */}
-//       <Card sx={{ mb: 3, background: "linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)", color: "white" }}>
-//         <CardContent sx={{ textAlign: "center", py: 3 }}>
-//           <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-//             <IconButton onClick={onBack} sx={{ color: "white", mr: 2 }}>
-//               <ArrowBackIcon />
-//             </IconButton>
-//             <Typography variant="h4" sx={{ flexGrow: 1, fontWeight: "bold" }}>
-//               ক্রাফট ইন্টারন্যাশনাল ইনস্টিটিউট
+//     <Card sx={{ boxShadow: "none", "@media print": { boxShadow: "none", border: 0 } }}>
+//       <CardHeader
+//         sx={{
+//           textAlign: "center",
+//           borderBottom: 1,
+//           borderColor: "divider",
+//           "@media print": { borderColor: "black" },
+//         }}
+//         title={
+//           <Box>
+//             <Typography variant="h4" sx={{ fontWeight: "bold", color: "text.primary", mb: 1 }}>
+//               Craft International Institute
+//             </Typography>
+//             <Typography variant="h5" sx={{ fontWeight: 600, color: "text.secondary", mb: 1 }}>
+//               Hifz Students Daily Report
+//             </Typography>
+//             <Typography variant="h6" sx={{ color: "text.secondary" }}>
+//               হিফজ শিক্ষার্থীদের দৈনিক রিপোর্ট
 //             </Typography>
 //           </Box>
-//           <Typography variant="h6" sx={{ opacity: 0.9 }}>
-//             নূরানী, নাযেরা ও হিফয শিক্ষার্থীদের দৈনিক ও সাপ্তাহিক রিপোর্ট
-//           </Typography>
-//           <Chip label="নতুন রিপোর্ট তৈরি করুন" sx={{ mt: 2, bgcolor: "rgba(255,255,255,0.2)", color: "white" }} />
-//         </CardContent>
-//       </Card>
+//         }
+//       />
 
-//       {/* Student Information */}
-//       <Card sx={{ mb: 3 }}>
-//         <CardContent>
-//           <Typography variant="h6" sx={{ mb: 3, color: "primary.main", fontWeight: "bold" }}>
-//             শিক্ষার্থীর তথ্য
-//           </Typography>
-//           <Grid container spacing={3}>
-//             <Grid item xs={12} md={3}>
-//               <TextField
-//                 fullWidth
-//                 label="শিক্ষার্থীর নাম"
-//                 value={studentInfo.studentName}
-//                 onChange={(e) => handleStudentInfoChange("studentName", e.target.value)}
-//                 variant="outlined"
-//               />
+//       <CardContent sx={{ p: 3 }}>
+//         {/* Student Information */}
+//         <Paper
+//           elevation={0}
+//           sx={{
+//             p: 2,
+//             mb: 3,
+//             bgcolor: "grey.50",
+//             "@media print": { bgcolor: "transparent", border: 1, borderColor: "black" },
+//           }}
+//         >
+//           <Grid container spacing={2}>
+//             <Grid item xs={12} md={4}>
+//               <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
+//                 Student Name (শিক্ষার্থীর নাম):
+//               </Typography>
+//               <Box sx={{ borderBottom: 1, borderColor: "grey.400", pb: 0.5, minHeight: 24 }}>
+//                 {studentName || "_________________"}
+//               </Box>
 //             </Grid>
-//             <Grid item xs={12} md={2}>
-//               <TextField
-//                 fullWidth
-//                 label="আইডি নম্বর"
-//                 value={studentInfo.studentId}
-//                 onChange={(e) => handleStudentInfoChange("studentId", e.target.value)}
-//                 variant="outlined"
-//               />
+//             <Grid item xs={12} md={4}>
+//               <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
+//                 Date (তারিখ):
+//               </Typography>
+//               <Box sx={{ borderBottom: 1, borderColor: "grey.400", pb: 0.5, minHeight: 24 }}>
+//                 {reportDate || "_________________"}
+//               </Box>
 //             </Grid>
-//             <Grid item xs={12} md={2}>
-//               <TextField
-//                 fullWidth
-//                 label="ক্লাস"
-//                 value={studentInfo.class}
-//                 onChange={(e) => handleStudentInfoChange("class", e.target.value)}
-//                 variant="outlined"
-//               />
-//             </Grid>
-//             <Grid item xs={12} md={3}>
-//               <TextField
-//                 fullWidth
-//                 label="তারিখ"
-//                 type="date"
-//                 value={studentInfo.date}
-//                 onChange={(e) => handleStudentInfoChange("date", e.target.value)}
-//                 variant="outlined"
-//                 InputLabelProps={{ shrink: true }}
-//               />
-//             </Grid>
-//             <Grid item xs={12} md={2}>
-//               <FormControl fullWidth>
-//                 <InputLabel>বার</InputLabel>
-//                 <Select
-//                   value={studentInfo.day}
-//                   onChange={(e) => handleStudentInfoChange("day", e.target.value)}
-//                   label="বার"
-//                 >
-//                   {days.map((day) => (
-//                     <MenuItem key={day} value={day}>
-//                       {day}
-//                     </MenuItem>
-//                   ))}
-//                 </Select>
-//               </FormControl>
+//             <Grid item xs={12} md={4}>
+//               <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
+//                 Month (মাস):
+//               </Typography>
+//               <Box sx={{ borderBottom: 1, borderColor: "grey.400", pb: 0.5, minHeight: 24 }}>
+//                 {month || "_________________"}
+//               </Box>
 //             </Grid>
 //           </Grid>
-//         </CardContent>
-//       </Card>
+//         </Paper>
 
-//       {/* Report Table */}
-//       <Card>
-//         <CardContent>
-//           <Typography variant="h6" sx={{ mb: 3, color: "primary.main", fontWeight: "bold" }}>
-//             দৈনিক ও সাপ্তাহিক রিপোর্ট
-//           </Typography>
+//         {/* Additional Info */}
+//         <Paper
+//           elevation={0}
+//           sx={{
+//             p: 2,
+//             mb: 3,
+//             bgcolor: "blue.50",
+//             "@media print": { bgcolor: "transparent", border: 1, borderColor: "black" },
+//           }}
+//         >
+//           <Grid container spacing={2}>
+//             <Grid item xs={12} md={6}>
+//               <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
+//                 Page Count & Number (পারার সংখ্যা ও নং):
+//               </Typography>
+//               <TextField
+//                 fullWidth
+//                 size="small"
+//                 placeholder="Enter para details"
+//                 sx={{
+//                   "& .MuiOutlinedInput-root": {
+//                     "@media print": {
+//                       border: 0,
+//                       borderBottom: 1,
+//                       borderColor: "black",
+//                       borderRadius: 0,
+//                       bgcolor: "transparent",
+//                     },
+//                   },
+//                 }}
+//               />
+//             </Grid>
+//             <Grid item xs={12} md={6}>
+//               <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
+//                 Total Pages (মোট পারা):
+//               </Typography>
+//               <TextField
+//                 fullWidth
+//                 size="small"
+//                 placeholder="Enter total pages"
+//                 sx={{
+//                   "& .MuiOutlinedInput-root": {
+//                     "@media print": {
+//                       border: 0,
+//                       borderBottom: 1,
+//                       borderColor: "black",
+//                       borderRadius: 0,
+//                       bgcolor: "transparent",
+//                     },
+//                   },
+//                 }}
+//               />
+//             </Grid>
+//           </Grid>
+//         </Paper>
 
-//           <TableContainer component={Paper} sx={{ border: "2px solid #e0e0e0" }}>
-//             <Table>
-//               <TableHead>
-//                 <TableRow sx={{ bgcolor: "#f5f5f5" }}>
-//                   <TableCell sx={{ fontWeight: "bold", border: "1px solid #ddd", minWidth: 120 }}>তারিখ</TableCell>
-//                   <TableCell sx={{ fontWeight: "bold", border: "1px solid #ddd", minWidth: 100 }}>বার</TableCell>
-//                   <TableCell sx={{ fontWeight: "bold", border: "1px solid #ddd", minWidth: 150 }}>বিভাগ</TableCell>
-//                   <TableCell sx={{ fontWeight: "bold", border: "1px solid #ddd", minWidth: 200 }}>পড়ার পরিমাণ</TableCell>
-//                   <TableCell sx={{ fontWeight: "bold", border: "1px solid #ddd", textAlign: "center" }} colSpan={2}>
-//                     ভিত্তিকরণ
+//         {/* Daily Entries Table */}
+//         <TableContainer component={Paper} sx={{ overflowX: "auto" }}>
+//           <Table
+//             size="small"
+//             sx={{
+//               border: 1,
+//               borderColor: "grey.300",
+//               "@media print": { borderColor: "black" },
+//               "& .MuiTableCell-root": {
+//                 border: 1,
+//                 borderColor: "grey.300",
+//                 "@media print": { borderColor: "black" },
+//                 fontSize: "0.75rem",
+//                 p: 1,
+//               },
+//             }}
+//           >
+//             <TableHead>
+//               <TableRow sx={{ bgcolor: "grey.100", "@media print": { bgcolor: "transparent" } }}>
+//                 <TableCell sx={{ fontWeight: 600, textAlign: "center" }}>
+//                   Date/Day
+//                   <br />
+//                   (তারিখ/বার)
+//                 </TableCell>
+//                 <TableCell colSpan={2} sx={{ fontWeight: 600, textAlign: "center" }}>
+//                   Sabak Seven - Sabak Amukta
+//                   <br />
+//                   (সবক সাত - সবক আমুক্তা পেছনের পড়া)
+//                 </TableCell>
+//                 <TableCell sx={{ fontWeight: 600, textAlign: "center" }}>
+//                   Tilawat
+//                   <br />
+//                   (তিলাওয়াত পারা নং)
+//                 </TableCell>
+//                 <TableCell sx={{ fontWeight: 600, textAlign: "center" }}>
+//                   Teacher Signature
+//                   <br />
+//                   (শিক্ষকের স্বাক্ষর)
+//                 </TableCell>
+//                 <TableCell sx={{ fontWeight: 600, textAlign: "center" }}>
+//                   Thursday Weekly Revision
+//                   <br />
+//                   (বৃহস্পতিবার সাপ্তাহিক শবনা রিভিশন)
+//                 </TableCell>
+//               </TableRow>
+//               <TableRow sx={{ bgcolor: "grey.50", "@media print": { bgcolor: "transparent" } }}>
+//                 <TableCell></TableCell>
+//                 <TableCell sx={{ fontSize: "0.7rem", textAlign: "center" }}>
+//                   Para & Page No
+//                   <br />
+//                   (পারা ও পৃষ্ঠা নং)
+//                 </TableCell>
+//                 <TableCell sx={{ fontSize: "0.7rem", textAlign: "center" }}>
+//                   Para & Page No
+//                   <br />
+//                   (পারা ও পৃষ্ঠা নং)
+//                 </TableCell>
+//                 <TableCell sx={{ fontSize: "0.7rem", textAlign: "center" }}>
+//                   Amount
+//                   <br />
+//                   (পরিমাণ)
+//                 </TableCell>
+//                 <TableCell></TableCell>
+//                 <TableCell></TableCell>
+//               </TableRow>
+//             </TableHead>
+//             <TableBody>
+//               {days.map((day) => (
+//                 <TableRow key={day.key} sx={{ "&:hover": { bgcolor: "grey.50" } }}>
+//                   <TableCell sx={{ fontWeight: 500, textAlign: "center" }}>
+//                     {day.name}
+//                     <br />
+//                     <Typography variant="caption" color="text.secondary">
+//                       ({day.bangla})
+//                     </Typography>
 //                   </TableCell>
-//                   <TableCell sx={{ fontWeight: "bold", border: "1px solid #ddd", minWidth: 150 }}>
-//                     শিক্ষকের স্বাক্ষর
+//                   <TableCell sx={{ p: 0.5 }}>
+//                     <TextField
+//                       size="small"
+//                       value={`${dailyEntries[day.key as keyof typeof dailyEntries].sabakSeven.para} ${dailyEntries[day.key as keyof typeof dailyEntries].sabakSeven.page}`}
+//                       onChange={(e) => {
+//                         const [para, page] = e.target.value.split(" ")
+//                         updateDayEntry(day.key, "sabakSeven", "para", para || "")
+//                         updateDayEntry(day.key, "sabakSeven", "page", page || "")
+//                       }}
+//                       placeholder="Para Page"
+//                       sx={{
+//                         "& .MuiOutlinedInput-root": {
+//                           border: 0,
+//                           fontSize: "0.75rem",
+//                           height: 32,
+//                           "@media print": { bgcolor: "transparent" },
+//                         },
+//                       }}
+//                     />
+//                   </TableCell>
+//                   <TableCell sx={{ p: 0.5 }}>
+//                     <TextField
+//                       size="small"
+//                       value={`${dailyEntries[day.key as keyof typeof dailyEntries].sabakAmukta.para} ${dailyEntries[day.key as keyof typeof dailyEntries].sabakAmukta.page}`}
+//                       onChange={(e) => {
+//                         const [para, page] = e.target.value.split(" ")
+//                         updateDayEntry(day.key, "sabakAmukta", "para", para || "")
+//                         updateDayEntry(day.key, "sabakAmukta", "page", page || "")
+//                       }}
+//                       placeholder="Para Page"
+//                       sx={{
+//                         "& .MuiOutlinedInput-root": {
+//                           border: 0,
+//                           fontSize: "0.75rem",
+//                           height: 32,
+//                           "@media print": { bgcolor: "transparent" },
+//                         },
+//                       }}
+//                     />
+//                   </TableCell>
+//                   <TableCell sx={{ p: 0.5 }}>
+//                     <TextField
+//                       size="small"
+//                       value={dailyEntries[day.key as keyof typeof dailyEntries].tilawaAmount}
+//                       onChange={(e) => updateDayEntry(day.key, "tilawaAmount", "", e.target.value)}
+//                       placeholder="Amount"
+//                       sx={{
+//                         "& .MuiOutlinedInput-root": {
+//                           border: 0,
+//                           fontSize: "0.75rem",
+//                           height: 32,
+//                           "@media print": { bgcolor: "transparent" },
+//                         },
+//                       }}
+//                     />
+//                   </TableCell>
+//                   <TableCell sx={{ p: 0.5 }}>
+//                     <TextField
+//                       size="small"
+//                       value={dailyEntries[day.key as keyof typeof dailyEntries].teacherSignature}
+//                       onChange={(e) => updateDayEntry(day.key, "teacherSignature", "", e.target.value)}
+//                       placeholder="Signature"
+//                       sx={{
+//                         "& .MuiOutlinedInput-root": {
+//                           border: 0,
+//                           fontSize: "0.75rem",
+//                           height: 32,
+//                           "@media print": { bgcolor: "transparent" },
+//                         },
+//                       }}
+//                     />
+//                   </TableCell>
+//                   <TableCell sx={{ p: 0.5 }}>
+//                     <TextField
+//                       size="small"
+//                       value={dailyEntries[day.key as keyof typeof dailyEntries].thursdayWeeklyRevision}
+//                       onChange={(e) => updateDayEntry(day.key, "thursdayWeeklyRevision", "", e.target.value)}
+//                       placeholder="Weekly Revision"
+//                       sx={{
+//                         "& .MuiOutlinedInput-root": {
+//                           border: 0,
+//                           fontSize: "0.75rem",
+//                           height: 32,
+//                           "@media print": { bgcolor: "transparent" },
+//                         },
+//                       }}
+//                     />
 //                   </TableCell>
 //                 </TableRow>
-//                 <TableRow sx={{ bgcolor: "#f9f9f9" }}>
-//                   <TableCell sx={{ border: "1px solid #ddd" }}></TableCell>
-//                   <TableCell sx={{ border: "1px solid #ddd" }}></TableCell>
-//                   <TableCell sx={{ border: "1px solid #ddd" }}></TableCell>
-//                   <TableCell sx={{ border: "1px solid #ddd" }}></TableCell>
-//                   <TableCell sx={{ fontWeight: "bold", border: "1px solid #ddd", textAlign: "center", minWidth: 100 }}>
-//                     দৈনিক
-//                   </TableCell>
-//                   <TableCell sx={{ fontWeight: "bold", border: "1px solid #ddd", textAlign: "center", minWidth: 100 }}>
-//                     সাপ্তাহিক
-//                   </TableCell>
-//                   <TableCell sx={{ border: "1px solid #ddd" }}></TableCell>
-//                 </TableRow>
-//               </TableHead>
-//               <TableBody>
-//                 {reportRows.map((row, index) => (
-//                   <TableRow key={row.id} sx={{ bgcolor: getSectionColor(row.section) }}>
-//                     <TableCell sx={{ border: "1px solid #ddd" }}>
-//                       {index === 0 ? (
-//                         <TextField
-//                           size="small"
-//                           type="date"
-//                           value={studentInfo.date}
-//                           onChange={(e) => handleStudentInfoChange("date", e.target.value)}
-//                           sx={{ minWidth: 120 }}
-//                         />
-//                       ) : (
-//                         ""
-//                       )}
-//                     </TableCell>
-//                     <TableCell sx={{ border: "1px solid #ddd" }}>
-//                       {index === 0 ? (
-//                         <FormControl size="small" sx={{ minWidth: 100 }}>
-//                           <Select
-//                             value={studentInfo.day}
-//                             onChange={(e) => handleStudentInfoChange("day", e.target.value)}
-//                           >
-//                             {days.map((day) => (
-//                               <MenuItem key={day} value={day}>
-//                                 {day}
-//                               </MenuItem>
-//                             ))}
-//                           </Select>
-//                         </FormControl>
-//                       ) : (
-//                         ""
-//                       )}
-//                     </TableCell>
-//                     <TableCell sx={{ border: "1px solid #ddd", fontWeight: row.section ? "bold" : "normal" }}>
-//                       {row.section}
-//                     </TableCell>
-//                     <TableCell sx={{ border: "1px solid #ddd" }}>
-//                       <TextField
-//                         fullWidth
-//                         size="small"
-//                         value={row.lesson}
-//                         onChange={(e) => handleRowChange(row.id, "lesson", e.target.value)}
-//                         placeholder={row.lesson}
-//                         variant="outlined"
-//                       />
-//                     </TableCell>
-//                     <TableCell sx={{ border: "1px solid #ddd" }}>
-//                       <TextField
-//                         fullWidth
-//                         size="small"
-//                         value={row.dailyFoundation}
-//                         onChange={(e) => handleRowChange(row.id, "dailyFoundation", e.target.value)}
-//                         variant="outlined"
-//                       />
-//                     </TableCell>
-//                     <TableCell sx={{ border: "1px solid #ddd" }}>
-//                       <TextField
-//                         fullWidth
-//                         size="small"
-//                         value={row.weeklyFoundation}
-//                         onChange={(e) => handleRowChange(row.id, "weeklyFoundation", e.target.value)}
-//                         variant="outlined"
-//                       />
-//                     </TableCell>
-//                     <TableCell sx={{ border: "1px solid #ddd" }}>
-//                       <TextField
-//                         fullWidth
-//                         size="small"
-//                         value={row.teacherSignature}
-//                         onChange={(e) => handleRowChange(row.id, "teacherSignature", e.target.value)}
-//                         variant="outlined"
-//                       />
-//                     </TableCell>
-//                   </TableRow>
-//                 ))}
-//               </TableBody>
-//             </Table>
-//           </TableContainer>
-
-//           <Box sx={{ mt: 3, display: "flex", justifyContent: "center", gap: 2 }}>
-//             <Button variant="contained" startIcon={<SaveIcon />} onClick={handleSave} size="large" sx={{ px: 4 }}>
-//               রিপোর্ট সংরক্ষণ করুন
-//             </Button>
-//           </Box>
-//         </CardContent>
-//       </Card>
-//     </Box>
+//               ))}
+//               <TableRow sx={{ bgcolor: "grey.100", "@media print": { bgcolor: "transparent" }, fontWeight: 600 }}>
+//                 <TableCell sx={{ textAlign: "center" }}>
+//                   Weekly Total
+//                   <br />
+//                   (সপ্তাহের মোট হিসাব)
+//                 </TableCell>
+//                 <TableCell colSpan={5}>
+//                   <Grid container spacing={1} sx={{ fontSize: "0.75rem" }}>
+//                     <Grid item xs={4}>
+//                       Total Sabak: ____
+//                     </Grid>
+//                     <Grid item xs={4}>
+//                       Total Tilawat: ____
+//                     </Grid>
+//                     <Grid item xs={4}>
+//                       Total Revision: ____
+//                     </Grid>
+//                   </Grid>
+//                 </TableCell>
+//               </TableRow>
+//             </TableBody>
+//           </Table>
+//         </TableContainer>
+//       </CardContent>
+//     </Card>
 //   )
 // }
 
-// export default HifzReportForm
+// export default HifzReport
+
 import React from 'react';
 
 const page = () => {
   return (
     <div>
-      add
+      
     </div>
   );
 };

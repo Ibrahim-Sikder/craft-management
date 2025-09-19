@@ -80,6 +80,7 @@ interface Admission {
 
 const AdmissionsList = () => {
   const { data: admissionData, isLoading, refetch } = useGetAllAdmissionsQuery({})
+
   const [deleteAdmission] = useDeleteAdmissionMutation()
   const [page, setPage] = useState(0)
   const [rowsPerPage, setRowsPerPage] = useState(10)

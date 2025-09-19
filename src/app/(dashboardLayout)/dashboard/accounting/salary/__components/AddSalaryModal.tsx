@@ -93,7 +93,7 @@ const AddSalaryModal = ({ open, onClose, salaryId }: AddSalaryDialogProps) => {
     };
 
     const defaultValues = {
-        employee: singleSalary?.data?.employee ?? '', // Fixed for employee selection
+        employee: singleSalary?.data?.employee ?? '',
         basicSalary: singleSalary?.data?.basicSalary ?? '',
         houseRent: singleSalary?.data?.houseRent ?? '',
         medicalAllowance: singleSalary?.data?.medicalAllowance ?? '',
@@ -191,10 +191,10 @@ const AddSalaryModal = ({ open, onClose, salaryId }: AddSalaryDialogProps) => {
 
                                     <Grid container spacing={3}>
                                         <Grid item xs={12}>
-                                            <CraftSelect
+                                            <CraftInput
                                                 name="employee"
-                                                items={['Karim', "Rahim"]}
-                                                label="Select Employee"
+                                                fullWidth
+                                                label=" Employee Name"
                                                 sx={StyledTextFieldSx}
                                             />
                                         </Grid>

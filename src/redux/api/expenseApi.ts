@@ -19,6 +19,14 @@ export const expenseApi = baseApi.injectEndpoints({
       }),
       providesTags: ["expense"],
     }),
+    getTotalExpenseCategory: build.query({
+      query: ({ limit, page, searchTerm }) => ({
+        url: "/expense/total-expense-category",
+        method: "GET",
+        params: { page, limit, searchTerm },
+      }),
+      providesTags: ["expense"],
+    }),
 
     getSingleExpense: build.query({
       query: (id) => ({
@@ -53,4 +61,5 @@ export const {
   useGetSingleExpenseQuery,
   useUpdateExpenseMutation,
   useDeleteExpenseMutation,
+  useGetTotalExpenseCategoryQuery
 } = expenseApi;
