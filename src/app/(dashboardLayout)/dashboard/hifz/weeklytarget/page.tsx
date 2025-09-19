@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import {
@@ -8,7 +9,6 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  TextField,
   Typography,
   Paper,
   Chip,
@@ -26,9 +26,6 @@ import {
   DialogTitle,
   DialogContent,
   DialogActions,
-  Stepper,
-  Step,
-  StepLabel,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -89,13 +86,15 @@ const studentsData = [
   // Add more students as needed...
 ];
 
+type Student = typeof studentsData[number];
+
 export default function ClassReportList() {
   const theme = useTheme();
   const [view, setView] = useState("grid");
-  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
   const [openDialog, setOpenDialog] = useState(false);
 
-  const handleViewClick = (student) => {
+  const handleViewClick = (student:any) => {
     setSelectedStudent(student);
     setOpenDialog(true);
   };
