@@ -156,33 +156,13 @@ export const navigationItems: NavigationItem[] = [
     roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
     children: [
       {
-        title: "Hifz Classes",
+        title: " Classes",
         icon: (
           <ColorfulIcon color="#9C27B0">
             <ClassOutlined />
           </ColorfulIcon>
         ),
         path: "/dashboard/hifz/class/list",
-        roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
-      },
-      {
-        title: "Weekly Target",
-        icon: (
-          <ColorfulIcon color="#9C27B0">
-            <ClassOutlined />
-          </ColorfulIcon>
-        ),
-        path: "/dashboard/hifz/weeklytarget",
-        roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
-      },
-      {
-        title: "Class Reports",
-        icon: (
-          <ColorfulIcon color="#9C27B0">
-            <BarChart />
-          </ColorfulIcon>
-        ),
-        path: "/dashboard/hifz/class-report/list",
         roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
       },
       {
@@ -196,23 +176,148 @@ export const navigationItems: NavigationItem[] = [
         roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
       },
       {
-        title: "Hifz Students",
+        title: " Daily Report List",
         icon: (
           <ColorfulIcon color="#9C27B0">
-            <Groups />
+            <ClassOutlined />
           </ColorfulIcon>
         ),
-        path: "/dashboard/student/list",
+        path: "/dashboard/hifz/daily-report",
         roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
       },
       {
-        title: "Hifz Teachers",
+        title: " Daily Report Add",
         icon: (
           <ColorfulIcon color="#9C27B0">
-            <SupervisorAccount />
+            <ClassOutlined />
           </ColorfulIcon>
         ),
-        path: "/dashboard/teacher/list",
+        path: "/dashboard/hifz/daily-report/add",
+        roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+      },
+      {
+        title: "Weekly Target List",
+        icon: (
+          <ColorfulIcon color="#9C27B0">
+            <ClassOutlined />
+          </ColorfulIcon>
+        ),
+        path: "/dashboard/hifz/weeklytarget",
+        roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+      },
+      {
+        title: "Weekly Target Add ",
+        icon: (
+          <ColorfulIcon color="#9C27B0">
+            <ClassOutlined />
+          </ColorfulIcon>
+        ),
+        path: "/dashboard/hifz/weeklytarget/add",
+        roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+      },
+
+
+
+    ],
+  },
+  {
+    title: "Nazera",
+    icon: (
+      <ColorfulIcon color="#9C27B0">
+        <MenuBook />
+      </ColorfulIcon>
+    ),
+    roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+    children: [
+      {
+        title: "Daily Report List",
+        icon: (
+          <ColorfulIcon color="#9C27B0">
+            <ClassOutlined />
+          </ColorfulIcon>
+        ),
+        path: "/dashboard/nazera/daily-report",
+        roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+      },
+      {
+        title: "Daily Report Add",
+        icon: (
+          <ColorfulIcon color="#9C27B0">
+            <ClassOutlined />
+          </ColorfulIcon>
+        ),
+        path: "/dashboard/nazera/daily-report/add",
+        roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+      },
+      {
+        title: "Weekly Report List",
+        icon: (
+          <ColorfulIcon color="#9C27B0">
+            <ClassOutlined />
+          </ColorfulIcon>
+        ),
+        path: "/dashboard/nazera/weekly-report/list",
+        roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+      },
+      {
+        title: "Weekly Report Add",
+        icon: (
+          <ColorfulIcon color="#9C27B0">
+            <ClassOutlined />
+          </ColorfulIcon>
+        ),
+        path: "/dashboard/nazera/weekly-report/add",
+        roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+      },
+    ],
+  },
+  {
+    title: "Qaida ",
+    icon: (
+      <ColorfulIcon color="#9C27B0">
+        <MenuBook />
+      </ColorfulIcon>
+    ),
+    roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+    children: [
+      {
+        title: "Daily Report List",
+        icon: (
+          <ColorfulIcon color="#9C27B0">
+            <ClassOutlined />
+          </ColorfulIcon>
+        ),
+        path: "/dashboard/qaida-noorani/qaida-noorani-report/list",
+        roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+      },
+      {
+        title: "Daily Report Add",
+        icon: (
+          <ColorfulIcon color="#9C27B0">
+            <ClassOutlined />
+          </ColorfulIcon>
+        ),
+        path: "/dashboard/qaida-noorani/qaida-noorani-report/add",
+        roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+      },
+      {
+        title: "Weekly Report Add",
+        icon: (
+          <ColorfulIcon color="#9C27B0">
+            <ClassOutlined />
+          </ColorfulIcon>
+        ),
+        path: "/dashboard/qaida-noorani/weekly-report/add",
+        roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+      },
+      {
+        title: "Weekly Report List",
+        icon: (
+          <ColorfulIcon color="#9C27B0">
+            <ClassOutlined />
+          </ColorfulIcon>
+        ),
+        path: "/dashboard/qaida-noorani/weekly-report/list",
         roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
       },
     ],
