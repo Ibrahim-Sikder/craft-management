@@ -161,42 +161,43 @@ function QaidaNooraniReport({ studentName, reportDate, month }: any) {
                 </Box>
 
                 <CardContent sx={{ p: 4 }}>
-                      <Paper
-                    elevation={0}
-                    sx={{
-                        p: 2,
-                        mb: 3,
-                        bgcolor: "grey.50",
-                        "@media print": { bgcolor: "transparent", border: 1, borderColor: "black" },
-                    }}
-                >
-                    <Grid container spacing={2}>
-                        <Grid item xs={12} md={4}>
-                            <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
-                                Teacher Name (শিক্ষকের নাম):
-                            </Typography>
-                            <Box sx={{ borderBottom: 1, borderColor: "grey.400", pb: 0.5, minHeight: 24 }}>
-                                {studentName || "_________________"}
-                            </Box>
-                        </Grid>
-                        <Grid item xs={12} md={4}>
-                            <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
-                                Date (তারিখ):
-                            </Typography>
-                            <Box sx={{ borderBottom: 1, borderColor: "grey.400", pb: 0.5, minHeight: 24 }}>
-                                {reportDate || "_________________"}
-                            </Box>
-                        </Grid>
-                        <Grid item xs={12} md={4}>
-                            <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
-                                Student Name (শিক্ষার্থীর নাম):
-                            </Typography>
-                            <Box sx={{ borderBottom: 1, borderColor: "grey.400", pb: 0.5, minHeight: 24 }}>
-                                {studentName || "_________________"}
-                            </Box>
-                        </Grid>
-                    </Grid>
-                </Paper>
+                       <Paper
+          elevation={0}
+          sx={{
+            p: 2,
+            mb: 3,
+            bgcolor: "grey.50",
+            "@media print": { bgcolor: "transparent", border: 1, borderColor: "black" },
+          }}
+        >
+          <Grid container spacing={2}>
+            <Grid item xs={12} md={4}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
+                Teacher Name (শিক্ষকের নাম):
+              </Typography>
+              <Box sx={{ borderBottom: 1, borderColor: "grey.400", pb: 0.5, minHeight: 24 }}>
+                {studentName || "_________________"}
+              </Box>
+            </Grid>
+
+            <Grid item xs={12} md={4}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
+                Student Name (শিক্ষার্থীর নাম):
+              </Typography>
+              <Box sx={{ borderBottom: 1, borderColor: "grey.400", pb: 0.5, minHeight: 24 }}>
+                {studentName || "_________________"}
+              </Box>
+            </Grid>
+            <Grid item xs={12} md={4}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
+                Date (তারিখ):
+              </Typography>
+              <Box sx={{ borderBottom: 1, borderColor: "grey.400", pb: 0.5, minHeight: 24 }}>
+                {reportDate || "_________________"}
+              </Box>
+            </Grid>
+          </Grid>
+        </Paper>
 
                     <TableContainer component={Paper} sx={{ border: 1, borderColor: "grey.300", mb: 4 }}>
                         <Table size="small" sx={{ "& .MuiTableCell-root": { border: 1, borderColor: "grey.300" } }}>
