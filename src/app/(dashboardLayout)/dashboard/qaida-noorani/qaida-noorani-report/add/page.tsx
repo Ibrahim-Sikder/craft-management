@@ -146,8 +146,8 @@ function QaidaNooraniReport({ studentName, reportDate, month }: any) {
     }
 
     return (
-        <Container maxWidth="xl">
-            <Card >
+        < >
+            <Card>
                 <Box sx={{ textAlign: "center", p: 3, borderBottom: 1, borderColor: "divider" }}>
                     <Typography variant="h4" fontWeight="bold" gutterBottom>
                         Craft International Institute
@@ -161,27 +161,42 @@ function QaidaNooraniReport({ studentName, reportDate, month }: any) {
                 </Box>
 
                 <CardContent sx={{ p: 4 }}>
-                    <Paper sx={{ p: 3, mb: 4, bgcolor: "grey.50" }}>
-                        <Grid container spacing={3}>
-                            <Grid item xs={12} md={4}>
-                                <Typography variant="subtitle2" fontWeight="600" gutterBottom>
-                                    Student Name (ছাত্রের নাম):
-                                </Typography>
-                                <Box sx={{ borderBottom: 1, borderColor: "grey.400", pb: 1, minHeight: 24 }}>
-                                    <Typography variant="body1">{studentName || "_________________"}</Typography>
-                                </Box>
-                            </Grid>
-                           
-                            <Grid item xs={12} md={4}>
-                                <Typography variant="subtitle2" fontWeight="600" gutterBottom>
-                                    Month (মাস):
-                                </Typography>
-                                <Box sx={{ borderBottom: 1, borderColor: "grey.400", pb: 1, minHeight: 24 }}>
-                                    <Typography variant="body1">{month || "_________________"}</Typography>
-                                </Box>
-                            </Grid>
+                      <Paper
+                    elevation={0}
+                    sx={{
+                        p: 2,
+                        mb: 3,
+                        bgcolor: "grey.50",
+                        "@media print": { bgcolor: "transparent", border: 1, borderColor: "black" },
+                    }}
+                >
+                    <Grid container spacing={2}>
+                        <Grid item xs={12} md={4}>
+                            <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
+                                Teacher Name (শিক্ষকের নাম):
+                            </Typography>
+                            <Box sx={{ borderBottom: 1, borderColor: "grey.400", pb: 0.5, minHeight: 24 }}>
+                                {studentName || "_________________"}
+                            </Box>
                         </Grid>
-                    </Paper>
+                        <Grid item xs={12} md={4}>
+                            <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
+                                Date (তারিখ):
+                            </Typography>
+                            <Box sx={{ borderBottom: 1, borderColor: "grey.400", pb: 0.5, minHeight: 24 }}>
+                                {reportDate || "_________________"}
+                            </Box>
+                        </Grid>
+                        <Grid item xs={12} md={4}>
+                            <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
+                                Student Name (শিক্ষার্থীর নাম):
+                            </Typography>
+                            <Box sx={{ borderBottom: 1, borderColor: "grey.400", pb: 0.5, minHeight: 24 }}>
+                                {studentName || "_________________"}
+                            </Box>
+                        </Grid>
+                    </Grid>
+                </Paper>
 
                     <TableContainer component={Paper} sx={{ border: 1, borderColor: "grey.300", mb: 4 }}>
                         <Table size="small" sx={{ "& .MuiTableCell-root": { border: 1, borderColor: "grey.300" } }}>
@@ -472,7 +487,7 @@ function QaidaNooraniReport({ studentName, reportDate, month }: any) {
                     </Box>
                 </CardContent>
             </Card>
-        </Container>
+        </>
     )
 }
 

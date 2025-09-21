@@ -153,7 +153,7 @@ function HifzReport({ studentName, reportDate, month }: any) {
 
             <CardContent sx={{ p: 3 }}>
                 {/* Student Information */}
-                <Paper
+               <Paper
                     elevation={0}
                     sx={{
                         p: 2,
@@ -165,7 +165,7 @@ function HifzReport({ studentName, reportDate, month }: any) {
                     <Grid container spacing={2}>
                         <Grid item xs={12} md={4}>
                             <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
-                                Student Name (শিক্ষার্থীর নাম):
+                                Teacher Name (শিক্ষকের নাম):
                             </Typography>
                             <Box sx={{ borderBottom: 1, borderColor: "grey.400", pb: 0.5, minHeight: 24 }}>
                                 {studentName || "_________________"}
@@ -181,10 +181,10 @@ function HifzReport({ studentName, reportDate, month }: any) {
                         </Grid>
                         <Grid item xs={12} md={4}>
                             <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
-                                Month (মাস):
+                                Student Name (শিক্ষার্থীর নাম):
                             </Typography>
                             <Box sx={{ borderBottom: 1, borderColor: "grey.400", pb: 0.5, minHeight: 24 }}>
-                                {month || "_________________"}
+                                {studentName || "_________________"}
                             </Box>
                         </Grid>
                     </Grid>
