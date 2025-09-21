@@ -215,7 +215,7 @@ function NazeraReport({ studentName, reportDate, month }: any) {
                   (দোয়া/হাদিস/মাসয়ালা সংখ্যা/নং)
                 </TableCell>
                 <TableCell sx={{ fontWeight: 600, textAlign: "center", minWidth: 90 }}>
-                  মাশক্ব হয়েছে কি
+                  মাশক্ব
                 </TableCell>
                 <TableCell sx={{ fontWeight: 600, textAlign: "center", minWidth: 90 }}>
                   তাজভীদ শিক্ষা

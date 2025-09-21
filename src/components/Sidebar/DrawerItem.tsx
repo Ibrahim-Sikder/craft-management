@@ -271,7 +271,7 @@ export const navigationItems: NavigationItem[] = [
             <PostAdd />
           </ColorfulIcon>
         ),
-        path: "/dashboard/hifz/daily-report/add",
+        path: "/dashboard/hifz/daily-report/soboki/add",
         roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
       },
       {

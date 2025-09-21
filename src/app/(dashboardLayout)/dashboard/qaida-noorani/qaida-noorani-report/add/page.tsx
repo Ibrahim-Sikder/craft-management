@@ -221,7 +221,7 @@ function QaidaNooraniReport({ studentName, reportDate, month }: any) {
                                     </TableCell>
                                 
                                     <TableCell  sx={{ fontWeight: 600, textAlign: "center", minWidth: 90 }}>
-                                            মাশক্ব হয়েছে কি
+                                            মাশক্ব
                                         </TableCell>
                                         <TableCell sx={{ fontWeight: 600, textAlign: "center", minWidth: 90 }}>
                                             তাজভীদ শিক্ষা
