@@ -217,19 +217,16 @@ function HifzReport({ studentName, reportDate, month }: any) {
                                         (তারিখ/বার)
                                     </TableCell>
                                     <TableCell colSpan={2} sx={{ fontWeight: 600, textAlign: "center", minWidth: 100 }}>
-                                        Sobok
-                                        <br />
-                                        (সবক)
+                                        সকালের পড়া।
+
                                     </TableCell>
                                     <TableCell colSpan={4} sx={{ fontWeight: 600, textAlign: "center" }}>
-                                        Sat Sobok
-                                        <br />
-                                        (সাত সবক)
+                                        রাতের পড়া
+
                                     </TableCell>
                                     <TableCell colSpan={4} sx={{ fontWeight: 600, textAlign: "center" }}>
-                                        Sabak Amukta
-                                        <br />
-                                        (সবক আমুক্তা)
+                                        পেছনের পড়া।
+
                                     </TableCell>
                                     <TableCell sx={{ fontWeight: 600, textAlign: "center", minWidth: 70 }}>
                                         Tilawat

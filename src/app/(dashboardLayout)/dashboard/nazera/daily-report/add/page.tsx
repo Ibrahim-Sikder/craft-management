@@ -18,11 +18,13 @@ import {
   TableHead,
   TableRow,
   Paper,
+  MenuItem,
+  Button,
 } from "@mui/material"
 
 
 
- function NazeraReport({ studentName, reportDate, month }: any) {
+function NazeraReport({ studentName, reportDate, month }: any) {
   const [weeklyTarget, setWeeklyTarget] = useState("")
   const [dailyEntries, setDailyEntries] = useState({
     saturday: {
@@ -150,37 +152,7 @@ import {
                 {studentName || "_________________"}
               </Box>
             </Grid>
-            <Grid item xs={12} md={4}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
-                Weekly Target (সাপ্তাহিক টার্গেট):
-              </Typography>
-              <TextField
-                fullWidth
-                size="small"
-                value={weeklyTarget}
-                onChange={(e) => setWeeklyTarget(e.target.value)}
-                placeholder="Enter weekly target"
-                sx={{
-                  "& .MuiOutlinedInput-root": {
-                    "@media print": {
-                      border: 0,
-                      borderBottom: 1,
-                      borderColor: "black",
-                      borderRadius: 0,
-                      bgcolor: "transparent",
-                    },
-                  },
-                }}
-              />
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
-                Month (মাস):
-              </Typography>
-              <Box sx={{ borderBottom: 1, borderColor: "grey.400", pb: 0.5, minHeight: 24 }}>
-                {month || "_________________"}
-              </Box>
-            </Grid>
+
           </Grid>
         </Paper>
 
@@ -227,10 +199,11 @@ import {
                   <br />
                   (দোয়া/হাদিস/মাসয়ালা সংখ্যা/নং)
                 </TableCell>
-                <TableCell sx={{ fontWeight: 600, textAlign: "center" }}>
-                  Teacher Signature
-                  <br />
-                  (শিক্ষকের স্বাক্ষর)
+                <TableCell sx={{ fontWeight: 600, textAlign: "center", minWidth: 90 }}>
+                  মাশক্ব হয়েছে কি
+                </TableCell>
+                <TableCell sx={{ fontWeight: 600, textAlign: "center", minWidth: 90 }}>
+                  তাজভীদ শিক্ষা
                 </TableCell>
               </TableRow>
               <TableRow sx={{ bgcolor: "grey.50", "@media print": { bgcolor: "transparent" } }}>
@@ -253,6 +226,7 @@ import {
                 <TableCell></TableCell>
                 <TableCell></TableCell>
                 <TableCell></TableCell>
+                <TableCell></TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -272,7 +246,7 @@ import {
                         size="small"
                         value={
                           dailyEntries[day.key as keyof typeof dailyEntries].morning[
-                            field as keyof typeof dailyEntries.saturday.morning
+                          field as keyof typeof dailyEntries.saturday.morning
                           ]
                         }
                         onChange={(e) => updateDayEntry(day.key, "morning", field, e.target.value)}
@@ -294,7 +268,7 @@ import {
                         size="small"
                         value={
                           dailyEntries[day.key as keyof typeof dailyEntries].afternoon[
-                            field as keyof typeof dailyEntries.saturday.afternoon
+                          field as keyof typeof dailyEntries.saturday.afternoon
                           ]
                         }
                         onChange={(e) => updateDayEntry(day.key, "afternoon", field, e.target.value)}
@@ -316,7 +290,7 @@ import {
                         size="small"
                         value={
                           dailyEntries[day.key as keyof typeof dailyEntries].night[
-                            field as keyof typeof dailyEntries.saturday.night
+                          field as keyof typeof dailyEntries.saturday.night
                           ]
                         }
                         onChange={(e) => updateDayEntry(day.key, "night", field, e.target.value)}
@@ -364,14 +338,35 @@ import {
                   </TableCell>
                   <TableCell sx={{ p: 0.5 }}>
                     <TextField
+                      select
                       size="small"
-                      value={dailyEntries[day.key as keyof typeof dailyEntries].teacherSignature}
-                      onChange={(e) => updateDayEntry(day.key, "teacherSignature", "", e.target.value)}
+                      value={dailyEntries[day.key as keyof typeof dailyEntries]}
+                      onChange={(e) => updateDayEntry(day.key, "mashq", "", e.target.value)}
                       sx={{
                         "& .MuiOutlinedInput-root": {
                           border: 0,
                           fontSize: "0.75rem",
-                          height: 24,
+                          height: 32,
+                          "@media print": { bgcolor: "transparent" },
+                        },
+                      }}
+                    >
+                      <MenuItem value="হ্যাঁ">হ্যাঁ</MenuItem>
+                      <MenuItem value="না">না</MenuItem>
+                    </TextField>
+                  </TableCell>
+                  {/* Tajweed Column */}
+                  <TableCell sx={{ p: 0.5 }}>
+                    <TextField
+                      size="small"
+                      value={dailyEntries[day.key as keyof typeof dailyEntries]}
+                      onChange={(e) => updateDayEntry(day.key, "tajweed", "", e.target.value)}
+                      placeholder="তাজভীদ"
+                      sx={{
+                        "& .MuiOutlinedInput-root": {
+                          border: 0,
+                          fontSize: "0.75rem",
+                          height: 32,
                           "@media print": { bgcolor: "transparent" },
                         },
                       }}
@@ -405,6 +400,23 @@ import {
             </TableBody>
           </Table>
         </TableContainer>
+        {/* Submit Button */}
+        <Box sx={{ mt: 3, display: 'flex', justifyContent: 'center', '@media print': { display: 'none' } }}>
+          <Button
+            variant="contained"
+            color="primary"
+            size="large"
+            type="submit"
+            sx={{
+              px: 4,
+              py: 1.5,
+              fontSize: '1.1rem',
+              fontWeight: 'bold',
+            }}
+          >
+            Submit Report
+          </Button>
+        </Box>
       </CardContent>
     </Card>
   )
