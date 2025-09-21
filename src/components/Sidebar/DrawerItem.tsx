@@ -265,7 +265,7 @@ export const navigationItems: NavigationItem[] = [
         roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
       },
       {
-        title: "Daily Report Add",
+        title: "Soboki Daily Report Add",
         icon: (
           <ColorfulIcon color="#9C27B0">
             <PostAdd />
@@ -284,16 +284,7 @@ export const navigationItems: NavigationItem[] = [
         path: "/dashboard/hifz/daily-report/sunani/add",
         roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
       },
-      {
-        title: "Soboki Daily Report Add",
-        icon: (
-          <ColorfulIcon color="#9C27B0">
-            <PostAdd />
-          </ColorfulIcon>
-        ),
-        path: "/dashboard/hifz/daily-report/soboki/add",
-        roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
-      },
+      
       {
         title: "Weekly Target List",
         icon: (
