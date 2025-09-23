@@ -308,6 +308,57 @@ export const navigationItems: NavigationItem[] = [
     ],
   },
   {
+    title: "Ampara",
+    icon: (
+      <ColorfulIcon color="#2E7D32">
+        <ImportContacts />
+      </ColorfulIcon>
+    ),
+    roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+    children: [
+      {
+        title: "Daily Report List",
+        icon: (
+          <ColorfulIcon color="#2E7D32">
+            <Description />
+          </ColorfulIcon>
+        ),
+        path: "/dashboard/ampara/daily-report",
+        roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+      },
+      {
+        title: "Daily Report Add",
+        icon: (
+          <ColorfulIcon color="#2E7D32">
+            <PostAdd />
+          </ColorfulIcon>
+        ),
+        path: "/dashboard/ampara/daily-report/add",
+        roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+      },
+      {
+        title: "Weekly Report List",
+        icon: (
+          <ColorfulIcon color="#2E7D32">
+            <Assessment />
+          </ColorfulIcon>
+        ),
+        path: "/dashboard/ampara/weekly-report/list",
+        roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+      },
+      {
+        title: "Weekly Report Add",
+        icon: (
+          <ColorfulIcon color="#2E7D32">
+            <LibraryAdd />
+          </ColorfulIcon>
+        ),
+        path: "/dashboard/ampara/weekly-report/add",
+        roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+      },
+    ],
+  },
+  {
     title: "Nazera",
     icon: (
       <ColorfulIcon color="#FF6B35">
