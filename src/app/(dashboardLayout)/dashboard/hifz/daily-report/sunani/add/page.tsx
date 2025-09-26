@@ -142,10 +142,10 @@ function HifzReport({ studentName, reportDate, month }: any) {
                             Craft International Institute
                         </Typography>
                         <Typography variant="h5" sx={{ fontWeight: 600, color: "text.secondary", mb: 1 }}>
-                            Hifz Students Daily Report
+                         Shunani Hifz Students Daily Report
                         </Typography>
                         <Typography variant="h6" sx={{ color: "text.secondary" }}>
-                            হিফজ শিক্ষার্থীদের দৈনিক রিপোর্ট
+                         শুনানী হিফজ শিক্ষার্থীদের দৈনিক রিপোর্ট
                         </Typography>
                     </Box>
                 }
@@ -212,31 +212,27 @@ function HifzReport({ studentName, reportDate, month }: any) {
                             <TableHead>
                                 <TableRow sx={{ bgcolor: "grey.100", "@media print": { bgcolor: "transparent" } }}>
                                     <TableCell sx={{ fontWeight: 600, textAlign: "center", minWidth: 80 }}>
-                                        Date/Day
+                                        Day
                                         <br />
-                                        (তারিখ/বার)
+                                        (বার)
                                     </TableCell>
                                     <TableCell colSpan={2} sx={{ fontWeight: 600, textAlign: "center", minWidth: 100 }}>
-                                        সকালের পড়া।
-
+                                        সকালের পড়া
                                     </TableCell>
                                     <TableCell colSpan={4} sx={{ fontWeight: 600, textAlign: "center" }}>
                                         রাতের পড়া
-
                                     </TableCell>
                                     <TableCell colSpan={4} sx={{ fontWeight: 600, textAlign: "center" }}>
-                                        পেছনের পড়া।
-
+                                        পেছনের পড়া
                                     </TableCell>
                                     <TableCell sx={{ fontWeight: 600, textAlign: "center", minWidth: 70 }}>
                                         Tilawat
                                         <br />
                                         (তিলাওয়াত)
                                     </TableCell>
-
                                     <TableCell sx={{ fontWeight: 600, textAlign: "center", minWidth: 90 }}>
-                                        মাশক্ব হয়েছে কি
-                                    </TableCell>
+                                        মাশক্ব
+                                     </TableCell>
                                     <TableCell sx={{ fontWeight: 600, textAlign: "center", minWidth: 90 }}>
                                         তাজভীদ শিক্ষা
                                     </TableCell>
