@@ -6,11 +6,12 @@ import CraftDatePicker from "@/components/Forms/DatePicker"
 
 interface StudentInfoSectionProps {
   teacherOptions: Array<{ label: string; value: string }>
+  studentOptions: Array<{ label: string; value: string }>
   studentName: string
   reportDate: string
 }
 
-const StudentInfoSection = ({ teacherOptions, studentName, reportDate }: StudentInfoSectionProps) => {
+const StudentInfoSection = ({ teacherOptions, studentOptions, studentName, reportDate }: StudentInfoSectionProps) => {
   return (
     <Paper
       elevation={0}
@@ -47,7 +48,7 @@ const StudentInfoSection = ({ teacherOptions, studentName, reportDate }: Student
               fullWidth
               freeSolo
               multiple={false}
-              options={teacherOptions}
+              options={studentOptions}
               forcePopupIcon={false}
               clearOnBlur={false}
               selectOnFocus={true}

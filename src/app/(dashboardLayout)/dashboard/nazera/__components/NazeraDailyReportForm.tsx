@@ -16,6 +16,8 @@ import DailyReportTable from "./DailyReportTable"
 import SubmitButton from "./SubmitButton"
 import { DAYS_OF_WEEK } from "@/constant/daysConfig"
 import { useRouter } from "next/navigation"
+import { useGetAllStudentsQuery } from "@/redux/api/studentApi"
+import { transformToSelectOptions } from "@/utils/selectOptions"
 
 interface NazeraReportProps {
     studentName?: string
@@ -82,14 +84,21 @@ function NazeraDailyReportForm({ studentName, reportDate, month, id }: NazeraRep
         page: page + 1,
         searchTerm: searchTerm,
     })
+    const { data: studentData } = useGetAllStudentsQuery({
+        limit: limit,
+        page: page + 1,
+        searchTerm: searchTerm,
+    })
+    const teacherOptions = useMemo(
+        () => transformToSelectOptions(teacherData?.data, "name"),
+        [teacherData]
+    )
 
-    const teacherOptions = useMemo(() => {
-        if (!teacherData?.data) return []
-        return teacherData.data.map((teacher: any) => ({
-            label: teacher.name,
-            value: teacher._id,
-        }))
-    }, [teacherData])
+    const studentOptions = useMemo(
+        () => transformToSelectOptions(studentData?.data, "name"),
+        [studentData]
+    )
+
 
     const handleSubmit = async (formData: FieldValues) => {
         try {
@@ -121,7 +130,6 @@ function NazeraDailyReportForm({ studentName, reportDate, month, id }: NazeraRep
         return <h2> Loading....... </h2>
     }
 
-    // Transform API data to form fields format
     const defaultValue = transformApiDataToFormFields(singleData?.data);
 
     return (
@@ -137,9 +145,11 @@ function NazeraDailyReportForm({ studentName, reportDate, month, id }: NazeraRep
                             <CardContent sx={{ p: 3 }}>
                                 <StudentInfoSection
                                     teacherOptions={teacherOptions}
+                                    studentOptions={studentOptions}
                                     studentName={studentName || ''}
                                     reportDate={reportDate || ''}
                                 />
+
 
                                 <DailyReportTable days={DAYS_OF_WEEK} />
 

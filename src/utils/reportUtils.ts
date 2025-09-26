@@ -1,34 +1,39 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { DAYS_OF_WEEK } from "@/constant/daysConfig"
-import { FieldValues } from "react-hook-form"
+import { DAYS_OF_WEEK } from "@/constant/daysConfig";
+import { FieldValues } from "react-hook-form";
 
 export const calculateWeeklyTotals = (data: FieldValues) => {
-  let totalPages = 0
-  let totalMistakes = 0
-  let totalDuas = 0
-  let totalHadiths = 0
+  let totalPages = 0;
+  let totalMistakes = 0;
+  let totalDuas = 0;
+  let totalHadiths = 0;
 
-  DAYS_OF_WEEK.forEach(day => {
-    totalPages += parseInt(data[`${day.key}TotalRead`] || "0", 10)
-    
-    totalMistakes += parseInt(data[`${day.key}MorningMistakes`] || "0", 10)
-    totalMistakes += parseInt(data[`${day.key}AfternoonMistakes`] || "0", 10)
-    totalMistakes += parseInt(data[`${day.key}NightMistakes`] || "0", 10)
-    
-    const duaHadithMasala = data[`${day.key}DuaHadithMasala`] || ""
-    const parts = duaHadithMasala.split('/').map((part:any) => part.trim())
-    
-    if (parts.length >= 1) totalDuas += parseInt(parts[0], 10) || 0
-    if (parts.length >= 2) totalHadiths += parseInt(parts[1], 10) || 0
-  })
+  DAYS_OF_WEEK.forEach((day) => {
+    totalPages += parseInt(data[`${day.key}TotalRead`] || "0", 10);
 
-  return { totalPages, totalMistakes, totalDuas, totalHadiths }
-}
+    totalMistakes += parseInt(data[`${day.key}MorningMistakes`] || "0", 10);
+    totalMistakes += parseInt(data[`${day.key}AfternoonMistakes`] || "0", 10);
+    totalMistakes += parseInt(data[`${day.key}NightMistakes`] || "0", 10);
 
-export const formatReportData = (data: FieldValues, weeklyTotals: any, month?: string, id?: string | null) => {
-  const dailyEntries: any = {}
+    const duaHadithMasala = data[`${day.key}DuaHadithMasala`] || "";
+    const parts = duaHadithMasala.split("/").map((part: any) => part.trim());
 
-  DAYS_OF_WEEK.forEach(day => {
+    if (parts.length >= 1) totalDuas += parseInt(parts[0], 10) || 0;
+    if (parts.length >= 2) totalHadiths += parseInt(parts[1], 10) || 0;
+  });
+
+  return { totalPages, totalMistakes, totalDuas, totalHadiths };
+};
+
+export const formatReportData = (
+  data: FieldValues,
+  weeklyTotals: any,
+  month?: string,
+  id?: string | null
+) => {
+  const dailyEntries: any = {};
+
+  DAYS_OF_WEEK.forEach((day) => {
     dailyEntries[day.key] = {
       morning: {
         para: data[`${day.key}MorningPara`] || "",
@@ -52,22 +57,21 @@ export const formatReportData = (data: FieldValues, weeklyTotals: any, month?: s
       duaHadithMasala: data[`${day.key}DuaHadithMasala`] || "",
       mashq: data[`${day.key}Mashq`] || "না",
       tajweed: data[`${day.key}Tajweed`] || "",
-    }
-  })
+    };
+  });
 
   const formattedData = {
-    teacherName: data.teacherName, // Changed from .label to direct value
-    studentName: data.studentName, // Changed from .label to direct value
+    teacherName: data.teacherName?.label,
+    studentName: data.studentName?.label,
     reportDate: data.reportDate,
     month: month || new Date().getMonth().toString(),
     dailyEntries,
-    ...weeklyTotals
-  }
+    ...weeklyTotals,
+  };
 
-  // Add ID if it exists (for updates)
   if (id) {
     formattedData._id = id;
   }
 
-  return formattedData
-}
+  return formattedData;
+};
