@@ -2,10 +2,8 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client"
 
-import { useMemo, useState } from "react"
 import { Card, CardContent } from "@mui/material"
 import CraftForm from "@/components/Forms/Form"
-import { useGetAllTeachersQuery } from "@/redux/api/teacherApi"
 import { FieldValues } from "react-hook-form"
 import { useCreateNazeraReportMutation, useGetSingleNazeraReportQuery, useUpdateNazeraReportMutation } from "@/redux/api/nazeraDailyReportApi"
 import { toast } from "react-hot-toast"
@@ -16,8 +14,7 @@ import DailyReportTable from "./DailyReportTable"
 import SubmitButton from "./SubmitButton"
 import { DAYS_OF_WEEK } from "@/constant/daysConfig"
 import { useRouter } from "next/navigation"
-import { useGetAllStudentsQuery } from "@/redux/api/studentApi"
-import { transformToSelectOptions } from "@/utils/selectOptions"
+import { useTeacherStudentOptions } from "@/hooks/useTeacherStudentOptions"
 
 interface NazeraReportProps {
     studentName?: string
@@ -70,34 +67,11 @@ const transformApiDataToFormFields = (apiData: any) => {
 
 
 function NazeraDailyReportForm({ studentName, reportDate, month, id }: NazeraReportProps) {
-    const [page] = useState(0)
-    const [searchTerm] = useState("")
-    const limit = 10
     const router = useRouter()
-
+    const {teacherOptions, studentOptions} = useTeacherStudentOptions()
     const [createNazeraReport, { isLoading }] = useCreateNazeraReportMutation()
     const [updateNazeraReport] = useUpdateNazeraReportMutation()
     const { data: singleData, isLoading: singleReportLoading } = useGetSingleNazeraReportQuery(id)
-
-    const { data: teacherData } = useGetAllTeachersQuery({
-        limit: limit,
-        page: page + 1,
-        searchTerm: searchTerm,
-    })
-    const { data: studentData } = useGetAllStudentsQuery({
-        limit: limit,
-        page: page + 1,
-        searchTerm: searchTerm,
-    })
-    const teacherOptions = useMemo(
-        () => transformToSelectOptions(teacherData?.data, "name"),
-        [teacherData]
-    )
-
-    const studentOptions = useMemo(
-        () => transformToSelectOptions(studentData?.data, "name"),
-        [studentData]
-    )
 
 
     const handleSubmit = async (formData: FieldValues) => {
@@ -108,6 +82,7 @@ function NazeraDailyReportForm({ studentName, reportDate, month, id }: NazeraRep
             if (id) {
                 res = await updateNazeraReport({ id, data: formattedData }).unwrap()
 
+                
             } else {
                 res = await createNazeraReport(formattedData).unwrap()
             }

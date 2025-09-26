@@ -1,7 +1,8 @@
 import { Box, Button } from "@mui/material"
 
 interface SubmitButtonProps {
-  isLoading: boolean
+  isLoading?: boolean,
+  id?:string;
 }
 
 const SubmitButton = ({ isLoading }: SubmitButtonProps) => {

@@ -25,7 +25,8 @@ export const tagTypesList = [
   'hifz-class',
   'loan',
   'investment',
-  'nazera-daily-report'
+  'nazera-daily-report',
+  'qaida-daily-report'
   
 ] as const;
 
