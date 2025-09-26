@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 export type TeacherStatus = "active" | "on leave" | "inactive"
 
 export interface Teacher {
@@ -87,3 +88,47 @@ export interface TExpense {
   incomeItems: IncomeItem[];
   totalAmount:number
 }
+
+export interface IDailySession {
+  para: string
+  page: string
+  amount: string
+  mistakes: string
+}
+
+export interface IDayEntry {
+  morning: IDailySession
+  afternoon: IDailySession
+  night: IDailySession
+  totalRead: string
+  duaHadithMasala: string
+  mashq?: string
+  tajweed?: string
+}
+
+export interface INazeraReport {
+  _id: string
+  teacherName: string
+  studentName: string
+  reportDate: string
+  month: string
+  weeklyTarget: string
+  dailyEntries: {
+    saturday: IDayEntry
+    sunday: IDayEntry
+    monday: IDayEntry
+    tuesday: IDayEntry
+    wednesday: IDayEntry
+    thursday: IDayEntry
+    friday: IDayEntry
+  }
+  totalPages: number
+  totalMistakes: number
+  totalDuas: number
+  totalHadiths: number
+  createdAt: string
+  updatedAt: string
+  totalDuaHadith:any
+}
+
+export type SessionKey = keyof Pick<IDayEntry, 'morning' | 'afternoon' | 'night'>;

@@ -71,6 +71,7 @@ import TodayLesson from "./TodayLesson"
 import TodayTask from "./TodayTask"
 import { format } from "date-fns"
 import { useGetAllTeachersQuery } from "@/redux/api/teacherApi"
+import { boxStyleReport } from "@/style/customeStyle"
 
 // Define a type for student evaluation
 type StudentEvaluation = {
@@ -82,10 +83,7 @@ type StudentEvaluation = {
   comments: string
 }
 
-interface IDateRange {
-  startDate: Date | null
-  endDate: Date | null
-}
+
 
 export default function ClassReportForm({ id }: any) {
   const router = useRouter()
@@ -108,10 +106,6 @@ export default function ClassReportForm({ id }: any) {
   const [filteredSubjects, setFilteredVehicles] = useState<any[]>([])
   const [selectedStudent, setSelectedStudent] = useState<any | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [refreshKey, setRefreshKey] = useState(0)
-  const [snackbarOpen, setSnackbarOpen] = useState(false)
-  const [snackbarMessage, setSnackbarMessage] = useState("")
-  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success")
   const [studentEvaluations, setStudentEvaluations] = useState<StudentEvaluation[]>([])
   const [todayLessonId, setTodayLessonId] = useState<string | null>(null)
   const [homeTaskId, setHomeTaskId] = useState<string | null>(null)
@@ -139,6 +133,7 @@ export default function ClassReportForm({ id }: any) {
     page: page + 1,
     searchTerm: searchTerm,
   })
+
 
   const classOption = useMemo(() => {
     if (!classData?.data?.classes) return []
@@ -951,7 +946,7 @@ export default function ClassReportForm({ id }: any) {
                     </Box>
 
                     <Paper elevation={0} sx={{  mb: 4, width: "100%", overflow: "hidden" }}>
-                      <Box sx={{ p: { xs: 1, sm: 1, md: 2, lg: 3 }, borderBottom: "1px solid rgba(0, 0, 0, 0.06)" }}>
+                      <Box sx={boxStyleReport}>
                         <Grid container spacing={2} alignItems="center">
                           <Grid item xs={6} sm={6} md={3} lg={2.5}>
                             <CraftIntAutoComplete
@@ -967,6 +962,7 @@ export default function ClassReportForm({ id }: any) {
                               selectOnFocus={true}
                               handleHomeEndKeys={true}
                             />
+
                           </Grid>
                           <Grid item xs={6} sm={6} md={2} lg={2.5}>
                             <CraftIntAutoComplete
