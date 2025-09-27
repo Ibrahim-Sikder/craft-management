@@ -22,7 +22,7 @@ import {
     Button,
 } from "@mui/material"
 
-function HifzReport({ studentName, reportDate, month }: any) {
+function SobokiReport({ studentName, reportDate, month }: any) {
     const [weeklyTarget, setWeeklyTarget] = useState("")
     const [dailyEntries, setDailyEntries] = useState({
         saturday: {
@@ -611,4 +611,4 @@ function HifzReport({ studentName, reportDate, month }: any) {
     )
 }
 
-export default HifzReport
+export default SobokiReport
