@@ -19,6 +19,14 @@ export const incomeApi = baseApi.injectEndpoints({
       }),
       providesTags: ["income"],
     }),
+    getTotalIncomeCategory: build.query({
+      query: ({ limit, page, searchTerm }) => ({
+        url: "/income/total-income-category",
+        method: "GET",
+        params: { page, limit, searchTerm },
+      }),
+      providesTags: ["income"],
+    }),
 
     getSingleIncome: build.query({
       query: (id) => ({
@@ -53,4 +61,5 @@ export const {
   useGetSingleIncomeQuery,
   useUpdateIncomeMutation,
   useDeleteIncomeMutation,
+  useGetTotalIncomeCategoryQuery
 } = incomeApi;

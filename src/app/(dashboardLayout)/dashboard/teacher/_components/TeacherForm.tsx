@@ -221,6 +221,7 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
         status: teacher?.status || "Active",
         language: teacher?.language || "",
         activeSession: teacher?.activeSession || "",
+        teacherDepartment: teacher?.teacherDepartment || "",
 
         // educational info
         teacherPhoto: teacher.teacherPhoto,
@@ -384,6 +385,7 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
         sameAsPermanent: data.sameAsPermanent,
         designation: data.designation,
         department: data.department,
+        studentDepartment: data.studentDepartment,
         joiningDate: data.joiningDate,
         monthlySalary: monthlySalaryNum,
         staffType: data.staffType,
@@ -426,8 +428,6 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
         language: data.language,
         activeSession: data.activeSession,
       }
-      console.log('submission data',submissionData)
-
       if (id) {
         // Use formData or submissionData based on your API requirements
         const res = await updateTeacher({ id, data: submissionData }).unwrap()
@@ -508,7 +508,16 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
               }}
             />
           </Grid>
-
+<Grid item xs={12} md={6}>
+            <CraftSelectWithIcon
+              name="teacherDepartment"
+              size="medium"
+              label="Teacher Department"
+              placeholder="Teacher Department"
+              items={["Hifz Teacher", "School Teacher",]}
+              adornment={<Apartment color="action" />}
+            />
+          </Grid>
           <Grid item xs={12} md={4}>
             <CraftInputWithIcon
               fullWidth

@@ -388,7 +388,7 @@
 //                 WebkitTextFillColor: "transparent",
 //               }}
 //             >
-//               ₹{totalExpense.toLocaleString()}
+//               ৳{totalExpense.toLocaleString()}
 //             </Typography>
 //             <Divider sx={{ my: 2 }} />
 //             <Grid container spacing={2}>
@@ -399,7 +399,7 @@
 //                   </Typography>
 //                   <Box sx={{ display: "flex", alignItems: "center" }}>
 //                     <Typography variant="h6" fontWeight="medium">
-//                       ₹180,500
+//                       ৳180,500
 //                     </Typography>
 //                     <Chip
 //                       size="small"
@@ -421,7 +421,7 @@
 //                   </Typography>
 //                   <Box sx={{ display: "flex", alignItems: "center" }}>
 //                     <Typography variant="h6" fontWeight="medium">
-//                       ₹165,200
+//                       ৳165,200
 //                     </Typography>
 //                     <Chip
 //                       size="small"
@@ -479,7 +479,7 @@
 //                           </Typography>
 //                         </Box>
 //                         <Typography variant="h6" sx={{ fontWeight: "bold", mb: 1 }}>
-//                           ₹{category.total.toLocaleString()}
+//                           ৳{category.total.toLocaleString()}
 //                         </Typography>
 //                         <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
 //                           <Typography variant="caption" color="text.secondary">
@@ -724,7 +724,7 @@
 //                   <TableCell>{expense.paymentMethod}</TableCell>
 //                   <TableCell align="right">
 //                     <Typography variant="body1" fontWeight="bold" color="error.main">
-//                       ₹{expense.amount.toLocaleString()}
+//                       ৳{expense.amount.toLocaleString()}
 //                     </Typography>
 //                   </TableCell>
 //                   <TableCell align="center">
@@ -849,7 +849,7 @@
 //                 onChange={handleFormChange}
 //                 margin="normal"
 //                 InputProps={{
-//                   startAdornment: <InputAdornment position="start">₹</InputAdornment>,
+//                   startAdornment: <InputAdornment position="start">৳</InputAdornment>,
 //                 }}
 //               />
 //             </Grid>

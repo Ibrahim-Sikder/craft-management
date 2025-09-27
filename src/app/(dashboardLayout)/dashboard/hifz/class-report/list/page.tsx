@@ -1,354 +1,261 @@
 // /* eslint-disable @typescript-eslint/no-explicit-any */
 // "use client"
 
-// import type React from "react"
 // import { useState } from "react"
 // import {
 //   Box,
 //   Card,
 //   CardContent,
+//   CardHeader,
 //   Typography,
-//   Table,
-//   TableBody,
-//   TableCell,
-//   TableContainer,
-//   TableHead,
-//   TableRow,
 //   Button,
-//   Paper,
-//   IconButton,
-//   Chip,
 //   TextField,
-//   InputAdornment,
+//   Chip,
+//   FormControl,
+//   InputLabel,
+//   Select,
+//   MenuItem,
 //   Grid,
+//   InputAdornment,
 //   Avatar,
-//   Tooltip,
 // } from "@mui/material"
-// import {
-//   Add as AddIcon,
-//   Visibility as ViewIcon,
-//   Edit as EditIcon,
-//   Delete as DeleteIcon,
-//   Search as SearchIcon,
-//   Download as DownloadIcon,
-//   Print as PrintIcon,
-// } from "@mui/icons-material"
+// import { Search, FilterList, Visibility, Download, CalendarToday, Person, Description } from "@mui/icons-material"
 
-// interface ReportData {
-//   id: string
-//   studentInfo: {
-//     studentName: string
-//     studentId: string
-//     class: string
-//     date: string
-//     day: string
-//   }
-//   createdAt: string
-//   status: "completed" | "pending" | "reviewed"
-// }
-
-// interface HifzReportListProps {
-//   onAddNew: () => void
-//   onViewReport: (id: string) => void
-// }
-
-// const HifzReportList: React.FC<HifzReportListProps> = ({ onAddNew, onViewReport }) => {
+// export function ReportsList() {
 //   const [searchTerm, setSearchTerm] = useState("")
+//   const [filterCategory, setFilterCategory] = useState("all")
+//   const [filterType, setFilterType] = useState("all")
 
-//   // Sample data - in real app this would come from API/database
-//   const [reports] = useState<ReportData[]>([
+//   // Mock data for reports
+//   const reports = [
 //     {
-//       id: "1",
-//       studentInfo: {
-//         studentName: "মোহাম্মদ আব্দুল্লাহ",
-//         studentId: "HF001",
-//         class: "হিফয-১",
-//         date: "2024-01-15",
-//         day: "সোমবার",
-//       },
-//       createdAt: "2024-01-15T10:30:00Z",
-//       status: "completed",
+//       id: 1,
+//       studentName: "Ahmed Hassan",
+//       category: "Qaida & Noorani",
+//       type: "Daily",
+//       date: "2024-01-15",
+//       status: "Completed",
+//       teacher: "Ustaz Rahman",
 //     },
 //     {
-//       id: "2",
-//       studentInfo: {
-//         studentName: "ফাতিমা খাতুন",
-//         studentId: "HF002",
-//         class: "হিফয-২",
-//         date: "2024-01-15",
-//         day: "সোমবার",
-//       },
-//       createdAt: "2024-01-15T11:15:00Z",
-//       status: "reviewed",
+//       id: 2,
+//       studentName: "Fatima Ali",
+//       category: "Nazera",
+//       type: "Weekly",
+//       date: "2024-01-14",
+//       status: "In Progress",
+//       teacher: "Ustaza Khadija",
 //     },
 //     {
-//       id: "3",
-//       studentInfo: {
-//         studentName: "মুহাম্মদ ইব্রাহিম",
-//         studentId: "HF003",
-//         class: "নূরানী-৩",
-//         date: "2024-01-16",
-//         day: "মঙ্গলবার",
-//       },
-//       createdAt: "2024-01-16T09:45:00Z",
-//       status: "pending",
+//       id: 3,
+//       studentName: "Omar Ibrahim",
+//       category: "Hifz",
+//       type: "Daily",
+//       date: "2024-01-13",
+//       status: "Completed",
+//       teacher: "Ustaz Abdullah",
 //     },
 //     {
-//       id: "4",
-//       studentInfo: {
-//         studentName: "আয়েশা সিদ্দিকা",
-//         studentId: "HF004",
-//         class: "নাযেরা-১",
-//         date: "2024-01-16",
-//         day: "মঙ্গলবার",
-//       },
-//       createdAt: "2024-01-16T14:20:00Z",
-//       status: "completed",
+//       id: 4,
+//       studentName: "Aisha Mohammad",
+//       category: "Qaida & Noorani",
+//       type: "Weekly",
+//       date: "2024-01-12",
+//       status: "Completed",
+//       teacher: "Ustaza Maryam",
 //     },
-//   ])
+//     {
+//       id: 5,
+//       studentName: "Yusuf Ahmed",
+//       category: "Hifz",
+//       type: "Weekly",
+//       date: "2024-01-11",
+//       status: "Pending Review",
+//       teacher: "Ustaz Rahman",
+//     },
+//   ]
 
-//   const filteredReports = reports.filter(
-//     (report) =>
-//       report.studentInfo.studentName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-//       report.studentInfo.studentId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-//       report.studentInfo.class.toLowerCase().includes(searchTerm.toLowerCase()),
-//   )
+//   const filteredReports = reports.filter((report) => {
+//     const matchesSearch = report.studentName.toLowerCase().includes(searchTerm.toLowerCase())
+//     const matchesCategory = filterCategory === "all" || report.category === filterCategory
+//     const matchesType = filterType === "all" || report.type === filterType
+//     return matchesSearch && matchesCategory && matchesType
+//   })
 
 //   const getStatusColor = (status: string) => {
 //     switch (status) {
-//       case "completed":
+//       case "Completed":
 //         return "success"
-//       case "reviewed":
+//       case "In Progress":
 //         return "primary"
-//       case "pending":
+//       case "Pending Review":
 //         return "warning"
 //       default:
 //         return "default"
 //     }
 //   }
 
-//   const getStatusText = (status: string) => {
-//     switch (status) {
-//       case "completed":
-//         return "সম্পন্ন"
-//       case "reviewed":
-//         return "পর্যালোচিত"
-//       case "pending":
-//         return "অপেক্ষমাণ"
+//   const getCategoryColor = (category: string) => {
+//     switch (category) {
+//       case "Qaida & Noorani":
+//         return "#10b981"
+//       case "Nazera":
+//         return "#3b82f6"
+//       case "Hifz":
+//         return "#8b5cf6"
 //       default:
-//         return status
+//         return "#6b7280"
 //     }
 //   }
 
-//   const formatDate = (dateString: string) => {
-//     const date = new Date(dateString)
-//     return date.toLocaleDateString("bn-BD", {
-//       year: "numeric",
-//       month: "long",
-//       day: "numeric",
-//     })
-//   }
-
 //   return (
-//     <Box sx={{ p: 3, maxWidth: 1400, mx: "auto" }}>
-//       {/* Header */}
-//       <Card sx={{ mb: 3, background: "linear-gradient(135deg, #1976d2 0%, #42a5f5 100%)", color: "white" }}>
-//         <CardContent sx={{ textAlign: "center", py: 3 }}>
-//           <Typography variant="h4" sx={{ fontWeight: "bold", mb: 1 }}>
-//             ক্রাফট ইন্টারন্যাশনাল ইনস্টিটিউট
+//     <Box sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
+//       <Card elevation={2}>
+//         <CardHeader>
+//           <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
+//             <Description />
+//             <Typography variant="h5" component="h1" fontWeight="bold">
+//               Report History
+//             </Typography>
+//           </Box>
+//           <Typography variant="body2" color="text.secondary">
+//             View and manage all student reports
 //           </Typography>
-//           <Typography variant="h6" sx={{ opacity: 0.9, mb: 2 }}>
-//             হিফয শিক্ষার্থীদের রিপোর্ট তালিকা
-//           </Typography>
-//           <Chip label={`মোট রিপোর্ট: ${reports.length}`} sx={{ bgcolor: "rgba(255,255,255,0.2)", color: "white" }} />
-//         </CardContent>
-//       </Card>
-
-//       {/* Controls */}
-//       <Card sx={{ mb: 3 }}>
+//         </CardHeader>
 //         <CardContent>
-//           <Grid container spacing={3} alignItems="center">
+//           {/* Search and Filters */}
+//           <Grid container spacing={2}>
 //             <Grid item xs={12} md={6}>
 //               <TextField
 //                 fullWidth
-//                 placeholder="শিক্ষার্থীর নাম, আইডি বা ক্লাস দিয়ে খুঁজুন..."
+//                 placeholder="Search by student name..."
 //                 value={searchTerm}
 //                 onChange={(e) => setSearchTerm(e.target.value)}
 //                 InputProps={{
 //                   startAdornment: (
 //                     <InputAdornment position="start">
-//                       <SearchIcon color="action" />
+//                       <Search />
 //                     </InputAdornment>
 //                   ),
 //                 }}
 //                 variant="outlined"
 //               />
 //             </Grid>
-//             <Grid item xs={12} md={6} sx={{ display: "flex", gap: 2, justifyContent: "flex-end" }}>
-//               <Button variant="contained" startIcon={<AddIcon />} onClick={onAddNew} size="large" sx={{ px: 3 }}>
-//                 নতুন রিপোর্ট
-//               </Button>
-//               <Button variant="outlined" startIcon={<DownloadIcon />} size="large">
-//                 এক্সপোর্ট
-//               </Button>
+//             <Grid item xs={12} md={3}>
+//               <FormControl fullWidth variant="outlined">
+//                 <InputLabel>Category</InputLabel>
+//                 <Select
+//                   value={filterCategory}
+//                   onChange={(e) => setFilterCategory(e.target.value)}
+//                   label="Category"
+//                   startAdornment={<FilterList sx={{ mr: 1 }} />}
+//                 >
+//                   <MenuItem value="all">All Categories</MenuItem>
+//                   <MenuItem value="Qaida & Noorani">Qaida & Noorani</MenuItem>
+//                   <MenuItem value="Nazera">Nazera</MenuItem>
+//                   <MenuItem value="Hifz">Hifz</MenuItem>
+//                 </Select>
+//               </FormControl>
+//             </Grid>
+//             <Grid item xs={12} md={3}>
+//               <FormControl fullWidth variant="outlined">
+//                 <InputLabel>Type</InputLabel>
+//                 <Select value={filterType} onChange={(e) => setFilterType(e.target.value)} label="Type">
+//                   <MenuItem value="all">All Types</MenuItem>
+//                   <MenuItem value="Daily">Daily</MenuItem>
+//                   <MenuItem value="Weekly">Weekly</MenuItem>
+//                 </Select>
+//               </FormControl>
 //             </Grid>
 //           </Grid>
 //         </CardContent>
 //       </Card>
 
-//       {/* Statistics Cards */}
-//       <Grid container spacing={3} sx={{ mb: 3 }}>
-//         <Grid item xs={12} md={3}>
-//           <Card sx={{ bgcolor: "#e8f5e8", border: "1px solid #4caf50" }}>
-//             <CardContent sx={{ textAlign: "center" }}>
-//               <Typography variant="h4" sx={{ color: "#2e7d32", fontWeight: "bold" }}>
-//                 {reports.filter((r) => r.status === "completed").length}
-//               </Typography>
-//               <Typography variant="body2" sx={{ color: "#2e7d32" }}>
-//                 সম্পন্ন রিপোর্ট
-//               </Typography>
-//             </CardContent>
-//           </Card>
-//         </Grid>
-//         <Grid item xs={12} md={3}>
-//           <Card sx={{ bgcolor: "#e3f2fd", border: "1px solid #2196f3" }}>
-//             <CardContent sx={{ textAlign: "center" }}>
-//               <Typography variant="h4" sx={{ color: "#1976d2", fontWeight: "bold" }}>
-//                 {reports.filter((r) => r.status === "reviewed").length}
-//               </Typography>
-//               <Typography variant="body2" sx={{ color: "#1976d2" }}>
-//                 পর্যালোচিত রিপোর্ট
-//               </Typography>
-//             </CardContent>
-//           </Card>
-//         </Grid>
-//         <Grid item xs={12} md={3}>
-//           <Card sx={{ bgcolor: "#fff3e0", border: "1px solid #ff9800" }}>
-//             <CardContent sx={{ textAlign: "center" }}>
-//               <Typography variant="h4" sx={{ color: "#f57c00", fontWeight: "bold" }}>
-//                 {reports.filter((r) => r.status === "pending").length}
-//               </Typography>
-//               <Typography variant="body2" sx={{ color: "#f57c00" }}>
-//                 অপেক্ষমাণ রিপোর্ট
-//               </Typography>
-//             </CardContent>
-//           </Card>
-//         </Grid>
-//         <Grid item xs={12} md={3}>
-//           <Card sx={{ bgcolor: "#f3e5f5", border: "1px solid #9c27b0" }}>
-//             <CardContent sx={{ textAlign: "center" }}>
-//               <Typography variant="h4" sx={{ color: "#7b1fa2", fontWeight: "bold" }}>
-//                 {reports.length}
-//               </Typography>
-//               <Typography variant="body2" sx={{ color: "#7b1fa2" }}>
-//                 মোট রিপোর্ট
-//               </Typography>
-//             </CardContent>
-//           </Card>
-//         </Grid>
-//       </Grid>
-
-//       {/* Reports Table */}
-//       <Card>
-//         <CardContent>
-//           <Typography variant="h6" sx={{ mb: 3, color: "primary.main", fontWeight: "bold" }}>
-//             রিপোর্ট তালিকা ({filteredReports.length})
-//           </Typography>
-
-//           <TableContainer component={Paper} sx={{ border: "1px solid #e0e0e0" }}>
-//             <Table>
-//               <TableHead>
-//                 <TableRow sx={{ bgcolor: "#f5f5f5" }}>
-//                   <TableCell sx={{ fontWeight: "bold" }}>শিক্ষার্থী</TableCell>
-//                   <TableCell sx={{ fontWeight: "bold" }}>আইডি</TableCell>
-//                   <TableCell sx={{ fontWeight: "bold" }}>ক্লাস</TableCell>
-//                   <TableCell sx={{ fontWeight: "bold" }}>তারিখ</TableCell>
-//                   <TableCell sx={{ fontWeight: "bold" }}>বার</TableCell>
-//                   <TableCell sx={{ fontWeight: "bold" }}>স্ট্যাটাস</TableCell>
-//                   <TableCell sx={{ fontWeight: "bold" }}>তৈরি হয়েছে</TableCell>
-//                   <TableCell sx={{ fontWeight: "bold", textAlign: "center" }}>অ্যাকশন</TableCell>
-//                 </TableRow>
-//               </TableHead>
-//               <TableBody>
-//                 {filteredReports.map((report) => (
-//                   <TableRow key={report.id} hover>
-//                     <TableCell>
-//                       <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-//                         <Avatar sx={{ bgcolor: "primary.main", width: 40, height: 40 }}>
-//                           {report.studentInfo.studentName.charAt(0)}
-//                         </Avatar>
-//                         <Typography variant="body2" sx={{ fontWeight: "medium" }}>
-//                           {report.studentInfo.studentName}
-//                         </Typography>
-//                       </Box>
-//                     </TableCell>
-//                     <TableCell>
-//                       <Chip label={report.studentInfo.studentId} size="small" variant="outlined" color="primary" />
-//                     </TableCell>
-//                     <TableCell>{report.studentInfo.class}</TableCell>
-//                     <TableCell>{formatDate(report.studentInfo.date)}</TableCell>
-//                     <TableCell>{report.studentInfo.day}</TableCell>
-//                     <TableCell>
+//       {/* Reports List */}
+//       <Box sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
+//         {filteredReports.map((report) => (
+//           <Card key={report.id} elevation={1} sx={{ "&:hover": { elevation: 3 } }}>
+//             <CardContent sx={{ p: 3 }}>
+//               <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+//                 <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+//                   <Avatar
+//                     sx={{
+//                       background: "linear-gradient(45deg, #3b82f6 30%, #8b5cf6 90%)",
+//                       width: 48,
+//                       height: 48,
+//                     }}
+//                   >
+//                     <Person />
+//                   </Avatar>
+//                   <Box>
+//                     <Typography variant="h6" component="h3" fontWeight="semibold">
+//                       {report.studentName}
+//                     </Typography>
+//                     <Box sx={{ display: "flex", alignItems: "center", gap: 1, mt: 0.5 }}>
 //                       <Chip
-//                         label={getStatusText(report.status)}
-//                         color={getStatusColor(report.status) as any}
+//                         label={report.category}
 //                         size="small"
+//                         sx={{
+//                           backgroundColor: getCategoryColor(report.category) + "20",
+//                           color: getCategoryColor(report.category),
+//                           fontWeight: "medium",
+//                         }}
 //                       />
-//                     </TableCell>
-//                     <TableCell>{formatDate(report.createdAt)}</TableCell>
-//                     <TableCell>
-//                       <Box sx={{ display: "flex", gap: 1, justifyContent: "center" }}>
-//                         <Tooltip title="দেখুন">
-//                           <IconButton size="small" color="primary" onClick={() => onViewReport(report.id)}>
-//                             <ViewIcon />
-//                           </IconButton>
-//                         </Tooltip>
-//                         <Tooltip title="সম্পাদনা">
-//                           <IconButton size="small" color="secondary">
-//                             <EditIcon />
-//                           </IconButton>
-//                         </Tooltip>
-//                         <Tooltip title="প্রিন্ট">
-//                           <IconButton size="small" color="info">
-//                             <PrintIcon />
-//                           </IconButton>
-//                         </Tooltip>
-//                         <Tooltip title="মুছুন">
-//                           <IconButton size="small" color="error">
-//                             <DeleteIcon />
-//                           </IconButton>
-//                         </Tooltip>
-//                       </Box>
-//                     </TableCell>
-//                   </TableRow>
-//                 ))}
-//               </TableBody>
-//             </Table>
-//           </TableContainer>
+//                       <Chip label={`${report.type} Report`} variant="outlined" size="small" />
+//                       <Chip label={report.status} color={getStatusColor(report.status) as any} size="small" />
+//                     </Box>
+//                   </Box>
+//                 </Box>
+//                 <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+//                   <Box sx={{ textAlign: "right" }}>
+//                     <Box sx={{ display: "flex", alignItems: "center", gap: 0.5, mb: 0.5 }}>
+//                       <CalendarToday fontSize="small" />
+//                       <Typography variant="body2" color="text.secondary">
+//                         {report.date}
+//                       </Typography>
+//                     </Box>
+//                     <Typography variant="body2" color="text.secondary">
+//                       Teacher: {report.teacher}
+//                     </Typography>
+//                   </Box>
+//                   <Box sx={{ display: "flex", gap: 1 }}>
+//                     <Button variant="outlined" size="small" startIcon={<Visibility />}>
+//                       View
+//                     </Button>
+//                     <Button variant="outlined" size="small" startIcon={<Download />}>
+//                       Download
+//                     </Button>
+//                   </Box>
+//                 </Box>
+//               </Box>
+//             </CardContent>
+//           </Card>
+//         ))}
+//       </Box>
 
-//           {filteredReports.length === 0 && (
-//             <Box sx={{ textAlign: "center", py: 4 }}>
-//               <Typography variant="h6" color="text.secondary">
-//                 কোনো রিপোর্ট পাওয়া যায়নি
-//               </Typography>
-//               <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-//                 নতুন রিপোর্ট তৈরি করতে নতুন রিপোর্ট বাটনে ক্লিক করুন
-//               </Typography>
-//             </Box>
-//           )}
-//         </CardContent>
-//       </Card>
+//       {filteredReports.length === 0 && (
+//         <Card elevation={1}>
+//           <CardContent sx={{ p: 6, textAlign: "center" }}>
+//             <Description sx={{ fontSize: 48, color: "text.secondary", mb: 2 }} />
+//             <Typography variant="h6" component="h3" fontWeight="semibold" sx={{ mb: 1 }}>
+//               No reports found
+//             </Typography>
+//             <Typography variant="body1" color="text.secondary">
+//               Try adjusting your search criteria or create a new report.
+//             </Typography>
+//           </CardContent>
+//         </Card>
+//       )}
 //     </Box>
 //   )
 // }
-
-// export default HifzReportList
+// export default ReportsList
 import React from 'react';
 
 const page = () => {
   return (
     <div>
-      
+      report list 
     </div>
   );
 };

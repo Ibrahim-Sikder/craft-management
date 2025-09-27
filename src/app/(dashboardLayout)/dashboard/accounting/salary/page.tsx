@@ -34,7 +34,6 @@ export default function SalaryManagement() {
   const [editingSalaryId, setEditingSalaryId] = useState<string | null>(null)
   const { data, isLoading, refetch } = useGetAllSalariesQuery({})
   const allSalaries = data?.data?.salaries || []
-  console.log('all salary', allSalaries)
   const [deleteSalary] = useDeleteSalaryMutation()
 
   const handleDeleteSalary = async (id: string) => {

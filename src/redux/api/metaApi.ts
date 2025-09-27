@@ -1,4 +1,4 @@
-// staffApi.ts
+// metaApi.ts
 import { baseApi } from "./baseApi";
 
 export const metaApi = baseApi.injectEndpoints({
@@ -9,7 +9,26 @@ export const metaApi = baseApi.injectEndpoints({
         method: "GET",
       }),
     }),
+
+    getFinancialDashboard: build.query({
+      query: () => ({
+        url: "/financial-dashboard",
+        method: "GET",
+      }),
+    }),
+
+    getAccountingReport: build.query({
+      query: () => ({
+        url: "/meta/accounting-report",
+        method: "GET",
+      }),
+    }),
   }),
 });
 
-export const { useGetAllMetaQuery } = metaApi;
+// ✅ Hooks
+export const {
+  useGetAllMetaQuery,
+  useGetFinancialDashboardQuery,
+  useGetAccountingReportQuery,
+} = metaApi;

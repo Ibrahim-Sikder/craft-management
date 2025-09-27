@@ -13,29 +13,26 @@ import {
   AppBar,
   Toolbar,
   Collapse,
-  Avatar,
   InputBase,
-  Menu,
-  MenuItem,
   Divider,
   useMediaQuery,
   Typography,
   Badge,
+  Menu,
+  MenuItem,
 } from "@mui/material";
 
 import {
   Menu as MenuIcon,
   ExpandMore,
-  Search as SearchIcon,
-  Person,
-  Settings,
-  Logout,
-  MenuOpen,
   ExpandLess,
+  MenuOpen,
   Close,
+  Search as SearchIcon,
   Notifications,
+  AccountCircle,
 } from "@mui/icons-material";
-import { ThemeProvider, alpha, createTheme } from "@mui/material/styles";
+import { alpha, createTheme } from "@mui/material/styles";
 import { useRouter, usePathname } from "next/navigation";
 import Cookies from "js-cookie";
 import { navigationItems } from "@/components/Sidebar/DrawerItem";
@@ -43,7 +40,6 @@ import { UserRole } from "@/types/common";
 import { getUserInfo } from "@/services/acttion";
 
 const DRAWER_WIDTH = 280;
-
 const COLLAPSED_DRAWER_WIDTH = 75;
 
 const CustomSidebar: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -67,19 +63,15 @@ const CustomSidebar: React.FC<{ children: React.ReactNode }> = ({ children }) =>
   const theme = createTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
-
   const toggleDrawer = () => setOpen(!open);
   const toggleMobileDrawer = () => setMobileOpen(!mobileOpen);
 
+  // ✅ Each accordion independent
   const toggleNestedList = (title: string) => {
-    setOpenItems((prev) => {
-      const newState = Object.keys(prev).reduce((acc, key) => {
-        acc[key] = false;
-        return acc;
-      }, {} as Record<string, boolean>);
-      newState[title] = !prev[title];
-      return newState;
-    });
+    setOpenItems((prev) => ({
+      ...prev,
+      [title]: !prev[title],
+    }));
   };
 
   const handleNavigation = (path?: string, title?: string) => {
@@ -91,49 +83,57 @@ const CustomSidebar: React.FC<{ children: React.ReactNode }> = ({ children }) =>
     }
   };
 
-  const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => setAnchorEl(event.currentTarget);
-  const handleProfileMenuClose = () => setAnchorEl(null);
+  // ✅ Full logout system
   const handleLogout = () => {
-    // Remove specific token cookie
-    Cookies.remove('craft-token', { path: '/' });
-
-    // Clear all cookies
-    const cookies = document.cookie.split(";");
-    for (let i = 0; i < cookies.length; i++) {
-      const cookie = cookies[i];
-      const eqPos = cookie.indexOf("=");
-      const name = eqPos > -1 ? cookie.substr(0, eqPos).trim() : cookie.trim();
-      document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
-    }
-
-    // Clear local storage
+    Cookies.remove("craft-token", { path: "/" });
+    document.cookie.split(";").forEach((c) => {
+      document.cookie = c
+        .replace(/^ +/, "")
+        .replace(/=.*/, `=;expires=${new Date(0).toUTCString()};path=/`);
+    });
     localStorage.clear();
+    router.push("/");
+  };
 
-    // Redirect to home page
-    router.push('/');
+  // ✅ Profile menu
+  const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+
+  const handleProfileMenuClose = () => {
+    setAnchorEl(null);
   };
 
   const renderNavigationItems = (items: any, nested = false) =>
     items.map((item: any) => (
       <React.Fragment key={item.title}>
         <ListItem
-          onClick={() => handleNavigation(item.path, item.children ? item.title : undefined)}
+          onClick={() =>
+            handleNavigation(item.path, item.children ? item.title : undefined)
+          }
           sx={{
             pl: nested ? 2 : 1,
             pr: 1,
-            gap: .5,
-            justifyContent: (!open && !isMobile && !nested) ? "center" : "flex-start",
+            gap: 0.5,
+            justifyContent:
+              !open && !isMobile && !nested ? "center" : "flex-start",
             cursor: "pointer",
-            backgroundColor: pathname === item.path ? "rgba(0, 0, 0, 0.08)" : "inherit",
+            backgroundColor:
+              pathname === item.path ? "rgba(0, 0, 0, 0.08)" : "inherit",
             minHeight: "48px",
-            '&:hover': { backgroundColor: "rgba(0, 0, 0, 0.04)" },
+            "&:hover": { backgroundColor: "rgba(0, 0, 0, 0.04)" },
           }}
         >
-          <ListItemIcon sx={{ minWidth: "auto", marginRight: (isMobile || open) ? 1 : 0 }}>
+          <ListItemIcon
+            sx={{ minWidth: "auto", marginRight: isMobile || open ? 1 : 0 }}
+          >
             {item.icon}
           </ListItemIcon>
           {(isMobile || open) && (
-            <ListItemText primary={item.title} sx={{ overflow: "hidden", whiteSpace: "nowrap" }} />
+            <ListItemText
+              primary={item.title}
+              sx={{ overflow: "hidden", whiteSpace: "nowrap" }}
+            />
           )}
           {item.children && (isMobile || open) && (
             openItems[item.title] ? <ExpandLess /> : <ExpandMore />
@@ -149,43 +149,75 @@ const CustomSidebar: React.FC<{ children: React.ReactNode }> = ({ children }) =>
       </React.Fragment>
     ));
 
-  // Filter navigation items based on userRole
   const roleBasedItems = userRole
     ? navigationItems.filter((item) =>
-      item.roles ? item.roles.includes(userRole) : true
-    )
+        item.roles ? item.roles.includes(userRole) : true
+      )
     : [];
 
   return (
     <Box sx={{ display: "flex" }}>
-      <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1, bgcolor: "#4F0187" }}>
+      <AppBar
+        position="fixed"
+        sx={{
+          zIndex: (theme) => theme.zIndex.drawer + 1,
+          bgcolor: "#4F0187",
+        }}
+      >
         <Toolbar>
-          <IconButton color="inherit" onClick={isMobile ? toggleMobileDrawer : toggleDrawer} sx={{ mr: 2 }}>
-            {isMobile ? (mobileOpen ? <Close /> : <MenuIcon />) : (open ? <MenuOpen /> : <MenuIcon />)}
+          <IconButton
+            color="inherit"
+            onClick={isMobile ? toggleMobileDrawer : toggleDrawer}
+            sx={{ mr: 2 }}
+          >
+            {isMobile ? (
+              mobileOpen ? (
+                <Close />
+              ) : (
+                <MenuIcon />
+              )
+            ) : open ? (
+              <MenuOpen />
+            ) : (
+              <MenuIcon />
+            )}
           </IconButton>
-          <Typography variant="h6" noWrap sx={{ mr: 2, fontWeight: 'bold' }}>
+          <Typography variant="h6" noWrap sx={{ mr: 2, fontWeight: "bold" }}>
             Craft International Institute
           </Typography>
-          <Box sx={{ flexGrow: 1, display: { xs: 'none', sm: 'flex' }, justifyContent: "center" }}>
-            <Box sx={{
-              padding: 0.5,
-              position: "relative",
-              borderRadius: 5,
-              bgcolor: "white",
-              width: "100%",
-              maxWidth: "300px"
-            }}>
-              <Box sx={{
-                position: "absolute",
+          <Box
+            sx={{
+              flexGrow: 1,
+              display: { xs: "none", sm: "flex" },
+              justifyContent: "center",
+            }}
+          >
+            <Box
+              sx={{
                 padding: 0.5,
-                pointerEvents: "none",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}>
+                position: "relative",
+                borderRadius: 5,
+                bgcolor: "white",
+                width: "100%",
+                maxWidth: "300px",
+              }}
+            >
+              <Box
+                sx={{
+                  position: "absolute",
+                  padding: 0.5,
+                  pointerEvents: "none",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
                 <SearchIcon sx={{ color: "black" }} />
               </Box>
-              <InputBase sx={{ width: "100%", paddingLeft: 4, color: "black" }} placeholder="Search…" />
+              <InputBase
+                sx={{ width: "100%", paddingLeft: 4, color: "black" }}
+                placeholder="Search…"
+              />
             </Box>
           </Box>
           <IconButton
@@ -203,50 +235,63 @@ const CustomSidebar: React.FC<{ children: React.ReactNode }> = ({ children }) =>
               <Notifications />
             </Badge>
           </IconButton>
-          <IconButton onClick={handleProfileMenuOpen} color="inherit"><Avatar /></IconButton>
+
+          {/* ✅ Profile + Logout */}
+          <IconButton
+            sx={{ ml: 1 }}
+            color="inherit"
+            onClick={handleProfileMenuOpen}
+          >
+            <AccountCircle />
+          </IconButton>
+          <Menu
+            anchorEl={anchorEl}
+            open={Boolean(anchorEl)}
+            onClose={handleProfileMenuClose}
+          >
+            <MenuItem onClick={() => router.push("/profile")}>Profile</MenuItem>
+            <Divider />
+            <MenuItem onClick={handleLogout}>Logout</MenuItem>
+          </Menu>
         </Toolbar>
       </AppBar>
-      {/* profile menu */}
-      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleProfileMenuClose}>
-        <MenuItem onClick={handleProfileMenuClose}><Person /> Profile</MenuItem>
-        <MenuItem onClick={handleProfileMenuClose}><Settings /> Settings</MenuItem>
-        <Divider />
-        <MenuItem onClick={handleLogout}><Logout /> Logout</MenuItem>
-      </Menu>
 
-      {/* drawer */}
       <Drawer
         variant={isMobile ? "temporary" : "permanent"}
         open={isMobile ? mobileOpen : open}
         onClose={() => isMobile && setMobileOpen(false)}
         sx={{
-          width: isMobile ? "100%" : (open ? DRAWER_WIDTH : COLLAPSED_DRAWER_WIDTH),
+          width: isMobile
+            ? "100%"
+            : open
+            ? DRAWER_WIDTH
+            : COLLAPSED_DRAWER_WIDTH,
           flexShrink: 0,
           [`& .MuiDrawer-paper`]: {
-            width: isMobile ? "100%" : (open ? DRAWER_WIDTH : COLLAPSED_DRAWER_WIDTH),
+            width: isMobile
+              ? "100%"
+              : open
+              ? DRAWER_WIDTH
+              : COLLAPSED_DRAWER_WIDTH,
             transition: "width 0.3s ease-in-out",
             overflowX: "hidden",
           },
         }}
       >
-        <List sx={{ padding: '8px', mt: 8 }}>{renderNavigationItems(roleBasedItems)}</List>
+        <List sx={{ padding: "8px", mt: 8 }}>
+          {renderNavigationItems(roleBasedItems)}
+        </List>
       </Drawer>
 
-      {/*Main content page  */}
-      <div className="flex flex-grow pt-2 md:pt-7 px-2 md:px-3 mt-14 bg-white">
+      <Box
+        component="main"
+        sx={{ flexGrow: 1, bgcolor: "#f9f9f9", minHeight: "100vh", p: 3 }}
+      >
+        <Toolbar />
         {children}
-      </div>
+      </Box>
     </Box>
   );
 };
 
-const Layout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const theme = createTheme();
-  return (
-    <ThemeProvider theme={theme}>
-      <CustomSidebar>{children}</CustomSidebar>
-    </ThemeProvider>
-  );
-};
-
-export default Layout;
+export default CustomSidebar;

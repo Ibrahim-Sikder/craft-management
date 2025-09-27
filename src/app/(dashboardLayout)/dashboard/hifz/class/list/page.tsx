@@ -43,11 +43,9 @@ import {
   Person,
 } from "@mui/icons-material"
 import { motion } from "framer-motion"
-import HifzClassForm from "../../__components/HifzClassForm"
+import HifzClassForm from "../../_components/HifzClassForm"
 import { useDeleteHifzClassMutation, useGetAllHifzClassesQuery } from "@/redux/api/hifzClassApi"
 import { departmentColors, hifzBG, hifzBox, islamicColors, StyledCard } from "@/style/customeStyle"
-
-
 
 
 // Department Chip with updated style

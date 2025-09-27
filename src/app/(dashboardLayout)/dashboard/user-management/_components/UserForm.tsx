@@ -391,7 +391,7 @@ export default function UserForm({ id }: any) {
                                                     <CraftSelect
                                                         name="role"
                                                         label="User Role"
-                                                        items={["super_admin", "user", "admin", "student", "teacher", "super_visor", "class_teacher"]}
+                                                        items={["super_admin", "user", "admin", "student", "teacher", "super_visor", "class_teacher", 'accountant']}
                                                         fullWidth
                                                     />
                                                     <Box

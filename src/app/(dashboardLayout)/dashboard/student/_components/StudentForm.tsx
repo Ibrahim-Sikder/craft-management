@@ -129,6 +129,7 @@ const StudentForm = ({ id }: StudentFormProps) => {
         birthRegistrationNo: studentData.birthRegistrationNo || "",
         bloodGroup: studentData.bloodGroup || "",
         gender: studentData.gender || "",
+        studentDepartment: studentData.studentDepartment || "",
 
         // Family Information
         fatherName: studentData.fatherName || "",
@@ -379,12 +380,12 @@ const StudentForm = ({ id }: StudentFormProps) => {
           </Grid>
           <Grid item xs={12} md={6}>
             <CraftSelectWithIcon
-              name="gender"
+              name="studentDepartment"
               size="medium"
-              label='Gender'
+              label='Student Department '
 
-              placeholder="Select Gender"
-              items={["Male", "Female", "Other"]}
+              placeholder="Student Department "
+              items={["Hifz Student", "School Student",]}
               adornment={<Person color="action" />}
             />
           </Grid>
