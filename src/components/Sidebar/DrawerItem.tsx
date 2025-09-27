@@ -1,33 +1,21 @@
 import {
   Dashboard,
-  School,
-  Payments,
-  AccountBalance,
   Assignment,
   EventNote,
-  AssignmentTurnedIn,
   Grading,
-  SupervisorAccount,
   Settings,
   Class,
   Subject,
-  BarChart,
   CloudUpload,
   Category,
   ReceiptLong,
   Score,
   TableChart,
-  Download,
-  Event,
   TableRows,
-  Message,
-  Addchart,
-  RestaurantMenu,
   ListAlt,
   AddCircle,
   ClassOutlined,
   Storage,
-  Book,
   NotificationAdd,
   DeveloperBoard,
   TrendingUp,
@@ -37,85 +25,46 @@ import {
   Savings,
   CreditCard,
   Calculate,
-  Receipt as ReceiptIcon,
   PointOfSale,
-  Money,
   AttachMoney,
-  MenuBook,
-  Groups,
-  Schedule,
   Campaign,
   Feedback,
-  CoPresent,
   Quiz,
   EmojiEvents,
   School as SchoolIcon,
-  AppRegistration,
-  Security,
-  ManageAccounts,
   PersonAdd,
   FormatListBulleted,
-  Backup,
-  Delete,
   Web,
-  List,
   PlaylistAddCheck,
   TrackChanges,
-  AutoAwesome,
   ImportContacts,
   LibraryBooks,
-  TrendingFlat,
-  Task,
-  Flag,
   CalendarMonth,
   DateRange,
   ViewList,
   PostAdd,
   LibraryAdd,
-  AccountCircle,
   Group,
-  RecentActors,
-  Fastfood,
-  LunchDining,
   Restaurant,
-  LocalAtm,
   Payment,
   RequestQuote,
-  Finance,
   Receipt,
-  AccountBox,
-  HowToReg,
   AdminPanelSettings,
-  Database,
-  SecurityUpdateGood,
   AutoDelete,
   CloudSync,
   Description,
   Analytics,
-  Report,
   Assessment,
-  Timeline,
-  WorkHistory,
-  TaskAlt,
-  Checklist,
-  GradingOutlined,
   FactCheck,
   SchoolOutlined,
-  GroupWork,
   PeopleAlt,
   Badge,
-  Person,
-  LocalPolice,
-  HistoryEdu,
   AutoStories,
   CollectionsBookmark,
   PictureAsPdf,
   Sms,
-  HowToApp,
-  PersonPin,
-  SystemUpdateAlt,
   VpnKey,
-  StorageOutlined
+  DoneAllSharp,
 } from "@mui/icons-material";
 import { ColorfulIcon } from "./ColorfulIcon";
 import { NavigationItem } from "@/types/common";
@@ -316,15 +265,26 @@ export const navigationItems: NavigationItem[] = [
         roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
       },
       {
-        title: "Daily Report Add",
+        title: "Soboki Daily Report Add",
         icon: (
           <ColorfulIcon color="#9C27B0">
             <PostAdd />
           </ColorfulIcon>
         ),
-        path: "/dashboard/hifz/daily-report/add",
+        path: "/dashboard/hifz/daily-report/soboki/add",
         roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
       },
+      {
+        title: "Sunani Daily Report Add",
+        icon: (
+          <ColorfulIcon color="#9C27B0">
+            <PostAdd />
+          </ColorfulIcon>
+        ),
+        path: "/dashboard/hifz/daily-report/sunani/add",
+        roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+      },
+      
       {
         title: "Weekly Target List",
         icon: (
@@ -343,6 +303,57 @@ export const navigationItems: NavigationItem[] = [
           </ColorfulIcon>
         ),
         path: "/dashboard/hifz/weeklytarget/add",
+        roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+      },
+    ],
+  },
+  {
+    title: "Ampara",
+    icon: (
+      <ColorfulIcon color="#2E7D32">
+        <ImportContacts />
+      </ColorfulIcon>
+    ),
+    roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+    children: [
+      {
+        title: "Daily Report List",
+        icon: (
+          <ColorfulIcon color="#2E7D32">
+            <Description />
+          </ColorfulIcon>
+        ),
+        path: "/dashboard/ampara/daily-report",
+        roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+      },
+      {
+        title: "Daily Report Add",
+        icon: (
+          <ColorfulIcon color="#2E7D32">
+            <PostAdd />
+          </ColorfulIcon>
+        ),
+        path: "/dashboard/ampara/daily-report/add",
+        roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+      },
+      {
+        title: "Weekly Report List",
+        icon: (
+          <ColorfulIcon color="#2E7D32">
+            <Assessment />
+          </ColorfulIcon>
+        ),
+        path: "/dashboard/ampara/weekly-report/list",
+        roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+      },
+      {
+        title: "Weekly Report Add",
+        icon: (
+          <ColorfulIcon color="#2E7D32">
+            <LibraryAdd />
+          </ColorfulIcon>
+        ),
+        path: "/dashboard/ampara/weekly-report/add",
         roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
       },
     ],
@@ -673,7 +684,7 @@ export const navigationItems: NavigationItem[] = [
     title: "Accounting",
     icon: (
       <ColorfulIcon color="#2E7D32">
-        <Finance />
+        <DoneAllSharp/>
       </ColorfulIcon>
     ),
     roles: ["admin", "super_admin", 'accountant'],
@@ -950,7 +961,7 @@ export const navigationItems: NavigationItem[] = [
     title: "Admissions",
     icon: (
       <ColorfulIcon color="#5D4037">
-        <HowToApp />
+        <TableChart />
       </ColorfulIcon>
     ),
     path: "/dashboard/admission",

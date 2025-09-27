@@ -22,7 +22,7 @@ import {
     Button,
 } from "@mui/material"
 
-function HifzReport({ studentName, reportDate, month }: any) {
+function SunaniReport({ studentName, reportDate, month }: any) {
     const [weeklyTarget, setWeeklyTarget] = useState("")
     const [dailyEntries, setDailyEntries] = useState({
         saturday: {
@@ -142,10 +142,10 @@ function HifzReport({ studentName, reportDate, month }: any) {
                             Craft International Institute
                         </Typography>
                         <Typography variant="h5" sx={{ fontWeight: 600, color: "text.secondary", mb: 1 }}>
-                            Hifz Students Daily Report
+                         Shunani Hifz Students Daily Report
                         </Typography>
                         <Typography variant="h6" sx={{ color: "text.secondary" }}>
-                            হিফজ শিক্ষার্থীদের দৈনিক রিপোর্ট
+                         শুনানী হিফজ শিক্ষার্থীদের দৈনিক রিপোর্ট
                         </Typography>
                     </Box>
                 }
@@ -153,43 +153,43 @@ function HifzReport({ studentName, reportDate, month }: any) {
 
             <CardContent sx={{ p: 3 }}>
                 {/* Student Information */}
-               <Paper
-          elevation={0}
-          sx={{
-            p: 2,
-            mb: 3,
-            bgcolor: "grey.50",
-            "@media print": { bgcolor: "transparent", border: 1, borderColor: "black" },
-          }}
-        >
-          <Grid container spacing={2}>
-            <Grid item xs={12} md={4}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
-                Teacher Name (শিক্ষকের নাম):
-              </Typography>
-              <Box sx={{ borderBottom: 1, borderColor: "grey.400", pb: 0.5, minHeight: 24 }}>
-                {studentName || "_________________"}
-              </Box>
-            </Grid>
+                <Paper
+                    elevation={0}
+                    sx={{
+                        p: 2,
+                        mb: 3,
+                        bgcolor: "grey.50",
+                        "@media print": { bgcolor: "transparent", border: 1, borderColor: "black" },
+                    }}
+                >
+                    <Grid container spacing={2}>
+                        <Grid item xs={12} md={4}>
+                            <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
+                                Teacher Name (শিক্ষকের নাম):
+                            </Typography>
+                            <Box sx={{ borderBottom: 1, borderColor: "grey.400", pb: 0.5, minHeight: 24 }}>
+                                {studentName || "_________________"}
+                            </Box>
+                        </Grid>
 
-            <Grid item xs={12} md={4}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
-                Student Name (শিক্ষার্থীর নাম):
-              </Typography>
-              <Box sx={{ borderBottom: 1, borderColor: "grey.400", pb: 0.5, minHeight: 24 }}>
-                {studentName || "_________________"}
-              </Box>
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
-                Date (তারিখ):
-              </Typography>
-              <Box sx={{ borderBottom: 1, borderColor: "grey.400", pb: 0.5, minHeight: 24 }}>
-                {reportDate || "_________________"}
-              </Box>
-            </Grid>
-          </Grid>
-        </Paper>
+                        <Grid item xs={12} md={4}>
+                            <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
+                                Student Name (শিক্ষার্থীর নাম):
+                            </Typography>
+                            <Box sx={{ borderBottom: 1, borderColor: "grey.400", pb: 0.5, minHeight: 24 }}>
+                                {studentName || "_________________"}
+                            </Box>
+                        </Grid>
+                        <Grid item xs={12} md={4}>
+                            <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 1 }}>
+                                Date (তারিখ):
+                            </Typography>
+                            <Box sx={{ borderBottom: 1, borderColor: "grey.400", pb: 0.5, minHeight: 24 }}>
+                                {reportDate || "_________________"}
+                            </Box>
+                        </Grid>
+                    </Grid>
+                </Paper>
                 {/* Daily Entries Table */}
                 <Box sx={{ width: '100%', overflow: 'auto' }}>
                     <TableContainer component={Paper} sx={{ minWidth: 1200, '@media print': { minWidth: '100%' } }}>
@@ -212,34 +212,27 @@ function HifzReport({ studentName, reportDate, month }: any) {
                             <TableHead>
                                 <TableRow sx={{ bgcolor: "grey.100", "@media print": { bgcolor: "transparent" } }}>
                                     <TableCell sx={{ fontWeight: 600, textAlign: "center", minWidth: 80 }}>
-                                        Date/Day
+                                        Day
                                         <br />
-                                        (তারিখ/বার)
+                                        (বার)
                                     </TableCell>
                                     <TableCell colSpan={2} sx={{ fontWeight: 600, textAlign: "center", minWidth: 100 }}>
-                                        Sobok
-                                        <br />
-                                        (সবক)
+                                        সকালের পড়া
                                     </TableCell>
                                     <TableCell colSpan={4} sx={{ fontWeight: 600, textAlign: "center" }}>
-                                        Sat Sobok
-                                        <br />
-                                        (সাত সবক)
+                                        রাতের পড়া
                                     </TableCell>
                                     <TableCell colSpan={4} sx={{ fontWeight: 600, textAlign: "center" }}>
-                                        Sabak Amukta
-                                        <br />
-                                        (সবক আমুক্তা)
+                                        পেছনের পড়া
                                     </TableCell>
                                     <TableCell sx={{ fontWeight: 600, textAlign: "center", minWidth: 70 }}>
                                         Tilawat
                                         <br />
                                         (তিলাওয়াত)
                                     </TableCell>
-
                                     <TableCell sx={{ fontWeight: 600, textAlign: "center", minWidth: 90 }}>
                                         মাশক্ব
-                                    </TableCell>
+                                     </TableCell>
                                     <TableCell sx={{ fontWeight: 600, textAlign: "center", minWidth: 90 }}>
                                         তাজভীদ শিক্ষা
                                     </TableCell>
@@ -611,4 +604,4 @@ function HifzReport({ studentName, reportDate, month }: any) {
     )
 }
 
-export default HifzReport
+export default SunaniReport

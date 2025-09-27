@@ -22,7 +22,7 @@ import {
     Button,
 } from "@mui/material"
 
-function HifzReport({ studentName, reportDate, month }: any) {
+function SobokiReport({ studentName, reportDate, month }: any) {
     const [weeklyTarget, setWeeklyTarget] = useState("")
     const [dailyEntries, setDailyEntries] = useState({
         saturday: {
@@ -142,10 +142,10 @@ function HifzReport({ studentName, reportDate, month }: any) {
                             Craft International Institute
                         </Typography>
                         <Typography variant="h5" sx={{ fontWeight: 600, color: "text.secondary", mb: 1 }}>
-                            Hifz Students Daily Report
+                           Soboki Hifz Students Daily Report
                         </Typography>
                         <Typography variant="h6" sx={{ color: "text.secondary" }}>
-                            হিফজ শিক্ষার্থীদের দৈনিক রিপোর্ট
+                           সবকি হিফজ শিক্ষার্থীদের দৈনিক রিপোর্ট
                         </Typography>
                     </Box>
                 }
@@ -212,9 +212,9 @@ function HifzReport({ studentName, reportDate, month }: any) {
                             <TableHead>
                                 <TableRow sx={{ bgcolor: "grey.100", "@media print": { bgcolor: "transparent" } }}>
                                     <TableCell sx={{ fontWeight: 600, textAlign: "center", minWidth: 80 }}>
-                                        Date/Day
+                                        Day
                                         <br />
-                                        (তারিখ/বার)
+                                        (বার)
                                     </TableCell>
                                     <TableCell colSpan={2} sx={{ fontWeight: 600, textAlign: "center", minWidth: 100 }}>
                                         Sobok
@@ -611,4 +611,4 @@ function HifzReport({ studentName, reportDate, month }: any) {
     )
 }
 
-export default HifzReport
+export default SobokiReport

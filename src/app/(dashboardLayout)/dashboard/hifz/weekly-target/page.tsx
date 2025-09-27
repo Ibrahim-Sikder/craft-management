@@ -3,7 +3,7 @@
 
 import { useState } from "react"
 import {
-  Box, Typography, Paper, Card, Grid, Button, Chip, Avatar,
+  Box, Typography, Card, Grid, Button, Chip, Avatar,
   Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   IconButton, Dialog, DialogTitle, DialogContent, DialogActions,
   TextField, InputAdornment, Tabs, Tab, Divider
@@ -14,7 +14,7 @@ import {
 } from "@mui/icons-material"
 
 // Helper functions defined at the top level
-const getStatusColor = (status) => {
+const getStatusColor = (status:any) => {
   switch (status) {
     case "completed": return "success"
     case "in-progress": return "warning"
@@ -23,7 +23,7 @@ const getStatusColor = (status) => {
   }
 }
 
-const getStatusText = (status) => {
+const getStatusText = (status:any) => {
   switch (status) {
     case "completed": return "Completed"
     case "in-progress": return "In Progress"
@@ -121,7 +121,7 @@ const mockReports = [
   }
 ]
 
-function TabPanel(props) {
+function TabPanel(props:any) {
   const { children, value, index, ...other } = props
   return (
     <div role="tabpanel" hidden={value !== index} {...other}>
@@ -130,8 +130,18 @@ function TabPanel(props) {
   )
 }
 
-function ReportsTable({ reports, onView, onSort, sortConfig }) {
-  const SortableHeader = ({ label, sortKey }) => (
+function ReportsTable({
+  reports,
+  onView,
+  onSort,
+  sortConfig
+}: {
+  reports: Report[],
+  onView: (report: Report) => void,
+  onSort: (key: SortKey) => void,
+  sortConfig: { key: SortKey, direction: 'asc' | 'desc' }
+}) {
+  const SortableHeader = ({ label, sortKey }: { label: string; sortKey: SortKey }) => (
     <TableCell 
       sx={{ fontWeight: "bold", cursor: "pointer", bgcolor: "#e8f5e9" }}
       onClick={() => onSort(sortKey)}
@@ -158,7 +168,7 @@ function ReportsTable({ reports, onView, onSort, sortConfig }) {
           </TableRow>
         </TableHead>
         <TableBody>
-          {reports.map((report) => (
+          {reports.map((report:any) => (
             <TableRow key={report.id} hover>
               <TableCell>
                 <Box sx={{ display: "flex", alignItems: "center" }}>
@@ -358,7 +368,7 @@ export default function HifzWeeklyReportsList() {
       >
         <DialogTitle sx={{ bgcolor: "#2e7d32", color: "white" }}>
           <Typography variant="h6">
-            {selectedReport?.studentName}'s Report - {selectedReport?.month}
+            {selectedReport?.studentName} s Report - {selectedReport?.month}
           </Typography>
         </DialogTitle>
         <DialogContent dividers sx={{ pt: 3 }}>

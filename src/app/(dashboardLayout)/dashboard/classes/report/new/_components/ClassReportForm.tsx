@@ -71,6 +71,8 @@ import TodayLesson from "./TodayLesson"
 import TodayTask from "./TodayTask"
 import { format } from "date-fns"
 import { useGetAllTeachersQuery } from "@/redux/api/teacherApi"
+import { boxStyleReport } from "@/style/customeStyle"
+import { useTeacherStudentOptions } from "@/hooks/useTeacherStudentOptions"
 
 // Define a type for student evaluation
 type StudentEvaluation = {
@@ -82,10 +84,7 @@ type StudentEvaluation = {
   comments: string
 }
 
-interface IDateRange {
-  startDate: Date | null
-  endDate: Date | null
-}
+
 
 export default function ClassReportForm({ id }: any) {
   const router = useRouter()
@@ -108,10 +107,6 @@ export default function ClassReportForm({ id }: any) {
   const [filteredSubjects, setFilteredVehicles] = useState<any[]>([])
   const [selectedStudent, setSelectedStudent] = useState<any | null>(null)
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [refreshKey, setRefreshKey] = useState(0)
-  const [snackbarOpen, setSnackbarOpen] = useState(false)
-  const [snackbarMessage, setSnackbarMessage] = useState("")
-  const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">("success")
   const [studentEvaluations, setStudentEvaluations] = useState<StudentEvaluation[]>([])
   const [todayLessonId, setTodayLessonId] = useState<string | null>(null)
   const [homeTaskId, setHomeTaskId] = useState<string | null>(null)
@@ -123,45 +118,9 @@ export default function ClassReportForm({ id }: any) {
   const [isSubmittingForm, setIsSubmittingForm] = useState(false)
 
   const { data: singleClassReport, isLoading: singleClassReportLoading } = useGetSingleClassReportQuery({ id })
+const { teacherOptions, subjectOptions, classOptions } = useTeacherStudentOptions()
 
-  const { data: classData } = useGetAllClassesQuery({
-    limit: limit,
-    page: page + 1,
-    searchTerm: searchTerm,
-  })
-  const { data: teacherData } = useGetAllTeachersQuery({
-    limit: limit,
-    page: page + 1,
-    searchTerm: searchTerm,
-  })
-  const { data: subjectData } = useGetAllSubjectsQuery({
-    limit: limit,
-    page: page + 1,
-    searchTerm: searchTerm,
-  })
 
-  const classOption = useMemo(() => {
-    if (!classData?.data?.classes) return []
-    return classData?.data?.classes.map((clg: any) => ({
-      label: clg.className,
-      value: clg._id,
-    }))
-  }, [classData])
-
-  const subjectOption = useMemo(() => {
-    if (!subjectData?.data?.subjects) return []
-    return subjectData?.data?.subjects.map((sub: any) => ({
-      label: sub.name,
-      value: sub._id,
-    }))
-  }, [subjectData])
-  const teacherOption = useMemo(() => {
-    if (!teacherData?.data) return []
-    return teacherData?.data?.map((sub: any) => ({
-      label: sub.name,
-      value: sub._id,
-    }))
-  }, [teacherData])
   const [todayLessonDialogOpen, setTodayLessonDialogOpen] = useState(false)
   const [todayTaskDialogOpen, setTodayTaskDialogOpen] = useState(false)
 
@@ -272,9 +231,9 @@ export default function ClassReportForm({ id }: any) {
     }
 
     // Find the correct option objects for autocomplete fields
-    const classObj = classOption.find((opt: any) => opt.label === report.classes)
-    const subjectObj = subjectOption.find((opt: any) => opt.label === report.subjects)
-    const teacherObj = teacherOption.find((opt: any) => opt.label === report.teachers)
+    const classObj = classOptions.find((opt: any) => opt.label === report.classes)
+    const subjectObj = subjectOptions.find((opt: any) => opt.label === report.subjects)
+    const teacherObj = teacherOptions.find((opt: any) => opt.label === report.teachers)
 
     return {
       classes: classObj || report.classes,
@@ -283,7 +242,7 @@ export default function ClassReportForm({ id }: any) {
       date: report.date ? format(new Date(report.date), "yyyy-MM-dd") : "",
       teachers: teacherObj || report.teachers,
     }
-  }, [singleClassReport, classOption, subjectOption, teacherOption])
+  }, [singleClassReport, classOptions, subjectOptions, teacherOptions])
 
   const handleLessonEvaluationTaskChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const checked = event.target.checked
@@ -346,7 +305,7 @@ export default function ClassReportForm({ id }: any) {
           // More robust autocomplete data format fixes for mobile
           if (data.classes) {
             if (typeof data.classes === "string") {
-              const match = classOption.find((opt: any) => opt.label === data.classes || opt.value === data.classes)
+              const match = classOptions.find((opt: any) => opt.label === data.classes || opt.value === data.classes)
               if (match) {
                 data.classes = match
               } else {
@@ -364,7 +323,7 @@ export default function ClassReportForm({ id }: any) {
 
           if (data.subjects) {
             if (typeof data.subjects === "string") {
-              const match = subjectOption.find((opt: any) => opt.label === data.subjects || opt.value === data.subjects)
+              const match = subjectOptions.find((opt: any) => opt.label === data.subjects || opt.value === data.subjects)
               if (match) {
                 data.subjects = match
               } else {
@@ -380,7 +339,7 @@ export default function ClassReportForm({ id }: any) {
 
           if (data.teachers) {
             if (typeof data.teachers === "string") {
-              const match = teacherOption.find((opt: any) => opt.label === data.teachers || opt.value === data.teachers)
+              const match = teacherOptions.find((opt: any) => opt.label === data.teachers || opt.value === data.teachers)
               if (match) {
                 data.teachers = match
               } else {
@@ -423,9 +382,9 @@ export default function ClassReportForm({ id }: any) {
       }
 
       // Safely extract values using utility function
-      const classValue = safeExtractValue(data.classes, classOption)
-      const subjectValue = safeExtractValue(data.subjects, subjectOption)
-      const teacherValue = safeExtractValue(data.teachers, teacherOption)
+      const classValue = safeExtractValue(data.classes, classOptions)
+      const subjectValue = safeExtractValue(data.subjects, subjectOptions)
+      const teacherValue = safeExtractValue(data.teachers, teacherOptions)
 
       // Validate extracted values
       if (!classValue) {
@@ -951,7 +910,7 @@ export default function ClassReportForm({ id }: any) {
                     </Box>
 
                     <Paper elevation={0} sx={{  mb: 4, width: "100%", overflow: "hidden" }}>
-                      <Box sx={{ p: { xs: 1, sm: 1, md: 2, lg: 3 }, borderBottom: "1px solid rgba(0, 0, 0, 0.06)" }}>
+                      <Box sx={boxStyleReport}>
                         <Grid container spacing={2} alignItems="center">
                           <Grid item xs={6} sm={6} md={3} lg={2.5}>
                             <CraftIntAutoComplete
@@ -961,12 +920,13 @@ export default function ClassReportForm({ id }: any) {
                               fullWidth
                               freeSolo
                               multiple={false}
-                              options={teacherOption}
+                              options={teacherOptions}
                               forcePopupIcon={false}
                               clearOnBlur={false}
                               selectOnFocus={true}
                               handleHomeEndKeys={true}
                             />
+
                           </Grid>
                           <Grid item xs={6} sm={6} md={2} lg={2.5}>
                             <CraftIntAutoComplete
@@ -975,7 +935,7 @@ export default function ClassReportForm({ id }: any) {
                               fullWidth
                               freeSolo
                               multiple={false}
-                              options={classOption}
+                              options={classOptions}
                               onChange={handleClassChange}
                               forcePopupIcon={false}
                               clearOnBlur={false}
@@ -990,7 +950,7 @@ export default function ClassReportForm({ id }: any) {
                               fullWidth
                               freeSolo
                               multiple={false}
-                              options={subjectOption}
+                              options={subjectOptions}
                               forcePopupIcon={false}
                               clearOnBlur={false}
                               selectOnFocus={true}
