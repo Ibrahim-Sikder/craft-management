@@ -275,6 +275,16 @@ export const navigationItems: NavigationItem[] = [
         roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
       },
       {
+        title: "Soboki Daily Report List",
+        icon: (
+          <ColorfulIcon color="#9C27B0">
+            <PostAdd />
+          </ColorfulIcon>
+        ),
+        path: "/dashboard/hifz/daily-report/soboki/list",
+        roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+      },
+      {
         title: "Sunani Daily Report Add",
         icon: (
           <ColorfulIcon color="#9C27B0">
@@ -284,7 +294,17 @@ export const navigationItems: NavigationItem[] = [
         path: "/dashboard/hifz/daily-report/sunani/add",
         roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
       },
-      
+      {
+        title: "Sunani Daily Report List",
+        icon: (
+          <ColorfulIcon color="#9C27B0">
+            <PostAdd />
+          </ColorfulIcon>
+        ),
+        path: "/dashboard/hifz/daily-report/sunani/list",
+        roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+      },
+
       {
         title: "Weekly Target List",
         icon: (
@@ -684,7 +704,7 @@ export const navigationItems: NavigationItem[] = [
     title: "Accounting",
     icon: (
       <ColorfulIcon color="#2E7D32">
-        <DoneAllSharp/>
+        <DoneAllSharp />
       </ColorfulIcon>
     ),
     roles: ["admin", "super_admin", 'accountant'],

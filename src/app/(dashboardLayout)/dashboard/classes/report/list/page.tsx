@@ -80,6 +80,7 @@ import DateRangePicker from "../new/_components/DateRangePicker"
 import Link from "next/link"
 import { DateRangeIcon } from "@mui/x-date-pickers"
 import Loader from "@/app/loading"
+import { useAcademicOptions } from "@/hooks/useTeacherStudentOptions"
 
 type Filters = {
   classes: string
@@ -114,7 +115,7 @@ export default function ClassReportList() {
     handwriting: "",
     startDate: "",
     endDate: "",
-    hasComments: false, // NEW: Initialize comments filter
+    hasComments: false,
   })
 
   const [orderBy, setOrderBy] = useState<string>("createdAt")
@@ -160,23 +161,7 @@ export default function ClassReportList() {
     },
   )
 
-  const { data: classData } = useGetAllClassesQuery({
-    limit: 100,
-    page: 1,
-    searchTerm: "",
-  })
 
-  const { data: subjectData } = useGetAllSubjectsQuery({
-    limit: 100,
-    page: 1,
-    searchTerm: "",
-  })
-
-  const { data: teacherData } = useGetAllTeachersQuery({
-    limit: 100,
-    page: 1,
-    searchTerm: "",
-  })
 
   useEffect(() => {
     refetch()
@@ -197,32 +182,10 @@ export default function ClassReportList() {
     studentsWithComments: 0,
   }
 
+const {teacherOptions, subjectOptions, classOptions, } = useAcademicOptions()
 
 
-  const classOptions = useMemo(() => {
-    return (
-      classData?.data?.classes?.map((cls: any) => ({
-        label: cls.className,
-        value: cls.className,
-      })) || []
-    )
-  }, [classData])
 
-  const subjectOptions = useMemo(() => {
-    if (!subjectData?.data?.subjects) return []
-    return subjectData.data.subjects.map((sub: any) => ({
-      label: sub.name,
-      value: sub.name,
-    }))
-  }, [subjectData])
-
-  const teacherOptions = useMemo(() => {
-    if (!teacherData?.data) return []
-    return teacherData.data?.map((teacher: any) => ({
-      label: teacher.name,
-      value: teacher.name,
-    }))
-  }, [teacherData])
 
   const hourOptions = ["১ম", "২য়", "৩য়", "৪র্থ", "৫ম", "৬ষ্ঠ", "৭ম", "৮ম"]
   const lessonEvaluationOptions = ["পড়া শিখেছে", "আংশিক শিখেছে", "পড়া শিখেনি", "অনুপস্থিত"]

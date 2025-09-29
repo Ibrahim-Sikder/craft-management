@@ -9,12 +9,12 @@ import { useCreateNazeraReportMutation, useGetSingleNazeraReportQuery, useUpdate
 import { toast } from "react-hot-toast"
 import { calculateWeeklyTotals, formatReportData } from "@/utils/reportUtils"
 import ReportHeader from "./ReportHeader"
-import StudentInfoSection from "./StudentInfoSection"
 import DailyReportTable from "./DailyReportTable"
 import SubmitButton from "./SubmitButton"
 import { DAYS_OF_WEEK } from "@/constant/daysConfig"
 import { useRouter } from "next/navigation"
-import { useTeacherStudentOptions } from "@/hooks/useTeacherStudentOptions"
+import { useAcademicOptions } from "@/hooks/useTeacherStudentOptions"
+import BasicInfo from "@/components/common/BasicInfo"
 
 interface NazeraReportProps {
     studentName?: string
@@ -68,7 +68,7 @@ const transformApiDataToFormFields = (apiData: any) => {
 
 function NazeraDailyReportForm({ studentName, reportDate, month, id }: NazeraReportProps) {
     const router = useRouter()
-    const {teacherOptions, studentOptions} = useTeacherStudentOptions()
+    const {teacherOptions, studentOptions} = useAcademicOptions()
     const [createNazeraReport, { isLoading }] = useCreateNazeraReportMutation()
     const [updateNazeraReport] = useUpdateNazeraReportMutation()
     const { data: singleData, isLoading: singleReportLoading } = useGetSingleNazeraReportQuery(id)
@@ -98,6 +98,7 @@ function NazeraDailyReportForm({ studentName, reportDate, month, id }: NazeraRep
             toast.error("An error occurred while submitting the report")
         }
     }
+    
 
 
 
@@ -118,7 +119,7 @@ function NazeraDailyReportForm({ studentName, reportDate, month, id }: NazeraRep
                             <ReportHeader />
 
                             <CardContent sx={{ p: 3 }}>
-                                <StudentInfoSection
+                                <BasicInfo
                                     teacherOptions={teacherOptions}
                                     studentOptions={studentOptions}
                                     studentName={studentName || ''}
@@ -130,6 +131,7 @@ function NazeraDailyReportForm({ studentName, reportDate, month, id }: NazeraRep
 
                                 <SubmitButton isLoading={isLoading} />
                             </CardContent>
+                            
                         </Card>
                     </CraftForm>
                 )

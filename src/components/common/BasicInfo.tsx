@@ -7,11 +7,11 @@ import CraftDatePicker from "@/components/Forms/DatePicker"
 interface StudentInfoSectionProps {
   teacherOptions: Array<{ label: string; value: string }>
   studentOptions: Array<{ label: string; value: string }>
-  studentName: string
-  reportDate: string
+  studentName?: string
+  reportDate?: string
 }
 
-const StudentInfoSection = ({ teacherOptions, studentOptions, studentName, reportDate }: StudentInfoSectionProps) => {
+const BasicInfo = ({ teacherOptions, studentOptions, studentName, reportDate }: StudentInfoSectionProps) => {
   return (
     <Paper
       elevation={0}
@@ -65,4 +65,4 @@ const StudentInfoSection = ({ teacherOptions, studentOptions, studentName, repor
   )
 }
 
-export default StudentInfoSection
+export default BasicInfo

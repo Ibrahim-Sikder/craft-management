@@ -72,7 +72,7 @@ import TodayTask from "./TodayTask"
 import { format } from "date-fns"
 import { useGetAllTeachersQuery } from "@/redux/api/teacherApi"
 import { boxStyleReport } from "@/style/customeStyle"
-import { useTeacherStudentOptions } from "@/hooks/useTeacherStudentOptions"
+import { useAcademicOptions } from "@/hooks/useTeacherStudentOptions"
 
 // Define a type for student evaluation
 type StudentEvaluation = {
@@ -118,7 +118,7 @@ export default function ClassReportForm({ id }: any) {
   const [isSubmittingForm, setIsSubmittingForm] = useState(false)
 
   const { data: singleClassReport, isLoading: singleClassReportLoading } = useGetSingleClassReportQuery({ id })
-const { teacherOptions, subjectOptions, classOptions } = useTeacherStudentOptions()
+const { teacherOptions, subjectOptions, classOptions } = useAcademicOptions()
 
 
   const [todayLessonDialogOpen, setTodayLessonDialogOpen] = useState(false)
