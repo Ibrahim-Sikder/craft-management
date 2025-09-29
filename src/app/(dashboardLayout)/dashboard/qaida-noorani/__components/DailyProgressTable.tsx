@@ -4,6 +4,7 @@ import CraftInput from "@/components/Forms/Input"
 import CraftSelect from "@/components/Forms/Select"
 import { reportStyle } from "@/style/customeStyle"
 
+
 export default function DailyProgressTable() {
     return (
         <TableContainer component={Paper} sx={{ border: 1, borderColor: "grey.300", mb: 4 }}>

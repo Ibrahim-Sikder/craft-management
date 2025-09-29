@@ -22,14 +22,13 @@ import ReportTableBody from "@/components/tables/Daily/ReportTableBody"
 import toast from "react-hot-toast"
 import { useRouter } from "next/navigation"
 import { calculateWeeklyTotals, formatReportData, transformApiDataToFormFields } from "@/utils/sunaniReport"
-import { useCreateAmparaReportMutation, useGetSingleAmparaReportQuery, useUpdateAmparaReportMutation } from "@/redux/api/amparaDailyReportApi"
 import { LoadingState } from "@/components/common/LoadingState"
 import { useCreateNazeraReportMutation, useGetSingleNazeraReportQuery, useUpdateNazeraReportMutation } from "@/redux/api/nazeraDailyReportApi"
 
 function NazeraReportForm({ studentName, reportDate, month, id }: any) {
     const router = useRouter()
     const { teacherOptions, studentOptions } = useAcademicOptions()
-    const [createNazeraReport, { isLoading }] = useCreateNazeraReportMutation()
+    const [createNazeraReport] = useCreateNazeraReportMutation()
     const [updateNazeraReport] = useUpdateNazeraReportMutation()
     const { data: singleData, isLoading: singleReportLoading } = useGetSingleNazeraReportQuery(id)
 

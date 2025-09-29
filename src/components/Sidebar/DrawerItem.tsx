@@ -385,7 +385,7 @@ export const navigationItems: NavigationItem[] = [
             <Description />
           </ColorfulIcon>
         ),
-        path: "/dashboard/nazera/daily-report",
+        path: "/dashboard/nazera/daily-report/list",
         roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
       },
       {
@@ -436,7 +436,7 @@ export const navigationItems: NavigationItem[] = [
             <Description />
           </ColorfulIcon>
         ),
-        path: "/dashboard/qaida-noorani/qaida-noorani-report/list",
+        path: "/dashboard/qaida-noorani/daily-report/list",
         roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
       },
       {
@@ -446,7 +446,7 @@ export const navigationItems: NavigationItem[] = [
             <PostAdd />
           </ColorfulIcon>
         ),
-        path: "/dashboard/qaida-noorani/qaida-noorani-report/add",
+        path: "/dashboard/qaida-noorani/daily-report/add",
         roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
       },
       {

@@ -13,8 +13,8 @@ import { toast } from "react-hot-toast"
 import { transformFormFieldsToQaidaApiData, transformQaidaApiDataToFormFields } from "./dataTransformations"
 import ReportHeader from "./ReportHeader"
 import DailyProgressTable from "./DailyProgressTable"
-import SubmitButton from "../../nazera/__components/SubmitButton"
 import BasicInfo from "@/components/common/BasicInfo"
+import { SubmitButton } from "@/components/common/SubmitButton"
 
 function QaidaDailyReportForm({ id }: { id?: string }) {
     const router = useRouter()
@@ -77,6 +77,7 @@ function QaidaDailyReportForm({ id }: { id?: string }) {
             </Card>
         </CraftForm>
     )
+
 }
 
 export default QaidaDailyReportForm
