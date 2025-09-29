@@ -11,6 +11,7 @@ import {
 } from "@/redux/api/incomeCategoryApi";
 import toast from "react-hot-toast";
 import { useState, Dispatch, SetStateAction } from "react";
+import { LoadingState } from "@/components/common/LoadingState";
 
 type CategoryProps = {
   open: boolean;
@@ -58,7 +59,7 @@ const IncomeCategoryModal = ({ open, setOpen, categoryId }: CategoryProps) => {
   return (
     <>
       {isLoading ? (
-        <h3>Loading.........</h3>
+          <LoadingState/>
       ) : (
         <CraftModal sx={{ width: "40%", margin: "0 auto" }} open={open} setOpen={setOpen} title="Create Income Category">
           <CraftForm onSubmit={handleSubmit} defaultValues={defaultValues}>

@@ -15,6 +15,7 @@ import { DAYS_OF_WEEK } from "@/constant/daysConfig"
 import { useRouter } from "next/navigation"
 import { useAcademicOptions } from "@/hooks/useTeacherStudentOptions"
 import BasicInfo from "@/components/common/BasicInfo"
+import { LoadingState } from "@/components/common/LoadingState"
 
 interface NazeraReportProps {
     studentName?: string
@@ -103,7 +104,7 @@ function NazeraDailyReportForm({ studentName, reportDate, month, id }: NazeraRep
 
 
     if (singleReportLoading) {
-        return <h2> Loading....... </h2>
+        return    <LoadingState/>
     }
 
     const defaultValue = transformApiDataToFormFields(singleData?.data);
@@ -112,7 +113,7 @@ function NazeraDailyReportForm({ studentName, reportDate, month, id }: NazeraRep
         <>
             {
                 singleReportLoading ? (
-                    <h2>Loading......</h2>
+                       <LoadingState/>
                 ) : (
                     <CraftForm onSubmit={handleSubmit} defaultValues={defaultValue}>
                         <Card sx={{ boxShadow: "none", "@media print": { boxShadow: "none", border: 0 } }}>

@@ -31,6 +31,7 @@ function ReportList({
     const router = useRouter()
     const { data: reportsData, isLoading, refetch } = useGetReportsQuery({})
     const [deleteReport] = useDeleteReportMutation()
+    console.log(reportsData)
 
     const [reports, setReports] = useState<Report[]>([])
     const [filteredReports, setFilteredReports] = useState<Report[]>([])

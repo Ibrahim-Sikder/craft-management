@@ -21,19 +21,18 @@ import { tableStyle } from "@/style/customeStyle"
 import { SubmitButton } from "@/components/common/SubmitButton"
 
 import ReportTableBody from "@/components/tables/Daily/ReportTableBody"
-import { useCreateSunaniReportMutation, useGetSingleSunaniReportQuery, useUpdateSunaniReportMutation } from "@/redux/api/sunaniDailyReportApi"
-
 import toast from "react-hot-toast"
 import { useRouter } from "next/navigation"
 import { calculateWeeklyTotals, formatReportData, transformApiDataToFormFields } from "@/utils/sunaniReport"
 import { useCreateSobokiReportMutation, useGetSingleSobokiReportQuery, useUpdateSobokiReportMutation } from "@/redux/api/sobokiDailyReport"
+import { useCreateAmparaReportMutation, useUpdateAmparaReportMutation } from "@/redux/api/amparaDailyReportApi"
 import { LoadingState } from "@/components/common/LoadingState"
 
-function SobokiDailyReportForm({ studentName, reportDate, month, id }: any) {
+function AmparaDailyReport({ studentName, reportDate, month, id }: any) {
     const router = useRouter()
     const { teacherOptions, studentOptions } = useAcademicOptions()
-    const [createSobokiReport, { isLoading }] = useCreateSobokiReportMutation()
-    const [updateSobokiReport] = useUpdateSobokiReportMutation()
+    const [createAmparaReport, { isLoading }] = useCreateAmparaReportMutation()
+    const [updateAmparaReport] = useUpdateAmparaReportMutation()
     const { data: singleData, isLoading: singleReportLoading } = useGetSingleSobokiReportQuery(id)
 
     console.log(singleData)
@@ -46,13 +45,14 @@ function SobokiDailyReportForm({ studentName, reportDate, month, id }: any) {
             const formattedData = formatReportData(formData, weeklyTotals, month, id)
             let res
             if (id) {
-                res = await updateSobokiReport({ id, data: formattedData }).unwrap()
+
+                res = await updateAmparaReport({ id, data: formattedData }).unwrap()
             } else {
-                res = await createSobokiReport(formattedData).unwrap()
+                res = await createAmparaReport(formattedData).unwrap()
             }
             if (res?.success) {
                 toast.success(`Report ${id ? "updated" : "submitted"} successfully!`)
-                router.push('/dashboard/hifz/daily-report/soboki/list')
+                router.push('/dashboard/ampara/daily-report/list')
             } else {
                 toast.error("Failed to submit report")
             }
@@ -63,7 +63,7 @@ function SobokiDailyReportForm({ studentName, reportDate, month, id }: any) {
     }
 
     if (singleReportLoading) {
-        return    <LoadingState/>
+        return <LoadingState/>
     }
 
     const defaultValue = transformApiDataToFormFields(singleData?.data);
@@ -72,7 +72,9 @@ function SobokiDailyReportForm({ studentName, reportDate, month, id }: any) {
         <CraftForm onSubmit={handleSubmit} defaultValues={defaultValue}>
             <Card sx={{ boxShadow: "none", "@media print": { boxShadow: "none", border: 0 } }}>
 
-                <ReportHeader title="  Soboki Hifz Students Daily Report" subtitleBangla=" সবকি হিফজ শিক্ষার্থীদের দৈনিক রিপোর্ট" />
+
+
+                <ReportHeader title="Ampara Students Daily Report" subtitleBangla="আমপারা ছাত্রদের দৈনিক রিপোর্ট" />
 
                 <CardContent sx={{ p: 3 }}>
                     {/* Student Information */}
@@ -90,7 +92,8 @@ function SobokiDailyReportForm({ studentName, reportDate, month, id }: any) {
                                 sx={tableStyle}
                             >
                                 <TableHead>
-                                    <ReportTableRow col1Label='  সবক' col2Label=' সাত সবক' col3Label='সবক আমুক্তা' />
+
+                                    <ReportTableRow col1Label=' Morning (সকাল)' col2Label='	Afternoon (দুপুর)' col3Label=' 	Night (রাত)' />
                                 </TableHead>
                                 <ReportTableBody />
                             </Table>
@@ -105,4 +108,4 @@ function SobokiDailyReportForm({ studentName, reportDate, month, id }: any) {
     )
 }
 
-export default SobokiDailyReportForm
+export default AmparaDailyReport

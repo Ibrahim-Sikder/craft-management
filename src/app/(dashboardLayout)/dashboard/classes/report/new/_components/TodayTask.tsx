@@ -11,6 +11,7 @@ import CraftDatePicker from "@/components/Forms/DatePicker"
 import toast from "react-hot-toast"
 import { useCreateTodayTaskMutation, useGetSingleTodayTaskQuery, useUpdateTodayTaskMutation } from "@/redux/api/todayTaskApi"
 import { FieldValues } from "react-hook-form"
+import { LoadingState } from "@/components/common/LoadingState"
 interface TodayTaskProps {
   open: boolean
   onClose: () => void
@@ -55,9 +56,7 @@ export default function TodayTask({ open, onClose, onSave, id }: TodayTaskProps)
   }
   return (
     isLoading ? (
-      <div>
-        <h3>Loading......</h3>
-      </div>
+       <LoadingState/>
     ) : (
       <>
         <Dialog

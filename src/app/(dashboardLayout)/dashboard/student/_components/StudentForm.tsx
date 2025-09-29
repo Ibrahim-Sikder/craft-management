@@ -67,6 +67,7 @@ import { useGetAllSectionsQuery } from "@/redux/api/sectionApi"
 import { useGetAllSessionsQuery } from "@/redux/api/sessionApi"
 import CraftIntAutoCompleteWithIcon from "@/components/Forms/AutocompleteWithIcon"
 import toast from "react-hot-toast"
+import { LoadingState } from "@/components/common/LoadingState"
 
 interface StudentFormProps {
   id?: string
@@ -1077,7 +1078,7 @@ const StudentForm = ({ id }: StudentFormProps) => {
   ]
 
   if (isLoading) {
-    return <h4>Loading.......</h4>
+    return    <LoadingState/>
   }
 
   return (

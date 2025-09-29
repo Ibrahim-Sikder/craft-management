@@ -49,6 +49,7 @@ import { bloodGroups } from "@/options"
 import { useCreateAdmissionMutation, useGetSingleAdmissionQuery, useUpdateAdmissionMutation } from "@/redux/api/admissionApi"
 import toast from "react-hot-toast"
 import CraftCheckbox from "@/components/Forms/CraftCheckbox"
+import { LoadingState } from "@/components/common/LoadingState"
 
 type TProps = {
   id?: string | string[];
@@ -234,7 +235,7 @@ const AdmissionForm = ({ id }: TProps) => {
     <Box>
       {
         isLoading ? (
-          <h2>Loading.....</h2>
+             <LoadingState/>
         ) : (
           <Box>
 
