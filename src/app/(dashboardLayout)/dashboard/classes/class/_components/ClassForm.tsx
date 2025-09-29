@@ -401,6 +401,7 @@ import { useMemo, useState } from "react"
 import { useRouter } from "next/navigation"
 import { useGetAllSectionsQuery, useCreateSectionMutation } from "@/redux/api/sectionApi"
 import SectionModal from "./SectionModal"
+import { LoadingState } from "@/components/common/LoadingState"
 
 // Define animations
 const pulseAnimation = keyframes`
@@ -538,7 +539,7 @@ export default function ClassForm({ id }: ClassProps) {
   }
 
   if (isLoading) {
-    return <h3>Loading........</h3>
+    return    <LoadingState/>
   }
 
   return (

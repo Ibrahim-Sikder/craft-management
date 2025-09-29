@@ -6,7 +6,7 @@ import { transformToSelectOptions } from "@/utils/selectOptions";
 import { useGetAllClassesQuery } from "@/redux/api/classApi";
 import { useGetAllSubjectsQuery } from "@/redux/api/subjectApi";
 
-export function useTeacherStudentOptions(limit = 10, initialSearch = "") {
+export function useAcademicOptions(limit = 10, initialSearch = "") {
   const [page] = useState(0);
   const [searchTerm] = useState(initialSearch);
 

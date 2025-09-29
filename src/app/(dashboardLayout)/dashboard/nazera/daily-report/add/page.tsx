@@ -1,8 +1,8 @@
 import React from 'react';
-import NazeraDailyReportForm from '../../__components/NazeraDailyReportForm';
+import NazeraReportForm from '../../__components/NazeraReportForm';
 
 const page = () => {
-  return <NazeraDailyReportForm />
+  return <NazeraReportForm />
 };
 
 export default page;

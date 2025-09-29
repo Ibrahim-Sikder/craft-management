@@ -28,6 +28,7 @@ import { useEffect, useMemo, useState } from "react"
 import { useGetAllIncomeCategoriesQuery } from "@/redux/api/incomeCategoryApi"
 import { cardStyle } from "@/style/customeStyle"
 import CategoryAutoComplete from "@/utils/CategoryAutoComplete"
+import { LoadingState } from "@/components/common/LoadingState"
 interface IncomeItem {
   id: number
   source: string
@@ -157,7 +158,7 @@ export default function AddIncomeModal({ id, open, onClose }: AddIncomeDialogPro
 
       {
         singleIncomeLoading ? (
-          <h3>Loading.......</h3>
+           <LoadingState/>
         ) : (
           <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
             <DialogTitle>

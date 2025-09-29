@@ -34,6 +34,7 @@ import CraftTextArea from "@/components/Forms/TextArea"
 import FileUploadWithIcon from "@/components/Forms/Upload"
 import { useCreateFeedbackMutation, useGetSingleFeedbackQuery, useUpdateFeedbackMutation } from "@/redux/api/feedbackApi"
 import toast from "react-hot-toast"
+import { LoadingState } from "@/components/common/LoadingState"
 
 interface FeedbackFormModalProps {
     open: boolean
@@ -137,7 +138,7 @@ const FeedbackFormModal: React.FC<FeedbackFormModalProps> = ({ open, onClose, pr
 
             {
                 isLoading ? (
-                    <h2>Loading.......</h2>
+                       <LoadingState/>
                 ) : (
                     <Dialog
                         open={open}

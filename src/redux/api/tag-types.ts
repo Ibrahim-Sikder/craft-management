@@ -26,7 +26,10 @@ export const tagTypesList = [
   'loan',
   'investment',
   'nazera-daily-report',
-  'qaida-daily-report'
+  'qaida-daily-report',
+  'sunani-daily-report',
+  'soboki-daily-report',
+  'ampara-daily-report'
   
 ] as const;
 

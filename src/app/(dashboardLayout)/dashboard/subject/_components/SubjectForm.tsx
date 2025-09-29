@@ -29,6 +29,7 @@ import toast from "react-hot-toast"
 import { useRouter } from "next/navigation"
 import { customTheme } from "@/ThemeStyle"
 import { boxStyle, evaluationStle, evaluationStle2, typographyStyle } from "@/style/customeStyle"
+import { LoadingState } from "@/components/common/LoadingState"
 
 export default function SubjectForm({ id }: any) {
   const router = useRouter()
@@ -73,7 +74,7 @@ export default function SubjectForm({ id }: any) {
   return (
     <>
       {isLoading ? (
-        <div>Loading......</div>
+          <LoadingState/>
       ) : (
         <ThemeProvider theme={theme}>
           <CraftForm onSubmit={handleSubmit} defaultValues={defaultValues}>

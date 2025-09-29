@@ -7,6 +7,7 @@ import CraftInput from "@/components/Forms/Input";
 import toast from "react-hot-toast";
 import { useState, Dispatch, SetStateAction } from "react";
 import { useCreateExpenseCategoryMutation, useGetSingleExpenseCategoryQuery, useUpdateExpenseCategoryMutation } from "@/redux/api/expenseCategoryApi";
+import { LoadingState } from "@/components/common/LoadingState";
 
 type CategoryProps = {
   open: boolean;
@@ -54,7 +55,7 @@ const ExpenseCategoryModal = ({ open, setOpen, categoryId }: CategoryProps) => {
   return (
     <>
       {isLoading ? (
-        <h3>Loading.........</h3>
+           <LoadingState/>
       ) : (
         <CraftModal sx={{ width: "40%", margin: "0 auto" }} open={open} setOpen={setOpen} title="Create Expense Category">
           <CraftForm onSubmit={handleSubmit} defaultValues={defaultValues}>

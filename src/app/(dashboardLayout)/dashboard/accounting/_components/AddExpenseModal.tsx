@@ -26,6 +26,7 @@ import { cardStyle } from "@/style/customeStyle"
 import CategoryAutoComplete from "@/utils/CategoryAutoComplete"
 import { useCreateExpenseMutation, useGetSingleExpenseQuery, useUpdateExpenseMutation } from "@/redux/api/expenseApi"
 import { useGetAllExpenseCategoriesQuery } from "@/redux/api/expenseCategoryApi"
+import { LoadingState } from "@/components/common/LoadingState"
 
 interface TExpenseItem {
   id: number
@@ -150,7 +151,7 @@ export default function AddExpenseModal({ id, open, onClose }: AddExpenseDialogP
   return (
     <>
       {singleExpenseLoading ? (
-        <h3>Loading.......</h3>
+        <LoadingState/>
       ) : (
         <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
           <DialogTitle>

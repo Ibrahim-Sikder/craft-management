@@ -6,22 +6,22 @@ import { useState } from "react"
 import { Card, CardContent, Typography, Box, Button } from "@mui/material"
 import CraftForm from "@/components/Forms/Form"
 import { FieldValues } from "react-hook-form"
-import { useTeacherStudentOptions } from "@/hooks/useTeacherStudentOptions"
+import { useAcademicOptions } from "@/hooks/useTeacherStudentOptions"
 import { useCreateQaidaReportMutation, useGetSingleQaidaReportQuery, useUpdateQaidaReportMutation } from "@/redux/api/qaidaDailyReportApi"
 import { useRouter } from "next/navigation"
 import { toast } from "react-hot-toast"
 import { transformFormFieldsToQaidaApiData, transformQaidaApiDataToFormFields } from "./dataTransformations"
 import ReportHeader from "./ReportHeader"
-import BasicInfoSection from "./BasicInfoSection"
 import DailyProgressTable from "./DailyProgressTable"
 import SubmitButton from "../../nazera/__components/SubmitButton"
+import BasicInfo from "@/components/common/BasicInfo"
 
 function QaidaDailyReportForm({ id }: { id?: string }) {
     const router = useRouter()
     const [createQaidaReport] = useCreateQaidaReportMutation()
     const [updateQaidaReport] = useUpdateQaidaReportMutation()
     const { data: singleQaidaReport, isLoading } = useGetSingleQaidaReportQuery(id)
-    const { teacherOptions, studentOptions } = useTeacherStudentOptions()
+    const { teacherOptions, studentOptions } = useAcademicOptions()
 
     const handleSubmit = async (data: FieldValues) => {
         const submitData = {
@@ -67,7 +67,7 @@ function QaidaDailyReportForm({ id }: { id?: string }) {
             <Card>
                 <ReportHeader />
                 <CardContent sx={{ p: 4 }}>
-                    <BasicInfoSection
+                    <BasicInfo
                         teacherOptions={teacherOptions}
                         studentOptions={studentOptions}
                     />
