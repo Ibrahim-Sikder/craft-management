@@ -9,8 +9,8 @@ function AmparaReportList() {
             useGetReportsQuery={useGetAllAmparaReportsQuery}
             useDeleteReportMutation={useDeleteAmparaReportMutation}
             title="Ampara Daily Reports"
-            createPath="/dashboard/daily-report/ampara/add"
-            updatePath="/dashboard/daily-report/ampara/update"
+            createPath="/dashboard/ampara/daily-report/add"
+            updatePath="/dashboard/ampara/daily-report/update"
             reportType="soboki"
             showCharts={true}
         />

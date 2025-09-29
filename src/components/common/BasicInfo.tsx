@@ -1,17 +1,18 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+// components/common/BasicInfo.tsx
 import { Paper, Box, Grid } from "@mui/material"
 import { boxStyleReport } from "@/style/customeStyle"
 import CraftIntAutoComplete from "@/components/Forms/CruftAutocomplete"
 import CraftDatePicker from "@/components/Forms/DatePicker"
-
 interface StudentInfoSectionProps {
   teacherOptions: Array<{ label: string; value: string }>
   studentOptions: Array<{ label: string; value: string }>
-  studentName?: string
-  reportDate?: string
+  studentName?: any
+  reportDate?: any
+  weeklyTarget?: any
 }
 
-const BasicInfo = ({ teacherOptions, studentOptions, studentName, reportDate }: StudentInfoSectionProps) => {
+const BasicInfo = ({ teacherOptions, studentOptions }: StudentInfoSectionProps) => {
   return (
     <Paper
       elevation={0}
@@ -59,6 +60,7 @@ const BasicInfo = ({ teacherOptions, studentOptions, studentName, reportDate }: 
           <Grid item xs={6} sm={6} md={2} lg={2.5}>
             <CraftDatePicker name="reportDate" label="তারিখ" />
           </Grid>
+          
         </Grid>
       </Box>
     </Paper>

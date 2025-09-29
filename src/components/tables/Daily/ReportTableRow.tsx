@@ -3,9 +3,9 @@ import { TableCell, TableRow } from '@mui/material';
 import React from 'react';
 
 interface ReportTableRowProps {
-  col1Label: React.ReactNode; // e.g., "সকালের পড়া" or "Sobok (সবক)"
-  col2Label: React.ReactNode; // e.g., "রাতের পড়া" or "Sat Sobok (সাত সবক)"
-  col3Label: React.ReactNode; // e.g., "পেছনের পড়া" or "Sabak Amukta (সবক আমুক্তা)"
+  col1Label: React.ReactNode;
+  col2Label: React.ReactNode; 
+  col3Label: React.ReactNode; 
 }
 
 const ReportTableRow: React.FC<ReportTableRowProps> = ({

@@ -17,15 +17,12 @@ import CraftForm from "@/components/Forms/Form"
 import { ReportHeader } from "@/components/common/ReportHeader"
 import ReportTableRow from "@/components/tables/Daily/ReportTableRow"
 import { tableStyle } from "@/style/customeStyle"
-
 import { SubmitButton } from "@/components/common/SubmitButton"
-
 import ReportTableBody from "@/components/tables/Daily/ReportTableBody"
 import toast from "react-hot-toast"
 import { useRouter } from "next/navigation"
 import { calculateWeeklyTotals, formatReportData, transformApiDataToFormFields } from "@/utils/sunaniReport"
-import { useCreateSobokiReportMutation, useGetSingleSobokiReportQuery, useUpdateSobokiReportMutation } from "@/redux/api/sobokiDailyReport"
-import { useCreateAmparaReportMutation, useUpdateAmparaReportMutation } from "@/redux/api/amparaDailyReportApi"
+import { useCreateAmparaReportMutation, useGetSingleAmparaReportQuery, useUpdateAmparaReportMutation } from "@/redux/api/amparaDailyReportApi"
 import { LoadingState } from "@/components/common/LoadingState"
 
 function AmparaDailyReport({ studentName, reportDate, month, id }: any) {
@@ -33,9 +30,8 @@ function AmparaDailyReport({ studentName, reportDate, month, id }: any) {
     const { teacherOptions, studentOptions } = useAcademicOptions()
     const [createAmparaReport, { isLoading }] = useCreateAmparaReportMutation()
     const [updateAmparaReport] = useUpdateAmparaReportMutation()
-    const { data: singleData, isLoading: singleReportLoading } = useGetSingleSobokiReportQuery(id)
+    const { data: singleData, isLoading: singleReportLoading } = useGetSingleAmparaReportQuery(id)
 
-    console.log(singleData)
 
 
 
@@ -43,6 +39,7 @@ function AmparaDailyReport({ studentName, reportDate, month, id }: any) {
         try {
             const weeklyTotals = calculateWeeklyTotals(formData)
             const formattedData = formatReportData(formData, weeklyTotals, month, id)
+            console.log('formate data', formattedData)
             let res
             if (id) {
 
@@ -63,7 +60,7 @@ function AmparaDailyReport({ studentName, reportDate, month, id }: any) {
     }
 
     if (singleReportLoading) {
-        return <LoadingState/>
+        return <LoadingState />
     }
 
     const defaultValue = transformApiDataToFormFields(singleData?.data);
@@ -107,5 +104,6 @@ function AmparaDailyReport({ studentName, reportDate, month, id }: any) {
         </CraftForm>
     )
 }
+
 
 export default AmparaDailyReport

@@ -254,16 +254,7 @@ export const navigationItems: NavigationItem[] = [
         path: "/dashboard/hifz/subject/list",
         roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
       },
-      {
-        title: "Daily Report List",
-        icon: (
-          <ColorfulIcon color="#9C27B0">
-            <Description />
-          </ColorfulIcon>
-        ),
-        path: "/dashboard/hifz/daily-report",
-        roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
-      },
+      
       {
         title: "Soboki Daily Report Add",
         icon: (
@@ -343,7 +334,7 @@ export const navigationItems: NavigationItem[] = [
             <Description />
           </ColorfulIcon>
         ),
-        path: "/dashboard/ampara/daily-report",
+        path: "/dashboard/ampara/daily-report/list",
         roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
       },
       {

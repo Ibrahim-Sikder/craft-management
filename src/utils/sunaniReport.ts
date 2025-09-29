@@ -5,12 +5,27 @@ export const transformApiDataToFormFields = (apiData: any) => {
 
     if (!apiData) return formFields;
 
+    // Transform basic fields
     formFields.reportDate = apiData.reportDate || "";
-    formFields.studentName = apiData.studentName || "";
-    formFields.teacherName = apiData.teacherName || "";
     formFields.month = apiData.month || "";
     formFields.weeklyTarget = apiData.weeklyTarget || "";
+    
+    // Format teacherName and studentName as objects for the autocomplete
+    if (apiData.teacherName) {
+        formFields.teacherName = {
+            label: apiData.teacherName,
+            value: apiData.teacherName
+        };
+    }
+    
+    if (apiData.studentName) {
+        formFields.studentName = {
+            label: apiData.studentName,
+            value: apiData.studentName
+        };
+    }
 
+    // Transform dailyEntries to form fields
     if (apiData.dailyEntries) {
         Object.keys(apiData.dailyEntries).forEach(day => {
             const dayData = apiData.dailyEntries[day];
@@ -54,6 +69,7 @@ export const transformApiDataToFormFields = (apiData: any) => {
 };
 
 // Helper function to format form data for API submission
+// Helper function to format form data for API submission
 export const formatReportData = (formData: any, weeklyTotals: any, month: string, id?: string) => {
     const days = ['saturday', 'sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday'];
     const dailyEntries: any = {};
@@ -86,9 +102,19 @@ export const formatReportData = (formData: any, weeklyTotals: any, month: string
         };
     });
 
+    // Handle teacherName and studentName properly
+    const getFieldValue = (field: any) => {
+        if (!field) return '';
+        if (typeof field === 'string') return field;
+        if (typeof field === 'object') {
+            return field.label || field.value || '';
+        }
+        return String(field);
+    };
+
     const result: any = {
-        teacherName: formData.teacherName.label,
-        studentName: formData.studentName.label,
+        teacherName: getFieldValue(formData.teacherName),
+        studentName: getFieldValue(formData.studentName),
         reportDate: formData.reportDate,
         weeklyTarget: formData.weeklyTarget || '',
         dailyEntries,

@@ -10,8 +10,7 @@ import {
     Dialog,
 } from "@mui/material"
 import { useRouter } from "next/navigation"
-import { COLORS } from "@/style/hifzReportStyle"
-import { DailyEntry, Report, ReportListProps } from "@/interface/hifzReport"
+import {  Report, ReportListProps } from "@/interface/hifzReport"
 import { ReportListHeader } from "./DailyReportListHeader"
 import { ReportCard } from "./ReportCard"
 import { ReportDialog } from "./ReportDialog"
@@ -31,8 +30,6 @@ function ReportList({
     const router = useRouter()
     const { data: reportsData, isLoading, refetch } = useGetReportsQuery({})
     const [deleteReport] = useDeleteReportMutation()
-    console.log(reportsData)
-
     const [reports, setReports] = useState<Report[]>([])
     const [filteredReports, setFilteredReports] = useState<Report[]>([])
     const [selectedReport, setSelectedReport] = useState<Report | null>(null)
@@ -98,6 +95,7 @@ function ReportList({
                 setSearchTerm={setSearchTerm}
                 onRefresh={refetch}
             />
+
 
             <Grid container spacing={3} sx={{ mt: 3, px: 3 }}>
                 {
