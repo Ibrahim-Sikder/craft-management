@@ -15,6 +15,7 @@ import DailyProgressTable from "./DailyProgressTable"
 import BasicInfo from "@/components/common/BasicInfo"
 import { SubmitButton } from "@/components/common/SubmitButton"
 import { ReportHeader } from "@/components/common/ReportHeader"
+import { LoadingState } from "@/components/common/LoadingState"
 
 function QaidaDailyReportForm({ id }: { id?: string }) {
     const router = useRouter()
@@ -55,11 +56,7 @@ function QaidaDailyReportForm({ id }: { id?: string }) {
     const defaultValues = transformQaidaApiDataToFormFields(singleQaidaReport?.data)
 
     if (isLoading) {
-        return (
-            <Box display="flex" justifyContent="center" alignItems="center" height="50vh">
-                <Typography variant="h6">Loading report data...</Typography>
-            </Box>
-        )
+        return <LoadingState/>
     }
 
     return (

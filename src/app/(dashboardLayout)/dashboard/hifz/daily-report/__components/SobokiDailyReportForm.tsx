@@ -82,6 +82,7 @@ function SobokiDailyReportForm({ studentName, reportDate, month, id }: any) {
                         studentName={studentName}
                         reportDate={reportDate}
                     />
+                    
                     {/* Daily Entries Table */}
                     <Box sx={{ width: '100%', overflow: 'auto' }}>
                         <TableContainer component={Paper} sx={{ minWidth: 1200, '@media print': { minWidth: '100%' } }}>
