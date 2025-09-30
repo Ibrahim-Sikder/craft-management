@@ -475,3 +475,5 @@ export const tableStyle = {
     minWidth: 60,
   },
 };
+
+export const tableRowCellStyle = { fontWeight: 600, fontSize: "0.75rem", p: 1 }

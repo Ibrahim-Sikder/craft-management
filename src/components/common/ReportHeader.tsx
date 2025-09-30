@@ -17,10 +17,8 @@ export function ReportHeader({ title, subtitleBangla }: ReportHeaderProps) {
       }}
       title={
         <Box>
-          <Typography variant="h4" sx={{ fontWeight: "bold", color: "text.primary", mb: 1 }}>
-            Craft International Institute
-          </Typography>
-          <Typography variant="h5" sx={{ fontWeight: 600, color: "text.secondary", mb: 1 }}>
+
+          <Typography variant="h4" sx={{ fontWeight: 'bold', color: "text.primary", mb: 1 }}>
             {title}
           </Typography>
           <Typography variant="h6" sx={{ color: "text.secondary" }}>

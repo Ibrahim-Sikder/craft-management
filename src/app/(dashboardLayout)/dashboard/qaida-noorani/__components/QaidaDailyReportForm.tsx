@@ -10,10 +10,11 @@ import { useCreateQaidaReportMutation, useGetSingleQaidaReportQuery, useUpdateQa
 import { useRouter } from "next/navigation"
 import { toast } from "react-hot-toast"
 import { transformFormFieldsToQaidaApiData, transformQaidaApiDataToFormFields } from "./dataTransformations"
-import ReportHeader from "./ReportHeader"
+
 import DailyProgressTable from "./DailyProgressTable"
 import BasicInfo from "@/components/common/BasicInfo"
 import { SubmitButton } from "@/components/common/SubmitButton"
+import { ReportHeader } from "@/components/common/ReportHeader"
 
 function QaidaDailyReportForm({ id }: { id?: string }) {
     const router = useRouter()
@@ -64,7 +65,7 @@ function QaidaDailyReportForm({ id }: { id?: string }) {
     return (
         <CraftForm onSubmit={handleSubmit} defaultValues={defaultValues}>
             <Card>
-                <ReportHeader />
+                <ReportHeader subtitleBangla=" কায়েদা ও নূরানী ছাত্রদের দৈনিক রিপোর্ট" title="Craft International Institute"/>
                 <CardContent sx={{ p: 4 }}>
                     <BasicInfo
                         teacherOptions={teacherOptions}
