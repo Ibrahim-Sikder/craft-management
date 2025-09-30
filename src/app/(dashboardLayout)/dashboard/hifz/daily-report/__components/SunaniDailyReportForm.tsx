@@ -47,7 +47,7 @@ function SunaniDailyReportForm({ studentName, reportDate, month, id }: any) {
             }
             if (res?.success) {
                 toast.success(`Report ${id ? "updated" : "submitted"} successfully!`)
-                // router.push('/dashboard/')
+                router.push('/dashboard/hifz/daily-report/sunani/list')
             } else {
                 toast.error("Failed to submit report")
             }
