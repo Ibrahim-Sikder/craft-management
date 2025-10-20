@@ -144,7 +144,7 @@ export default function AddClassReportTarget() {
                           fontSize: "1.1rem",
                         }}
                       >
-                        এককজরে এই সপ্তাহের টার্গেট
+                        একনজরে এই সপ্তাহের টার্গেট
                       </TableCell>
                       <TableCell
                         align="center"
@@ -203,7 +203,7 @@ export default function AddClassReportTarget() {
                           background: "#e3f2fd",
                         }}
                       >
-                        এককজরে এই সপ্তাহের টার্গেট
+                        একনজরে এই সপ্তাহের টার্গেট
                       </TableCell>
                       {[0, 1, 2, 3].map((index) => (
                         <TableCell
@@ -231,7 +231,7 @@ export default function AddClassReportTarget() {
                           background: "#e3f2fd",
                         }}
                       >
-                        এককজরে এই সপ্তাহের রিপোর্ট
+                        একনজরে এই সপ্তাহের রিপোর্ট
                       </TableCell>
                       {[0, 1, 2, 3].map((index) => (
                         <TableCell
@@ -259,7 +259,7 @@ export default function AddClassReportTarget() {
                           background: "#e3f2fd",
                         }}
                       >
-                        এককজরে ভুলের সংখ্যা
+                        একনজরে ভুলের সংখ্যা
                       </TableCell>
                       {[0, 1, 2, 3].map((index) => (
                         <TableCell

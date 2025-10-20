@@ -58,7 +58,7 @@ export function ReportDataList({
                         <TableRow>
                             <TableCell sx={tableCellStyle}>Day</TableCell>
                             <TableCell sx={tableCellStyle}>Sobok</TableCell>
-                            <TableCell sx={tableCellStyle}>Sabak Seven</TableCell>
+                            
                             <TableCell sx={tableCellStyle}>Sabak Amukta</TableCell>
                             <TableCell sx={tableCellStyle}>Sat Sobok</TableCell>
                             <TableCell sx={tableCellStyle}>Tilawat</TableCell>
@@ -83,9 +83,7 @@ export function ReportDataList({
                                 <TableCell>
                                     {data.sobok.para || '-'}/{data.sobok.page || '-'}
                                 </TableCell>
-                                <TableCell>
-                                    {data.sabakSeven.para || '-'}/{data.sabakSeven.page || '-'}
-                                </TableCell>
+                               
                                 <TableCell>
                                     {data.sabakAmukta.para || '-'}/{data.sabakAmukta.page || '-'}
                                 </TableCell>

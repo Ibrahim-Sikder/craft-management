@@ -74,6 +74,7 @@ function QaidaDailyReportForm({ id }: { id?: string }) {
             </Card>
         </CraftForm>
     )
+    
 
 }
 

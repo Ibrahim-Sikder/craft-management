@@ -29,8 +29,9 @@ export const tagTypesList = [
   'qaida-daily-report',
   'sunani-daily-report',
   'soboki-daily-report',
-  'ampara-daily-report'
-  
+  'ampara-daily-report',
+  'weeklyReport'
+
 ] as const;
 
 export type TagType = (typeof tagTypesList)[number];

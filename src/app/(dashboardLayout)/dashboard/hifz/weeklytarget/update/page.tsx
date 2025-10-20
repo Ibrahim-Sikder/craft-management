@@ -1,7 +1,7 @@
 import React from 'react'
 import WeeklyReportForm from '../__components/WeeklyReportForm'
 
-const page = () => {
-  return <WeeklyReportForm />
+export const page = () => {
+    return <WeeklyReportForm />
 }
 export default page

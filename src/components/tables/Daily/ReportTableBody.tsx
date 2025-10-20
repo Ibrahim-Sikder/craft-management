@@ -1,6 +1,5 @@
 // components/tables/Daily/ReportTableBody.tsx
 import CraftInput from '@/components/Forms/Input';
-import CraftSelect from '@/components/Forms/Select';
 import { DAYS_OF_WEEK } from '@/constant/daysConfig';
 import { reportInput } from '@/style/customeStyle';
 import { TableBody, TableCell, TableRow, Typography, useTheme, useMediaQuery } from '@mui/material';
@@ -11,6 +10,7 @@ const ReportTableBody = () => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
     
+
     return (
         <TableBody>
             {DAYS_OF_WEEK.map((day, index) => (
@@ -60,6 +60,34 @@ const ReportTableBody = () => {
                         <CraftInput
                             name={`${day.key}SobokPage`}
                             placeholder="Page"
+                            sx={{
+                                ...reportInput,
+                                '& input': { 
+                                    textAlign: 'center',
+                                    fontSize: { xs: '0.7rem', sm: '0.8rem' }
+                                }
+                            }}
+                        />
+                    </TableCell>
+                    <TableCell sx={{ p: { xs: 0.3, sm: 0.5 } }}>
+                        <CraftInput
+                            name={`${day.key}SobokAmount`}
+                            size="small"
+                            placeholder="amount"
+                            sx={{
+                                ...reportInput,
+                                '& input': { 
+                                    textAlign: 'center',
+                                    fontSize: { xs: '0.7rem', sm: '0.8rem' }
+                                }
+                            }}
+                        />
+                    </TableCell>
+                    <TableCell sx={{ p: { xs: 0.3, sm: 0.5 } }}>
+                        <CraftInput
+                            name={`${day.key}SobokWrong`}
+                            size="small"
+                            placeholder="wrong"
                             sx={{
                                 ...reportInput,
                                 '& input': { 
@@ -155,12 +183,11 @@ const ReportTableBody = () => {
                             }}
                         />
                     </TableCell>
-                    {/* Sabak Seven Column */}
                     <TableCell sx={{ p: { xs: 0.3, sm: 0.5 } }}>
                         <CraftInput
-                            name={`${day.key}SabakSevenPara`}
+                            name={`${day.key}SabakAmuktaAmount`}
                             size="small"
-                            placeholder="para"
+                            placeholder="amount"
                             sx={{
                                 ...reportInput,
                                 '& input': { 
@@ -172,9 +199,9 @@ const ReportTableBody = () => {
                     </TableCell>
                     <TableCell sx={{ p: { xs: 0.3, sm: 0.5 } }}>
                         <CraftInput
-                            name={`${day.key}SabakSevenPage`}
+                            name={`${day.key}SabakAmuktaWrong`}
                             size="small"
-                            placeholder="page"
+                            placeholder="wrong"
                             sx={{
                                 ...reportInput,
                                 '& input': { 
@@ -189,7 +216,7 @@ const ReportTableBody = () => {
                         <CraftInput
                             name={`${day.key}TilawaAmount`}
                             size="small"
-                            placeholder="Tilawat Amount"
+                            placeholder="Tilawat"
                             sx={{
                                 ...reportInput,
                                 '& input': { 
@@ -201,19 +228,19 @@ const ReportTableBody = () => {
                     </TableCell>
                     {/* Mashq Column (Yes/No) */}
                     <TableCell sx={{ p: { xs: 0.3, sm: 0.5 } }}>
-                        <CraftSelect 
-                            items={['হ্যাঁ', 'না']}
+                        <CraftInput
                             name={`${day.key}Mashq`}
                             size="small"
-                            placeholder="Mashq"
-                            sx={{
+                            placeholder="মাশক্ব"
+                          sx={{
                                 ...reportInput,
-                                '& .MuiSelect-select': { 
+                                '& input': { 
                                     textAlign: 'center',
                                     fontSize: { xs: '0.7rem', sm: '0.8rem' }
                                 }
                             }}
                         />
+                       
                     </TableCell>
                     {/* Tajweed Column */}
                     <TableCell sx={{ p: { xs: 0.3, sm: 0.5 } }}>

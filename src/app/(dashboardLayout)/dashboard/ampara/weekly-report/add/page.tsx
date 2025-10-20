@@ -48,10 +48,10 @@ import {
 
 // Sample student data
 const initialStudentsData = [
-  { 
-    id: 1, 
-    name: "আহমেদ রফিক", 
-    date: dayjs(), 
+  {
+    id: 1,
+    name: "আহমেদ রফিক",
+    date: dayjs(),
     month: "জানুয়ারী",
     status: "completed",
     progress: 95,
@@ -330,7 +330,7 @@ export default function NazeraStudentReport() {
                               fontSize: "1.1rem",
                             }}
                           >
-                            এককজরে এই সপ্তাহের টার্গেট
+                            একনজরে এই সপ্তাহের টার্গেট
                           </TableCell>
                           <TableCell
                             align="center"
@@ -389,7 +389,7 @@ export default function NazeraStudentReport() {
                               background: "#e8f5e9",
                             }}
                           >
-                            এককজরে এই সপ্তাহের টার্গেট
+                            একনজরে এই সপ্তাহের টার্গেট
                           </TableCell>
                           {[0, 1, 2, 3].map((index) => (
                             <TableCell
@@ -417,7 +417,7 @@ export default function NazeraStudentReport() {
                               background: "#e8f5e9",
                             }}
                           >
-                            এককজরে এই সপ্তাহের রিপোর্ট
+                            একনজরে এই সপ্তাহের রিপোর্ট
                           </TableCell>
                           {[0, 1, 2, 3].map((index) => (
                             <TableCell
@@ -445,7 +445,7 @@ export default function NazeraStudentReport() {
                               background: "#e8f5e9",
                             }}
                           >
-                            এককজরে ভুলের সংখ্যা
+                            একনজরে ভুলের সংখ্যা
                           </TableCell>
                           {[0, 1, 2, 3].map((index) => (
                             <TableCell
@@ -478,7 +478,7 @@ export default function NazeraStudentReport() {
           </Box>
         </TabPanel>
 
-       
+
       </Box>
     </LocalizationProvider>
   );

@@ -39,7 +39,7 @@ function AmparaDailyReport({ studentName, reportDate, month, id }: any) {
         try {
             const weeklyTotals = calculateWeeklyTotals(formData)
             const formattedData = formatReportData(formData, weeklyTotals, month, id)
-            console.log('formate data', formattedData)
+       
             let res
             if (id) {
 
@@ -104,6 +104,7 @@ function AmparaDailyReport({ studentName, reportDate, month, id }: any) {
         </CraftForm>
     )
 }
+
 
 
 export default AmparaDailyReport

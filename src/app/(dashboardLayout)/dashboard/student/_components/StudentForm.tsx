@@ -55,12 +55,10 @@ import { useRouter } from "next/navigation"
 import CraftForm from "@/components/Forms/Form"
 import CraftInputWithIcon from "@/components/Forms/inputWithIcon"
 import CraftSelectWithIcon from "@/components/Forms/selectWithIcon"
-import { batches, bloodGroup, classes, sections } from "@/options"
+import { batches, bloodGroup } from "@/options"
 import CraftSwitch from "@/components/Forms/switch"
 import { useCreateStudentsMutation, useGetSingleStudentQuery, useUpdateStudentMutation } from "@/redux/api/studentApi"
-import { zodResolver } from "@hookform/resolvers/zod"
 import FileUploadWithIcon from "@/components/Forms/Upload"
-import { studentSchema } from "@/schema"
 import { FieldValues } from "react-hook-form"
 import { useGetAllClassesQuery } from "@/redux/api/classApi"
 import { useGetAllSectionsQuery } from "@/redux/api/sectionApi"
@@ -68,11 +66,9 @@ import { useGetAllSessionsQuery } from "@/redux/api/sessionApi"
 import CraftIntAutoCompleteWithIcon from "@/components/Forms/AutocompleteWithIcon"
 import toast from "react-hot-toast"
 import { LoadingState } from "@/components/common/LoadingState"
-
 interface StudentFormProps {
   id?: string
 }
-
 const StudentForm = ({ id }: StudentFormProps) => {
   const [createStudents] = useCreateStudentsMutation()
   const [updateStudent] = useUpdateStudentMutation()
@@ -386,7 +382,7 @@ const StudentForm = ({ id }: StudentFormProps) => {
               label='Student Department '
 
               placeholder="Student Department "
-              items={["Hifz Student", "School Student",]}
+              items={["Hifz Student", "Academic Student",]}
               adornment={<Person color="action" />}
             />
           </Grid>
