@@ -203,7 +203,6 @@ export default function WeeklyReportList({ title, reportType, addPath }: ReportT
         );
     }
 
-    // Show error state if API call fails
     if (error) {
         return (
             <Box display="flex" justifyContent="center" alignItems="center" height="100vh">
