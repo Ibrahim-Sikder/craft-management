@@ -1,4 +1,3 @@
-// WeeklyReportBody.tsx
 'use client'
 
 import {
@@ -30,14 +29,21 @@ const WeeklyReportBody = ({
     readOnly = false
 }: WeeklyReportBodyProps) => {
 
-    // Generate a unique name for each input field
-    const getInputName = (rowIndex: number, colIndex: number) => {
-        return `rows[${rowIndex}].values[${colIndex}]`;
-    };
-
     const handleInputChange = (rowIndex: number, colIndex: number, value: string) => {
-        const newRows = [...rows];
-        newRows[rowIndex].values[colIndex] = value;
+        // Create a deep copy of the rows to avoid read-only issues
+        const newRows = rows.map((row, index) => {
+            if (index === rowIndex) {
+                // Create a new values array for the specific row
+                const newValues = [...row.values];
+                newValues[colIndex] = value;
+                return {
+                    ...row,
+                    values: newValues
+                };
+            }
+            return { ...row }; // Return a copy of other rows
+        });
+
         if (onDataChange) {
             onDataChange(newRows);
         }
@@ -65,11 +71,11 @@ const WeeklyReportBody = ({
                             sx={{ border: "1px solid #ccc", p: 0.5 }}
                         >
                             <CraftInput
-                                name={getInputName(rowIndex, colIndex)}
+                                name={`rows[${rowIndex}].values[${colIndex}]`}
                                 fullWidth
                                 variant="outlined"
                                 size="small"
-                                value={value}
+                                value={value || ""}
                                 onChange={(e) => handleInputChange(rowIndex, colIndex, e.target.value)}
                                 disabled={readOnly}
                                 InputProps={{

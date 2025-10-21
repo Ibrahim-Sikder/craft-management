@@ -11,10 +11,10 @@ export const weeklyReportApi = baseApi.injectEndpoints({
             invalidatesTags: ["weeklyReport"],
         }),
         getAllWeeklyReports: build.query({
-            query: ({ limit, page, searchTerm }) => ({
+            query: ({ limit, page, searchTerm, reportType }) => ({
                 url: "/weekly-report",
                 method: "GET",
-                params: { page, limit, searchTerm },
+                params: { page, limit, searchTerm, reportType },
             }),
             providesTags: ["weeklyReport"],
         }),

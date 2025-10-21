@@ -254,7 +254,7 @@ export const navigationItems: NavigationItem[] = [
         path: "/dashboard/hifz/subject/list",
         roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
       },
-      
+
       {
         title: "Soboki Daily Report Add",
         icon: (
@@ -303,7 +303,7 @@ export const navigationItems: NavigationItem[] = [
             <TrackChanges />
           </ColorfulIcon>
         ),
-        path: "/dashboard/hifz/weeklytarget",
+        path: "/dashboard/hifz/weeklytarget/list",
         roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
       },
       {
