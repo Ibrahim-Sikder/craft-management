@@ -10,9 +10,9 @@ import toast from 'react-hot-toast'
 type ReportType = 'qaida' | 'hifz' | 'ampara' | 'nazera';
 
 interface WeeklyReportFormProps {
-    id?: string;
+    id?: string | null;
     reportType: ReportType;
-    title: string;
+    title?: string;
 }
 
 const WeeklyReportForm = ({ id, reportType, title }: WeeklyReportFormProps) => {
