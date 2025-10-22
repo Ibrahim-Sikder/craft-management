@@ -1,7 +1,6 @@
 import { TableRow, TableCell, Typography, useTheme, useMediaQuery, } from "@mui/material"
 import { DAYS_OF_WEEK } from "@/constant/daysConfig"
 import CraftInput from "@/components/Forms/Input"
-import CraftSelect from "@/components/Forms/Select"
 import { reportStyle } from "@/style/customeStyle"
 
 export const QaidaTableBody = () => {
@@ -194,17 +193,19 @@ export const QaidaTableBody = () => {
                             }}
                         />
                     </TableCell>
-
-                    {/* Signature and Comment Columns */}
                     <TableCell sx={{ p: { xs: 0.3, sm: 0.8 }, bgcolor: index % 2 === 0 ? '#ffffff' : '#fafafa' }}>
-                        <CraftSelect
-                            items={['হ্যাঁ', 'না']}
+                        <CraftInput
+
+
+                            name={`${day.key}mask`}
                             fullWidth
                             size="small"
-                            name={`${day.key}TeacherSignature`}
+                            placeholder="Mask"
+                            variant="standard"
+                            InputProps={{ disableUnderline: true }}
                             sx={{
                                 ...reportStyle,
-                                '& .MuiSelect-select': {
+                                '& input': {
                                     textAlign: 'center',
                                     fontSize: { xs: '0.65rem', sm: '0.8rem' }
                                 }

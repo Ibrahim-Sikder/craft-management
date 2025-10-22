@@ -68,7 +68,7 @@ const WeeklyReportHeader = () => {
                             fontSize: "1.1rem",
                         }}
                     >
-                        কাজের (শ:)
+                        মোট পড়ার পরিমাণ
                     </TableCell>
                 </TableRow>
             </TableHead>
