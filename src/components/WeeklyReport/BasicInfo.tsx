@@ -4,7 +4,8 @@ import React from 'react';
 import CraftIntAutoComplete from "@/components/Forms/CruftAutocomplete"
 import { useAcademicOptions } from '@/hooks/useTeacherStudentOptions';
 import CraftDatePicker from '../Forms/DatePicker';
-import CraftInput from '../Forms/Input';
+import CraftSelect from '../Forms/Select';
+import { months } from '@/options';
 
 
 
@@ -36,6 +37,7 @@ export const BasicInfo = () => {
                         clearOnBlur={false}
                         selectOnFocus={true}
                         handleHomeEndKeys={true}
+                        size='small'
                     />
                 </Grid>
 
@@ -44,16 +46,16 @@ export const BasicInfo = () => {
                         label="তারিখ"
                         name="date"
                         fullWidth
-
+                        size='small'
 
                     />
                 </Grid>
 
                 <Grid item xs={12} md={6} lg={3}>
-                    <CraftInput
+                    <CraftSelect
                         name="month"
                         label="মাস"
-                        variant="outlined"
+                        items={months}
                         size="small"
                         fullWidth
                     />

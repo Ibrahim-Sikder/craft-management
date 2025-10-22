@@ -30,10 +30,9 @@ const WeeklyReportBody = ({
 }: WeeklyReportBodyProps) => {
 
     const handleInputChange = (rowIndex: number, colIndex: number, value: string) => {
-        // Create a deep copy of the rows to avoid read-only issues
+
         const newRows = rows.map((row, index) => {
             if (index === rowIndex) {
-                // Create a new values array for the specific row
                 const newValues = [...row.values];
                 newValues[colIndex] = value;
                 return {
@@ -41,7 +40,7 @@ const WeeklyReportBody = ({
                     values: newValues
                 };
             }
-            return { ...row }; // Return a copy of other rows
+            return { ...row };
         });
 
         if (onDataChange) {

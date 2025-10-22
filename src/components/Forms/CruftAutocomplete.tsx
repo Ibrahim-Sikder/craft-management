@@ -10,12 +10,12 @@ import type { SxProps } from "@mui/material"
 
 type Option =
   | {
-      title: string
-    }
+    title: string
+  }
   | {
-      value: string
-      label: string
-    }
+    value: string
+    label: string
+  }
 
 type TStateProps = {
   name: string
@@ -36,8 +36,6 @@ type TStateProps = {
   disableClearable?: boolean
   blurOnSelect?: boolean
   clearOnBlur?: boolean
-
-  // ✅ Added props
   forcePopupIcon?: boolean
   selectOnFocus?: boolean
   handleHomeEndKeys?: boolean
@@ -64,6 +62,7 @@ const CraftIntAutoComplete = ({
   forcePopupIcon = true,
   selectOnFocus = false,
   handleHomeEndKeys = false,
+  size = 'small'
 }: TStateProps) => {
   const { control } = useFormContext()
 
@@ -102,12 +101,12 @@ const CraftIntAutoComplete = ({
 
             const processedValue = Array.isArray(newValue)
               ? newValue.map((item) => {
-                  if (typeof item === "string") return item
-                  if (item && typeof item === "object") {
-                    return item.title || item.value || item
-                  }
-                  return item
-                })
+                if (typeof item === "string") return item
+                if (item && typeof item === "object") {
+                  return item.title || item.value || item
+                }
+                return item
+              })
               : newValue
 
             field.onChange(processedValue)
@@ -139,6 +138,7 @@ const CraftIntAutoComplete = ({
               disabled={disabled}
               margin={margin}
               error={!!error}
+              size={size}
               helperText={error?.message}
               variant="outlined"
               sx={sx}
