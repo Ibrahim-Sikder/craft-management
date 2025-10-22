@@ -9,6 +9,7 @@ import { useGetAllSubjectsQuery } from "@/redux/api/subjectApi";
 export function useAcademicOptions(limit = 10, initialSearch = "") {
   const [page] = useState(0);
   const [searchTerm] = useState(initialSearch);
+  const studentDepartment = 'Hifz Student'
 
   const { data: classData } = useGetAllClassesQuery({
     limit: limit,
@@ -28,6 +29,7 @@ export function useAcademicOptions(limit = 10, initialSearch = "") {
       limit,
       page: page + 1,
       searchTerm,
+
     });
 
   // Fetch students
@@ -36,6 +38,7 @@ export function useAcademicOptions(limit = 10, initialSearch = "") {
       limit,
       page: page + 1,
       searchTerm,
+      studentDepartment
     });
 
   // Transform to select options

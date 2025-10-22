@@ -11,10 +11,10 @@ export const studentApi = baseApi.injectEndpoints({
       invalidatesTags: ["student"],
     }),
     getAllStudents: build.query({
-      query: ({ limit, page, searchTerm,className }) => ({
+      query: ({ limit, page, searchTerm, className, studentDepartment }) => ({
         url: "/student",
         method: "GET",
-        params: { page, limit, searchTerm,className },
+        params: { page, limit, searchTerm, className, studentDepartment },
       }),
       providesTags: ["student"],
     }),
@@ -31,7 +31,7 @@ export const studentApi = baseApi.injectEndpoints({
       query: ({ id, data }) => ({
         url: `/student/${id}`,
         method: "PATCH",
-         data,
+        data,
       }),
       invalidatesTags: ["student"],
     }),
