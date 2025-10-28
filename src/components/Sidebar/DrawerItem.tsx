@@ -25,7 +25,7 @@ import {
   Savings,
   CreditCard,
   Calculate,
-  PointOfSale,
+
   AttachMoney,
   Campaign,
   Feedback,
@@ -669,7 +669,7 @@ export const navigationItems: NavigationItem[] = [
     roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
     children: [
       {
-        path: "/dashboard/fee-type/list",
+        path: "/dashboard/fees/list",
         title: "Fee Types",
         icon: (
           <ColorfulIcon color="#009688">
@@ -678,19 +678,10 @@ export const navigationItems: NavigationItem[] = [
         ),
         roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
       },
-      {
-        path: "/dashboard/collect-fee/list",
-        title: "Collect Fees",
-        icon: (
-          <ColorfulIcon color="#009688">
-            <PointOfSale />
-          </ColorfulIcon>
-        ),
-        roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
-      },
+
     ],
   },
-  // Accounting
+
   {
     title: "Accounting",
     icon: (
@@ -708,6 +699,16 @@ export const navigationItems: NavigationItem[] = [
           </ColorfulIcon>
         ),
         children: [
+          {
+            path: "/dashboard/accounting/residantial/list",
+            title: "Residential ",
+            icon: (
+              <ColorfulIcon color="#2E7D32">
+                <Category />
+              </ColorfulIcon>
+            ),
+            roles: ["admin", "super_admin"],
+          },
           {
             path: "/dashboard/accounting/income",
             title: "Income Records",

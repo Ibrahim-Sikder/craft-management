@@ -16,7 +16,7 @@ import {
 import { Close, Add, Delete } from "@mui/icons-material"
 import CraftForm from "@/components/Forms/Form"
 import CraftSelect from "@/components/Forms/Select"
-import { categoryStatusOptions, paymentOptions } from "@/options"
+import { paymentOptions } from "@/options"
 import CraftInput from "@/components/Forms/Input"
 import CraftTextArea from "@/components/Forms/TextArea"
 import CraftDatePicker from "@/components/Forms/DatePicker"
@@ -111,30 +111,30 @@ export default function AddExpenseModal({ id, open, onClose }: AddExpenseDialogP
   const defaultValues =
     id && singleExpense?.data
       ? {
-          category: singleExpense?.data?.category
-            ? [
-                {
-                  title: singleExpense.data.category.name,
-                  value: singleExpense.data.category._id,
-                },
-              ]
-            : [],
-          paymentMethod: singleExpense.data.paymentMethod,
-          expenseDate: singleExpense.data.expenseDate,
-          note: singleExpense.data.note,
-          expenseItems: singleExpense.data.expenseItems.map((item: any, index: number) => ({
-            id: index + 1,
-            source: item.source,
-            amount: item.amount.toString(),
-          })),
-        }
+        category: singleExpense?.data?.category
+          ? [
+            {
+              title: singleExpense.data.category.name,
+              value: singleExpense.data.category._id,
+            },
+          ]
+          : [],
+        paymentMethod: singleExpense.data.paymentMethod,
+        expenseDate: singleExpense.data.expenseDate,
+        note: singleExpense.data.note,
+        expenseItems: singleExpense.data.expenseItems.map((item: any, index: number) => ({
+          id: index + 1,
+          source: item.source,
+          amount: item.amount.toString(),
+        })),
+      }
       : {
-          category: [],
-          paymentMethod: "",
-          expenseDate: new Date(),
-          note: "",
-          expenseItems: [{ id: 1, source: "", amount: "" }],
-        }
+        category: [],
+        paymentMethod: "",
+        expenseDate: new Date(),
+        note: "",
+        expenseItems: [{ id: 1, source: "", amount: "" }],
+      }
 
   useEffect(() => {
     if (id && singleExpense?.data) {
@@ -151,9 +151,9 @@ export default function AddExpenseModal({ id, open, onClose }: AddExpenseDialogP
   return (
     <>
       {singleExpenseLoading ? (
-        <LoadingState/>
+        <LoadingState />
       ) : (
-        <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
+        <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
           <DialogTitle>
             <Box display="flex" justifyContent="space-between" alignItems="center">
               <Typography variant="h5" fontWeight="bold">
@@ -173,15 +173,17 @@ export default function AddExpenseModal({ id, open, onClose }: AddExpenseDialogP
                 <Grid item xs={12} sm={6}>
                   <CraftSelect margin="none" name="paymentMethod" label="Payment Method" items={paymentOptions} />
                 </Grid>
-                <Grid item xs={12} sm={6}>
-                  <CraftSelect name="status" label="Status" items={categoryStatusOptions} />
-                </Grid>
+
                 <Grid item xs={12} sm={6}>
                   <CraftDatePicker name="expenseDate" label="Expense Date" />
                 </Grid>
-                <Grid item xs={12} sm={12}>
-                  <CraftTextArea name="note" label="Note" />
+                <Grid item xs={12} sm={6}>
+                  <CraftInput name="status" label="Buyer" fullWidth />
                 </Grid>
+                <Grid item xs={12} sm={6}>
+                  <CraftInput name="status" label="Payer" fullWidth />
+                </Grid>
+
                 <Grid item xs={12}>
                   {expenseItems.map((item, index) => (
                     <Card key={item.id} sx={cardStyle}>
@@ -209,7 +211,7 @@ export default function AddExpenseModal({ id, open, onClose }: AddExpenseDialogP
                               }}
                             />
                           </Grid>
-                         
+
                           <Grid item xs={12} sm={6}>
                             <CraftInput
                               sx={{
@@ -247,17 +249,8 @@ export default function AddExpenseModal({ id, open, onClose }: AddExpenseDialogP
                     </Button>
                   </Box>
                 </Grid>
-                <Grid item xs={12}>
-                  <Card sx={{ p: 2, backgroundColor: "#f1f8e9" }}>
-                    <CardContent>
-                      <Box display="flex" justifyContent="space-between">
-                        <Typography fontWeight={600}>Total Expense:</Typography>
-                        <Typography fontWeight={700} color="green">
-                          ৳ {expenseItems.reduce((sum, item) => sum + (Number.parseFloat(item.amount) || 0), 0)}
-                        </Typography>
-                      </Box>
-                    </CardContent>
-                  </Card>
+                <Grid item xs={12} sm={12}>
+                  <CraftTextArea name="note" label="Note" />
                 </Grid>
               </Grid>
               <DialogActions sx={{ mt: 3 }}>
