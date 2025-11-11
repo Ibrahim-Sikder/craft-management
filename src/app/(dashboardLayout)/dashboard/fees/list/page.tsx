@@ -1,436 +1,328 @@
-"use client"
+/* eslint-disable react/no-unescaped-entities */
+/* eslint-disable @typescript-eslint/no-explicit-any */
+"use client";
 
-import { useState } from "react"
+import StatsGrid from "@/components/StatsCard/StatsGrid";
+import CraftTable, { Column, RowAction } from "@/components/Table";
+import { useDeleteFeeMutation, useGetAllFeesQuery } from "@/redux/api/feesApi";
 import {
-    Box,
-    Container,
-    Paper,
-    Table,
-    TableBody,
-    TableCell,
-    TableContainer,
-    TableHead,
-    TableRow,
-    TextField,
-    Button,
-    Card,
-    CardContent,
-    Grid,
-    Typography,
-    Chip,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    IconButton,
-    InputAdornment,
-    MenuItem,
-    Tooltip,
-} from "@mui/material"
-import {
-    Search as SearchIcon,
-    Edit as EditIcon,
-    Delete as DeleteIcon,
-    Add as AddIcon,
-    TrendingUp as TrendingUpIcon,
-    TrendingDown as TrendingDownIcon,
-    AccountBalance as AccountBalanceIcon,
-} from "@mui/icons-material"
-import Link from "next/link"
-
-interface FeeRecord {
-    id: string
-    studentName: string
-    class: string
-    month: string
-    feeName: string
-    feeAmount: number
-    note: string
-    date: string
-}
-
-// Sample data
-const initialFeeData: FeeRecord[] = [
-    {
-        id: "1",
-        studentName: "Abrar Chowdhury",
-        class: "One (1)B",
-        month: "January",
-        feeName: "Monthly Fee",
-        feeAmount: 3000,
-        note: "Regular monthly fee",
-        date: "2024-01-15",
-    },
-    {
-        id: "2",
-        studentName: "Omayer Bin Ismail",
-        class: "One (1)A",
-        month: "January",
-        feeName: "Admission Fee",
-        feeAmount: 2000,
-        note: "Admission fee paid",
-        date: "2024-01-10",
-    },
-    {
-        id: "3",
-        studentName: "Kalid Walid",
-        class: "One (1)B",
-        month: "February",
-        feeName: "Monthly Fee",
-        feeAmount: 2500,
-        note: "Regular monthly fee",
-        date: "2024-02-05",
-    },
-]
+  AccountBalance as AccountBalanceIcon,
+  Add as AddIcon,
+  Delete,
+  Edit,
+  FileDownload,
+  TrendingDown as TrendingDownIcon,
+  TrendingUp as TrendingUpIcon,
+  Visibility,
+} from "@mui/icons-material";
+import { Box, Button, Container, Typography } from "@mui/material";
+import Link from "next/link";
+import { useMemo, useState } from "react";
+import FeeDetailsModal from "../__components/FeeDetailsModal";
 
 export default function FeesListPage() {
-    const [feeData, setFeeData] = useState<FeeRecord[]>(initialFeeData)
-    const [searchTerm, setSearchTerm] = useState("")
-    const [classFilter, setClassFilter] = useState("All")
-    const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-    const [selectedFeeId, setSelectedFeeId] = useState<string | null>(null)
+  const { data: feesData, isLoading, error } = useGetAllFeesQuery({});
+  console.log("fee data check ", feesData);
+  const [deleteFee] = useDeleteFeeMutation();
+  const [selectedFee, setSelectedFee] = useState<any>(null);
+  const [modalOpen, setModalOpen] = useState(false);
 
-    const classes = [
-        "All",
-        "One (1)A",
-        "One (1)B",
-        "Two (2)",
-        "Three (3)",
-        "Four (4)",
-        "Five (5)",
-        "Six (6)",
-        "Hifz",
-        "Nazera",
-        "Nurani",
-    ]
+  const handleViewFee = (row: any) => {
+    setSelectedFee(row);
+    setModalOpen(true);
+  };
+  const handleEditFee = (fee: any) => {
+    console.log(fee);
+  };
 
-    const filteredData = feeData.filter((fee) => {
-        const matchesSearch = fee.studentName.toLowerCase().includes(searchTerm.toLowerCase())
-        const matchesClass = classFilter === "All" || fee.class === classFilter
-        return matchesSearch && matchesClass
-    })
+  const statsData = useMemo(() => {
+    const fees = feesData?.data?.data || [];
+    const totalFees = fees.reduce(
+      (sum: number, fee: any) => sum + (fee.amount || 0),
+      0
+    );
+    const totalRecords = fees.length;
+    const averageFee = totalRecords > 0 ? totalFees / totalRecords : 0;
+    const feeTypes = new Set(fees.map((fee: any) => fee.feeType)).size;
 
-    const totalFees = filteredData.reduce((sum, fee) => sum + fee.feeAmount, 0)
-    const totalRecords = filteredData.length
-    const averageFee = totalRecords > 0 ? totalFees / totalRecords : 0
+    return [
+      {
+        title: "Total Fees",
+        value: `৳${totalFees.toLocaleString()}`,
+        icon: <AccountBalanceIcon sx={{ fontSize: 40 }} />,
+        gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+      },
+      {
+        title: "Total Records",
+        value: totalRecords,
+        icon: <TrendingUpIcon sx={{ fontSize: 40 }} />,
+        gradient: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
+      },
+      {
+        title: "Average Fee",
+        value: `৳${averageFee.toFixed(2)}`,
+        icon: <TrendingDownIcon sx={{ fontSize: 40 }} />,
+        gradient: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
+      },
+      {
+        title: "Fee Types",
+        value: feeTypes,
+        icon: <AccountBalanceIcon sx={{ fontSize: 40 }} />,
+        gradient: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
+      },
+    ];
+  }, [feesData]);
 
-    const handleDeleteClick = (id: string) => {
-        setSelectedFeeId(id)
-        setDeleteDialogOpen(true)
-    }
+  const columns: Column[] = [
+    {
+      id: "student.name",
+      label: "Student Name",
+      minWidth: 150,
+      sortable: true,
+      filterable: true,
+      render: (row: any) => row.student?.name || "N/A",
+    },
+    {
+      id: "enrollment.className",
+      label: "Class",
+      minWidth: 100,
+      sortable: true,
+      filterable: true,
+      render: (row: any) => row.enrollment?.className || "N/A",
+    },
+    {
+      id: "enrollment.section",
+      label: "Section",
+      minWidth: 80,
+      sortable: true,
+      filterable: true,
+      render: (row: any) => row.enrollment?.section || "N/A",
+    },
+    {
+      id: "enrollment.rollNumber",
+      label: "Roll No",
+      minWidth: 80,
+      sortable: true,
+      filterable: true,
+      render: (row: any) => row.enrollment?.rollNumber || "N/A",
+    },
+    {
+      id: "month",
+      label: "Month",
+      minWidth: 100,
+      sortable: true,
+      filterable: true,
+      render: (row: any) => row.month || "N/A",
+    },
+    {
+      id: "feeType",
+      label: "Fee Type",
+      minWidth: 120,
+      sortable: true,
+      filterable: true,
+      type: "status",
+    },
+    {
+      id: "amount",
+      label: "Amount",
+      minWidth: 100,
+      align: "right" as const,
+      sortable: true,
+      format: (value: number) => `৳${value?.toLocaleString() || "0"}`,
+    },
+    {
+      id: "paidAmount",
+      label: "Paid",
+      minWidth: 100,
+      align: "right" as const,
+      sortable: true,
+      format: (value: number) => `৳${value?.toLocaleString() || "0"}`,
+    },
+    {
+      id: "dueAmount",
+      label: "Due",
+      minWidth: 100,
+      align: "right" as const,
+      sortable: true,
+      format: (value: number) => `৳${value?.toLocaleString() || "0"}`,
+    },
+    {
+      id: "status",
+      label: "Status",
+      minWidth: 100,
+      sortable: true,
+      type: "status",
+    },
+    {
+      id: "paymentMethod",
+      label: "Payment Method",
+      minWidth: 120,
+      sortable: true,
+    },
+    {
+      id: "paymentDate",
+      label: "Payment Date",
+      minWidth: 120,
+      sortable: true,
+      type: "date",
+      render: (row: any) => {
+        if (!row.paymentDate) return "N/A";
+        return new Date(row.paymentDate).toLocaleDateString();
+      },
+    },
+  ];
 
-    const handleDeleteConfirm = () => {
-        if (selectedFeeId) {
-            setFeeData(feeData.filter((fee) => fee.id !== selectedFeeId))
+  const rowActions: RowAction[] = [
+    {
+      label: "View",
+      icon: <Visibility fontSize="small" />,
+      onClick: (row: any) => handleViewFee(row),
+      color: "info" as const,
+      tooltip: "View fee details",
+    },
+    {
+      label: "Edit",
+      icon: <Edit fontSize="small" />,
+      onClick: (row: any) => console.log("Edit fee:", row),
+      color: "primary" as const,
+      tooltip: "Edit fee",
+    },
+    {
+      label: "Delete",
+      icon: <Delete fontSize="small" />,
+      onClick: (row: any) => {
+        if (confirm("Are you sure you want to delete this fee record?")) {
+          deleteFee(row._id);
         }
-        setDeleteDialogOpen(false)
-        setSelectedFeeId(null)
-    }
+      },
+      color: "error" as const,
+      tooltip: "Delete fee",
+    },
+  ];
 
-    return (
-        <Box
+  const bulkActions = [
+    {
+      label: "Delete Selected",
+      icon: <Delete fontSize="small" />,
+      onClick: (selectedRows: any[]) => {
+        if (
+          confirm(
+            `Are you sure you want to delete ${selectedRows.length} records?`
+          )
+        ) {
+          selectedRows.forEach((row) => deleteFee(row._id));
+        }
+      },
+      color: "error" as const,
+    },
+    {
+      label: "Export Selected",
+      icon: <FileDownload fontSize="small" />,
+      onClick: (selectedRows: any[]) => {
+        console.log("Exporting:", selectedRows);
+        // Implement export functionality
+      },
+    },
+  ];
 
-        >
-            <Container maxWidth="xl">
+  const handleRefresh = () => {
+    window.location.reload();
+  };
 
-                <Box sx={{ mb: 4 }}>
-                    <Typography
-                        variant="h3"
-                        sx={{
-                            fontWeight: "bold",
-                        }}
-                    >
-                        Fee Management
-                    </Typography>
-                    <Typography variant="body1" sx={{ color: "rgba(255,255,255,0.9)" }}>
-                        Track and manage all student fee payments
-                    </Typography>
-                </Box>
+  const handleExport = () => {
+    console.log("Export all data");
+  };
 
-                {/* Stats Cards */}
-                <Grid container spacing={3} sx={{ mb: 4 }}>
-                    <Grid item xs={12} sm={6} md={3}>
-                        <Card
-                            sx={{
-                                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                                color: "white",
-                                boxShadow: "0 8px 32px rgba(0,0,0,0.1)",
-                            }}
-                        >
-                            <CardContent>
-                                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                                    <Box>
-                                        <Typography color="rgba(255,255,255,0.8)" variant="body2" sx={{ mb: 1 }}>
-                                            Total Fees
-                                        </Typography>
-                                        <Typography variant="h5" sx={{ fontWeight: "bold" }}>
-                                            ৳{totalFees.toLocaleString()}
-                                        </Typography>
-                                    </Box>
-                                    <AccountBalanceIcon sx={{ fontSize: 40, opacity: 0.7 }} />
-                                </Box>
-                            </CardContent>
-                        </Card>
-                    </Grid>
+  const handlePrint = () => {
+    window.print();
+  };
 
-                    <Grid item xs={12} sm={6} md={3}>
-                        <Card
-                            sx={{
-                                background: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
-                                color: "white",
-                                boxShadow: "0 8px 32px rgba(0,0,0,0.1)",
-                            }}
-                        >
-                            <CardContent>
-                                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                                    <Box>
-                                        <Typography color="rgba(255,255,255,0.8)" variant="body2" sx={{ mb: 1 }}>
-                                            Total Records
-                                        </Typography>
-                                        <Typography variant="h5" sx={{ fontWeight: "bold" }}>
-                                            {totalRecords}
-                                        </Typography>
-                                    </Box>
-                                    <TrendingUpIcon sx={{ fontSize: 40, opacity: 0.7 }} />
-                                </Box>
-                            </CardContent>
-                        </Card>
-                    </Grid>
+  const handleAdd = () => {};
+  const tableData = feesData?.data?.data || [];
 
-                    <Grid item xs={12} sm={6} md={3}>
-                        <Card
-                            sx={{
-                                background: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
-                                color: "white",
-                                boxShadow: "0 8px 32px rgba(0,0,0,0.1)",
-                            }}
-                        >
-                            <CardContent>
-                                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                                    <Box>
-                                        <Typography color="rgba(255,255,255,0.8)" variant="body2" sx={{ mb: 1 }}>
-                                            Average Fee
-                                        </Typography>
-                                        <Typography variant="h5" sx={{ fontWeight: "bold" }}>
-                                            ৳{averageFee.toLocaleString("en-US", { maximumFractionDigits: 0 })}
-                                        </Typography>
-                                    </Box>
-                                    <TrendingDownIcon sx={{ fontSize: 40, opacity: 0.7 }} />
-                                </Box>
-                            </CardContent>
-                        </Card>
-                    </Grid>
-
-                    <Grid item xs={12} sm={6} md={3}>
-                        <Card
-                            sx={{
-                                background: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
-                                color: "white",
-                                boxShadow: "0 8px 32px rgba(0,0,0,0.1)",
-                            }}
-                        >
-                            <CardContent>
-                                <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                                    <Box>
-                                        <Typography color="rgba(255,255,255,0.8)" variant="body2" sx={{ mb: 1 }}>
-                                            Fee Types
-                                        </Typography>
-                                        <Typography variant="h5" sx={{ fontWeight: "bold" }}>
-                                            {new Set(filteredData.map((f) => f.feeName)).size}
-                                        </Typography>
-                                    </Box>
-                                    <AccountBalanceIcon sx={{ fontSize: 40, opacity: 0.7 }} />
-                                </Box>
-                            </CardContent>
-                        </Card>
-                    </Grid>
-                </Grid>
-
-                {/* Search and Filter */}
-                <Paper
-                    sx={{
-                        p: 3,
-                        mb: 3,
-                        background: "rgba(255,255,255,0.95)",
-                        backdropFilter: "blur(10px)",
-                        boxShadow: "0 8px 32px rgba(0,0,0,0.1)",
-                        borderRadius: "16px",
-                    }}
-                >
-                    <Grid container spacing={2} sx={{ mb: 2 }}>
-                        <Grid item xs={12} md={6}>
-                            <TextField
-                                fullWidth
-                                placeholder="Search by student name..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                InputProps={{
-                                    startAdornment: (
-                                        <InputAdornment position="start">
-                                            <SearchIcon sx={{ color: "#667eea" }} />
-                                        </InputAdornment>
-                                    ),
-                                }}
-                                sx={{
-                                    "& .MuiOutlinedInput-root": {
-                                        borderRadius: "12px",
-                                        backgroundColor: "#f5f5f5",
-                                    },
-                                }}
-                            />
-                        </Grid>
-                        <Grid item xs={12} md={6}>
-                            <TextField
-                                select
-                                fullWidth
-                                value={classFilter}
-                                onChange={(e) => setClassFilter(e.target.value)}
-                                sx={{
-                                    "& .MuiOutlinedInput-root": {
-                                        borderRadius: "12px",
-                                        backgroundColor: "#f5f5f5",
-                                    },
-                                }}
-                            >
-                                {classes.map((cls) => (
-                                    <MenuItem key={cls} value={cls}>
-                                        {cls}
-                                    </MenuItem>
-                                ))}
-                            </TextField>
-                        </Grid>
-                    </Grid>
-
-                    <Box sx={{ display: "flex", gap: 2, justifyContent: "flex-end" }}>
-                        <Link href="/dashboard/fees/add">
-                            <Button
-                                variant="contained"
-                                startIcon={<AddIcon />}
-                                sx={{
-                                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                                    borderRadius: "12px",
-                                    textTransform: "none",
-                                    fontSize: "1rem",
-                                    px: 3,
-                                }}
-                            >
-                                Add New Fee
-                            </Button>
-                        </Link>
-                    </Box>
-                </Paper>
-
-                {/* Table */}
-                <TableContainer
-                    component={Paper}
-                    sx={{
-                        background: "rgba(255,255,255,0.95)",
-                        backdropFilter: "blur(10px)",
-                        boxShadow: "0 8px 32px rgba(0,0,0,0.1)",
-                        borderRadius: "16px",
-                        overflow: "hidden",
-                    }}
-                >
-                    <Table>
-                        <TableHead>
-                            <TableRow
-                                sx={{
-                                    background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                                    "& th": {
-                                        color: "white",
-                                        fontWeight: "bold",
-                                        fontSize: "0.95rem",
-                                    },
-                                }}
-                            >
-                                <TableCell>Student Name</TableCell>
-                                <TableCell>Class</TableCell>
-                                <TableCell>Month</TableCell>
-                                <TableCell>Fee Name</TableCell>
-                                <TableCell align="right">Amount</TableCell>
-                                <TableCell>Note</TableCell>
-                                <TableCell align="center">Actions</TableCell>
-                            </TableRow>
-                        </TableHead>
-                        <TableBody>
-                            {filteredData.map((fee) => (
-                                <TableRow
-                                    key={fee.id}
-                                    sx={{
-                                        "&:hover": {
-                                            backgroundColor: "rgba(102, 126, 234, 0.05)",
-                                        },
-                                        borderBottom: "1px solid #e0e0e0",
-                                    }}
-                                >
-                                    <TableCell sx={{ fontWeight: "500" }}>{fee.studentName}</TableCell>
-                                    <TableCell>
-                                        <Chip label={fee.class} size="small" variant="outlined" sx={{ borderRadius: "8px" }} />
-                                    </TableCell>
-                                    <TableCell>{fee.month}</TableCell>
-                                    <TableCell>
-                                        <Chip
-                                            label={fee.feeName}
-                                            size="small"
-                                            sx={{
-                                                background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                                                color: "white",
-                                                borderRadius: "8px",
-                                            }}
-                                        />
-                                    </TableCell>
-                                    <TableCell align="right" sx={{ fontWeight: "bold", color: "#667eea" }}>
-                                        ৳{fee.feeAmount.toLocaleString()}
-                                    </TableCell>
-                                    <TableCell sx={{ maxWidth: "200px", overflow: "hidden", textOverflow: "ellipsis" }}>
-                                        {fee.note}
-                                    </TableCell>
-                                    <TableCell align="center">
-                                        <Tooltip title="Edit">
-                                            <IconButton size="small" sx={{ color: "#667eea" }}>
-                                                <EditIcon fontSize="small" />
-                                            </IconButton>
-                                        </Tooltip>
-                                        <Tooltip title="Delete">
-                                            <IconButton size="small" sx={{ color: "#f44336" }} onClick={() => handleDeleteClick(fee.id)}>
-                                                <DeleteIcon fontSize="small" />
-                                            </IconButton>
-                                        </Tooltip>
-                                    </TableCell>
-                                </TableRow>
-                            ))}
-                        </TableBody>
-                    </Table>
-                </TableContainer>
-
-                {filteredData.length === 0 && (
-                    <Paper
-                        sx={{
-                            p: 4,
-                            textAlign: "center",
-                            background: "rgba(255,255,255,0.95)",
-                            backdropFilter: "blur(10px)",
-                            borderRadius: "16px",
-                        }}
-                    >
-                        <Typography color="textSecondary">No fee records found</Typography>
-                    </Paper>
-                )}
-            </Container>
-
-            {/* Delete Confirmation Dialog */}
-            <Dialog open={deleteDialogOpen} onClose={() => setDeleteDialogOpen(false)}>
-                <DialogTitle>Delete Fee Record</DialogTitle>
-                <DialogContent>
-                    <Typography>Are you sure you want to delete this fee record? This action cannot be undone.</Typography>
-                </DialogContent>
-                <DialogActions>
-                    <Button onClick={() => setDeleteDialogOpen(false)}>Cancel</Button>
-                    <Button onClick={handleDeleteConfirm} variant="contained" color="error">
-                        Delete
-                    </Button>
-                </DialogActions>
-            </Dialog>
+  return (
+    <Box>
+      <Container maxWidth="xl">
+        <Box sx={{ mb: 4 }}>
+          <Typography
+            variant="h3"
+            sx={{
+              fontWeight: "bold",
+            }}
+          >
+            Fee Management
+          </Typography>
+          <Typography variant="body1" sx={{ color: "rgba(255,255,255,0.9)" }}>
+            Track and manage all student fee payments
+          </Typography>
         </Box>
-    )
+
+        {/* Stats Cards using reusable component */}
+        <StatsGrid stats={statsData} />
+
+        {/* Enhanced Table */}
+        <CraftTable
+          title="Fee Records"
+          subtitle="Manage and track all fee payments"
+          columns={columns}
+          data={tableData}
+          loading={isLoading}
+          error={error ? "Failed to load fee data" : undefined}
+          onRefresh={handleRefresh}
+          onExport={handleExport}
+          onPrint={handlePrint}
+          rowActions={rowActions}
+          bulkActions={bulkActions}
+          selectable={true}
+          searchable={true}
+          filterable={true}
+          sortable={true}
+          pagination={true}
+          emptyStateMessage="No fee records found"
+          idField="_id"
+          height="600px"
+          stickyHeader={true}
+          hover={true}
+          showToolbar={true}
+          customToolbar={
+            <Link href="/dashboard/fees/add" style={{ textDecoration: "none" }}>
+              <Button
+                variant="contained"
+                startIcon={<AddIcon />}
+                sx={{
+                  background:
+                    "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                  borderRadius: "12px",
+                  textTransform: "none",
+                  fontSize: "1rem",
+                  px: 3,
+                  "&:hover": {
+                    transform: "translateY(-1px)",
+                    boxShadow: "0 6px 20px rgba(102, 126, 234, 0.4)",
+                  },
+                  transition: "all 0.2s ease-in-out",
+                }}
+                onClick={handleAdd}
+              >
+                Add New Fee
+              </Button>
+            </Link>
+          }
+          elevation={2}
+          borderRadius={3}
+          showRowNumbers={true}
+          loadingOverlay={true}
+          fadeIn={true}
+        />
+
+        {/* Fee Details Modal - Now as separate component */}
+        <FeeDetailsModal
+          open={modalOpen}
+          setOpen={setModalOpen}
+          selectedFee={selectedFee}
+          onEdit={handleEditFee}
+        />
+      </Container>
+    </Box>
+  );
 }

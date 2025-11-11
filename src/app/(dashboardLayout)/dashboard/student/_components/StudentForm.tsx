@@ -1,11 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react/no-unescaped-entities */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useEffect, useRef, useMemo } from "react"
+import { useState, useEffect, useRef, useMemo } from "react";
 import {
   Box,
   Button,
@@ -24,7 +24,7 @@ import {
   Snackbar,
   Backdrop,
   CircularProgress,
-} from "@mui/material"
+} from "@mui/material";
 import {
   Person,
   People,
@@ -49,61 +49,63 @@ import {
   ArrowBack,
   Clear,
   Help,
-} from "@mui/icons-material"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import CraftForm from "@/components/Forms/Form"
-import CraftInputWithIcon from "@/components/Forms/inputWithIcon"
-import CraftSelectWithIcon from "@/components/Forms/selectWithIcon"
-import { batches, bloodGroup } from "@/options"
-import CraftSwitch from "@/components/Forms/switch"
-import { useCreateStudentsMutation, useGetSingleStudentQuery, useUpdateStudentMutation } from "@/redux/api/studentApi"
-import FileUploadWithIcon from "@/components/Forms/Upload"
-import { FieldValues } from "react-hook-form"
-import { useGetAllClassesQuery } from "@/redux/api/classApi"
-import { useGetAllSectionsQuery } from "@/redux/api/sectionApi"
-import { useGetAllSessionsQuery } from "@/redux/api/sessionApi"
-import CraftIntAutoCompleteWithIcon from "@/components/Forms/AutocompleteWithIcon"
-import toast from "react-hot-toast"
-import { LoadingState } from "@/components/common/LoadingState"
+} from "@mui/icons-material";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import CraftForm from "@/components/Forms/Form";
+import CraftInputWithIcon from "@/components/Forms/inputWithIcon";
+import CraftSelectWithIcon from "@/components/Forms/selectWithIcon";
+import { batches, bloodGroup } from "@/options";
+import CraftSwitch from "@/components/Forms/switch";
+import {
+  useCreateStudentsMutation,
+  useGetSingleStudentQuery,
+  useUpdateStudentMutation,
+} from "@/redux/api/studentApi";
+import FileUploadWithIcon from "@/components/Forms/Upload";
+import { FieldValues } from "react-hook-form";
+import { useGetAllClassesQuery } from "@/redux/api/classApi";
+import { useGetAllSectionsQuery } from "@/redux/api/sectionApi";
+import { useGetAllSessionsQuery } from "@/redux/api/sessionApi";
+import CraftIntAutoCompleteWithIcon from "@/components/Forms/AutocompleteWithIcon";
+import toast from "react-hot-toast";
+import { LoadingState } from "@/components/common/LoadingState";
 interface StudentFormProps {
-  id?: string
+  id?: string;
 }
 const StudentForm = ({ id }: StudentFormProps) => {
-  const [createStudents] = useCreateStudentsMutation()
-  const [updateStudent] = useUpdateStudentMutation()
+  const [createStudents] = useCreateStudentsMutation();
+  const [updateStudent] = useUpdateStudentMutation();
   const { data, isLoading } = useGetSingleStudentQuery(
     { id },
     {
       skip: !id,
       refetchOnMountOrArgChange: true,
-    },
-  )
+    }
+  );
 
+  const formRef = useRef<any>(null);
 
-  const formRef = useRef<any>(null)
-
-  const router = useRouter()
-  const [activeStep, setActiveStep] = useState(0)
+  const router = useRouter();
+  const [activeStep, setActiveStep] = useState(0);
   interface FormData {
-    permanentAddress?: string
-    permanentDistrict?: string
-    permanentThana?: string
-    sameAsPermanent?: boolean
-    presentAddress?: string
-    presentDistrict?: string
-    presentThana?: string
-    sendAdmissionSMS?: boolean
-    sendAttendanceSMS?: boolean
-    studentPhoto?: string | File
-
+    permanentAddress?: string;
+    permanentDistrict?: string;
+    permanentThana?: string;
+    sameAsPermanent?: boolean;
+    presentAddress?: string;
+    presentDistrict?: string;
+    presentThana?: string;
+    sendAdmissionSMS?: boolean;
+    sendAttendanceSMS?: boolean;
+    studentPhoto?: string | File;
   }
 
-  const [formData, setFormData] = useState<FormData>({})
-  const [defaultValues, setDefaultValues] = useState<any>({})
+  const [formData, setFormData] = useState<FormData>({});
+  const [defaultValues, setDefaultValues] = useState<any>({});
   useEffect(() => {
     if (data?.data) {
-      const studentData = data.data
+      const studentData = data.data;
       setFormData({
         studentPhoto: studentData.studentPhoto,
         sameAsPermanent: studentData.sameAsPermanent || false,
@@ -115,7 +117,7 @@ const StudentForm = ({ id }: StudentFormProps) => {
         presentThana: studentData.presentThana,
         sendAdmissionSMS: studentData.sendAdmissionSMS || false,
         sendAttendanceSMS: studentData.sendAttendanceSMS || false,
-      })
+      });
       const formDefaultValues = {
         // Basic Information
         name: studentData.name || "",
@@ -172,120 +174,129 @@ const StudentForm = ({ id }: StudentFormProps) => {
 
         // Photo
         studentPhoto: studentData.studentPhoto || "",
-      }
+      };
 
-      setDefaultValues(formDefaultValues)
+      setDefaultValues(formDefaultValues);
     }
-  }, [data])
+  }, [data]);
 
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
     severity: "success" as "success" | "error",
-  })
-  const [page, setPage] = useState(0)
-  const [rowsPerPage, setRowsPerPage] = useState(10)
-  const [searchTerm, setSearchTerm] = useState("")
+  });
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const { data: classData } = useGetAllClassesQuery({
     limit: rowsPerPage,
     page: page + 1,
     searchTerm: searchTerm,
-  })
+  });
   const { data: sectionData } = useGetAllSectionsQuery({
     limit: rowsPerPage,
     page: page + 1,
     searchTerm: searchTerm,
-  })
+  });
   const { data: sessionData } = useGetAllSessionsQuery({
     limit: rowsPerPage,
     page: page + 1,
     searchTerm: searchTerm,
-  })
+  });
   const classOption = useMemo(() => {
-    if (!classData?.data?.classes) return []
+    if (!classData?.data?.classes) return [];
     return classData?.data?.classes.map((clg: any) => ({
       label: clg?.className,
       value: clg?._id,
-    }))
-  }, [classData])
+    }));
+  }, [classData]);
   const sectionOption = useMemo(() => {
-    if (!sectionData?.data?.sections) return []
+    if (!sectionData?.data?.sections) return [];
     return sectionData?.data?.sections.map((sec: any) => ({
       label: sec.name,
       value: sec._id,
-    }))
-  }, [sectionData])
+    }));
+  }, [sectionData]);
 
   const sessionOption = useMemo(() => {
-    if (!sessionData?.data?.sessions) return []
+    if (!sessionData?.data?.sessions) return [];
     return sessionData?.data?.sessions.map((sec: any) => ({
       label: sec.sessionName,
       value: sec._id,
-    }))
-  }, [sessionData])
+    }));
+  }, [sessionData]);
 
-
-
-  const [success, setSuccess] = useState(false)
+  const [success, setSuccess] = useState(false);
 
   const handleSwitchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, checked } = e.target
+    const { name, checked } = e.target;
     setFormData((prev) => {
       const newData = {
         ...prev,
         [name]: checked,
-      }
+      };
 
       if (name === "sameAsPermanent" && checked) {
-        newData.presentAddress = prev.permanentAddress || ""
-        newData.presentDistrict = prev.permanentDistrict || ""
-        newData.presentThana = prev.permanentThana || ""
+        newData.presentAddress = prev.permanentAddress || "";
+        newData.presentDistrict = prev.permanentDistrict || "";
+        newData.presentThana = prev.permanentThana || "";
       }
 
-      return newData
-    })
-  }
+      return newData;
+    });
+  };
 
   const handleNext = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep + 1)
-  }
+    setActiveStep((prevActiveStep) => prevActiveStep + 1);
+  };
 
   const handleBack = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep - 1)
-  }
-
+    setActiveStep((prevActiveStep) => prevActiveStep - 1);
+  };
 
   const handleSubmit = async (data: FieldValues) => {
     if (!data.name) {
-      toast.error("Student name is missing!")
+      toast.error("Student name is missing!");
     } else if (!data.studentType) {
-      toast.error("Student type is missing!")
+      toast.error("Student type is missing!");
     } else {
       const classArray = Array.isArray(data.className)
-        ? data.className.map((item: any) => (typeof item === "object" ? item.label : item))
+        ? data.className.map((item: any) =>
+            typeof item === "object" ? item.label : item
+          )
         : data.className
           ? [data.className]
-          : []
+          : [];
 
       const sectionArray = Array.isArray(data.section)
-        ? data.section.map((item: any) => (typeof item === "object" ? item.label : item))
+        ? data.section.map((item: any) =>
+            typeof item === "object" ? item.label : item
+          )
         : data.section
           ? [data.section]
-          : []
+          : [];
 
       const sessionArray = Array.isArray(data.activeSession)
-        ? data.activeSession.map((item: any) => (typeof item === "object" ? item.label : item))
+        ? data.activeSession.map((item: any) =>
+            typeof item === "object" ? item.label : item
+          )
         : data.activeSession
           ? [data.activeSession]
-          : []
+          : [];
 
       const submissionData = {
         ...data,
         sameAsPermanent: formData.sameAsPermanent || false,
-        presentAddress: formData.sameAsPermanent ? data.permanentAddress : data.presentAddress,
-        presentDistrict: formData.sameAsPermanent ? data.permanentDistrict : data.presentDistrict,
-        presentThana: formData.sameAsPermanent ? data.permanentThana : data.presentThana,
+        presentAddress: formData.sameAsPermanent
+          ? data.permanentAddress
+          : data.presentAddress,
+        presentDistrict: formData.sameAsPermanent
+          ? data.permanentDistrict
+          : data.presentDistrict,
+        presentThana: formData.sameAsPermanent
+          ? data.permanentThana
+          : data.presentThana,
         admissionFee: Number(data.admissionFee || 0),
         monthlyFee: Number(data.monthlyFee || 0),
         previousDues: Number(data.previousDues || 0),
@@ -298,59 +309,61 @@ const StudentForm = ({ id }: StudentFormProps) => {
         className: classArray,
         section: sectionArray,
         activeSession: sessionArray,
-      }
+      };
 
-      console.log("submission data", submissionData)
+      console.log("submission data", submissionData);
 
       try {
         if (id) {
-          const res = await updateStudent({ id, data: submissionData }).unwrap()
+          const res = await updateStudent({
+            id,
+            data: submissionData,
+          }).unwrap();
           if (res.success) {
-            setSuccess(true)
+            setSuccess(true);
             setSnackbar({
               open: true,
               message: "Student updated successfully!",
               severity: "success",
-            })
+            });
             setTimeout(() => {
-              router.push("/dashboard/student/list")
-            }, 2000)
+              router.push("/dashboard/student/list");
+            }, 2000);
           }
         } else {
-          const res = await createStudents(submissionData).unwrap()
+          const res = await createStudents(submissionData).unwrap();
           if (res.success) {
-            setSuccess(true)
+            setSuccess(true);
             setSnackbar({
               open: true,
               message: "Student registered successfully!",
               severity: "success",
-            })
+            });
             setTimeout(() => {
-              router.push("/dashboard/student/list")
-            }, 2000)
+              router.push("/dashboard/student/list");
+            }, 2000);
           }
         }
       } catch (error: any) {
-        console.error("❌ Submission error:", error)
+        console.error("❌ Submission error:", error);
       }
     }
-  }
-
+  };
 
   const handleCloseSnackbar = () => {
     setSnackbar({
       ...snackbar,
       open: false,
-    })
-  }
+    });
+  };
 
   const handleReset = () => {
-    setFormData({})
-    setActiveStep(0)
+    setFormData({});
+    setActiveStep(0);
     if (formRef.current) {
-      formRef.current.reset()
+      formRef.current.reset();
     }
-  }
+  };
 
   const steps = [
     {
@@ -365,13 +378,17 @@ const StudentForm = ({ id }: StudentFormProps) => {
               name="name"
               label={
                 <span>
-                  Student Name <span style={{ color: 'red' }}>*</span>
+                  Student Name <span style={{ color: "red" }}>*</span>
                 </span>
               }
               placeholder="e.g., John Smith"
               size="medium"
               InputProps={{
-                startAdornment: <DriveFileRenameOutline sx={{ color: "text.secondary", mr: 1 }} />,
+                startAdornment: (
+                  <DriveFileRenameOutline
+                    sx={{ color: "text.secondary", mr: 1 }}
+                  />
+                ),
               }}
             />
           </Grid>
@@ -379,10 +396,9 @@ const StudentForm = ({ id }: StudentFormProps) => {
             <CraftSelectWithIcon
               name="studentDepartment"
               size="medium"
-              label='Student Department '
-
+              label="Student Department "
               placeholder="Student Department "
-              items={["Hifz Student", "Academic Student",]}
+              items={["hifz", "academic"]}
               adornment={<Person color="action" />}
             />
           </Grid>
@@ -395,7 +411,9 @@ const StudentForm = ({ id }: StudentFormProps) => {
               placeholder="e.g., SMART-001"
               size="medium"
               InputProps={{
-                startAdornment: <Badge sx={{ color: "text.secondary", mr: 1 }} />,
+                startAdornment: (
+                  <Badge sx={{ color: "text.secondary", mr: 1 }} />
+                ),
               }}
             />
           </Grid>
@@ -404,8 +422,7 @@ const StudentForm = ({ id }: StudentFormProps) => {
             <CraftSelectWithIcon
               name="gender"
               size="medium"
-              label='Gender'
-
+              label="Gender"
               placeholder="Select Gender"
               items={["Male", "Female", "Other"]}
               adornment={<Person color="action" />}
@@ -420,7 +437,9 @@ const StudentForm = ({ id }: StudentFormProps) => {
               placeholder="e.g., +1 234 567 8900"
               size="medium"
               InputProps={{
-                startAdornment: <Phone sx={{ color: "text.secondary", mr: 1 }} />,
+                startAdornment: (
+                  <Phone sx={{ color: "text.secondary", mr: 1 }} />
+                ),
               }}
             />
           </Grid>
@@ -440,11 +459,13 @@ const StudentForm = ({ id }: StudentFormProps) => {
             <CraftInputWithIcon
               fullWidth
               name="birthDate"
-              label='  Birth Date'
+              label="  Birth Date"
               type="date"
               size="medium"
               InputProps={{
-                startAdornment: <Cake sx={{ color: "text.secondary", mr: 1 }} />,
+                startAdornment: (
+                  <Cake sx={{ color: "text.secondary", mr: 1 }} />
+                ),
               }}
             />
           </Grid>
@@ -453,12 +474,13 @@ const StudentForm = ({ id }: StudentFormProps) => {
             <CraftInputWithIcon
               fullWidth
               name="birthRegistrationNo"
-              label='Birth Registration No.'
-
+              label="Birth Registration No."
               placeholder="Birth Registration Number"
               size="medium"
               InputProps={{
-                startAdornment: <CreditCard sx={{ color: "text.secondary", mr: 1 }} />,
+                startAdornment: (
+                  <CreditCard sx={{ color: "text.secondary", mr: 1 }} />
+                ),
               }}
             />
           </Grid>
@@ -466,22 +488,20 @@ const StudentForm = ({ id }: StudentFormProps) => {
             <CraftInputWithIcon
               fullWidth
               name="email"
-              label='Email'
-
+              label="Email"
               placeholder="e.g., exmaple@gmail.com"
               size="medium"
               InputProps={{
-                startAdornment: <DriveFileRenameOutline sx={{ color: "text.secondary", mr: 1 }} />,
+                startAdornment: (
+                  <DriveFileRenameOutline
+                    sx={{ color: "text.secondary", mr: 1 }}
+                  />
+                ),
               }}
             />
           </Grid>
           <Grid item xs={12}>
-            <FileUploadWithIcon
-              name="studentPhoto"
-              label="Student Photo"
-
-            />
-
+            <FileUploadWithIcon name="studentPhoto" label="Student Photo" />
           </Grid>
         </Grid>
       ),
@@ -497,11 +517,12 @@ const StudentForm = ({ id }: StudentFormProps) => {
               fullWidth
               name="fatherName"
               label=" Father's Name."
-
               placeholder="Father's Name"
               size="medium"
               InputProps={{
-                startAdornment: <Person sx={{ color: "text.secondary", mr: 1 }} />,
+                startAdornment: (
+                  <Person sx={{ color: "text.secondary", mr: 1 }} />
+                ),
               }}
             />
           </Grid>
@@ -509,13 +530,14 @@ const StudentForm = ({ id }: StudentFormProps) => {
           <Grid item xs={12} md={6}>
             <CraftInputWithIcon
               fullWidth
-              label='Mother Name'
+              label="Mother Name"
               name="motherName"
-
               placeholder="Mother Name"
               size="medium"
               InputProps={{
-                startAdornment: <Person sx={{ color: "text.secondary", mr: 1 }} />,
+                startAdornment: (
+                  <Person sx={{ color: "text.secondary", mr: 1 }} />
+                ),
               }}
             />
           </Grid>
@@ -528,7 +550,9 @@ const StudentForm = ({ id }: StudentFormProps) => {
               placeholder="Guardian's Name"
               size="medium"
               InputProps={{
-                startAdornment: <Contacts sx={{ color: "text.secondary", mr: 1 }} />,
+                startAdornment: (
+                  <Contacts sx={{ color: "text.secondary", mr: 1 }} />
+                ),
               }}
             />
           </Grid>
@@ -541,7 +565,9 @@ const StudentForm = ({ id }: StudentFormProps) => {
               placeholder="Guardian's Mobile"
               size="medium"
               InputProps={{
-                startAdornment: <ContactPhone sx={{ color: "text.secondary", mr: 1 }} />,
+                startAdornment: (
+                  <ContactPhone sx={{ color: "text.secondary", mr: 1 }} />
+                ),
               }}
             />
           </Grid>
@@ -554,7 +580,9 @@ const StudentForm = ({ id }: StudentFormProps) => {
               placeholder="e.g., Father, Mother, Uncle"
               size="medium"
               InputProps={{
-                startAdornment: <People sx={{ color: "text.secondary", mr: 1 }} />,
+                startAdornment: (
+                  <People sx={{ color: "text.secondary", mr: 1 }} />
+                ),
               }}
             />
           </Grid>
@@ -563,16 +591,13 @@ const StudentForm = ({ id }: StudentFormProps) => {
             <CraftInputWithIcon
               fullWidth
               name="nidFatherMotherGuardian"
-
-              label={
-                <span>
-                  NID (Father/Mother/Guardian)
-                </span>
-              }
+              label={<span>NID (Father/Mother/Guardian)</span>}
               placeholder="NID (Father/Mother/Guardian)"
               size="medium"
               InputProps={{
-                startAdornment: <CreditCard sx={{ color: "text.secondary", mr: 1 }} />,
+                startAdornment: (
+                  <CreditCard sx={{ color: "text.secondary", mr: 1 }} />
+                ),
               }}
             />
           </Grid>
@@ -594,8 +619,9 @@ const StudentForm = ({ id }: StudentFormProps) => {
                     Guardian Information
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    The guardian will be the primary contact for all communications regarding the student. Make sure to
-                    provide accurate contact information.
+                    The guardian will be the primary contact for all
+                    communications regarding the student. Make sure to provide
+                    accurate contact information.
                   </Typography>
                 </Box>
               </Box>
@@ -611,7 +637,11 @@ const StudentForm = ({ id }: StudentFormProps) => {
       content: (
         <Grid container spacing={3}>
           <Grid item xs={12} md={6}>
-            <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 500 }}>
+            <Typography
+              variant="subtitle1"
+              gutterBottom
+              sx={{ fontWeight: 500 }}
+            >
               Permanent Address
             </Typography>
             <Card variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
@@ -619,16 +649,22 @@ const StudentForm = ({ id }: StudentFormProps) => {
                 <Grid item xs={12}>
                   <CraftInputWithIcon
                     fullWidth
-                    label=' Permanent Address'
+                    label=" Permanent Address"
                     name="permanentAddress"
-
                     placeholder="Permanent Address"
                     size="medium"
                     multiline
                     rows={2}
                     InputProps={{
                       startAdornment: (
-                        <LocationOn sx={{ color: "text.secondary", mr: 1, alignSelf: "flex-start", mt: 1.5 }} />
+                        <LocationOn
+                          sx={{
+                            color: "text.secondary",
+                            mr: 1,
+                            alignSelf: "flex-start",
+                            mt: 1.5,
+                          }}
+                        />
                       ),
                     }}
                   />
@@ -641,7 +677,9 @@ const StudentForm = ({ id }: StudentFormProps) => {
                     placeholder="District"
                     size="medium"
                     InputProps={{
-                      startAdornment: <LocationOn sx={{ color: "text.secondary", mr: 1 }} />,
+                      startAdornment: (
+                        <LocationOn sx={{ color: "text.secondary", mr: 1 }} />
+                      ),
                     }}
                   />
                 </Grid>
@@ -653,7 +691,9 @@ const StudentForm = ({ id }: StudentFormProps) => {
                     label="Thana"
                     placeholder="Select Thana"
                     InputProps={{
-                      startAdornment: <LocationOn sx={{ color: "text.secondary", mr: 1 }} />,
+                      startAdornment: (
+                        <LocationOn sx={{ color: "text.secondary", mr: 1 }} />
+                      ),
                     }}
                   />
                 </Grid>
@@ -662,7 +702,14 @@ const StudentForm = ({ id }: StudentFormProps) => {
           </Grid>
 
           <Grid item xs={12} md={6}>
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                mb: 1,
+              }}
+            >
               <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
                 Present Address
               </Typography>
@@ -699,7 +746,14 @@ const StudentForm = ({ id }: StudentFormProps) => {
                     disabled={formData.sameAsPermanent}
                     InputProps={{
                       startAdornment: (
-                        <LocationOn sx={{ color: "text.secondary", mr: 1, alignSelf: "flex-start", mt: 1.5 }} />
+                        <LocationOn
+                          sx={{
+                            color: "text.secondary",
+                            mr: 1,
+                            alignSelf: "flex-start",
+                            mt: 1.5,
+                          }}
+                        />
                       ),
                     }}
                   />
@@ -713,7 +767,9 @@ const StudentForm = ({ id }: StudentFormProps) => {
                     size="medium"
                     disabled={formData.sameAsPermanent}
                     InputProps={{
-                      startAdornment: <LocationOn sx={{ color: "text.secondary", mr: 1 }} />,
+                      startAdornment: (
+                        <LocationOn sx={{ color: "text.secondary", mr: 1 }} />
+                      ),
                     }}
                   />
                 </Grid>
@@ -726,7 +782,9 @@ const StudentForm = ({ id }: StudentFormProps) => {
                     size="medium"
                     disabled={formData.sameAsPermanent}
                     InputProps={{
-                      startAdornment: <LocationOn sx={{ color: "text.secondary", mr: 1 }} />,
+                      startAdornment: (
+                        <LocationOn sx={{ color: "text.secondary", mr: 1 }} />
+                      ),
                     }}
                   />
                 </Grid>
@@ -745,7 +803,7 @@ const StudentForm = ({ id }: StudentFormProps) => {
           <Grid item xs={12} md={6}>
             <CraftIntAutoCompleteWithIcon
               name="className"
-              label='Class'
+              label="Class"
               placeholder="Select Class"
               options={classOption}
               fullWidth
@@ -763,7 +821,9 @@ const StudentForm = ({ id }: StudentFormProps) => {
               placeholder="Class Roll"
               size="medium"
               InputProps={{
-                startAdornment: <Badge sx={{ color: "text.secondary", mr: 1 }} />,
+                startAdornment: (
+                  <Badge sx={{ color: "text.secondary", mr: 1 }} />
+                ),
               }}
             />
           </Grid>
@@ -784,29 +844,25 @@ const StudentForm = ({ id }: StudentFormProps) => {
               name="section"
               size="medium"
               placeholder="Select Section"
-              label='Section'
+              label="Section"
               options={sectionOption}
               fullWidth
               multiple
               icon={<Class color="primary" />}
             />
-
           </Grid>
 
           <Grid item xs={12} md={6}>
             <CraftIntAutoCompleteWithIcon
               name="activeSession"
               size="medium"
-
               placeholder="Select Active Session"
               options={sessionOption}
-              label=' Active Session'
+              label=" Active Session"
               fullWidth
               multiple
               icon={<CalendarMonth color="primary" />}
             />
-
-
           </Grid>
 
           <Grid item xs={12} md={6}>
@@ -824,10 +880,9 @@ const StudentForm = ({ id }: StudentFormProps) => {
             <CraftSelectWithIcon
               name="studentType"
               size="medium"
-
               label={
                 <span>
-                  Student Type <span style={{ color: 'red' }}>*</span>
+                  Student Type <span style={{ color: "red" }}>*</span>
                 </span>
               }
               placeholder="Select Student Type"
@@ -847,7 +902,14 @@ const StudentForm = ({ id }: StudentFormProps) => {
               rows={3}
               InputProps={{
                 startAdornment: (
-                  <Description sx={{ color: "text.secondary", mr: 1, alignSelf: "flex-start", mt: 1.5 }} />
+                  <Description
+                    sx={{
+                      color: "text.secondary",
+                      mr: 1,
+                      alignSelf: "flex-start",
+                      mt: 1.5,
+                    }}
+                  />
                 ),
               }}
             />
@@ -863,7 +925,8 @@ const StudentForm = ({ id }: StudentFormProps) => {
         <Grid container spacing={3}>
           <Grid item xs={12}>
             <Alert severity="info" sx={{ mb: 3 }}>
-              Enter all applicable fees for this student. Leave as 0 for any fees that don't apply.
+              Enter all applicable fees for this student. Leave as 0 for any
+              fees that don't apply.
             </Alert>
           </Grid>
 
@@ -876,7 +939,9 @@ const StudentForm = ({ id }: StudentFormProps) => {
               placeholder="0"
               size="medium"
               InputProps={{
-                startAdornment: <AttachMoney sx={{ color: "text.secondary", mr: 1 }} />,
+                startAdornment: (
+                  <AttachMoney sx={{ color: "text.secondary", mr: 1 }} />
+                ),
               }}
             />
           </Grid>
@@ -890,7 +955,9 @@ const StudentForm = ({ id }: StudentFormProps) => {
               placeholder="0"
               size="medium"
               InputProps={{
-                startAdornment: <AttachMoney sx={{ color: "text.secondary", mr: 1 }} />,
+                startAdornment: (
+                  <AttachMoney sx={{ color: "text.secondary", mr: 1 }} />
+                ),
               }}
             />
           </Grid>
@@ -904,7 +971,9 @@ const StudentForm = ({ id }: StudentFormProps) => {
               placeholder="0"
               size="medium"
               InputProps={{
-                startAdornment: <AttachMoney sx={{ color: "text.secondary", mr: 1 }} />,
+                startAdornment: (
+                  <AttachMoney sx={{ color: "text.secondary", mr: 1 }} />
+                ),
               }}
             />
           </Grid>
@@ -918,7 +987,9 @@ const StudentForm = ({ id }: StudentFormProps) => {
               placeholder="0"
               size="medium"
               InputProps={{
-                startAdornment: <AttachMoney sx={{ color: "text.secondary", mr: 1 }} />,
+                startAdornment: (
+                  <AttachMoney sx={{ color: "text.secondary", mr: 1 }} />
+                ),
               }}
             />
           </Grid>
@@ -932,7 +1003,9 @@ const StudentForm = ({ id }: StudentFormProps) => {
               placeholder="0"
               size="medium"
               InputProps={{
-                startAdornment: <AttachMoney sx={{ color: "text.secondary", mr: 1 }} />,
+                startAdornment: (
+                  <AttachMoney sx={{ color: "text.secondary", mr: 1 }} />
+                ),
               }}
             />
           </Grid>
@@ -946,7 +1019,9 @@ const StudentForm = ({ id }: StudentFormProps) => {
               placeholder="0"
               size="medium"
               InputProps={{
-                startAdornment: <AttachMoney sx={{ color: "text.secondary", mr: 1 }} />,
+                startAdornment: (
+                  <AttachMoney sx={{ color: "text.secondary", mr: 1 }} />
+                ),
               }}
             />
           </Grid>
@@ -960,7 +1035,9 @@ const StudentForm = ({ id }: StudentFormProps) => {
               placeholder="0"
               size="medium"
               InputProps={{
-                startAdornment: <AttachMoney sx={{ color: "text.secondary", mr: 1 }} />,
+                startAdornment: (
+                  <AttachMoney sx={{ color: "text.secondary", mr: 1 }} />
+                ),
               }}
             />
           </Grid>
@@ -974,7 +1051,9 @@ const StudentForm = ({ id }: StudentFormProps) => {
               placeholder="0"
               size="medium"
               InputProps={{
-                startAdornment: <AttachMoney sx={{ color: "text.secondary", mr: 1 }} />,
+                startAdornment: (
+                  <AttachMoney sx={{ color: "text.secondary", mr: 1 }} />
+                ),
               }}
             />
           </Grid>
@@ -1010,7 +1089,11 @@ const StudentForm = ({ id }: StudentFormProps) => {
                     checked={formData.sendAdmissionSMS || false}
                   />
 
-                  <Typography variant="caption" color="text.secondary" sx={{ display: "block", ml: 4 }}>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: "block", ml: 4 }}
+                  >
                     Send SMS notification upon admission
                   </Typography>
                 </Grid>
@@ -1023,7 +1106,9 @@ const StudentForm = ({ id }: StudentFormProps) => {
                     placeholder="Student Serial"
                     size="medium"
                     InputProps={{
-                      startAdornment: <Badge sx={{ color: "text.secondary", mr: 1 }} />,
+                      startAdornment: (
+                        <Badge sx={{ color: "text.secondary", mr: 1 }} />
+                      ),
                     }}
                   />
                 </Grid>
@@ -1036,7 +1121,11 @@ const StudentForm = ({ id }: StudentFormProps) => {
                     checked={formData.sendAttendanceSMS || false}
                   />
 
-                  <Typography variant="caption" color="text.secondary" sx={{ display: "block", ml: 4 }}>
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ display: "block", ml: 4 }}
+                  >
                     Send SMS for attendance updates
                   </Typography>
                 </Grid>
@@ -1061,8 +1150,9 @@ const StudentForm = ({ id }: StudentFormProps) => {
                     SMS Notifications
                   </Typography>
                   <Typography variant="body2" color="text.secondary">
-                    SMS notifications will be sent to the guardian's mobile number. Make sure the mobile number is
-                    correct before enabling these options.
+                    SMS notifications will be sent to the guardian's mobile
+                    number. Make sure the mobile number is correct before
+                    enabling these options.
                   </Typography>
                 </Box>
               </Box>
@@ -1071,10 +1161,10 @@ const StudentForm = ({ id }: StudentFormProps) => {
         </Grid>
       ),
     },
-  ]
+  ];
 
   if (isLoading) {
-    return    <LoadingState/>
+    return <LoadingState />;
   }
 
   return (
@@ -1131,11 +1221,14 @@ const StudentForm = ({ id }: StudentFormProps) => {
         </Box>
 
         <CraftForm
-
           onSubmit={handleSubmit}
           // resolver={zodResolver(studentSchema)}
           defaultValues={defaultValues}
-          key={Object.keys(defaultValues).length > 0 ? "form-with-data" : "empty-form"}
+          key={
+            Object.keys(defaultValues).length > 0
+              ? "form-with-data"
+              : "empty-form"
+          }
         >
           <Paper
             elevation={3}
@@ -1182,7 +1275,8 @@ const StudentForm = ({ id }: StudentFormProps) => {
                             startIcon={<Save />}
                             sx={{
                               borderRadius: 100,
-                              background: "linear-gradient(135deg, #1976d2 0%, #2196f3 100%)",
+                              background:
+                                "linear-gradient(135deg, #1976d2 0%, #2196f3 100%)",
                               boxShadow: "0 4px 10px rgba(33, 150, 243, 0.3)",
                               px: 3,
                             }}
@@ -1195,7 +1289,8 @@ const StudentForm = ({ id }: StudentFormProps) => {
                             onClick={handleNext}
                             sx={{
                               borderRadius: 100,
-                              background: "linear-gradient(135deg, #1976d2 0%, #2196f3 100%)",
+                              background:
+                                "linear-gradient(135deg, #1976d2 0%, #2196f3 100%)",
                               boxShadow: "0 4px 10px rgba(33, 150, 243, 0.3)",
                               px: 3,
                             }}
@@ -1240,20 +1335,27 @@ const StudentForm = ({ id }: StudentFormProps) => {
         >
           <Help sx={{ color: "#2e7d32", mt: 0.5 }} />
           <Box>
-            <Typography variant="subtitle1" sx={{ color: "#2e7d32", fontWeight: 600 }}>
+            <Typography
+              variant="subtitle1"
+              sx={{ color: "#2e7d32", fontWeight: 600 }}
+            >
               Need Help?
             </Typography>
             <Typography variant="body2" sx={{ color: "#1b5e20" }}>
-              Registering a student is the first step in the enrollment process. After registration, you can manage the
-              student's academic records, attendance, and fee payments. Make sure to fill in all required fields marked
-              with an asterisk (*) for successful registration.
+              Registering a student is the first step in the enrollment process.
+              After registration, you can manage the student's academic records,
+              attendance, and fee payments. Make sure to fill in all required
+              fields marked with an asterisk (*) for successful registration.
             </Typography>
           </Box>
         </Paper>
       </Container>
 
       {/* Success Backdrop */}
-      <Backdrop sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }} open={success}>
+      <Backdrop
+        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={success}
+      >
         <Box
           sx={{
             display: "flex",
@@ -1280,24 +1382,36 @@ const StudentForm = ({ id }: StudentFormProps) => {
           >
             <CheckCircle sx={{ fontSize: 50, color: "#2e7d32" }} />
           </Box>
-          <Typography variant="h5" sx={{ color: "#2e7d32", fontWeight: 600, mb: 1 }}>
+          <Typography
+            variant="h5"
+            sx={{ color: "#2e7d32", fontWeight: 600, mb: 1 }}
+          >
             Success!
           </Typography>
           <Typography variant="body1" sx={{ color: "text.secondary", mb: 3 }}>
-            Student has been registered successfully. Redirecting to student list...
+            Student has been registered successfully. Redirecting to student
+            list...
           </Typography>
           <CircularProgress size={24} sx={{ color: "primary.main" }} />
         </Box>
       </Backdrop>
 
       {/* Snackbar for notifications */}
-      <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleCloseSnackbar}>
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: "100%" }}>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
           {snackbar.message}
         </Alert>
       </Snackbar>
     </Box>
-  )
-}
+  );
+};
 
-export default StudentForm
+export default StudentForm;

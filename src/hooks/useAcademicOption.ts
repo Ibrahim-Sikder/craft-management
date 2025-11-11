@@ -5,13 +5,25 @@ import { useGetAllStudentsQuery } from "@/redux/api/studentApi";
 import { transformToSelectOptions } from "@/utils/selectOptions";
 import { useGetAllClassesQuery } from "@/redux/api/classApi";
 import { useGetAllSubjectsQuery } from "@/redux/api/subjectApi";
+import { useGetAllFeesQuery } from "@/redux/api/feesApi";
+import { useGetAllFeeCategoriesQuery } from "@/redux/api/feeCategoryApi";
 
-export function useAcademicOptions(limit = 10, initialSearch = "") {
+export function useAcademicOption(limit = 10, initialSearch = "") {
   const [page] = useState(0);
   const [searchTerm] = useState(initialSearch);
-  const studentDepartment = 'Hifz Student'
+  const studentDepartment = "Hifz Student";
 
   const { data: classData } = useGetAllClassesQuery({
+    limit: limit,
+    page: page + 1,
+    searchTerm: searchTerm,
+  });
+  const { data: feesData } = useGetAllFeesQuery({
+    limit: limit,
+    page: page + 1,
+    searchTerm: searchTerm,
+  });
+  const { data: feeCategoryData } = useGetAllFeeCategoriesQuery({
     limit: limit,
     page: page + 1,
     searchTerm: searchTerm,
@@ -29,7 +41,6 @@ export function useAcademicOptions(limit = 10, initialSearch = "") {
       limit,
       page: page + 1,
       searchTerm,
-
     });
 
   // Fetch students
@@ -38,7 +49,7 @@ export function useAcademicOptions(limit = 10, initialSearch = "") {
       limit,
       page: page + 1,
       searchTerm,
-      studentDepartment
+      studentDepartment,
     });
 
   // Transform to select options
@@ -60,6 +71,22 @@ export function useAcademicOptions(limit = 10, initialSearch = "") {
     }));
   }, [classData]);
 
+  const feesOptions = useMemo(() => {
+    if (!feesData?.data?.data) return [];
+    return feesData?.data?.data?.map((clg: any) => ({
+      label: clg.feeType,
+      value: clg._id,
+    }));
+  }, [feesData]);
+
+  const feeCategoryOptions = useMemo(() => {
+    if (!feeCategoryData?.data?.data) return [];
+    return feeCategoryData?.data?.data?.map((clg: any) => ({
+      label: clg.feeType,
+      value: clg._id,
+    }));
+  }, [feeCategoryData]);
+
   const subjectOptions = useMemo(() => {
     if (!subjectData?.data?.subjects) return [];
     return subjectData.data.subjects.map((sub: any) => ({
@@ -79,5 +106,9 @@ export function useAcademicOptions(limit = 10, initialSearch = "") {
     subjectData,
     classOptions,
     subjectOptions,
+    feesData,
+    feesOptions,
+    feeCategoryOptions,
+    feeCategoryData,
   };
 }
