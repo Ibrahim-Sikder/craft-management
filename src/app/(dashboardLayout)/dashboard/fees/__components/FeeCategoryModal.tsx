@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { Save as SaveIcon } from "@mui/icons-material";
+import { Class, Save as SaveIcon } from "@mui/icons-material";
 import { Box, Button, Grid } from "@mui/material";
 import { FieldValues } from "react-hook-form";
 
@@ -27,9 +27,10 @@ export default function FeeCategoryModal({ open, setOpen, id }: any) {
   const { classOptions } = useAcademicOption();
 
   const handleSubmit = async (data: FieldValues) => {
+    console.log(data);
     const submitData = {
       ...data,
-      class: data.class?.label || data.class,
+      class: data.class[0]?.label || data.class,
       feeAmount: Number(data.feeAmount),
     };
 
@@ -89,17 +90,17 @@ export default function FeeCategoryModal({ open, setOpen, id }: any) {
           <Grid container spacing={3}>
             <Grid item xs={12} sm={12}>
               <CraftIntAutoCompleteWithIcon
-                margin="none"
-                fullWidth
-                label="Class"
                 name="class"
+                label={
+                  <span>
+                    Class <span style={{ color: "red" }}>*</span>
+                  </span>
+                }
+                placeholder="Select Class"
                 options={classOptions}
-                sx={inputStyle}
-                required
-                multiple={false}
-                freeSolo={false}
-                placeholder="Select class"
-                defaultValue={getDefaultValues().class}
+                fullWidth
+                multiple
+                icon={<Class color="primary" />}
               />
             </Grid>
 
@@ -122,7 +123,6 @@ export default function FeeCategoryModal({ open, setOpen, id }: any) {
                 type="number"
                 margin="none"
                 sx={inputStyle}
-                required
               />
             </Grid>
           </Grid>

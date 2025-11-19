@@ -7,6 +7,7 @@ import { useGetAllClassesQuery } from "@/redux/api/classApi";
 import { useGetAllSubjectsQuery } from "@/redux/api/subjectApi";
 import { useGetAllFeesQuery } from "@/redux/api/feesApi";
 import { useGetAllFeeCategoriesQuery } from "@/redux/api/feeCategoryApi";
+import { useGetAllSectionsQuery } from "@/redux/api/sectionApi";
 
 export function useAcademicOption(limit = 10, initialSearch = "") {
   const [page] = useState(0);
@@ -28,7 +29,11 @@ export function useAcademicOption(limit = 10, initialSearch = "") {
     page: page + 1,
     searchTerm: searchTerm,
   });
-
+  const { data: sectionData } = useGetAllSectionsQuery({
+    limit: limit,
+    page: page + 1,
+    searchTerm: searchTerm,
+  });
   const { data: subjectData } = useGetAllSubjectsQuery({
     limit: limit,
     page: page + 1,
@@ -110,5 +115,6 @@ export function useAcademicOption(limit = 10, initialSearch = "") {
     feesOptions,
     feeCategoryOptions,
     feeCategoryData,
+    sectionData
   };
 }

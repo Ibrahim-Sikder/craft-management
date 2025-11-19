@@ -51,7 +51,7 @@
 // } from "@mui/material";
 // import { useRouter, useSearchParams } from "next/navigation";
 // import { useEffect, useState } from "react";
-// import { useFieldArray, useFormContext, watch } from "react-hook-form";
+// import { useFieldArray, useFormContext } from "react-hook-form";
 // import toast from "react-hot-toast";
 
 // type TProps = {
@@ -113,7 +113,8 @@
 
 //   const addFeeField = () => {
 //     // Use the main className if available, otherwise use empty array
-//     const classNameValue = mainClassName && mainClassName.length > 0 ? mainClassName : [];
+//     const classNameValue =
+//       mainClassName && mainClassName.length > 0 ? mainClassName : [];
 
 //     append({
 //       feeType: [],
@@ -270,7 +271,7 @@
 //                   fullWidth
 //                   multiple
 //                   icon={<Class color="primary" />}
-//                   disabled // Make it read-only since it's auto-populated
+//                   // disabled
 //                 />
 //               </Grid>
 
@@ -297,7 +298,7 @@
 //                       <Money sx={{ color: "text.secondary", mr: 1 }} />
 //                     ),
 //                   }}
-//                 // disabled
+//                   // disabled
 //                 />
 //               </Grid>
 //               <Grid item xs={12} md={3}>
@@ -330,8 +331,8 @@
 //           }}
 //         >
 //           <Typography variant="body2">
-//             <strong>Tip:</strong> The class field is automatically populated from the Academic Information section.
-//             Click{" "}
+//             <strong>Tip:</strong> The class field is automatically populated
+//             from the Academic Information section. Click{" "}
 //             <Add sx={{ fontSize: 16, verticalAlign: "middle", mx: 0.5 }} />{" "}
 //             button to add multiple fee entries for different fee types
 //             (Admission, Monthly, Exam, etc.)
@@ -386,11 +387,11 @@
 //       return matchedClass
 //         ? [matchedClass]
 //         : [
-//           {
-//             value: studentClass._id || studentClass,
-//             label: studentClass.className || studentClass,
-//           },
-//         ];
+//             {
+//               value: studentClass._id || studentClass,
+//               label: studentClass.className || studentClass,
+//             },
+//           ];
 //     }
 //   };
 
@@ -575,10 +576,10 @@
 //               {selectedStudent.className
 //                 ? Array.isArray(selectedStudent.className)
 //                   ? selectedStudent.className
-//                     .map((c: any) => c.className || c)
-//                     .join(", ")
+//                       .map((c: any) => c.className || c)
+//                       .join(", ")
 //                   : selectedStudent.className.className ||
-//                   selectedStudent.className
+//                     selectedStudent.className
 //                 : "Not assigned"}
 //             </Typography>
 //             <Typography variant="body2">
@@ -602,10 +603,6 @@
 //   }
 
 //   const data = enrollmentData.data;
-
-//   console.log("Raw enrollment data:", data);
-//   console.log("Class options:", classOptions);
-//   console.log("Fee category options:", feeCategoryOptions);
 
 //   // Helper function to format class data
 //   const formatClassForForm = (className: any) => {
@@ -638,11 +635,11 @@
 //       return matchedClass
 //         ? [matchedClass]
 //         : [
-//           {
-//             value: className._id || className,
-//             label: className.className || className,
-//           },
-//         ];
+//             {
+//               value: className._id || className,
+//               label: className.className || className,
+//             },
+//           ];
 //     }
 //   };
 
@@ -676,11 +673,11 @@
 //         feeType: matchedFeeType
 //           ? [matchedFeeType]
 //           : [
-//             {
-//               value: fee.feeType,
-//               label: fee.feeType,
-//             },
-//           ],
+//               {
+//                 value: fee.feeType,
+//                 label: fee.feeType,
+//               },
+//             ],
 //         className: formatClassForForm(className),
 //         feeAmount: fee.amount?.toString() || fee.feeAmount?.toString() || "",
 //         paidAmount: fee.paidAmount?.toString() || "",
@@ -933,12 +930,15 @@
 //       console.log("Form submission data:", submitData);
 
 //       // Fix: Ensure className is properly formatted as an array of ObjectIds
-//       const classNameArray = submitData.className && submitData.className.length > 0
-//         ? submitData.className.map((cls: any) => {
-//           // Ensure we're getting the ObjectId value, not the label
-//           return cls.value || cls;
-//         }).filter(Boolean) // Remove any null/undefined values
-//         : [];
+//       const classNameArray =
+//         submitData.className && submitData.className.length > 0
+//           ? submitData.className
+//               .map((cls: any) => {
+//                 // Ensure we're getting the ObjectId value, not the label
+//                 return cls.value || cls;
+//               })
+//               .filter(Boolean) // Remove any null/undefined values
+//           : [];
 
 //       if (!classNameArray.length) {
 //         toast.error("Class selection is required");
@@ -949,13 +949,19 @@
 //       // Fix: Transform fees array properly
 //       const transformedFees = Array.isArray(submitData.fees)
 //         ? submitData.fees
-//           .filter((fee: any) => fee.feeType && fee.feeType.length > 0 && fee.className && fee.className.length > 0)
-//           .map((fee: any) => ({
-//             feeType: fee.feeType[0]?.value || fee.feeType[0] || "",
-//             className: fee.className[0]?.value || fee.className[0] || "",
-//             feeAmount: Number(fee.feeAmount) || 0,
-//             paidAmount: Number(fee.paidAmount) || 0,
-//           }))
+//             .filter(
+//               (fee: any) =>
+//                 fee.feeType &&
+//                 fee.feeType.length > 0 &&
+//                 fee.className &&
+//                 fee.className.length > 0
+//             )
+//             .map((fee: any) => ({
+//               feeType: fee.feeType[0]?.value || fee.feeType[0] || "",
+//               className: fee.className[0]?.value || fee.className[0] || "",
+//               feeAmount: Number(fee.feeAmount) || 0,
+//               paidAmount: Number(fee.paidAmount) || 0,
+//             }))
 //         : [];
 
 //       // Fix: Transform boolean fields properly
@@ -974,7 +980,9 @@
 //         mobileNo: submitData.mobileNo || "",
 //         rollNumber: submitData.rollNumber || "",
 //         gender: submitData.gender || "",
-//         birthDate: submitData.dateOfBirth ? new Date(submitData.dateOfBirth).toISOString() : "",
+//         birthDate: submitData.dateOfBirth
+//           ? new Date(submitData.dateOfBirth).toISOString()
+//           : "",
 //         birthRegistrationNo: submitData.nidBirth || "",
 //         bloodGroup: submitData.bloodGroup || "",
 //         nationality: submitData.nationality || "Bangladeshi",
@@ -1038,7 +1046,9 @@
 //         documents: {
 //           birthCertificate: transformBoolean(submitData.birthCertificate),
 //           transferCertificate: transformBoolean(submitData.transferCertificate),
-//           characterCertificate: transformBoolean(submitData.characterCertificate),
+//           characterCertificate: transformBoolean(
+//             submitData.characterCertificate
+//           ),
 //           markSheet: transformBoolean(submitData.markSheet),
 //           photographs: transformBoolean(submitData.photographs),
 //         },
@@ -1055,17 +1065,20 @@
 //       };
 
 //       // Clean up empty objects
-//       Object.keys(finalSubmitData).forEach(key => {
-//         if (finalSubmitData[key] && typeof finalSubmitData[key] === 'object') {
+//       Object.keys(finalSubmitData).forEach((key) => {
+//         if (finalSubmitData[key] && typeof finalSubmitData[key] === "object") {
 //           const obj = finalSubmitData[key];
-//           const isEmpty = Object.keys(obj).every(subKey => !obj[subKey]);
+//           const isEmpty = Object.keys(obj).every((subKey) => !obj[subKey]);
 //           if (isEmpty) {
 //             delete finalSubmitData[key];
 //           }
 //         }
 //       });
 
-//       console.log("Final submission data:", JSON.stringify(finalSubmitData, null, 2));
+//       console.log(
+//         "Final submission data:",
+//         JSON.stringify(finalSubmitData, null, 2)
+//       );
 
 //       let res;
 //       if (id) {
@@ -1083,11 +1096,15 @@
 //     } catch (err: any) {
 //       console.error("Submission error:", err);
 
-//       if (err?.data?.message?.includes("jwt") || err?.message?.includes("jwt")) {
+//       if (
+//         err?.data?.message?.includes("jwt") ||
+//         err?.message?.includes("jwt")
+//       ) {
 //         toast.error("Authentication failed. Please login again.");
 //         router.push("/login");
 //       } else {
-//         const errorMessage = err.data?.message || err.message || "Failed to enroll student!";
+//         const errorMessage =
+//           err.data?.message || err.message || "Failed to enroll student!";
 //         toast.error(errorMessage);
 //       }
 //     } finally {

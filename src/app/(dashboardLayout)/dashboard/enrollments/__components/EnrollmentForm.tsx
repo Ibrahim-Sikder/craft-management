@@ -60,30 +60,36 @@ type TProps = {
 
 // Fee Amount Handler Component
 const FeeAmountHandler = ({
-  feeCategoryData,
   feeIndex,
+  feeCategoryData,
 }: {
-  feeCategoryData: any;
   feeIndex: number;
+  feeCategoryData: any[];
 }) => {
   const { watch, setValue } = useFormContext();
   const selectedFees = watch(`fees.${feeIndex}.feeType`);
-  const selectedClasses = watch(`fees.${feeIndex}.className`);
+  const selectedClass = watch(`fees.${feeIndex}.className`);
+  const feeAmount = watch(`fees.${feeIndex}.feeAmount`);
+  const paidAmount = watch(`fees.${feeIndex}.paidAmount`);
 
+  // Auto-populate fee amount based on fee type and class
   useEffect(() => {
     if (
       selectedFees &&
       selectedFees.length > 0 &&
-      selectedClasses &&
-      selectedClasses.length > 0
+      selectedClass &&
+      selectedClass.length > 0
     ) {
-      const selectedFee = selectedFees[0];
-      const selectedClass = selectedClasses[0];
+      const selectedFeeType = selectedFees[0]?.label || selectedFees[0];
+      const selectedClassName = selectedClass[0]?.label || selectedClass[0];
+
+      // Find matching fee in feeCategoryData
       const matchingFee = feeCategoryData?.data?.data?.find(
         (fee: any) =>
-          fee.feeType === (selectedFee.label || selectedFee) &&
-          fee.class === (selectedClass.label || selectedClass)
+          fee.feeType.toLowerCase() === selectedFeeType.toLowerCase() &&
+          fee.class === selectedClassName
       );
+
       if (matchingFee) {
         setValue(
           `fees.${feeIndex}.feeAmount`,
@@ -91,16 +97,52 @@ const FeeAmountHandler = ({
         );
       }
     }
-  }, [selectedFees, selectedClasses, feeCategoryData, setValue, feeIndex]);
+  }, [selectedFees, selectedClass, setValue, feeIndex, feeCategoryData]);
+
+  // Calculate monthly fee when yearly fee is entered
+  useEffect(() => {
+    if (feeAmount && selectedFees && selectedFees.length > 0) {
+      const selectedFee = selectedFees[0];
+      const feeType = selectedFee.label || selectedFee;
+
+      if (
+        feeType.toLowerCase().includes("yearly") ||
+        feeType.toLowerCase().includes("annual") ||
+        feeType.toLowerCase().includes("monthly")
+      ) {
+        const yearlyAmount = parseFloat(feeAmount);
+        if (!isNaN(yearlyAmount)) {
+          const monthlyAmount = (yearlyAmount / 12).toFixed(2);
+          setValue(`fees.${feeIndex}.monthlyAmount`, monthlyAmount);
+          setValue(`fees.${feeIndex}.yearlyAmount`, yearlyAmount.toString());
+        }
+      }
+    }
+  }, [feeAmount, selectedFees, setValue, feeIndex]);
+
+  // Calculate due amount whenever fee amount or paid amount changes
+  useEffect(() => {
+    if (feeAmount !== undefined && paidAmount !== undefined) {
+      const fee = parseFloat(feeAmount) || 0;
+      const paid = parseFloat(paidAmount) || 0;
+      const due = fee - paid;
+
+      setValue(`fees.${feeIndex}.dueAmount`, due > 0 ? due.toString() : "0");
+      setValue(
+        `fees.${feeIndex}.paymentStatus`,
+        due <= 0 ? "paid" : paid > 0 ? "partial" : "unpaid"
+      );
+    }
+  }, [feeAmount, paidAmount, setValue, feeIndex]);
 
   return null;
 };
 
 // Dynamic Fee Fields Component
 const DynamicFeeFields = ({
-  feeCategoryData,
   classOptions,
   feeCategoryOptions,
+  feeCategoryData,
 }: any) => {
   const { control, watch, setValue } = useFormContext();
   const { fields, append, remove } = useFieldArray({
@@ -108,19 +150,55 @@ const DynamicFeeFields = ({
     name: "fees",
   });
 
-  // Watch the main className from academic information
   const mainClassName = watch("className");
 
+  // Filter fee types based on selected class in EACH fee entry
+  const getFilteredFeeOptions = (feeClassName: any) => {
+    if (feeClassName && feeClassName.length > 0) {
+      // Get the selected class names for this specific fee entry
+      const selectedClassNames = feeClassName.map(
+        (cls: any) => cls.label || cls
+      );
+
+      // Filter fee options based on selected classes
+      const filtered = feeCategoryData?.data?.data?.filter((fee: any) =>
+        selectedClassNames.includes(fee.class)
+      );
+
+      // Create unique fee type options
+      const uniqueFeeTypes = Array.from(
+        new Set(filtered.map((fee: any) => fee.feeType))
+      ).map((feeType) => {
+        // Find a matching fee type in the original options
+        const originalOption = feeCategoryOptions.find(
+          (option: any) => option.label === feeType
+        );
+        return originalOption || { value: feeType, label: feeType };
+      });
+
+      return uniqueFeeTypes;
+    } else {
+      // If no class selected in this fee entry, return all fee options
+      return feeCategoryOptions;
+    }
+  };
+
   const addFeeField = () => {
-    // Use the main className if available, otherwise use empty array
+    // Use the main class name from academic info, or empty array if not selected
     const classNameValue =
-      mainClassName && mainClassName.length > 0 ? mainClassName : [];
+      mainClassName && mainClassName.length > 0
+        ? JSON.parse(JSON.stringify(mainClassName))
+        : [];
 
     append({
       feeType: [],
-      className: classNameValue, // Pre-populate with the main class
+      className: classNameValue, // Always use the main class name
       feeAmount: "",
+      yearlyAmount: "",
+      monthlyAmount: "",
       paidAmount: "",
+      dueAmount: "",
+      paymentStatus: "unpaid",
     });
   };
 
@@ -132,218 +210,202 @@ const DynamicFeeFields = ({
     }
   };
 
-  // Update all fee entries when the main class changes
-  useEffect(() => {
-    if (mainClassName && mainClassName.length > 0) {
-      fields.forEach((_, index) => {
-        setValue(`fees.${index}.className`, mainClassName);
-      });
-    }
-  }, [mainClassName, fields, setValue]);
-
   return (
-    <Card elevation={2} sx={{ mb: 3, borderRadius: 2, position: "relative" }}>
+    <Card elevation={2} sx={{ mb: 3, borderRadius: 2 }}>
       <CardContent sx={{ p: 3 }}>
-        {/* Header with Add Button */}
         <Box
           sx={{
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
             mb: 3,
-            pb: 2,
-            borderBottom: "2px solid",
-            borderColor: "primary.main",
-            background: "linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%)",
-            borderRadius: 1,
-            px: 2,
-            py: 1,
           }}
         >
           <Typography
             variant="h6"
-            sx={{
-              fontWeight: "bold",
-              color: "primary.main",
-              display: "flex",
-              alignItems: "center",
-              gap: 1,
-            }}
+            sx={{ fontWeight: "bold", color: "primary.main" }}
           >
-            <Money sx={{ fontSize: 28 }} />
+            <Money sx={{ fontSize: 28, mr: 1 }} />
             Fee Information <span className="text-red-600">*</span>
           </Typography>
-
           <IconButton
             onClick={addFeeField}
             sx={{
               backgroundColor: "primary.main",
               color: "white",
-              borderRadius: "50%",
-              width: 48,
-              height: 48,
-              boxShadow: "0 4px 12px rgba(63, 81, 181, 0.3)",
               "&:hover": {
                 backgroundColor: "primary.dark",
-                transform: "scale(1.05)",
-                boxShadow: "0 6px 16px rgba(63, 81, 181, 0.4)",
               },
-              transition: "all 0.3s ease-in-out",
             }}
           >
-            <Add sx={{ fontSize: 24 }} />
+            <Add />
           </IconButton>
         </Box>
 
-        {/* Fee Fields */}
-        {fields.map((field, index) => (
-          <Box
-            key={field.id}
-            sx={{
-              mb: 3,
-              p: 3,
-              border: "2px solid",
-              borderColor: index === 0 ? "primary.light" : "grey.200",
-              borderRadius: 2,
-              backgroundColor: index === 0 ? "primary.50" : "grey.50",
-              position: "relative",
-              boxShadow:
-                index === 0 ? "0 2px 8px rgba(63, 81, 181, 0.1)" : "none",
-            }}
-          >
-            {/* Remove Button for non-first items */}
-            {index > 0 && (
-              <IconButton
-                onClick={() => removeFeeField(index)}
-                sx={{
-                  position: "absolute",
-                  top: -12,
-                  right: -12,
-                  backgroundColor: "error.main",
-                  color: "white",
-                  width: 32,
-                  height: 32,
-                  boxShadow: "0 2px 8px rgba(211, 47, 47, 0.3)",
-                  "&:hover": {
-                    backgroundColor: "error.dark",
-                    transform: "scale(1.1)",
-                  },
-                  transition: "all 0.2s ease-in-out",
-                  zIndex: 1,
-                }}
-              >
-                <Remove sx={{ fontSize: 18 }} />
-              </IconButton>
-            )}
+        {fields.map((field, index) => {
+          const feeClassName = watch(`fees.${index}.className`);
+          const filteredFeeOptions = getFilteredFeeOptions(feeClassName);
 
-            {/* Fee Number Badge */}
+          return (
             <Box
+              key={field.id}
               sx={{
-                position: "absolute",
-                top: -12,
-                left: 16,
-                backgroundColor: index === 0 ? "primary.main" : "grey.500",
-                color: "white",
-                px: 2,
-                py: 0.5,
-                borderRadius: 4,
-                fontSize: "0.75rem",
-                fontWeight: "bold",
-                boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+                mb: 3,
+                p: 3,
+                border: "1px solid #e0e0e0",
+                borderRadius: 2,
+                backgroundColor: index === 0 ? "#f8f9fa" : "white",
               }}
             >
-              Fee #{index + 1}
+              {index > 0 && (
+                <IconButton
+                  onClick={() => removeFeeField(index)}
+                  sx={{
+                    float: "right",
+                    color: "error.main",
+                    mb: 2,
+                  }}
+                >
+                  <Remove />
+                </IconButton>
+              )}
+
+              <Typography
+                variant="subtitle1"
+                sx={{ mb: 2, fontWeight: "bold" }}
+              >
+                Fee Entry #{index + 1}
+              </Typography>
+
+              <FeeAmountHandler
+                feeIndex={index}
+                feeCategoryData={feeCategoryData}
+              />
+
+              <Grid container spacing={2} alignItems="center">
+                {/* Class Field - Pre-filled with main class name */}
+                <Grid item xs={12} md={6}>
+                  <CraftIntAutoCompleteWithIcon
+                    name={`fees.${index}.className`}
+                    label="Class"
+                    placeholder="Select Class"
+                    options={classOptions}
+                    fullWidth
+                    multiple
+                    icon={<Class color="primary" />}
+                  />
+                </Grid>
+
+                {/* Fee Type - Filtered based on selected class in this fee entry */}
+                <Grid item xs={12} md={6}>
+                  <CraftIntAutoCompleteWithIcon
+                    name={`fees.${index}.feeType`}
+                    label="Fee Type"
+                    placeholder="Select Fee Type"
+                    options={filteredFeeOptions}
+                    fullWidth
+                    multiple
+                    icon={<Money color="primary" />}
+                  />
+                </Grid>
+
+                {/* Yearly Fee Amount */}
+                <Grid item xs={12} md={4}>
+                  <CraftInputWithIcon
+                    name={`fees.${index}.feeAmount`}
+                    label="Fee Amount"
+                    fullWidth
+                    size="small"
+                    type="number"
+                    InputProps={{
+                      startAdornment: (
+                        <Money sx={{ color: "text.secondary", mr: 1 }} />
+                      ),
+                    }}
+                  />
+                </Grid>
+
+                {/* Monthly Breakdown */}
+                <Grid item xs={12} md={4}>
+                  <CraftInputWithIcon
+                    name={`fees.${index}.monthlyAmount`}
+                    label="Monthly Amount (Auto)"
+                    fullWidth
+                    size="small"
+                    disabled
+                    InputProps={{
+                      startAdornment: (
+                        <Money sx={{ color: "text.secondary", mr: 1 }} />
+                      ),
+                    }}
+                  />
+                </Grid>
+
+                {/* Paid Amount */}
+                <Grid item xs={12} md={4}>
+                  <CraftInputWithIcon
+                    name={`fees.${index}.paidAmount`}
+                    label="Paid Amount"
+                    fullWidth
+                    size="small"
+                    type="number"
+                    InputProps={{
+                      startAdornment: (
+                        <Money sx={{ color: "text.secondary", mr: 1 }} />
+                      ),
+                    }}
+                  />
+                </Grid>
+
+                {/* Due Amount */}
+                <Grid item xs={12} md={6}>
+                  <CraftInputWithIcon
+                    name={`fees.${index}.dueAmount`}
+                    label="Due Amount (Auto)"
+                    fullWidth
+                    size="small"
+                    disabled
+                    InputProps={{
+                      startAdornment: (
+                        <Money sx={{ color: "text.secondary", mr: 1 }} />
+                      ),
+                    }}
+                  />
+                </Grid>
+
+                {/* Payment Status */}
+                <Grid item xs={12} md={6}>
+                  <CraftSelectWithIcon
+                    name={`fees.${index}.paymentStatus`}
+                    label="Payment Status"
+                    items={["paid", "partial", "unpaid"]}
+                    adornment={<Money />}
+                    size="small"
+                  />
+                </Grid>
+              </Grid>
+
+              {/* Show info when class is not selected */}
+              {(!feeClassName || feeClassName.length === 0) && (
+                <Alert severity="warning" sx={{ mt: 2 }}>
+                  Please select a class to see available fee types
+                </Alert>
+              )}
             </Box>
+          );
+        })}
 
-            <FeeAmountHandler
-              feeCategoryData={feeCategoryData}
-              feeIndex={index}
-            />
-
-            <Grid container spacing={3} alignItems="center">
-              {/* Class field - Now pre-populated and read-only */}
-              <Grid item xs={12} md={3}>
-                <CraftIntAutoCompleteWithIcon
-                  name={`fees.${index}.className`}
-                  label="Class"
-                  placeholder="Class from Academic Info"
-                  options={classOptions}
-                  fullWidth
-                  multiple
-                  icon={<Class color="primary" />}
-                  // disabled
-                />
-              </Grid>
-
-              <Grid item xs={12} md={3} sm={6}>
-                <CraftIntAutoCompleteWithIcon
-                  name={`fees.${index}.feeType`}
-                  label="Select Fee"
-                  placeholder="Select Fee Type"
-                  options={feeCategoryOptions}
-                  fullWidth
-                  multiple
-                  icon={<Money color="primary" />}
-                />
-              </Grid>
-
-              <Grid item xs={12} md={3}>
-                <CraftInputWithIcon
-                  name={`fees.${index}.feeAmount`}
-                  label="Fee Amount"
-                  fullWidth
-                  size="small"
-                  InputProps={{
-                    startAdornment: (
-                      <Money sx={{ color: "text.secondary", mr: 1 }} />
-                    ),
-                  }}
-                  // disabled
-                />
-              </Grid>
-              <Grid item xs={12} md={3}>
-                <CraftInputWithIcon
-                  name={`fees.${index}.paidAmount`}
-                  label="Paid Amount"
-                  fullWidth
-                  size="small"
-                  InputProps={{
-                    startAdornment: (
-                      <Money sx={{ color: "text.secondary", mr: 1 }} />
-                    ),
-                  }}
-                />
-              </Grid>
-            </Grid>
-          </Box>
-        ))}
-
-        {/* Helper Text */}
-        <Alert
-          severity="info"
-          sx={{
-            mt: 2,
-            borderRadius: 2,
-            backgroundColor: "info.50",
-            "& .MuiAlert-icon": {
-              alignItems: "center",
-            },
-          }}
-        >
-          <Typography variant="body2">
-            <strong>Tip:</strong> The class field is automatically populated
-            from the Academic Information section. Click{" "}
-            <Add sx={{ fontSize: 16, verticalAlign: "middle", mx: 0.5 }} />{" "}
-            button to add multiple fee entries for different fee types
-            (Admission, Monthly, Exam, etc.)
-          </Typography>
-        </Alert>
+        {fields.length === 0 && (
+          <Alert severity="info" sx={{ mt: 2 }}>
+            Click the + button to add fee entries
+          </Alert>
+        )}
       </CardContent>
     </Card>
   );
 };
 
-// Student Selector Component
+// Student Selector Component - FIXED: Properly format class name
 const StudentSelector = ({ studentData, classOptions }: any) => {
   const { setValue, watch } = useFormContext();
   const [selectedStudent, setSelectedStudent] = useState<any>(null);
@@ -362,113 +424,124 @@ const StudentSelector = ({ studentData, classOptions }: any) => {
       data: student,
     })) || [];
 
-  const formatClassData = (studentClass: any) => {
-    if (!studentClass) return [];
-
-    if (Array.isArray(studentClass)) {
-      return studentClass.map((c: any) => {
-        const matchedClass = classOptions?.find(
-          (option: any) =>
-            option.value === (c._id || c) || option.label === (c.className || c)
-        );
-        return (
-          matchedClass || {
-            value: c._id || c,
-            label: c.className || c,
-          }
-        );
-      });
-    } else {
-      const matchedClass = classOptions?.find(
-        (option: any) =>
-          option.value === (studentClass._id || studentClass) ||
-          option.label === (studentClass.className || studentClass)
-      );
-      return matchedClass
-        ? [matchedClass]
-        : [
-            {
-              value: studentClass._id || studentClass,
-              label: studentClass.className || studentClass,
-            },
-          ];
+  // Function to transform student className to form format
+  const transformStudentClassToForm = (studentClassName: any[]) => {
+    if (
+      !studentClassName ||
+      !Array.isArray(studentClassName) ||
+      studentClassName.length === 0
+    ) {
+      return [];
     }
+
+    return studentClassName.map((cls: any) => {
+      // Get the class name from the nested structure
+      const className = cls.className || cls;
+
+      // Try to find a matching class in the options
+      let matchedClass = classOptions?.find(
+        (option: any) => option.value === cls._id || option.label === className
+      );
+
+      // If not found, create a new option
+      if (!matchedClass) {
+        matchedClass = {
+          value: cls._id || className,
+          label: className,
+        };
+      }
+
+      return matchedClass;
+    });
   };
 
+  // Modified populateFormWithStudentData - Properly format class name
   const populateFormWithStudentData = (student: any) => {
     if (!student) return;
 
-    const formattedClassData = formatClassData(student.className);
+    // Transform the className from student data to form format
+    const formattedClassName = transformStudentClassToForm(student.className);
 
     const formValues: any = {
-      studentNameBangla: student.name || "",
+      studentNameBangla: student.nameBangla || "",
       studentPhoto: student.studentPhoto || "",
       fatherNameBangla: student.fatherName || "",
       motherNameBangla: student.motherName || "",
       studentName: student.name || "",
       mobileNo: student.mobile || "",
-      className: formattedClassData,
-      session: student.activeSession?.[0] || "",
-      category: student.studentType?.toLowerCase() || "",
+      className: formattedClassName, // Use the transformed class name
+      session:
+        student.activeSession?.[0] || new Date().getFullYear().toString(),
+      category: student.studentType?.toLowerCase() || "residential",
       dateOfBirth: student.birthDate ? new Date(student.birthDate) : null,
       nidBirth: student.birthRegistrationNo || "",
       bloodGroup: student.bloodGroup || "",
       nationality: "Bangladeshi",
       fatherName: student.fatherName || "",
-      fatherMobile: "",
+      fatherMobile: student.fatherMobile || "",
       fatherNid: student.nidFatherMotherGuardian || "",
-      fatherProfession: "",
+      fatherProfession: student.fatherProfession || "",
       fatherIncome: student.fatherIncome || 0,
       motherName: student.motherName || "",
-      motherMobile: "",
+      motherMobile: student.motherMobile || "",
       motherNid: student.nidFatherMotherGuardian || "",
-      motherProfession: "",
+      motherProfession: student.motherProfession || "",
       motherIncome: student.motherIncome || 0,
-      village: student.presentAddress || "",
-      postOffice: "",
-      postCode: "",
-      policeStation: student.presentThana || "",
-      district: student.presentDistrict || "",
-      permVillage: student.permanentAddress || "",
-      permPostOffice: "",
-      permPostCode: "",
-      permPoliceStation: student.permanentThana || "",
-      permDistrict: student.permanentDistrict || "",
-      guardianName: student.guardianName || "",
-      guardianRelation: student.relation || "",
-      guardianMobile: student.guardianMobile || "",
-      guardianVillage: student.permanentAddress || "",
+      village: student.presentAddress?.village || "",
+      postOffice: student.presentAddress?.postOffice || "",
+      postCode: student.presentAddress?.postCode || "",
+      policeStation: student.presentAddress?.policeStation || "",
+      district: student.presentAddress?.district || "",
+      permVillage: student.permanentAddress?.village || "",
+      permPostOffice: student.permanentAddress?.postOffice || "",
+      permPostCode: student.permanentAddress?.postCode || "",
+      permPoliceStation: student.permanentAddress?.policeStation || "",
+      permDistrict: student.permanentAddress?.district || "",
+      guardianName: student.guardianInfo?.name || "",
+      guardianRelation: student.guardianInfo?.relation || "",
+      guardianMobile: student.guardianInfo?.mobile || "",
+      guardianVillage: student.guardianInfo?.address || "",
       formerInstitution: "",
       formerVillage: "",
-      birthCertificate: false,
-      transferCertificate: false,
-      characterCertificate: false,
-      markSheet: false,
-      photographs: false,
-      termsAccepted: false,
-      studentDepartment: student.studentDepartment || "",
+      birthCertificate: student.documents?.birthCertificate ? "Yes" : "No",
+      transferCertificate: student.documents?.transferCertificate
+        ? "Yes"
+        : "No",
+      characterCertificate: student.documents?.characterCertificate
+        ? "Yes"
+        : "No",
+      markSheet: student.documents?.markSheet ? "Yes" : "No",
+      photographs: student.documents?.photographs ? "Yes" : "No",
+      termsAccepted: "No",
+      studentDepartment: student.studentDepartment || "hifz",
       rollNumber: student.studentClassRoll || "",
       section: student.section?.[0] || "",
-      group: "",
+      group: student.batch || "",
       optionalSubject: "",
       shift: "",
+      // Fees will be populated based on selected class
       fees: [
         {
           feeType: [],
-          className: formattedClassData,
+          className: formattedClassName, // Use the transformed class name
           feeAmount: "",
           paidAmount: "",
+          monthlyAmount: "",
+          yearlyAmount: "",
+          dueAmount: "",
+          paymentStatus: "unpaid",
         },
       ],
       admissionFee: student.admissionFee || 0,
       monthlyFee: student.monthlyFee || 0,
     };
 
+    // Set each form value individually to ensure proper update
     Object.keys(formValues).forEach((key) => {
       setValue(key, formValues[key]);
     });
 
-    toast.success(`Form populated with data for ${student.name}`);
+    toast.success(`Form populated with student data for ${student.name}.`);
   };
 
   const handleStudentIdSelection = (value: any) => {
@@ -525,7 +598,12 @@ const StudentSelector = ({ studentData, classOptions }: any) => {
   return (
     <Card elevation={2} sx={{ mb: 3, borderRadius: 2 }}>
       <CardContent sx={{ p: 3 }}>
-        <Typography variant="h6" gutterBottom>
+        <Typography
+          variant="h6"
+          gutterBottom
+          sx={{ display: "flex", alignItems: "center" }}
+        >
+          <Person sx={{ mr: 1 }} />
           Select Student to Auto-fill Form
         </Typography>
         <Grid container spacing={3}>
@@ -563,27 +641,17 @@ const StudentSelector = ({ studentData, classOptions }: any) => {
             sx={{
               mt: 2,
               p: 2,
-              bgcolor: "success.light",
+              bgcolor: "info.light",
               color: "white",
               borderRadius: 1,
             }}
           >
             <Typography variant="body2">
-              Selected: {selectedStudent.name} (ID: {selectedStudent.studentId})
+              <strong>Selected:</strong> {selectedStudent.name} (ID:{" "}
+              {selectedStudent.studentId})
             </Typography>
             <Typography variant="body2">
-              Class:{" "}
-              {selectedStudent.className
-                ? Array.isArray(selectedStudent.className)
-                  ? selectedStudent.className
-                      .map((c: any) => c.className || c)
-                      .join(", ")
-                  : selectedStudent.className.className ||
-                    selectedStudent.className
-                : "Not assigned"}
-            </Typography>
-            <Typography variant="body2">
-              Form has been auto-filled with student information.
+              <strong>Note:</strong> Student information loaded.
             </Typography>
           </Box>
         )}
@@ -604,74 +672,93 @@ const transformEnrollmentDataToForm = (
 
   const data = enrollmentData.data;
 
-  console.log("Raw enrollment data:", data);
-  console.log("Class options:", classOptions);
-  console.log("Fee category options:", feeCategoryOptions);
-
   // Helper function to format class data
   const formatClassForForm = (className: any) => {
-    if (!className) return [];
-
-    console.log("Formatting class:", className);
+    if (!className || className.length === 0) return [];
 
     if (Array.isArray(className)) {
       return className.map((cls: any) => {
-        const matchedClass = classOptions?.find(
-          (option: any) =>
-            option.value === (cls._id || cls) ||
-            option.label === (cls.className || cls)
+        // Try to find a matching class in the options
+        const classId = cls._id || cls;
+        const className = cls.className || cls;
+
+        // First try to match by ID
+        let matchedClass = classOptions?.find(
+          (option: any) => option.value === classId
         );
-        console.log("Matched class for array:", matchedClass);
-        return (
-          matchedClass || {
-            value: cls._id || cls,
-            label: cls.className || cls,
-          }
-        );
+
+        // If not found by ID, try to match by name
+        if (!matchedClass) {
+          matchedClass = classOptions?.find(
+            (option: any) => option.label === className
+          );
+        }
+
+        // If still not found, create a new option
+        if (!matchedClass) {
+          matchedClass = {
+            value: classId,
+            label: className,
+          };
+        }
+
+        return matchedClass;
       });
     } else {
-      const matchedClass = classOptions?.find(
-        (option: any) =>
-          option.value === (className._id || className) ||
-          option.label === (className.className || className)
+      // Handle single class object or string
+      const classId = className._id || className;
+      const className = className.className || className;
+
+      // First try to match by ID
+      let matchedClass = classOptions?.find(
+        (option: any) => option.value === classId
       );
-      console.log("Matched class for single:", matchedClass);
-      return matchedClass
-        ? [matchedClass]
-        : [
-            {
-              value: className._id || className,
-              label: className.className || className,
-            },
-          ];
+
+      // If not found by ID, try to match by name
+      if (!matchedClass) {
+        matchedClass = classOptions?.find(
+          (option: any) => option.label === className
+        );
+      }
+
+      // If still not found, create a new option
+      if (!matchedClass) {
+        matchedClass = {
+          value: classId,
+          label: className,
+        };
+      }
+
+      return [matchedClass];
     }
   };
 
-  // Helper function to format fee data - FIXED VERSION
+  // Helper function to format fee data
   const formatFeeForForm = (fees: any[], className: any) => {
     if (!fees || !Array.isArray(fees) || fees.length === 0) {
-      console.log("No fees found, returning default fee structure");
       return [
         {
           feeType: [],
           className: formatClassForForm(className),
           feeAmount: "",
           paidAmount: "",
+          monthlyAmount: "",
+          yearlyAmount: "",
+          dueAmount: "",
+          paymentStatus: "unpaid",
         },
       ];
     }
 
-    console.log("Formatting fees:", fees);
-
     return fees.map((fee: any) => {
-      // Find matching fee type from feeCategoryOptions
       const matchedFeeType = feeCategoryOptions?.find(
         (option: any) =>
           option.value === fee.feeType || option.label === fee.feeType
       );
 
-      console.log("Fee feeType:", fee.feeType);
-      console.log("Matched fee type:", matchedFeeType);
+      const feeAmount = fee.amount || fee.feeAmount || 0;
+      const paidAmount = fee.paidAmount || 0;
+      const dueAmount = feeAmount - paidAmount;
 
       return {
         feeType: matchedFeeType
@@ -683,8 +770,13 @@ const transformEnrollmentDataToForm = (
               },
             ],
         className: formatClassForForm(className),
-        feeAmount: fee.amount?.toString() || fee.feeAmount?.toString() || "",
-        paidAmount: fee.paidAmount?.toString() || "",
+        feeAmount: feeAmount.toString(),
+        paidAmount: paidAmount.toString(),
+        monthlyAmount: ((feeAmount || 0) / 12).toFixed(2),
+        yearlyAmount: feeAmount.toString(),
+        dueAmount: dueAmount.toString(),
+        paymentStatus:
+          dueAmount <= 0 ? "paid" : paidAmount > 0 ? "partial" : "unpaid",
       };
     });
   };
@@ -706,7 +798,7 @@ const transformEnrollmentDataToForm = (
 
   const transformedData = {
     // Student Information (Bangla)
-    studentNameBangla: data.nameBangla || data.student?.name || "",
+    studentNameBangla: data.nameBangla || data.student?.nameBangla || "",
     studentPhoto: data.studentPhoto || data.student?.studentPhoto || "",
     fatherNameBangla: data.fatherNameBangla || data.student?.fatherName || "",
     motherNameBangla: data.motherNameBangla || data.student?.motherName || "",
@@ -714,62 +806,59 @@ const transformEnrollmentDataToForm = (
     // Personal Information
     studentName: data.name || data.student?.name || "",
     mobileNo: data.mobileNo || data.student?.mobile || "",
-    session: data.session || "",
+    session: data.session || new Date().getFullYear().toString(),
     category:
-      data.studentType || data.student?.studentType?.toLowerCase() || "",
+      data.studentType ||
+      data.student?.studentType?.toLowerCase() ||
+      "residential",
     dateOfBirth: formatDate(data.birthDate || data.student?.birthDate),
-    nidBirth: data.nidBirth || data.student?.nidFatherMotherGuardian || "",
+    nidBirth: data.nidBirth || data.student?.birthRegistrationNo || "",
     bloodGroup: data.bloodGroup || data.student?.bloodGroup || "",
     nationality: data.nationality || "Bangladeshi",
+
+    // Academic Information - Class name preserved from enrollment data
+    className: formatClassForForm(data.className),
+    studentDepartment: data.studentDepartment || "hifz",
+    rollNumber: data.roll || data.student?.studentClassRoll || "",
+    section: data.section || data.student?.section?.[0] || "",
+    group: data.group || data.student?.batch || "",
+    optionalSubject: data.optionalSubject || "",
+    shift: data.shift || "",
+    admissionType: data.admissionType || "",
 
     // Parent Information
     fatherName: data.fatherName || data.student?.fatherName || "",
     fatherMobile: data.fatherMobile || "",
-    fatherNid: data.fatherNid || data.student?.nidFatherMotherGuardian || "",
+    fatherNid: data.fatherNid || "",
     fatherProfession: data.fatherProfession || "",
     fatherIncome: data.fatherIncome || data.student?.fatherIncome || 0,
     motherName: data.motherName || data.student?.motherName || "",
     motherMobile: data.motherMobile || "",
-    motherNid: data.motherNid || data.student?.nidFatherMotherGuardian || "",
+    motherNid: data.motherNid || "",
     motherProfession: data.motherProfession || "",
     motherIncome: data.motherIncome || data.student?.motherIncome || 0,
-
-    // Academic Information
-    className: formatClassForForm(data.className),
-    studentDepartment: data.studentDepartment || "",
-    rollNumber: data.roll || data.student?.studentClassRoll || "",
-    section: data.section || data.student?.section?.[0] || "",
-    group: data.group || "",
-    optionalSubject: data.optionalSubject || "",
-    shift: data.shift || "",
-    admissionType: data.admissionType || "",
 
     // Address Information
     village: data.presentAddress?.village || "",
     postOffice: data.presentAddress?.postOffice || "",
     postCode: data.presentAddress?.postCode || "",
-    policeStation:
-      data.presentAddress?.policeStation || data.student?.presentThana || "",
-    district:
-      data.presentAddress?.district || data.student?.presentDistrict || "",
+    policeStation: data.presentAddress?.policeStation || "",
+    district: data.presentAddress?.district || "",
     permVillage: data.permanentAddress?.village || "",
     permPostOffice: data.permanentAddress?.postOffice || "",
     permPostCode: data.permanentAddress?.postCode || "",
-    permPoliceStation:
-      data.permanentAddress?.policeStation ||
-      data.student?.permanentThana ||
-      "",
-    permDistrict:
-      data.permanentAddress?.district || data.student?.permanentDistrict || "",
+    permPoliceStation: data.permanentAddress?.policeStation || "",
+    permDistrict: data.permanentAddress?.district || "",
 
     // Guardian Information
-    guardianName: data.guardianInfo?.name || data.student?.guardianName || "",
+    guardianName:
+      data.guardianInfo?.name || data.student?.guardianInfo?.name || "",
     guardianRelation:
-      data.guardianInfo?.relation || data.student?.relation || "",
+      data.guardianInfo?.relation || data.student?.guardianInfo?.relation || "",
     guardianMobile:
-      data.guardianInfo?.mobile || data.student?.guardianMobile || "",
+      data.guardianInfo?.mobile || data.student?.guardianInfo?.mobile || "",
     guardianVillage:
-      data.guardianInfo?.address || data.student?.permanentAddress || "",
+      data.guardianInfo?.address || data.student?.guardianInfo?.address || "",
 
     // Previous Education
     formerInstitution: data.previousSchool?.institution || "",
@@ -791,7 +880,7 @@ const transformEnrollmentDataToForm = (
     // Terms & Conditions
     termsAccepted: formatBooleanForSelect(data.termsAccepted || false),
 
-    // Fees - FIXED: Pass className to formatFeeForForm
+    // Fees
     fees: formatFeeForForm(data.fees, data.className),
     admissionFee: data.admissionFee || data.student?.admissionFee || 0,
     monthlyFee: data.monthlyFee || data.student?.monthlyFee || 0,
@@ -801,7 +890,6 @@ const transformEnrollmentDataToForm = (
     studentNameSelect: null,
   };
 
-  console.log("Transformed form data:", transformedData);
   return transformedData;
 };
 
@@ -815,6 +903,7 @@ const EnrollmentForm = () => {
 
   const { classOptions, feeCategoryOptions, feeCategoryData } =
     useAcademicOption();
+  console.log("fee category data", feeCategoryData);
   const [createEnrollment] = useCreateEnrollmentMutation();
   const [updateEnrollment] = useUpdateEnrollmentMutation();
   const { data: singleEnrollment, isLoading: enrollmentLoading } =
@@ -841,7 +930,6 @@ const EnrollmentForm = () => {
       classOptions.length > 0 &&
       feeCategoryOptions.length > 0
     ) {
-      console.log("Transforming enrollment data...");
       const transformedData = transformEnrollmentDataToForm(
         singleEnrollment,
         classOptions,
@@ -851,11 +939,9 @@ const EnrollmentForm = () => {
       if (transformedData) {
         setDefaultValues(transformedData);
         setFormKey((prev) => prev + 1);
-        console.log("Default values set:", transformedData);
       }
     } else if (!id) {
       // Set empty default values for new enrollment
-      console.log("Setting empty default values for new enrollment");
       setDefaultValues({
         studentNameBangla: "",
         studentPhoto: "",
@@ -915,6 +1001,10 @@ const EnrollmentForm = () => {
             className: [],
             feeAmount: "",
             paidAmount: "",
+            monthlyAmount: "",
+            yearlyAmount: "",
+            dueAmount: "",
+            paymentStatus: "unpaid",
           },
         ],
         admissionFee: 0,
@@ -922,26 +1012,23 @@ const EnrollmentForm = () => {
         studentIdSelect: null,
         studentNameSelect: null,
       });
+      setFormKey((prev) => prev + 1);
     }
   }, [id, singleEnrollment, classOptions, feeCategoryOptions]);
 
-  // In your handleSubmit function, fix the data transformation:
+  // Handle Submit Function
   const handleSubmit = async (data: any) => {
     try {
       setSubmitting(true);
 
       const { studentIdSelect, studentNameSelect, ...submitData } = data;
-      console.log("Form submission data:", submitData);
 
-      // Fix: Ensure className is properly formatted as an array of ObjectIds
+      // Class name processing
       const classNameArray =
         submitData.className && submitData.className.length > 0
           ? submitData.className
-              .map((cls: any) => {
-                // Ensure we're getting the ObjectId value, not the label
-                return cls.value || cls;
-              })
-              .filter(Boolean) // Remove any null/undefined values
+              .map((cls: any) => cls.value || cls)
+              .filter(Boolean)
           : [];
 
       if (!classNameArray.length) {
@@ -950,7 +1037,7 @@ const EnrollmentForm = () => {
         return;
       }
 
-      // Fix: Transform fees array properly
+      // Fees processing
       const transformedFees = Array.isArray(submitData.fees)
         ? submitData.fees
             .filter(
@@ -960,22 +1047,30 @@ const EnrollmentForm = () => {
                 fee.className &&
                 fee.className.length > 0
             )
-            .map((fee: any) => ({
-              feeType: fee.feeType[0]?.value || fee.feeType[0] || "",
-              className: fee.className[0]?.value || fee.className[0] || "",
-              feeAmount: Number(fee.feeAmount) || 0,
-              paidAmount: Number(fee.paidAmount) || 0,
-            }))
+            .map((fee: any) => {
+              const feeType = fee.feeType[0]?.label || fee.feeType[0] || "";
+              const className =
+                fee.className[0]?.label || fee.className[0] || "";
+              const feeAmount = Number(fee.feeAmount) || 0;
+              const paidAmount = Number(fee.paidAmount) || 0;
+
+              return {
+                feeType: feeType,
+                className: className,
+                feeAmount: feeAmount,
+                paidAmount: paidAmount,
+              };
+            })
         : [];
 
-      // Fix: Transform boolean fields properly
+      // Boolean transformation
       const transformBoolean = (value: any) => {
         if (value === "Yes") return true;
         if (value === "No") return false;
         return Boolean(value);
       };
 
-      // Fix: Create the final submission data with proper structure
+      // Final submission data
       const finalSubmitData: any = {
         // Student Information
         studentName: submitData.studentName || "",
@@ -995,9 +1090,9 @@ const EnrollmentForm = () => {
         className: classNameArray,
         section: submitData.section || "",
         roll: submitData.rollNumber || "",
-        session: submitData.session || "",
+        session: submitData.session || new Date().getFullYear().toString(),
         batch: submitData.group || "",
-        studentType: submitData.category || "",
+        studentType: submitData.category || "residential",
         studentDepartment: submitData.studentDepartment || "hifz",
 
         // Parent Information
@@ -1015,7 +1110,7 @@ const EnrollmentForm = () => {
         motherProfession: submitData.motherProfession || "",
         motherIncome: Number(submitData.motherIncome) || 0,
 
-        // Fix: Address objects with proper structure
+        // Address Information
         presentAddress: {
           village: submitData.village || "",
           postOffice: submitData.postOffice || "",
@@ -1063,7 +1158,7 @@ const EnrollmentForm = () => {
         // Terms & Conditions
         termsAccepted: transformBoolean(submitData.termsAccepted),
 
-        // Additional fee information
+        // Additional Information
         admissionFee: Number(submitData.admissionFee) || 0,
         monthlyFee: Number(submitData.monthlyFee) || 0,
       };
@@ -1072,17 +1167,17 @@ const EnrollmentForm = () => {
       Object.keys(finalSubmitData).forEach((key) => {
         if (finalSubmitData[key] && typeof finalSubmitData[key] === "object") {
           const obj = finalSubmitData[key];
-          const isEmpty = Object.keys(obj).every((subKey) => !obj[subKey]);
+          const isEmpty = Object.keys(obj).every(
+            (subKey) =>
+              obj[subKey] === undefined ||
+              obj[subKey] === null ||
+              obj[subKey] === ""
+          );
           if (isEmpty) {
             delete finalSubmitData[key];
           }
         }
       });
-
-      console.log(
-        "Final submission data:",
-        JSON.stringify(finalSubmitData, null, 2)
-      );
 
       let res;
       if (id) {
@@ -1091,8 +1186,8 @@ const EnrollmentForm = () => {
         res = await createEnrollment(finalSubmitData).unwrap();
       }
 
-      if (res.success) {
-        toast.success(res.message || "Student enrolled successfully");
+      if (res?.success) {
+        toast?.success(res?.message || "Student enrolled successfully");
         setTimeout(() => {
           router.push("/dashboard/enrollments/list");
         }, 2000);
@@ -1100,28 +1195,33 @@ const EnrollmentForm = () => {
     } catch (err: any) {
       console.error("Submission error:", err);
 
+      let errorMessage = "Failed to enroll student!";
+
+      if (err?.data?.message) {
+        errorMessage = err.data.message;
+      } else if (err?.message) {
+        errorMessage = err.message;
+      }
+
       if (
-        err?.data?.message?.includes("jwt") ||
-        err?.message?.includes("jwt")
+        errorMessage.includes("jwt") ||
+        errorMessage.includes("auth") ||
+        errorMessage.includes("token")
       ) {
         toast.error("Authentication failed. Please login again.");
         router.push("/login");
+      } else if (errorMessage.includes("duplicate")) {
+        toast.error("Student already exists with same mobile number or name");
       } else {
-        const errorMessage =
-          err.data?.message || err.message || "Failed to enroll student!";
         toast.error(errorMessage);
       }
     } finally {
       setSubmitting(false);
     }
   };
-  // Show loading state while data is being fetched
-  if (
-    (id && enrollmentLoading) ||
-    !defaultValues ||
-    classOptions.length === 0 ||
-    feeCategoryOptions.length === 0
-  ) {
+
+  // Show loading state
+  if ((id && enrollmentLoading) || !defaultValues) {
     return <LoadingState />;
   }
 
@@ -1133,14 +1233,8 @@ const EnrollmentForm = () => {
         defaultValues={defaultValues}
       >
         <Container maxWidth="xl" sx={{ py: 3 }}>
-          <Paper
-            elevation={3}
-            sx={{
-              p: 3,
-              mb: 3,
-              borderRadius: 2,
-            }}
-          >
+          {/* Header Section */}
+          <Paper elevation={3} sx={{ p: 3, mb: 3, borderRadius: 2 }}>
             <Box
               display="flex"
               justifyContent="space-between"
@@ -1170,7 +1264,7 @@ const EnrollmentForm = () => {
             </Typography>
           </Paper>
 
-          {/* Pass classOptions to StudentSelector */}
+          {/* Student Selector */}
           <StudentSelector
             studentData={studentData}
             classOptions={classOptions}
@@ -1200,7 +1294,6 @@ const EnrollmentForm = () => {
                     }}
                   />
                 </Grid>
-
                 <Grid item xs={12} md={4}>
                   <CraftInputWithIcon
                     fullWidth
@@ -1454,9 +1547,9 @@ const EnrollmentForm = () => {
 
           {/* Dynamic Fee Fields */}
           <DynamicFeeFields
-            feeCategoryData={feeCategoryData}
             classOptions={classOptions}
             feeCategoryOptions={feeCategoryOptions}
+            feeCategoryData={feeCategoryData}
           />
 
           {/* Parent Information */}
@@ -1527,6 +1620,7 @@ const EnrollmentForm = () => {
                     label="Monthly Income"
                     name="fatherIncome"
                     placeholder="BDT"
+                    type="number"
                     InputProps={{
                       startAdornment: (
                         <Work sx={{ color: "text.secondary", mr: 1 }} />
@@ -1598,6 +1692,7 @@ const EnrollmentForm = () => {
                     label="Monthly Income"
                     name="motherIncome"
                     placeholder="BDT"
+                    type="number"
                     InputProps={{
                       startAdornment: (
                         <Work sx={{ color: "text.secondary", mr: 1 }} />
@@ -1935,6 +2030,7 @@ const EnrollmentForm = () => {
             </CardContent>
           </Card>
 
+          {/* Submit Button */}
           <Box sx={{ display: "flex", justifyContent: "center", mt: 3, mb: 3 }}>
             <Button
               type="submit"
@@ -1949,6 +2045,10 @@ const EnrollmentForm = () => {
                 fontWeight: "bold",
                 fontSize: "1.1rem",
                 minWidth: "250px",
+                boxShadow: 3,
+                "&:hover": {
+                  boxShadow: 6,
+                },
               }}
             >
               {submitting
