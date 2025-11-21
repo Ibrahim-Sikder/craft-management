@@ -1,38 +1,34 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
-  Box,
-  Button,
-  Paper,
-  Typography,
-  useTheme,
-  TextField,
-  FormControl,
-  FormLabel,
-  RadioGroup,
-  FormControlLabel,
-  Radio,
-  Grid,
-  TableContainer,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
-  InputAdornment,
-  FormGroup,
-  Checkbox,
-  Divider,
-  Modal,
-} from "@mui/material";
-import { useState } from "react";
-import {
-  AttachMoney,
-  CreditCard,
   AccountBalance,
-  Smartphone,
+  AttachMoney,
   CheckCircle,
   Close,
+  CreditCard,
+  Smartphone,
 } from "@mui/icons-material";
+import {
+  Box,
+  Button,
+  FormControl,
+  Grid,
+  InputAdornment,
+  InputLabel,
+  MenuItem,
+  Modal,
+  Paper,
+  Select,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  TextField,
+  Typography,
+  useTheme,
+} from "@mui/material";
+import { useEffect, useState } from "react";
 
 interface PaymentModalProps {
   open: boolean;
@@ -54,41 +50,68 @@ const PaymentModal = ({
     new Date().toISOString().split("T")[0]
   );
   const [transactionId, setTransactionId] = useState("");
-  const [selectedMonths, setSelectedMonths] = useState<string[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-  const months = [
-    "January",
-    "February",
-    "March",
-    "April",
-    "May",
-    "June",
-    "July",
-    "August",
-    "September",
-    "October",
-    "November",
-    "December",
-  ];
+  useEffect(() => {
+    if (fee) {
+      setAmount(fee.dueAmount || 0);
+      setTransactionId("");
+    }
+  }, [fee]);
 
-  const handleMonthChange = (month: string) => {
-    setSelectedMonths((prev) =>
-      prev.includes(month) ? prev.filter((m) => m !== month) : [...prev, month]
-    );
-  };
+  const handlePaymentSubmit = async () => {
+    if (amount <= 0 || amount > fee?.dueAmount) {
+      return;
+    }
 
-  const handlePaymentSubmit = () => {
-    const paymentData = {
-      feeId: fee._id,
-      amount: amount,
-      paymentMethod,
-      paymentDate,
-      transactionId: transactionId || `TXN-${Date.now()}`,
-      selectedMonths,
-      status: "completed",
-    };
-    onPaymentSuccess(paymentData);
-    onClose();
+    setIsLoading(true);
+
+    try {
+      const paymentMethodMap: { [key: string]: string } = {
+        cash: "cash",
+        card: "card",
+        bank: "bank",
+        mobile: "bkash",
+      };
+
+      const backendPaymentMethod = paymentMethodMap[paymentMethod] || "cash";
+
+      const paymentData = {
+        feeId: fee._id,
+        amountPaid: amount,
+        paymentMethod: backendPaymentMethod,
+        paymentDate: new Date(paymentDate),
+        transactionId: transactionId || `TXN-${Date.now()}`,
+        receiptNo: `RCP-${Date.now()}`,
+      };
+
+      // Call API
+      const response = await fetch("http://localhost:5000/api/v1/fees/pay", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(paymentData),
+      });
+
+      if (!response.ok) {
+        throw new Error("Payment failed");
+      }
+
+      const result = await response.json();
+
+      if (result.success) {
+        onPaymentSuccess(result.data);
+        onClose();
+      } else {
+        throw new Error(result.message || "Payment failed");
+      }
+    } catch (error) {
+      console.error("Payment error:", error);
+      // You could show an error message here
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const paymentMethods = [
@@ -112,7 +135,7 @@ const PaymentModal = ({
     },
     {
       value: "mobile",
-      label: "Mobile Banking",
+      label: "Mobile Banking (bKash/Nagad)",
       icon: <Smartphone />,
       color: "secondary",
     },
@@ -127,7 +150,7 @@ const PaymentModal = ({
       <Paper
         sx={{
           width: "90%",
-          maxWidth: 800,
+          maxWidth: 500,
           borderRadius: 2,
           boxShadow: theme.shadows[10],
           overflow: "hidden",
@@ -154,7 +177,7 @@ const PaymentModal = ({
         <Box sx={{ p: 3 }}>
           <Grid container spacing={3}>
             {/* Left Column - Payment Details */}
-            <Grid item xs={12} md={6}>
+            <Grid item xs={12} md={12}>
               <Typography
                 variant="h6"
                 fontWeight="bold"
@@ -207,6 +230,18 @@ const PaymentModal = ({
                   </TableHead>
                   <TableBody>
                     <TableRow>
+                      <TableCell>Fee Type</TableCell>
+                      <TableCell align="right">{fee?.feeType}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>Month</TableCell>
+                      <TableCell align="right">{fee?.month}</TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>Class</TableCell>
+                      <TableCell align="right">{fee?.class}</TableCell>
+                    </TableRow>
+                    <TableRow>
                       <TableCell>Total Fee Amount</TableCell>
                       <TableCell align="right">
                         {fee?.amount?.toLocaleString()}
@@ -242,7 +277,7 @@ const PaymentModal = ({
                           InputProps={{
                             startAdornment: (
                               <InputAdornment position="start">
-                                $
+                                ${" "}
                               </InputAdornment>
                             ),
                           }}
@@ -254,196 +289,40 @@ const PaymentModal = ({
                 </Table>
               </TableContainer>
 
-              {/* Payment Method Selection */}
-              <FormControl component="fieldset" fullWidth sx={{ mb: 3 }}>
-                <FormLabel
-                  component="legend"
-                  sx={{ mb: 2, fontWeight: "bold", color: "text.primary" }}
-                >
+              {/* Payment Method Selection - Changed to Select Dropdown */}
+              <FormControl fullWidth sx={{ mb: 3 }}>
+                <InputLabel id="payment-method-label">
                   Select Payment Method
-                </FormLabel>
-                <RadioGroup
+                </InputLabel>
+                <Select
+                  size="small"
+                  labelId="payment-method-label"
                   value={paymentMethod}
                   onChange={(e) => setPaymentMethod(e.target.value)}
+                  label="Select Payment Method"
                 >
-                  <Grid container spacing={1}>
-                    {paymentMethods.map((method) => (
-                      <Grid item xs={6} key={method.value}>
-                        <Paper
-                          sx={{
-                            p: 1.5,
-                            border: `2px solid ${
-                              paymentMethod === method.value
-                                ? theme.palette.primary.main
-                                : theme.palette.grey[300]
-                            }`,
-                            borderRadius: 1,
-                            cursor: "pointer",
-                            transition: "all 0.2s",
-                            "&:hover": {
-                              borderColor: theme.palette.primary.main,
-                            },
-                          }}
-                          onClick={() => setPaymentMethod(method.value)}
-                        >
-                          <FormControlLabel
-                            value={method.value}
-                            control={<Radio size="small" />}
-                            label={
-                              <Box
-                                sx={{
-                                  display: "flex",
-                                  alignItems: "center",
-                                  gap: 1,
-                                }}
-                              >
-                                <Box
-                                  sx={{
-                                    color: theme.palette.primary.main,
-                                    display: "flex",
-                                    alignItems: "center",
-                                  }}
-                                >
-                                  {method.icon}
-                                </Box>
-                                <Typography variant="body2" fontWeight="500">
-                                  {method.label}
-                                </Typography>
-                              </Box>
-                            }
-                            sx={{ width: "100%", m: 0 }}
-                          />
-                        </Paper>
-                      </Grid>
-                    ))}
-                  </Grid>
-                </RadioGroup>
+                  {paymentMethods.map((method) => (
+                    <MenuItem key={method.value} value={method.value}>
+                      <Typography variant="body2" fontWeight="500">
+                        {method.label}
+                      </Typography>
+                    </MenuItem>
+                  ))}
+                </Select>
               </FormControl>
 
-              {/* Transaction ID for non-cash payments */}
-              {paymentMethod !== "cash" && (
+              {/* Transaction ID for mobile banking */}
+              {paymentMethod === "mobile" && (
                 <TextField
                   fullWidth
                   size="small"
-                  label="Transaction Reference"
+                  label="Transaction ID (Mobile Banking)"
                   value={transactionId}
                   onChange={(e) => setTransactionId(e.target.value)}
-                  placeholder="Enter transaction ID or reference number"
                   sx={{ mb: 3 }}
+                  placeholder="Enter transaction ID from mobile banking"
                 />
               )}
-            </Grid>
-
-            {/* Right Column - Month Selection */}
-            <Grid item xs={12} md={6}>
-              <Typography
-                variant="h6"
-                fontWeight="bold"
-                gutterBottom
-                sx={{ color: theme.palette.primary.main }}
-              >
-                Select Months
-              </Typography>
-
-              <Paper variant="outlined" sx={{ p: 2, mb: 3 }}>
-                <FormControl component="fieldset" fullWidth>
-                  <FormLabel
-                    component="legend"
-                    sx={{ mb: 2, fontWeight: "bold", color: "text.primary" }}
-                  >
-                    Academic Months ({selectedMonths.length} selected)
-                  </FormLabel>
-                  <FormGroup>
-                    <Grid container spacing={1}>
-                      {months.map((month) => (
-                        <Grid item xs={6} key={month}>
-                          <FormControlLabel
-                            control={
-                              <Checkbox
-                                size="small"
-                                checked={selectedMonths.includes(month)}
-                                onChange={() => handleMonthChange(month)}
-                                color="primary"
-                              />
-                            }
-                            label={
-                              <Typography variant="body2">{month}</Typography>
-                            }
-                          />
-                        </Grid>
-                      ))}
-                    </Grid>
-                  </FormGroup>
-                </FormControl>
-              </Paper>
-
-              {/* Selected Months Summary */}
-              {selectedMonths.length > 0 && (
-                <Paper
-                  variant="outlined"
-                  sx={{
-                    p: 2,
-                    mb: 3,
-                    backgroundColor: theme.palette.success.light,
-                    borderColor: theme.palette.success.main,
-                  }}
-                >
-                  <Typography
-                    variant="subtitle2"
-                    fontWeight="bold"
-                    gutterBottom
-                    sx={{ color: theme.palette.success.dark }}
-                  >
-                    Selected Months:
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    sx={{ color: theme.palette.success.dark }}
-                  >
-                    {selectedMonths.join(", ")}
-                  </Typography>
-                </Paper>
-              )}
-
-              {/* Payment Summary */}
-              <Paper variant="outlined" sx={{ p: 2 }}>
-                <Typography variant="subtitle2" fontWeight="bold" gutterBottom>
-                  Payment Summary
-                </Typography>
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    mb: 1,
-                  }}
-                >
-                  <Typography variant="body2">Months Selected:</Typography>
-                  <Typography variant="body2" fontWeight="bold">
-                    {selectedMonths.length}
-                  </Typography>
-                </Box>
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    mb: 1,
-                  }}
-                >
-                  <Typography variant="body2">Amount per Month:</Typography>
-                  <Typography variant="body2" fontWeight="bold">
-                    ${(amount / (selectedMonths.length || 1)).toFixed(2)}
-                  </Typography>
-                </Box>
-                <Divider sx={{ my: 1 }} />
-                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                  <Typography variant="body1" fontWeight="bold">
-                    Total Amount:
-                  </Typography>
-                  <Typography variant="body1" fontWeight="bold" color="primary">
-                    ${amount.toLocaleString()}
-                  </Typography>
-                </Box>
-              </Paper>
             </Grid>
           </Grid>
 
@@ -456,6 +335,7 @@ const PaymentModal = ({
               onClick={onClose}
               startIcon={<Close />}
               size="large"
+              disabled={isLoading}
             >
               Cancel
             </Button>
@@ -463,11 +343,7 @@ const PaymentModal = ({
               variant="contained"
               onClick={handlePaymentSubmit}
               startIcon={<CheckCircle />}
-              disabled={
-                amount <= 0 ||
-                amount > fee?.dueAmount ||
-                selectedMonths.length === 0
-              }
+              disabled={isLoading || amount <= 0 || amount > fee?.dueAmount}
               size="large"
               sx={{
                 background: `linear-gradient(135deg, #1976d2 0%, #115293 100%)`,
@@ -477,30 +353,8 @@ const PaymentModal = ({
                 minWidth: 180,
               }}
             >
-              Confirm Payment
+              {isLoading ? "Processing..." : "Confirm Payment"}
             </Button>
-          </Box>
-
-          {/* Contact Information */}
-          <Box
-            sx={{
-              mt: 3,
-              pt: 2,
-              borderTop: `1px dashed ${theme.palette.divider}`,
-              textAlign: "center",
-            }}
-          >
-            <Typography variant="body2" color="text.secondary" gutterBottom>
-              For assistance, contact:
-            </Typography>
-            <Box sx={{ display: "flex", justifyContent: "center", gap: 3 }}>
-              <Typography variant="body2" fontWeight="500">
-                +8801830678383
-              </Typography>
-              <Typography variant="body2" fontWeight="500">
-                +8801300726000
-              </Typography>
-            </Box>
           </Box>
         </Box>
       </Paper>

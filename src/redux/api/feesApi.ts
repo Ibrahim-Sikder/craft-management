@@ -19,6 +19,14 @@ export const feesApi = baseApi.injectEndpoints({
       }),
       providesTags: ["fees"],
     }),
+    getDueFees: build.query({
+      query: ({ limit, page, searchTerm }) => ({
+        url: "/fees/due",
+        method: "GET",
+        params: { page, limit, searchTerm },
+      }),
+      providesTags: ["fees"],
+    }),
 
     getSingleFee: build.query({
       query: ({ id }) => ({
@@ -53,4 +61,5 @@ export const {
   useGetSingleFeeQuery,
   useUpdateFeeMutation,
   useDeleteFeeMutation,
+  useGetDueFeesQuery
 } = feesApi;

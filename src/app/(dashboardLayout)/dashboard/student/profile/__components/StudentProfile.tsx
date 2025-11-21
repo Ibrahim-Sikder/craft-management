@@ -83,7 +83,7 @@ const StudentProfile = ({ params }: PageProps) => {
   const theme = useTheme();
   const [tabValue, setTabValue] = useState(0);
   const { data: singleStudent } = useGetSingleStudentQuery({ id });
-
+  console.log("sutdent ", singleStudent);
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
@@ -121,11 +121,7 @@ const StudentProfile = ({ params }: PageProps) => {
                   {singleStudent?.data?.name}
                 </Typography>
                 <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, mb: 2 }}>
-                  <Chip
-                    icon={<School fontSize="small" />}
-                    // label={`${singleStudent?.data?.className[0]}, ${singleStudent?.data?.section[0] || ''}`}
-                    size="small"
-                  />
+                  <Chip icon={<School fontSize="small" />} size="small" />
                   <Chip
                     icon={<Info fontSize="small" />}
                     label={`Roll: ${singleStudent?.data?.studentClassRoll}`}
@@ -256,9 +252,9 @@ const StudentProfile = ({ params }: PageProps) => {
         </Box>
 
         {/* Overview Tab */}
-        <TabPanel value={tabValue} index={0}>
+        {/* <TabPanel value={tabValue} index={0}>
           <StudentOverview student={singleStudent?.data} />
-        </TabPanel>
+        </TabPanel> */}
 
         {/* Results Tab */}
         <TabPanel value={tabValue} index={1}>

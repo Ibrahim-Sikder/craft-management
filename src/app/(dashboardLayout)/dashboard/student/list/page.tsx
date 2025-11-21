@@ -46,7 +46,7 @@ import Swal from "sweetalert2";
 import { useGetAllClassesQuery } from "@/redux/api/classApi";
 import { useGetAllSectionsQuery } from "@/redux/api/sectionApi";
 import { useGetAllMetaQuery } from "@/redux/api/metaApi";
-import CraftTable from "@/components/Table";
+import CraftTable, { Column, RowAction } from "@/components/Table";
 
 const StudentList = () => {
   const theme = useTheme();
@@ -103,7 +103,7 @@ const StudentList = () => {
   const classOptions = useMemo(() => {
     if (!classData?.data) return [];
     if (Array.isArray(classData.data)) {
-      return classData.data.map((cls) => ({
+      return classData.data.map((cls: any) => ({
         id: cls._id || cls.id,
         name: cls.className || cls.name || cls,
       }));
@@ -111,7 +111,7 @@ const StudentList = () => {
       classData.data.classes &&
       Array.isArray(classData.data.classes)
     ) {
-      return classData.data.classes.map((cls) => ({
+      return classData.data.classes.map((cls: any) => ({
         id: cls._id || cls.id,
         name: cls.className || cls.name || cls,
       }));
@@ -122,7 +122,7 @@ const StudentList = () => {
   const sectionOptions = useMemo(() => {
     if (!sectionData?.data) return [];
     if (Array.isArray(sectionData.data)) {
-      return sectionData.data.map((section) => ({
+      return sectionData.data.map((section: any) => ({
         id: section._id || section.id,
         name: section.name || section.section || section,
       }));
@@ -130,7 +130,7 @@ const StudentList = () => {
       sectionData.data.sections &&
       Array.isArray(sectionData.data.sections)
     ) {
-      return sectionData.data.sections.map((section) => ({
+      return sectionData.data.sections.map((section: any) => ({
         id: section._id || section.id,
         name: section.name || section.section || section,
       }));

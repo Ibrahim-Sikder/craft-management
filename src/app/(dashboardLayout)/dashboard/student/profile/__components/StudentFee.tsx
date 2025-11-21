@@ -1,14 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import CraftTable, { Column, RowAction } from "@/components/Table";
-import {
-  Delete,
-  Download,
-  Edit,
-  Payment,
-  Visibility,
-} from "@mui/icons-material";
-import { Box, Card, CardContent, Chip, Typography } from "@mui/material";
-import { useState } from "react";
+import { Delete, Download, Payment, Visibility } from "@mui/icons-material";
+import { Box, Chip, Typography } from "@mui/material";
+import { useEffect, useState } from "react";
 import AddFeeModal from "./AddFeeModal";
 import PaymentModal from "./PaymentModal";
 
@@ -27,7 +21,6 @@ const StudentFee = ({
   studentFees,
   loading = false,
   onView,
-  onEdit,
   onDelete,
   onDownload,
   onPay,
@@ -36,6 +29,22 @@ const StudentFee = ({
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [addFeeModalOpen, setAddFeeModalOpen] = useState(false);
   const [selectedFee, setSelectedFee] = useState<any>(null);
+  const [filteredFees, setFilteredFees] = useState<any[]>([]);
+  const [feeTypeFilter] = useState<string>("all");
+
+  // Debug log to check all fees
+  console.log("All student fees:", studentFees);
+
+  // Filter fees based on selected fee type
+  useEffect(() => {
+    if (feeTypeFilter === "all") {
+      setFilteredFees(studentFees);
+    } else {
+      setFilteredFees(
+        studentFees.filter((fee) => fee.feeType === feeTypeFilter)
+      );
+    }
+  }, [studentFees, feeTypeFilter]);
 
   const handlePayClick = (fee: any) => {
     setSelectedFee(fee);
@@ -69,12 +78,27 @@ const StudentFee = ({
     }
   };
 
-  // Define columns for the fee table
+  // Define columns for fee table with all fee information
   const columns: Column[] = [
     {
       id: "feeType",
       label: "Fee Type",
       minWidth: 150,
+      sortable: true,
+      filterable: true,
+    },
+    {
+      id: "month",
+      label: "Month",
+      minWidth: 120,
+      sortable: true,
+      filterable: true,
+      type: "text",
+    },
+    {
+      id: "class",
+      label: "Class",
+      minWidth: 100,
       sortable: true,
       filterable: true,
       type: "text",
@@ -86,7 +110,7 @@ const StudentFee = ({
       align: "right",
       sortable: true,
       type: "number",
-      format: (value: number) => `$${value?.toLocaleString()}`,
+      format: (value: number) => `৳${value?.toLocaleString()}`,
     },
     {
       id: "paidAmount",
@@ -95,7 +119,7 @@ const StudentFee = ({
       align: "right",
       sortable: true,
       type: "number",
-      format: (value: number) => `$${value?.toLocaleString()}`,
+      format: (value: number) => `৳${value?.toLocaleString()}`,
     },
     {
       id: "dueAmount",
@@ -104,7 +128,34 @@ const StudentFee = ({
       align: "right",
       sortable: true,
       type: "number",
-      format: (value: number) => `$${value?.toLocaleString()}`,
+      format: (value: number) => `৳${value?.toLocaleString()}`,
+    },
+    {
+      id: "discount",
+      label: "Discount",
+      minWidth: 100,
+      align: "right",
+      sortable: true,
+      type: "number",
+      format: (value: number) => `৳${value?.toLocaleString()}`,
+    },
+    {
+      id: "waiver",
+      label: "Waiver",
+      minWidth: 100,
+      align: "right",
+      sortable: true,
+      type: "number",
+      format: (value: number) => `৳${value?.toLocaleString()}`,
+    },
+    {
+      id: "advanceUsed",
+      label: "Advance Used",
+      minWidth: 120,
+      align: "right",
+      sortable: true,
+      type: "number",
+      format: (value: number) => `৳${value?.toLocaleString()}`,
     },
     {
       id: "paymentDate",
@@ -113,6 +164,7 @@ const StudentFee = ({
       sortable: true,
       type: "date",
       format: (value: string) => {
+        if (!value) return "Not Paid";
         try {
           return new Date(value).toLocaleDateString();
         } catch {
@@ -127,8 +179,10 @@ const StudentFee = ({
       sortable: true,
       filterable: true,
       type: "text",
-      format: (value: string) =>
-        value?.charAt(0).toUpperCase() + value?.slice(1),
+      format: (value: string) => {
+        if (!value) return "N/A";
+        return value.charAt(0).toUpperCase() + value.slice(1);
+      },
     },
     {
       id: "status",
@@ -137,6 +191,30 @@ const StudentFee = ({
       sortable: true,
       filterable: true,
       type: "status",
+      format: (value: string) => {
+        const statusConfig: {
+          [key: string]: {
+            color: "success" | "warning" | "error" | "default";
+            label: string;
+          };
+        } = {
+          paid: { color: "success", label: "Paid" },
+          partial: { color: "warning", label: "Partial" },
+          unpaid: { color: "error", label: "Unpaid" },
+        };
+        const config = statusConfig[value] || {
+          color: "default",
+          label: value,
+        };
+        return (
+          <Chip
+            label={config.label}
+            color={config.color}
+            size="small"
+            variant="outlined"
+          />
+        );
+      },
     },
     {
       id: "createdAt",
@@ -169,15 +247,9 @@ const StudentFee = ({
       onClick: (row) => onDownload?.(row),
       color: "primary",
       tooltip: "Download payment receipt",
+      disabled: (row) => row.status === "unpaid" || row.paidAmount === 0,
     },
-    {
-      label: "Edit",
-      icon: <Edit fontSize="small" />,
-      onClick: (row) => onEdit?.(row),
-      color: "warning",
-      tooltip: "Edit fee record",
-      inMenu: true,
-    },
+
     {
       label: "Make Payment",
       icon: <Payment fontSize="small" />,
@@ -196,88 +268,17 @@ const StudentFee = ({
     },
   ];
 
-  // Calculate summary statistics
-  const summary = {
-    totalFee: studentFees.reduce((sum, fee) => sum + (fee.amount || 0), 0),
-    totalPaid: studentFees.reduce((sum, fee) => sum + (fee.paidAmount || 0), 0),
-    totalDue: studentFees.reduce((sum, fee) => sum + (fee.dueAmount || 0), 0),
-    paidCount: studentFees.filter((fee) => fee.status === "paid").length,
-    partialCount: studentFees.filter((fee) => fee.status === "partial").length,
-    unpaidCount: studentFees.filter((fee) => fee.status === "unpaid").length,
-  };
-
   return (
     <Box>
       <Typography variant="h6" gutterBottom>
-        Fee Details
+        Student Fee Management
       </Typography>
-
-      {/* Summary Cards */}
-      <Box sx={{ mb: 3 }}>
-        <Card variant="outlined">
-          <CardContent>
-            <Typography variant="h6" gutterBottom>
-              Fee Summary
-            </Typography>
-            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 3 }}>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <Typography variant="body1">Total Fee:</Typography>
-                <Typography variant="body1" fontWeight="bold">
-                  ${summary.totalFee.toLocaleString()}
-                </Typography>
-              </Box>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <Typography variant="body1">Paid Amount:</Typography>
-                <Typography
-                  variant="body1"
-                  color="success.main"
-                  fontWeight="bold"
-                >
-                  ${summary.totalPaid.toLocaleString()}
-                </Typography>
-              </Box>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <Typography variant="body1">Due Amount:</Typography>
-                <Typography
-                  variant="body1"
-                  color="error.main"
-                  fontWeight="bold"
-                >
-                  ${summary.totalDue.toLocaleString()}
-                </Typography>
-              </Box>
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                <Typography variant="body1">Status:</Typography>
-                <Chip
-                  label={`${summary.paidCount} Paid`}
-                  size="small"
-                  color="success"
-                  variant="outlined"
-                />
-                <Chip
-                  label={`${summary.partialCount} Partial`}
-                  size="small"
-                  color="warning"
-                  variant="outlined"
-                />
-                <Chip
-                  label={`${summary.unpaidCount} Unpaid`}
-                  size="small"
-                  color="error"
-                  variant="outlined"
-                />
-              </Box>
-            </Box>
-          </CardContent>
-        </Card>
-      </Box>
 
       {/* Fee Records Table */}
       <CraftTable
-        title="Fee Records"
-        subtitle={`${studentFees.length} fee records found`}
+        title={`${feeTypeFilter === "all" ? "All" : feeTypeFilter} Fee Records`}
         columns={columns}
-        data={studentFees}
+        data={filteredFees}
         loading={loading}
         rowActions={rowActions}
         selectable={true}
@@ -307,6 +308,13 @@ const StudentFee = ({
             icon: <Download fontSize="small" />,
             onClick: (selectedRows) => {
               console.log("Exporting selected:", selectedRows);
+            },
+          },
+          {
+            label: "Generate Bulk Receipts",
+            icon: <Download fontSize="small" />,
+            onClick: (selectedRows) => {
+              console.log("Generating bulk receipts:", selectedRows);
             },
           },
           {

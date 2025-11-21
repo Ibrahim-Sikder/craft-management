@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable react/no-unescaped-entities */
@@ -54,23 +55,20 @@ import { useEffect, useState } from "react";
 import { useFieldArray, useFormContext } from "react-hook-form";
 import toast from "react-hot-toast";
 
-type TProps = {
-  id?: string | string[];
-};
-
-// Fee Amount Handler Component
+// FeeAmountHandler component update
 const FeeAmountHandler = ({
   feeIndex,
   feeCategoryData,
 }: {
   feeIndex: number;
-  feeCategoryData: any[];
+  feeCategoryData: any;
 }) => {
   const { watch, setValue } = useFormContext();
   const selectedFees = watch(`fees.${feeIndex}.feeType`);
   const selectedClass = watch(`fees.${feeIndex}.className`);
   const feeAmount = watch(`fees.${feeIndex}.feeAmount`);
   const paidAmount = watch(`fees.${feeIndex}.paidAmount`);
+  const isYearlyFee = watch(`fees.${feeIndex}.isYearlyFee`);
 
   // Auto-populate fee amount based on fee type and class
   useEffect(() => {
@@ -95,6 +93,12 @@ const FeeAmountHandler = ({
           `fees.${feeIndex}.feeAmount`,
           matchingFee.feeAmount.toString()
         );
+
+        // Auto-detect if this is a yearly fee
+        const feeType = selectedFeeType.toLowerCase();
+        const isYearly =
+          feeType.includes("yearly") || feeType.includes("annual");
+        setValue(`fees.${feeIndex}.isYearlyFee`, isYearly);
       }
     }
   }, [selectedFees, selectedClass, setValue, feeIndex, feeCategoryData]);
@@ -138,7 +142,7 @@ const FeeAmountHandler = ({
   return null;
 };
 
-// Dynamic Fee Fields Component
+// DynamicFeeFields component update
 const DynamicFeeFields = ({
   classOptions,
   feeCategoryOptions,
@@ -199,6 +203,7 @@ const DynamicFeeFields = ({
       paidAmount: "",
       dueAmount: "",
       paymentStatus: "unpaid",
+      isYearlyFee: false, // Add this field
     });
   };
 
@@ -245,6 +250,7 @@ const DynamicFeeFields = ({
         {fields.map((field, index) => {
           const feeClassName = watch(`fees.${index}.className`);
           const filteredFeeOptions = getFilteredFeeOptions(feeClassName);
+          const isYearlyFee = watch(`fees.${index}.isYearlyFee`);
 
           return (
             <Box
@@ -309,11 +315,11 @@ const DynamicFeeFields = ({
                   />
                 </Grid>
 
-                {/* Yearly Fee Amount */}
+                {/* Yearly/Monthly Fee Amount */}
                 <Grid item xs={12} md={4}>
                   <CraftInputWithIcon
                     name={`fees.${index}.feeAmount`}
-                    label="Fee Amount"
+                    label={isYearlyFee ? "Yearly Fee Amount" : "Fee Amount"}
                     fullWidth
                     size="small"
                     type="number"
@@ -325,21 +331,23 @@ const DynamicFeeFields = ({
                   />
                 </Grid>
 
-                {/* Monthly Breakdown */}
-                <Grid item xs={12} md={4}>
-                  <CraftInputWithIcon
-                    name={`fees.${index}.monthlyAmount`}
-                    label="Monthly Amount (Auto)"
-                    fullWidth
-                    size="small"
-                    disabled
-                    InputProps={{
-                      startAdornment: (
-                        <Money sx={{ color: "text.secondary", mr: 1 }} />
-                      ),
-                    }}
-                  />
-                </Grid>
+                {/* Monthly Breakdown - Only show for yearly/monthly fees */}
+                {isYearlyFee && (
+                  <Grid item xs={12} md={4}>
+                    <CraftInputWithIcon
+                      name={`fees.${index}.monthlyAmount`}
+                      label="Monthly Amount (Auto)"
+                      fullWidth
+                      size="small"
+                      disabled
+                      InputProps={{
+                        startAdornment: (
+                          <Money sx={{ color: "text.secondary", mr: 1 }} />
+                        ),
+                      }}
+                    />
+                  </Grid>
+                )}
 
                 {/* Paid Amount */}
                 <Grid item xs={12} md={4}>
@@ -661,6 +669,7 @@ const StudentSelector = ({ studentData, classOptions }: any) => {
 };
 
 // Helper function to transform API data to form format
+// Helper function to transform API data to form format
 const transformEnrollmentDataToForm = (
   enrollmentData: any,
   classOptions: any[],
@@ -673,14 +682,14 @@ const transformEnrollmentDataToForm = (
   const data = enrollmentData.data;
 
   // Helper function to format class data
-  const formatClassForForm = (className: any) => {
-    if (!className || className.length === 0) return [];
+  const formatClassForForm = (classData: any) => {
+    if (!classData || classData.length === 0) return [];
 
-    if (Array.isArray(className)) {
-      return className.map((cls: any) => {
+    if (Array.isArray(classData)) {
+      return classData.map((cls: any) => {
         // Try to find a matching class in the options
         const classId = cls._id || cls;
-        const className = cls.className || cls;
+        const classNameValue = cls.className || cls; // Renamed to avoid conflict
 
         // First try to match by ID
         let matchedClass = classOptions?.find(
@@ -690,7 +699,7 @@ const transformEnrollmentDataToForm = (
         // If not found by ID, try to match by name
         if (!matchedClass) {
           matchedClass = classOptions?.find(
-            (option: any) => option.label === className
+            (option: any) => option.label === classNameValue
           );
         }
 
@@ -698,7 +707,7 @@ const transformEnrollmentDataToForm = (
         if (!matchedClass) {
           matchedClass = {
             value: classId,
-            label: className,
+            label: classNameValue,
           };
         }
 
@@ -706,8 +715,8 @@ const transformEnrollmentDataToForm = (
       });
     } else {
       // Handle single class object or string
-      const classId = className._id || className;
-      const className = className.className || className;
+      const classId = classData._id || classData;
+      const classNameValue = classData.className || classData; // Renamed to avoid conflict
 
       // First try to match by ID
       let matchedClass = classOptions?.find(
@@ -717,7 +726,7 @@ const transformEnrollmentDataToForm = (
       // If not found by ID, try to match by name
       if (!matchedClass) {
         matchedClass = classOptions?.find(
-          (option: any) => option.label === className
+          (option: any) => option.label === classNameValue
         );
       }
 
@@ -725,7 +734,7 @@ const transformEnrollmentDataToForm = (
       if (!matchedClass) {
         matchedClass = {
           value: classId,
-          label: className,
+          label: classNameValue,
         };
       }
 
@@ -734,12 +743,12 @@ const transformEnrollmentDataToForm = (
   };
 
   // Helper function to format fee data
-  const formatFeeForForm = (fees: any[], className: any) => {
+  const formatFeeForForm = (fees: any[], classData: any) => {
     if (!fees || !Array.isArray(fees) || fees.length === 0) {
       return [
         {
           feeType: [],
-          className: formatClassForForm(className),
+          className: formatClassForForm(classData),
           feeAmount: "",
           paidAmount: "",
           monthlyAmount: "",
@@ -769,7 +778,7 @@ const transformEnrollmentDataToForm = (
                 label: fee.feeType,
               },
             ],
-        className: formatClassForForm(className),
+        className: formatClassForForm(classData),
         feeAmount: feeAmount.toString(),
         paidAmount: paidAmount.toString(),
         monthlyAmount: ((feeAmount || 0) / 12).toFixed(2),
@@ -1038,6 +1047,8 @@ const EnrollmentForm = () => {
       }
 
       // Fees processing
+      // In the handleSubmit function, update the fees processing part:
+      // In the handleSubmit function, update the fees processing:
       const transformedFees = Array.isArray(submitData.fees)
         ? submitData.fees
             .filter(
@@ -1045,7 +1056,9 @@ const EnrollmentForm = () => {
                 fee.feeType &&
                 fee.feeType.length > 0 &&
                 fee.className &&
-                fee.className.length > 0
+                fee.className.length > 0 &&
+                fee.feeAmount && // Ensure fee amount exists
+                Number(fee.feeAmount) > 0 // Ensure fee amount is greater than 0
             )
             .map((fee: any) => {
               const feeType = fee.feeType[0]?.label || fee.feeType[0] || "";
@@ -1059,9 +1072,17 @@ const EnrollmentForm = () => {
                 className: className,
                 feeAmount: feeAmount,
                 paidAmount: paidAmount,
+                monthlyAmount: fee.monthlyAmount || "",
               };
             })
         : [];
+
+      // Make sure we have at least one valid fee
+      if (transformedFees.length === 0) {
+        toast.error("At least one valid fee entry is required");
+        setSubmitting(false);
+        return;
+      }
 
       // Boolean transformation
       const transformBoolean = (value: any) => {
