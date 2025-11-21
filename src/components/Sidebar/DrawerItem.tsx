@@ -25,7 +25,6 @@ import {
   Savings,
   CreditCard,
   Calculate,
-  PointOfSale,
   AttachMoney,
   Campaign,
   Feedback,
@@ -78,7 +77,14 @@ export const navigationItems: NavigationItem[] = [
       </ColorfulIcon>
     ),
     path: "/dashboard",
-    roles: ["admin", "teacher", "student", "super_admin", "class_teacher", 'accountant'],
+    roles: [
+      "admin",
+      "teacher",
+      "student",
+      "super_admin",
+      "class_teacher",
+      "accountant",
+    ],
   },
   // Website
   {
@@ -254,7 +260,7 @@ export const navigationItems: NavigationItem[] = [
         path: "/dashboard/hifz/subject/list",
         roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
       },
-      
+
       {
         title: "Soboki Daily Report Add",
         icon: (
@@ -303,7 +309,7 @@ export const navigationItems: NavigationItem[] = [
             <TrackChanges />
           </ColorfulIcon>
         ),
-        path: "/dashboard/hifz/weeklytarget",
+        path: "/dashboard/hifz/weeklytarget/list",
         roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
       },
       {
@@ -385,7 +391,7 @@ export const navigationItems: NavigationItem[] = [
             <Description />
           </ColorfulIcon>
         ),
-        path: "/dashboard/nazera/daily-report",
+        path: "/dashboard/nazera/daily-report/list",
         roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
       },
       {
@@ -436,7 +442,7 @@ export const navigationItems: NavigationItem[] = [
             <Description />
           </ColorfulIcon>
         ),
-        path: "/dashboard/qaida-noorani/qaida-noorani-report/list",
+        path: "/dashboard/qaida-noorani/daily-report/list",
         roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
       },
       {
@@ -446,7 +452,7 @@ export const navigationItems: NavigationItem[] = [
             <PostAdd />
           </ColorfulIcon>
         ),
-        path: "/dashboard/qaida-noorani/qaida-noorani-report/add",
+        path: "/dashboard/qaida-noorani/daily-report/add",
         roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
       },
       {
@@ -497,7 +503,13 @@ export const navigationItems: NavigationItem[] = [
                 <PersonAdd />
               </ColorfulIcon>
             ),
-            roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+            roles: [
+              "admin",
+              "teacher",
+              "student",
+              "super_admin",
+              "class_teacher",
+            ],
           },
           {
             path: "/dashboard/teacher/list",
@@ -507,7 +519,13 @@ export const navigationItems: NavigationItem[] = [
                 <FormatListBulleted />
               </ColorfulIcon>
             ),
-            roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+            roles: [
+              "admin",
+              "teacher",
+              "student",
+              "super_admin",
+              "class_teacher",
+            ],
           },
           {
             path: "/dashboard/teacher/daily-report/list",
@@ -517,7 +535,13 @@ export const navigationItems: NavigationItem[] = [
                 <ReceiptLong />
               </ColorfulIcon>
             ),
-            roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+            roles: [
+              "admin",
+              "teacher",
+              "student",
+              "super_admin",
+              "class_teacher",
+            ],
           },
         ],
       },
@@ -537,7 +561,13 @@ export const navigationItems: NavigationItem[] = [
                 <PersonAdd />
               </ColorfulIcon>
             ),
-            roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+            roles: [
+              "admin",
+              "teacher",
+              "student",
+              "super_admin",
+              "class_teacher",
+            ],
           },
           {
             path: "/dashboard/staff/list",
@@ -547,7 +577,13 @@ export const navigationItems: NavigationItem[] = [
                 <FormatListBulleted />
               </ColorfulIcon>
             ),
-            roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+            roles: [
+              "admin",
+              "teacher",
+              "student",
+              "super_admin",
+              "class_teacher",
+            ],
           },
         ],
       },
@@ -567,7 +603,13 @@ export const navigationItems: NavigationItem[] = [
                 <FormatListBulleted />
               </ColorfulIcon>
             ),
-            roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+            roles: [
+              "admin",
+              "teacher",
+              "student",
+              "super_admin",
+              "class_teacher",
+            ],
           },
         ],
       },
@@ -669,8 +711,8 @@ export const navigationItems: NavigationItem[] = [
     roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
     children: [
       {
-        path: "/dashboard/fee-type/list",
-        title: "Fee Types",
+        path: "/dashboard/fees/list",
+        title: "All Fee",
         icon: (
           <ColorfulIcon color="#009688">
             <Category />
@@ -679,18 +721,28 @@ export const navigationItems: NavigationItem[] = [
         roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
       },
       {
-        path: "/dashboard/collect-fee/list",
-        title: "Collect Fees",
+        path: "/dashboard/fees/category",
+        title: "Fee Category",
         icon: (
           <ColorfulIcon color="#009688">
-            <PointOfSale />
+            <Category />
+          </ColorfulIcon>
+        ),
+        roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+      },
+      {
+        path: "/dashboard/fees/fee-collection",
+        title: "Fee Collection",
+        icon: (
+          <ColorfulIcon color="#009688">
+            <Category />
           </ColorfulIcon>
         ),
         roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
       },
     ],
   },
-  // Accounting
+
   {
     title: "Accounting",
     icon: (
@@ -698,7 +750,7 @@ export const navigationItems: NavigationItem[] = [
         <DoneAllSharp />
       </ColorfulIcon>
     ),
-    roles: ["admin", "super_admin", 'accountant'],
+    roles: ["admin", "super_admin", "accountant"],
     children: [
       {
         title: "Income",
@@ -708,6 +760,16 @@ export const navigationItems: NavigationItem[] = [
           </ColorfulIcon>
         ),
         children: [
+          {
+            path: "/dashboard/accounting/residantial/list",
+            title: "Residential ",
+            icon: (
+              <ColorfulIcon color="#2E7D32">
+                <Category />
+              </ColorfulIcon>
+            ),
+            roles: ["admin", "super_admin"],
+          },
           {
             path: "/dashboard/accounting/income",
             title: "Income Records",
@@ -975,7 +1037,7 @@ export const navigationItems: NavigationItem[] = [
         <TableChart />
       </ColorfulIcon>
     ),
-    path: "/dashboard/admission",
+    path: "/dashboard/enrollments/list",
     roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
   },
   // user management

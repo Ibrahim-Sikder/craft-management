@@ -8,7 +8,7 @@ function SunaniReportList() {
         <ReportList
             useGetReportsQuery={useGetAllSunaniReportsQuery}
             useDeleteReportMutation={useDeleteSunaniReportMutation}
-            title="Nazera Daily Reports"
+            title="Sunani Daily Reports"
             createPath="/dashboard/hifz/daily-report/sunani/add"
             updatePath="/dashboard/hifz/daily-report/sunani/update"
             reportType="nazera"

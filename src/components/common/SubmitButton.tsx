@@ -1,7 +1,5 @@
 // components/common/SubmitButton.tsx
-import { Button, styled,  } from "@mui/material";
-import { motion } from "framer-motion";
-
+import { Button, styled, } from "@mui/material";
 const StyledSubmitButton = styled(Button)(({ theme }) => ({
     borderRadius: 30,
     padding: '12px 32px',
@@ -21,19 +19,28 @@ const StyledSubmitButton = styled(Button)(({ theme }) => ({
     },
 }))
 
-export function SubmitButton() {
+type IdProps = {
+    id?: string | null
+}
+
+export function SubmitButton({ id }: IdProps) {
     return (
-        <motion.div
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+        <div
+            style={{
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                width: "100%",
+                marginTop: "1rem",
+            }}
         >
             <StyledSubmitButton
                 variant="contained"
                 size="large"
                 type="submit"
             >
-                Submit Report
+                {id ? 'Update Report' : ' Submit Report'}
             </StyledSubmitButton>
-        </motion.div>
+        </div>
     )
 }

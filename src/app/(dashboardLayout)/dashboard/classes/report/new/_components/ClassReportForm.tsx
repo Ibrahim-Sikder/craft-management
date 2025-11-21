@@ -1,11 +1,11 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useEffect, useMemo } from "react"
+import { useState, useEffect, useMemo } from "react";
 import {
   Box,
   Container,
@@ -40,7 +40,7 @@ import {
   FormControlLabel,
   Tooltip,
   CircularProgress,
-} from "@mui/material"
+} from "@mui/material";
 import {
   Search as SearchIcon,
   Edit as EditIcon,
@@ -48,51 +48,54 @@ import {
   Visibility as VisibilityIcon,
   Add,
   Save,
-} from "@mui/icons-material"
-import CraftForm from "@/components/Forms/Form"
-import CraftDatePicker from "@/components/Forms/DatePicker"
-import CraftSelect from "@/components/Forms/Select"
-import { classHour, handWritting, lessonEvaluation, subjectName } from "@/options"
-import CraftIntAutoComplete from "@/components/Forms/CruftAutocomplete"
-import { customTheme } from "@/data"
-import { getFromLocalStorage } from "@/utils/local.storage"
-import type { FieldValues } from "react-hook-form"
-import { useGetAllStudentsQuery } from "@/redux/api/studentApi"
-import toast from "react-hot-toast"
-import { useRouter } from "next/navigation"
+} from "@mui/icons-material";
+import CraftForm from "@/components/Forms/Form";
+import CraftDatePicker from "@/components/Forms/DatePicker";
+import CraftSelect from "@/components/Forms/Select";
+import {
+  classHour,
+  handWritting,
+  lessonEvaluation,
+  subjectName,
+} from "@/options";
+import CraftIntAutoComplete from "@/components/Forms/CruftAutocomplete";
+import { customTheme } from "@/data";
+import { getFromLocalStorage } from "@/utils/local.storage";
+import type { FieldValues } from "react-hook-form";
+import { useGetAllStudentsQuery } from "@/redux/api/studentApi";
+import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 import {
   useCreateClassReportMutation,
   useGetSingleClassReportQuery,
   useUpdateClassReportMutation,
-} from "@/redux/api/classReportApi"
-import { useGetAllClassesQuery } from "@/redux/api/classApi"
-import { useGetAllSubjectsQuery } from "@/redux/api/subjectApi"
-import TodayLesson from "./TodayLesson"
-import TodayTask from "./TodayTask"
-import { format } from "date-fns"
-import { useGetAllTeachersQuery } from "@/redux/api/teacherApi"
-import { boxStyleReport } from "@/style/customeStyle"
-import { useAcademicOptions } from "@/hooks/useTeacherStudentOptions"
+} from "@/redux/api/classReportApi";
+import { useGetAllClassesQuery } from "@/redux/api/classApi";
+import { useGetAllSubjectsQuery } from "@/redux/api/subjectApi";
+import TodayLesson from "./TodayLesson";
+import TodayTask from "./TodayTask";
+import { format } from "date-fns";
+import { useGetAllTeachersQuery } from "@/redux/api/teacherApi";
+import { boxStyleReport } from "@/style/customeStyle";
+import { useAcademicOption } from "@/hooks/useAcademicOption";
 
 // Define a type for student evaluation
 type StudentEvaluation = {
-  studentId: string
-  lessonEvaluation: string
-  handwriting: string
-  attendance: string
-  parentSignature: boolean
-  comments: string
-}
-
-
+  studentId: string;
+  lessonEvaluation: string;
+  handwriting: string;
+  attendance: string;
+  parentSignature: boolean;
+  comments: string;
+};
 
 export default function ClassReportForm({ id }: any) {
-  const router = useRouter()
-  const [page, setPage] = useState(0)
-  const [rowsPerPage, setRowsPerPage] = useState(10)
-  const [searchTerm, setSearchTerm] = useState("")
-  const limit = 90000000
-  const theme = customTheme
+  const router = useRouter();
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [searchTerm, setSearchTerm] = useState("");
+  const limit = 90000000;
+  const theme = customTheme;
   const [filters, setFilters] = useState({
     class: "",
     batch: "",
@@ -101,30 +104,32 @@ export default function ClassReportForm({ id }: any) {
     day: "",
     startDate: "",
     endDate: "",
-  })
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
-  const [selectedBrand, setSelectedBrand] = useState("")
-  const [filteredSubjects, setFilteredVehicles] = useState<any[]>([])
-  const [selectedStudent, setSelectedStudent] = useState<any | null>(null)
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [studentEvaluations, setStudentEvaluations] = useState<StudentEvaluation[]>([])
-  const [todayLessonId, setTodayLessonId] = useState<string | null>(null)
-  const [homeTaskId, setHomeTaskId] = useState<string | null>(null)
-  const [reportStudents, setReportStudents] = useState<any[]>([])
-  const [isEditMode, setIsEditMode] = useState(false)
-  const [noTaskForClass, setNoTaskForClass] = useState(false)
-  const [lessonEvaluationTask, setLessonEvaluationTask] = useState(false)
-  const [handwrittenTask, setHandwrittenTask] = useState(false)
-  const [isSubmittingForm, setIsSubmittingForm] = useState(false)
+  });
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [selectedBrand, setSelectedBrand] = useState("");
+  const [filteredSubjects, setFilteredVehicles] = useState<any[]>([]);
+  const [selectedStudent, setSelectedStudent] = useState<any | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [studentEvaluations, setStudentEvaluations] = useState<
+    StudentEvaluation[]
+  >([]);
+  const [todayLessonId, setTodayLessonId] = useState<string | null>(null);
+  const [homeTaskId, setHomeTaskId] = useState<string | null>(null);
+  const [reportStudents, setReportStudents] = useState<any[]>([]);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [noTaskForClass, setNoTaskForClass] = useState(false);
+  const [lessonEvaluationTask, setLessonEvaluationTask] = useState(false);
+  const [handwrittenTask, setHandwrittenTask] = useState(false);
+  const [isSubmittingForm, setIsSubmittingForm] = useState(false);
 
-  const { data: singleClassReport, isLoading: singleClassReportLoading } = useGetSingleClassReportQuery({ id })
-const { teacherOptions, subjectOptions, classOptions } = useAcademicOptions()
+  const { data: singleClassReport, isLoading: singleClassReportLoading } =
+    useGetSingleClassReportQuery({ id });
+  const { teacherOptions, subjectOptions, classOptions } = useAcademicOption();
 
+  const [todayLessonDialogOpen, setTodayLessonDialogOpen] = useState(false);
+  const [todayTaskDialogOpen, setTodayTaskDialogOpen] = useState(false);
 
-  const [todayLessonDialogOpen, setTodayLessonDialogOpen] = useState(false)
-  const [todayTaskDialogOpen, setTodayTaskDialogOpen] = useState(false)
-
-  const storedUser = JSON.parse(getFromLocalStorage("user-info") || "{}")
+  const storedUser = JSON.parse(getFromLocalStorage("user-info") || "{}");
 
   const {
     data: studentData,
@@ -141,48 +146,54 @@ const { teacherOptions, subjectOptions, classOptions } = useAcademicOptions()
     },
     {
       skip: id && isEditMode,
-    },
-  )
+    }
+  );
 
-  const [createClassReport, { isLoading: isSubmitting }] = useCreateClassReportMutation()
-  const [updateClassReport, { isLoading: isUpdating }] = useUpdateClassReportMutation()
+  const [createClassReport, { isLoading: isSubmitting }] =
+    useCreateClassReportMutation();
+  const [updateClassReport, { isLoading: isUpdating }] =
+    useUpdateClassReportMutation();
 
   const students = useMemo(() => {
     if (id && isEditMode) {
-      return reportStudents
+      return reportStudents;
     }
-    return studentData?.data || []
-  }, [id, isEditMode, reportStudents, studentData?.data])
+    return studentData?.data || [];
+  }, [id, isEditMode, reportStudents, studentData?.data]);
 
   useEffect(() => {
     if (id && singleClassReport?.data?.studentEvaluations) {
-      setIsEditMode(true)
-      const studentsFromReport = singleClassReport.data.studentEvaluations?.map((studentEval: any) => {
-        const student = studentEval?.studentId
-        return {
-          _id: student?._id,
-          name: student?.name,
-          studentId: student?.studentId,
-          className: student?.className,
-          section: student?.section || "",
+      setIsEditMode(true);
+      const studentsFromReport = singleClassReport.data.studentEvaluations?.map(
+        (studentEval: any) => {
+          const student = studentEval?.studentId;
+          return {
+            _id: student?._id,
+            name: student?.name,
+            studentId: student?.studentId,
+            className: student?.className,
+            section: student?.section || "",
+          };
         }
-      })
+      );
 
-      setReportStudents(studentsFromReport)
+      setReportStudents(studentsFromReport);
     }
-  }, [id, singleClassReport])
+  }, [id, singleClassReport]);
 
   useEffect(() => {
     if (singleClassReport?.data?.studentEvaluations?.length > 0) {
-      const evaluations = singleClassReport?.data?.studentEvaluations?.map((studentEval: any) => ({
-        studentId: studentEval?.studentId?._id,
-        lessonEvaluation: studentEval.lessonEvaluation,
-        handwriting: studentEval.handwriting,
-        attendance: studentEval.attendance,
-        parentSignature: studentEval.parentSignature,
-        comments: studentEval.comments || "",
-      }))
-      setStudentEvaluations(evaluations)
+      const evaluations = singleClassReport?.data?.studentEvaluations?.map(
+        (studentEval: any) => ({
+          studentId: studentEval?.studentId?._id,
+          lessonEvaluation: studentEval.lessonEvaluation,
+          handwriting: studentEval.handwriting,
+          attendance: studentEval.attendance,
+          parentSignature: studentEval.parentSignature,
+          comments: studentEval.comments || "",
+        })
+      );
+      setStudentEvaluations(evaluations);
     } else if (students.length > 0 && studentEvaluations.length === 0) {
       const initialEvaluations = students.map((student: any) => ({
         studentId: student._id,
@@ -191,49 +202,55 @@ const { teacherOptions, subjectOptions, classOptions } = useAcademicOptions()
         attendance: "উপস্থিত",
         parentSignature: noTaskForClass ? false : true,
         comments: "",
-      }))
-      setStudentEvaluations(initialEvaluations)
+      }));
+      setStudentEvaluations(initialEvaluations);
     }
-  }, [students, singleClassReport, studentEvaluations.length])
+  }, [students, singleClassReport, studentEvaluations.length]);
 
   useEffect(() => {
     if (singleClassReport?.data) {
       if (singleClassReport.data.noTaskForClass !== undefined) {
-        setNoTaskForClass(!!singleClassReport.data.noTaskForClass)
+        setNoTaskForClass(!!singleClassReport.data.noTaskForClass);
       }
       if (singleClassReport.data.lessonEvaluationTask !== undefined) {
-        setLessonEvaluationTask(!!singleClassReport.data.lessonEvaluationTask)
+        setLessonEvaluationTask(!!singleClassReport.data.lessonEvaluationTask);
       }
       if (singleClassReport.data.handwrittenTask !== undefined) {
-        setHandwrittenTask(!!singleClassReport.data.handwrittenTask)
+        setHandwrittenTask(!!singleClassReport.data.handwrittenTask);
       }
     }
-  }, [singleClassReport?.data])
+  }, [singleClassReport?.data]);
 
   // Fixed defaultValues with proper option mapping
   const defaultValues = useMemo(() => {
-    if (!singleClassReport?.data) return null
+    if (!singleClassReport?.data) return null;
 
-    const report = singleClassReport.data
+    const report = singleClassReport.data;
 
     if (report.todayLesson?._id) {
-      setTodayLessonId(report.todayLesson._id)
+      setTodayLessonId(report.todayLesson._id);
     }
 
     if (report.homeTask?._id) {
-      setHomeTaskId(report.homeTask._id)
+      setHomeTaskId(report.homeTask._id);
     }
     if (report.classes) {
       setFilters((prev) => ({
         ...prev,
         class: report.classes,
-      }))
+      }));
     }
 
     // Find the correct option objects for autocomplete fields
-    const classObj = classOptions.find((opt: any) => opt.label === report.classes)
-    const subjectObj = subjectOptions.find((opt: any) => opt.label === report.subjects)
-    const teacherObj = teacherOptions.find((opt: any) => opt.label === report.teachers)
+    const classObj = classOptions.find(
+      (opt: any) => opt.label === report.classes
+    );
+    const subjectObj = subjectOptions.find(
+      (opt: any) => opt.label === report.subjects
+    );
+    const teacherObj = teacherOptions.find(
+      (opt: any) => opt.label === report.teachers
+    );
 
     return {
       classes: classObj || report.classes,
@@ -241,160 +258,205 @@ const { teacherOptions, subjectOptions, classOptions } = useAcademicOptions()
       hour: report.hour || "",
       date: report.date ? format(new Date(report.date), "yyyy-MM-dd") : "",
       teachers: teacherObj || report.teachers,
-    }
-  }, [singleClassReport, classOptions, subjectOptions, teacherOptions])
+    };
+  }, [singleClassReport, classOptions, subjectOptions, teacherOptions]);
 
-  const handleLessonEvaluationTaskChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const checked = event.target.checked
-    setLessonEvaluationTask(checked)
-    toast.success(checked ? "পাঠ মূল্যায়ন অক্ষম করা হয়েছে!" : "পাঠ মূল্যায়ন সক্ষম করা হয়েছে!")
-  }
+  const handleLessonEvaluationTaskChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const checked = event.target.checked;
+    setLessonEvaluationTask(checked);
+    toast.success(
+      checked
+        ? "পাঠ মূল্যায়ন অক্ষম করা হয়েছে!"
+        : "পাঠ মূল্যায়ন সক্ষম করা হয়েছে!"
+    );
+  };
 
-  const handleHandwrittenTaskChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const checked = event.target.checked
-    setHandwrittenTask(checked)
-    toast.success(checked ? "হাতের লিখা অক্ষম করা হয়েছে!" : "হাতের লিখা সক্ষম করা হয়েছে!")
-  }
+  const handleHandwrittenTaskChange = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const checked = event.target.checked;
+    setHandwrittenTask(checked);
+    toast.success(
+      checked ? "হাতের লিখা অক্ষম করা হয়েছে!" : "হাতের লিখা সক্ষম করা হয়েছে!"
+    );
+  };
 
   // Utility function to safely extract values from form data
   const safeExtractValue = (data: any, options: any[], fallback = "") => {
-    if (!data) return fallback
+    if (!data) return fallback;
 
     if (typeof data === "string") {
-      const match = options.find((opt: any) => opt.label === data || opt.value === data)
-      return match ? match.label : data
+      const match = options.find(
+        (opt: any) => opt.label === data || opt.value === data
+      );
+      return match ? match.label : data;
     }
 
     if (typeof data === "object" && data.label) {
-      return data.label
+      return data.label;
     }
 
-    return fallback
-  }
+    return fallback;
+  };
 
   // Enhanced mobile handling in handleSubmit with comprehensive error handling
   const handleSubmit = async (data: FieldValues) => {
     // Prevent multiple submissions
     if (isSubmittingForm) {
-      toast.error("অনুগ্রহ করে অপেক্ষা করুন...")
-      return
+      toast.error("অনুগ্রহ করে অপেক্ষা করুন...");
+      return;
     }
 
-    setIsSubmittingForm(true)
+    setIsSubmittingForm(true);
 
     try {
-
-
       // Enhanced mobile detection
       const isMobile =
-        /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+        /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+          navigator.userAgent
+        ) ||
         window.innerWidth <= 768 ||
-        "ontouchstart" in window
+        "ontouchstart" in window;
 
       // Check network connectivity
       if (!navigator.onLine) {
-        throw new Error("No internet connection. Please check your network and try again.")
+        throw new Error(
+          "No internet connection. Please check your network and try again."
+        );
       }
 
       // Enhanced mobile data processing with better error handling
       if (isMobile) {
         try {
           // Add longer delay for mobile processing
-          await new Promise((resolve) => setTimeout(resolve, 500))
+          await new Promise((resolve) => setTimeout(resolve, 500));
 
           // More robust autocomplete data format fixes for mobile
           if (data.classes) {
             if (typeof data.classes === "string") {
-              const match = classOptions.find((opt: any) => opt.label === data.classes || opt.value === data.classes)
+              const match = classOptions.find(
+                (opt: any) =>
+                  opt.label === data.classes || opt.value === data.classes
+              );
               if (match) {
-                data.classes = match
+                data.classes = match;
               } else {
                 // Fallback: create object if string doesn't match any option
-                data.classes = { label: data.classes, value: data.classes }
+                data.classes = { label: data.classes, value: data.classes };
               }
-            } else if (data.classes && (!data.classes.label || !data.classes.value)) {
+            } else if (
+              data.classes &&
+              (!data.classes.label || !data.classes.value)
+            ) {
               // Ensure object has required properties
               data.classes = {
                 label: data.classes.label || data.classes.value || data.classes,
                 value: data.classes.value || data.classes.label || data.classes,
-              }
+              };
             }
           }
 
           if (data.subjects) {
             if (typeof data.subjects === "string") {
-              const match = subjectOptions.find((opt: any) => opt.label === data.subjects || opt.value === data.subjects)
+              const match = subjectOptions.find(
+                (opt: any) =>
+                  opt.label === data.subjects || opt.value === data.subjects
+              );
               if (match) {
-                data.subjects = match
+                data.subjects = match;
               } else {
-                data.subjects = { label: data.subjects, value: data.subjects }
+                data.subjects = { label: data.subjects, value: data.subjects };
               }
-            } else if (data.subjects && (!data.subjects.label || !data.subjects.value)) {
+            } else if (
+              data.subjects &&
+              (!data.subjects.label || !data.subjects.value)
+            ) {
               data.subjects = {
-                label: data.subjects.label || data.subjects.value || data.subjects,
-                value: data.subjects.value || data.subjects.label || data.subjects,
-              }
+                label:
+                  data.subjects.label || data.subjects.value || data.subjects,
+                value:
+                  data.subjects.value || data.subjects.label || data.subjects,
+              };
             }
           }
 
           if (data.teachers) {
             if (typeof data.teachers === "string") {
-              const match = teacherOptions.find((opt: any) => opt.label === data.teachers || opt.value === data.teachers)
+              const match = teacherOptions.find(
+                (opt: any) =>
+                  opt.label === data.teachers || opt.value === data.teachers
+              );
               if (match) {
-                data.teachers = match
+                data.teachers = match;
               } else {
-                data.teachers = { label: data.teachers, value: data.teachers }
+                data.teachers = { label: data.teachers, value: data.teachers };
               }
-            } else if (data.teachers && (!data.teachers.label || !data.teachers.value)) {
+            } else if (
+              data.teachers &&
+              (!data.teachers.label || !data.teachers.value)
+            ) {
               data.teachers = {
-                label: data.teachers.label || data.teachers.value || data.teachers,
-                value: data.teachers.value || data.teachers.label || data.teachers,
-              }
+                label:
+                  data.teachers.label || data.teachers.value || data.teachers,
+                value:
+                  data.teachers.value || data.teachers.label || data.teachers,
+              };
             }
           }
 
-          console.log("Mobile processed data:", data)
+          console.log("Mobile processed data:", data);
         } catch (error) {
-          console.error("Mobile data processing error:", error)
-          throw new Error("Mobile data processing failed. Please try again.")
+          console.error("Mobile data processing error:", error);
+          throw new Error("Mobile data processing failed. Please try again.");
         }
       }
 
       // Enhanced validation with better error messages
-      if (!data.classes || (typeof data.classes === "object" && !data.classes.label)) {
-        throw new Error("শ্রেণী নির্বাচন করুন")
+      if (
+        !data.classes ||
+        (typeof data.classes === "object" && !data.classes.label)
+      ) {
+        throw new Error("শ্রেণী নির্বাচন করুন");
       }
 
-      if (!data.subjects || (typeof data.subjects === "object" && !data.subjects.label)) {
-        throw new Error("বিষয় নির্বাচন করুন")
+      if (
+        !data.subjects ||
+        (typeof data.subjects === "object" && !data.subjects.label)
+      ) {
+        throw new Error("বিষয় নির্বাচন করুন");
       }
 
-      if (!data.teachers || (typeof data.teachers === "object" && !data.teachers.label)) {
-        throw new Error("শিক্ষক নির্বাচন করুন")
+      if (
+        !data.teachers ||
+        (typeof data.teachers === "object" && !data.teachers.label)
+      ) {
+        throw new Error("শিক্ষক নির্বাচন করুন");
       }
 
       if (!data.hour) {
-        throw new Error("ঘন্টা নির্বাচন করুন")
+        throw new Error("ঘন্টা নির্বাচন করুন");
       }
 
       if (!data.date) {
-        throw new Error("তারিখ নির্বাচন করুন")
+        throw new Error("তারিখ নির্বাচন করুন");
       }
 
       // Safely extract values using utility function
-      const classValue = safeExtractValue(data.classes, classOptions)
-      const subjectValue = safeExtractValue(data.subjects, subjectOptions)
-      const teacherValue = safeExtractValue(data.teachers, teacherOptions)
+      const classValue = safeExtractValue(data.classes, classOptions);
+      const subjectValue = safeExtractValue(data.subjects, subjectOptions);
+      const teacherValue = safeExtractValue(data.teachers, teacherOptions);
 
       // Validate extracted values
       if (!classValue) {
-        throw new Error("শ্রেণীর তথ্য সঠিক নয়")
+        throw new Error("শ্রেণীর তথ্য সঠিক নয়");
       }
       if (!subjectValue) {
-        throw new Error("বিষয়ের তথ্য সঠিক নয়")
+        throw new Error("বিষয়ের তথ্য সঠিক নয়");
       }
       if (!teacherValue) {
-        throw new Error("শিক্ষকের তথ্য সঠিক নয়")
+        throw new Error("শিক্ষকের তথ্য সঠিক নয়");
       }
 
       const formattedData = {
@@ -407,7 +469,9 @@ const { teacherOptions, subjectOptions, classOptions } = useAcademicOptions()
         lessonEvaluationTask: lessonEvaluationTask,
         handwrittenTask: handwrittenTask,
         studentEvaluations: students.map((student: any) => {
-          const existingEval = studentEvaluations.find((evaluation) => evaluation.studentId === student._id)
+          const existingEval = studentEvaluations.find(
+            (evaluation) => evaluation.studentId === student._id
+          );
 
           if (noTaskForClass) {
             return {
@@ -417,20 +481,22 @@ const { teacherOptions, subjectOptions, classOptions } = useAcademicOptions()
               attendance: existingEval?.attendance || "উপস্থিত",
               parentSignature: false,
               comments: "",
-            }
+            };
           } else {
             return (() => {
-              const attendanceValue = existingEval?.attendance || "উপস্থিত"
+              const attendanceValue = existingEval?.attendance || "উপস্থিত";
 
               if (attendanceValue === "অনুপস্থিত") {
                 return {
-                  studentId: existingEval ? existingEval.studentId : student._id,
+                  studentId: existingEval
+                    ? existingEval.studentId
+                    : student._id,
                   attendance: "অনুপস্থিত",
                   lessonEvaluation: "অনুপস্থিত",
                   handwriting: "অনুপস্থিত",
                   parentSignature: false,
                   comments: "",
-                }
+                };
               }
 
               if (noTaskForClass) {
@@ -441,40 +507,47 @@ const { teacherOptions, subjectOptions, classOptions } = useAcademicOptions()
                   attendance: attendanceValue,
                   parentSignature: false,
                   comments: "",
-                }
+                };
               }
               return {
                 studentId: existingEval ? existingEval.studentId : student._id,
-                lessonEvaluation: lessonEvaluationTask ? "পাঠ নেই" : existingEval?.lessonEvaluation || "পড়া শিখেছে",
-                handwriting: handwrittenTask ? "কাজ নেই" : existingEval?.handwriting || "লিখেছে",
+                lessonEvaluation: lessonEvaluationTask
+                  ? "পাঠ নেই"
+                  : existingEval?.lessonEvaluation || "পড়া শিখেছে",
+                handwriting: handwrittenTask
+                  ? "কাজ নেই"
+                  : existingEval?.handwriting || "লিখেছে",
                 attendance: attendanceValue,
                 parentSignature:
                   noTaskForClass || (lessonEvaluationTask && handwrittenTask)
                     ? false
                     : existingEval?.parentSignature || true,
                 comments: existingEval?.comments || "",
-              }
-            })()
+              };
+            })();
           }
         }),
         todayLesson: todayLessonId,
         homeTask: homeTaskId,
-      }
+      };
 
-      console.log("Formatted data for submission:", formattedData)
+      console.log("Formatted data for submission:", formattedData);
 
-      let response: any = null
-      let apiError: any = null
+      let response: any = null;
+      let apiError: any = null;
 
       try {
         if (!id) {
-          response = await createClassReport(formattedData).unwrap()
+          response = await createClassReport(formattedData).unwrap();
         } else {
-          response = await updateClassReport({ id, data: formattedData }).unwrap()
+          response = await updateClassReport({
+            id,
+            data: formattedData,
+          }).unwrap();
         }
       } catch (error: any) {
-        apiError = error
-        console.error("API call failed:", error)
+        apiError = error;
+        console.error("API call failed:", error);
       }
 
       // Enhanced response handling with comprehensive checks
@@ -485,22 +558,25 @@ const { teacherOptions, subjectOptions, classOptions } = useAcademicOptions()
           response.status === "success" ||
           response.statusCode === 200 ||
           response.statusCode === 201 ||
-          (response.data && response.data.success === true)
+          (response.data && response.data.success === true);
 
         if (isSuccess) {
-          const successMessage = id ? "Class report updated successfully!" : "Class report saved successfully!"
-          const successMessageBn = id ? "ক্লাস রিপোর্ট সফলভাবে আপডেট হয়েছে!" : "ক্লাস রিপোর্ট সফলভাবে সংরক্ষিত হয়েছে!"
+          const successMessage = id
+            ? "Class report updated successfully!"
+            : "Class report saved successfully!";
+          const successMessageBn = id
+            ? "ক্লাস রিপোর্ট সফলভাবে আপডেট হয়েছে!"
+            : "ক্লাস রিপোর্ট সফলভাবে সংরক্ষিত হয়েছে!";
 
-
-          toast.success(successMessageBn)
+          toast.success(successMessageBn);
 
           // Add delay before navigation for mobile
           if (isMobile) {
-            await new Promise((resolve) => setTimeout(resolve, 1000))
+            await new Promise((resolve) => setTimeout(resolve, 1000));
           }
 
-          router.push("/dashboard/classes/report/list")
-          return
+          router.push("/dashboard/classes/report/list");
+          return;
         }
       }
 
@@ -510,25 +586,28 @@ const { teacherOptions, subjectOptions, classOptions } = useAcademicOptions()
         response?.error ||
         apiError?.data?.message ||
         apiError?.message ||
-        "Failed to save class report"
+        "Failed to save class report";
 
-      throw new Error(errorMessage)
+      throw new Error(errorMessage);
     } catch (error: any) {
-      console.error("Error in handleSubmit:", error)
+      console.error("Error in handleSubmit:", error);
 
       // Enhanced error handling
-      let errorMessage = "Failed to save class report"
+      let errorMessage = "Failed to save class report";
 
       if (error.message) {
-        errorMessage = error.message
+        errorMessage = error.message;
       } else if (error.data?.message) {
-        errorMessage = error.data.message
+        errorMessage = error.data.message;
       } else if (typeof error === "string") {
-        errorMessage = error
+        errorMessage = error;
       }
 
       // Log additional debug info for mobile
-      const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+      const isMobile =
+        /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+          navigator.userAgent
+        );
       if (isMobile) {
         console.log("Mobile error debug:", {
           error,
@@ -536,48 +615,50 @@ const { teacherOptions, subjectOptions, classOptions } = useAcademicOptions()
           studentEvaluations: studentEvaluations.length,
           networkStatus: navigator.onLine ? "online" : "offline",
           userAgent: navigator.userAgent,
-        })
+        });
       }
-      toast.error(errorMessage)
+      toast.error(errorMessage);
 
       // Additional mobile-specific error handling
       if (!navigator.onLine) {
-        toast.error("নেটওয়ার্ক সমস্যা। অনুগ্রহ করে আপনার ইন্টারনেট সংযোগ পরীক্ষা করুন।")
+        toast.error(
+          "নেটওয়ার্ক সমস্যা। অনুগ্রহ করে আপনার ইন্টারনেট সংযোগ পরীক্ষা করুন।"
+        );
       }
     } finally {
-      setIsSubmittingForm(false)
+      setIsSubmittingForm(false);
     }
-  }
+  };
 
   const handleMenuClose = () => {
-    setAnchorEl(null)
-  }
+    setAnchorEl(null);
+  };
 
   const handleDeleteClick = () => {
-    setDeleteDialogOpen(true)
-    setAnchorEl(null)
-  }
+    setDeleteDialogOpen(true);
+    setAnchorEl(null);
+  };
 
   const handleDeleteConfirm = () => {
-    setDeleteDialogOpen(false)
-    setSelectedStudent(null)
-  }
+    setDeleteDialogOpen(false);
+    setSelectedStudent(null);
+  };
 
   const handleDeleteCancel = () => {
-    setDeleteDialogOpen(false)
-  }
-
-
+    setDeleteDialogOpen(false);
+  };
 
   const handleLessonEvaluationChange = (studentId: string, value: string) => {
-    const updatedEvaluations = [...studentEvaluations]
-    const index = updatedEvaluations.findIndex((evaluation) => evaluation.studentId === studentId)
+    const updatedEvaluations = [...studentEvaluations];
+    const index = updatedEvaluations.findIndex(
+      (evaluation) => evaluation.studentId === studentId
+    );
 
     if (index !== -1) {
       updatedEvaluations[index] = {
         ...updatedEvaluations[index],
         lessonEvaluation: value,
-      }
+      };
     } else {
       updatedEvaluations.push({
         studentId,
@@ -586,21 +667,23 @@ const { teacherOptions, subjectOptions, classOptions } = useAcademicOptions()
         attendance: "উপস্থিত",
         parentSignature: true,
         comments: "",
-      })
+      });
     }
 
-    setStudentEvaluations(updatedEvaluations)
-  }
+    setStudentEvaluations(updatedEvaluations);
+  };
 
   const handleHandwritingChange = (studentId: string, value: string) => {
-    const updatedEvaluations = [...studentEvaluations]
-    const index = updatedEvaluations.findIndex((evaluation) => evaluation.studentId === studentId)
+    const updatedEvaluations = [...studentEvaluations];
+    const index = updatedEvaluations.findIndex(
+      (evaluation) => evaluation.studentId === studentId
+    );
 
     if (index !== -1) {
       updatedEvaluations[index] = {
         ...updatedEvaluations[index],
         handwriting: value,
-      }
+      };
     } else {
       updatedEvaluations.push({
         studentId,
@@ -609,21 +692,23 @@ const { teacherOptions, subjectOptions, classOptions } = useAcademicOptions()
         attendance: "উপস্থিত",
         parentSignature: true,
         comments: "",
-      })
+      });
     }
 
-    setStudentEvaluations(updatedEvaluations)
-  }
+    setStudentEvaluations(updatedEvaluations);
+  };
 
   const handleAttendanceChange = (studentId: string, value: string) => {
-    const updatedEvaluations = [...studentEvaluations]
-    const index = updatedEvaluations.findIndex((evaluation) => evaluation.studentId === studentId)
+    const updatedEvaluations = [...studentEvaluations];
+    const index = updatedEvaluations.findIndex(
+      (evaluation) => evaluation.studentId === studentId
+    );
 
     if (index !== -1) {
       updatedEvaluations[index] = {
         ...updatedEvaluations[index],
         attendance: value,
-      }
+      };
     } else {
       updatedEvaluations.push({
         studentId,
@@ -632,21 +717,23 @@ const { teacherOptions, subjectOptions, classOptions } = useAcademicOptions()
         attendance: value,
         parentSignature: true,
         comments: "",
-      })
+      });
     }
 
-    setStudentEvaluations(updatedEvaluations)
-  }
+    setStudentEvaluations(updatedEvaluations);
+  };
 
   const handleParentSignatureChange = (studentId: string, checked: boolean) => {
-    const updatedEvaluations = [...studentEvaluations]
-    const index = updatedEvaluations.findIndex((evaluation) => evaluation.studentId === studentId)
+    const updatedEvaluations = [...studentEvaluations];
+    const index = updatedEvaluations.findIndex(
+      (evaluation) => evaluation.studentId === studentId
+    );
 
     if (index !== -1) {
       updatedEvaluations[index] = {
         ...updatedEvaluations[index],
         parentSignature: checked,
-      }
+      };
     } else {
       updatedEvaluations.push({
         studentId,
@@ -655,21 +742,23 @@ const { teacherOptions, subjectOptions, classOptions } = useAcademicOptions()
         attendance: "উপস্থিত",
         parentSignature: checked,
         comments: "",
-      })
+      });
     }
 
-    setStudentEvaluations(updatedEvaluations)
-  }
+    setStudentEvaluations(updatedEvaluations);
+  };
 
   const handleCommentsChange = (studentId: string, value: string) => {
-    const updatedEvaluations = [...studentEvaluations]
-    const index = updatedEvaluations.findIndex((evaluation) => evaluation.studentId === studentId)
+    const updatedEvaluations = [...studentEvaluations];
+    const index = updatedEvaluations.findIndex(
+      (evaluation) => evaluation.studentId === studentId
+    );
 
     if (index !== -1) {
       updatedEvaluations[index] = {
         ...updatedEvaluations[index],
         comments: value,
-      }
+      };
     } else {
       updatedEvaluations.push({
         studentId,
@@ -678,17 +767,17 @@ const { teacherOptions, subjectOptions, classOptions } = useAcademicOptions()
         attendance: "উপস্থিত",
         parentSignature: true,
         comments: value,
-      })
+      });
     }
 
-    setStudentEvaluations(updatedEvaluations)
-  }
+    setStudentEvaluations(updatedEvaluations);
+  };
 
   const sortedVehicleName = subjectName.sort((a, b) => {
-    if (a.value < b.value) return -1
-    if (a.value > b.value) return 1
-    return 0
-  })
+    if (a.value < b.value) return -1;
+    if (a.value > b.value) return 1;
+    return 0;
+  });
 
   // const handleClassName = (event: any, newValue: any) => {
   //   setSelectedBrand(newValue)
@@ -700,38 +789,51 @@ const { teacherOptions, subjectOptions, classOptions } = useAcademicOptions()
 
   const handleClassChange = (event: any, newValue: any) => {
     if (id && isEditMode) {
-      toast("Cannot change class in edit mode")
-      return
+      toast("Cannot change class in edit mode");
+      return;
     }
 
     if (newValue) {
       setFilters((prev) => ({
         ...prev,
         class: newValue.label,
-      }))
-      refetch()
+      }));
+      refetch();
     } else {
       setFilters((prev) => ({
         ...prev,
         class: "",
-      }))
+      }));
     }
-  }
+  };
 
   const getStudentEvaluation = (studentId: string) => {
-    const evaluation = studentEvaluations.find((evaluation) => evaluation.studentId === studentId)
+    const evaluation = studentEvaluations.find(
+      (evaluation) => evaluation.studentId === studentId
+    );
 
     if (!evaluation) {
       const defaultEvaluation = {
         studentId,
-        lessonEvaluation: noTaskForClass ? "পাঠ নেই" : lessonEvaluationTask ? "পাঠ নেই" : "পড়া শিখেছে",
-        handwriting: noTaskForClass ? "কাজ নেই" : handwrittenTask ? "কাজ নেই" : "লিখেছে",
+        lessonEvaluation: noTaskForClass
+          ? "পাঠ নেই"
+          : lessonEvaluationTask
+            ? "পাঠ নেই"
+            : "পড়া শিখেছে",
+        handwriting: noTaskForClass
+          ? "কাজ নেই"
+          : handwrittenTask
+            ? "কাজ নেই"
+            : "লিখেছে",
         attendance: "উপস্থিত",
-        parentSignature: noTaskForClass || (lessonEvaluationTask && handwrittenTask) ? false : true,
+        parentSignature:
+          noTaskForClass || (lessonEvaluationTask && handwrittenTask)
+            ? false
+            : true,
         comments: "",
-      }
-      setStudentEvaluations((prev) => [...prev, defaultEvaluation])
-      return defaultEvaluation
+      };
+      setStudentEvaluations((prev) => [...prev, defaultEvaluation]);
+      return defaultEvaluation;
     }
 
     // If noTaskForClass is enabled or individual fields are disabled, show appropriate values
@@ -741,63 +843,78 @@ const { teacherOptions, subjectOptions, classOptions } = useAcademicOptions()
         lessonEvaluation: "পাঠ নেই",
         handwriting: "কাজ নেই",
         parentSignature: false,
-      }
+      };
     } else {
       return {
         ...evaluation,
-        lessonEvaluation: lessonEvaluationTask ? "পাঠ নেই" : evaluation.lessonEvaluation,
+        lessonEvaluation: lessonEvaluationTask
+          ? "পাঠ নেই"
+          : evaluation.lessonEvaluation,
         handwriting: handwrittenTask ? "কাজ নেই" : evaluation.handwriting,
-        parentSignature: lessonEvaluationTask && handwrittenTask ? false : evaluation.parentSignature,
-      }
+        parentSignature:
+          lessonEvaluationTask && handwrittenTask
+            ? false
+            : evaluation.parentSignature,
+      };
     }
-  }
+  };
 
   // Handle Today's Lesson dialog
   const handleOpenTodayLessonDialog = () => {
-    setTodayLessonDialogOpen(true)
-  }
+    setTodayLessonDialogOpen(true);
+  };
 
   const handleCloseTodayLessonDialog = () => {
-    setTodayLessonDialogOpen(false)
-  }
+    setTodayLessonDialogOpen(false);
+  };
 
   const handleSaveTodayLesson = (lessonId: string) => {
-    setTodayLessonId(lessonId)
-    toast.success("আজকের পাঠ যোগ করা হয়েছে!")
-  }
+    setTodayLessonId(lessonId);
+    toast.success("আজকের পাঠ যোগ করা হয়েছে!");
+  };
 
   const handleOpenTodayTaskDialog = () => {
-    setTodayTaskDialogOpen(true)
-  }
+    setTodayTaskDialogOpen(true);
+  };
 
   const handleCloseTodayTaskDialog = () => {
-    setTodayTaskDialogOpen(false)
-  }
+    setTodayTaskDialogOpen(false);
+  };
 
   const handleSaveTodayTask = (taskId: string) => {
-    setHomeTaskId(taskId)
-    toast.success("বাড়ির কাজ যোগ করা হয়েছে!")
-  }
+    setHomeTaskId(taskId);
+    toast.success("বাড়ির কাজ যোগ করা হয়েছে!");
+  };
 
   const handleNoTaskChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const checked = event.target.checked
-    setNoTaskForClass(checked)
-    toast.success(checked ? "আজ কোন কাজ/হোমওয়ার্ক নেই!" : "কাজ/হোমওয়ার্ক স্ট্যাটাস আপডেট করা হয়েছে")
-  }
+    const checked = event.target.checked;
+    setNoTaskForClass(checked);
+    toast.success(
+      checked
+        ? "আজ কোন কাজ/হোমওয়ার্ক নেই!"
+        : "কাজ/হোমওয়ার্ক স্ট্যাটাস আপডেট করা হয়েছে"
+    );
+  };
 
   useEffect(() => {
     // Mobile-specific optimizations
-    const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera|Realme Mini/i.test(navigator.userAgent)
+    const isMobile =
+      /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera|Realme Mini/i.test(
+        navigator.userAgent
+      );
 
     if (isMobile) {
       // Prevent zoom on input focus for iOS
-      const viewport = document.querySelector('meta[name="viewport"]')
+      const viewport = document.querySelector('meta[name="viewport"]');
       if (viewport) {
-        viewport.setAttribute("content", "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no")
+        viewport.setAttribute(
+          "content",
+          "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+        );
       }
 
       // Add mobile-specific styles
-      const style = document.createElement("style")
+      const style = document.createElement("style");
       style.textContent = `
         .MuiAutocomplete-popper {
           z-index: 9999 !important;
@@ -808,17 +925,20 @@ const { teacherOptions, subjectOptions, classOptions } = useAcademicOptions()
         .MuiInputBase-input {
           font-size: 16px !important;
         }
-      `
-      document.head.appendChild(style)
+      `;
+      document.head.appendChild(style);
 
       return () => {
-        document.head.removeChild(style)
+        document.head.removeChild(style);
         if (viewport) {
-          viewport.setAttribute("content", "width=device-width, initial-scale=1.0")
+          viewport.setAttribute(
+            "content",
+            "width=device-width, initial-scale=1.0"
+          );
         }
-      }
+      };
     }
-  }, [])
+  }, []);
 
   return (
     <ThemeProvider theme={theme}>
@@ -826,10 +946,27 @@ const { teacherOptions, subjectOptions, classOptions } = useAcademicOptions()
         <div></div>
       ) : (
         <>
-
-          <CraftForm onSubmit={handleSubmit} defaultValues={defaultValues || undefined}>
-            <Box sx={{ flexGrow: 1, bgcolor: "background.default", minHeight: "100vh", borderRadius: 2 }}>
-              <Container maxWidth={false} sx={{ mt: 0, mb: 8, borderRadius: 2, px: { xs: 0, sm: 0, md: 4, lg: 5 } }}>
+          <CraftForm
+            onSubmit={handleSubmit}
+            defaultValues={defaultValues || undefined}
+          >
+            <Box
+              sx={{
+                flexGrow: 1,
+                bgcolor: "background.default",
+                minHeight: "100vh",
+                borderRadius: 2,
+              }}
+            >
+              <Container
+                maxWidth={false}
+                sx={{
+                  mt: 0,
+                  mb: 8,
+                  borderRadius: 2,
+                  px: { xs: 0, sm: 0, md: 4, lg: 5 },
+                }}
+              >
                 <Fade in={true} timeout={800}>
                   <Box>
                     <Box
@@ -854,12 +991,22 @@ const { teacherOptions, subjectOptions, classOptions } = useAcademicOptions()
                       >
                         {id ? "Edit Report" : "+ Add New Report"}
                         {isEditMode && (
-                          <Typography component="span" variant="subtitle1" sx={{ ml: 2, color: "text.secondary" }}>
+                          <Typography
+                            component="span"
+                            variant="subtitle1"
+                            sx={{ ml: 2, color: "text.secondary" }}
+                          >
                             (Editing existing report)
                           </Typography>
                         )}
                       </Typography>
-                      <Box sx={{ display: "flex", gap: { xs: 0.5, sm: 2 }, flexWrap: "wrap" }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          gap: { xs: 0.5, sm: 2 },
+                          flexWrap: "wrap",
+                        }}
+                      >
                         <Button
                           variant="contained"
                           color="primary"
@@ -894,8 +1041,16 @@ const { teacherOptions, subjectOptions, classOptions } = useAcademicOptions()
                           type="submit"
                           variant="contained"
                           color="primary"
-                          startIcon={isSubmittingForm ? <CircularProgress size={16} color="inherit" /> : <Save />}
-                          disabled={isSubmittingForm || isSubmitting || isUpdating}
+                          startIcon={
+                            isSubmittingForm ? (
+                              <CircularProgress size={16} color="inherit" />
+                            ) : (
+                              <Save />
+                            )
+                          }
+                          disabled={
+                            isSubmittingForm || isSubmitting || isUpdating
+                          }
                           sx={{
                             bgcolor: "#4F0187",
                             borderRadius: 2,
@@ -904,12 +1059,17 @@ const { teacherOptions, subjectOptions, classOptions } = useAcademicOptions()
                             px: { xs: 2, sm: 2 },
                           }}
                         >
-                          {isSubmittingForm || isSubmitting || isUpdating ? "Saving..." : "Save"}
+                          {isSubmittingForm || isSubmitting || isUpdating
+                            ? "Saving..."
+                            : "Save"}
                         </Button>
                       </Box>
                     </Box>
 
-                    <Paper elevation={0} sx={{  mb: 4, width: "100%", overflow: "hidden" }}>
+                    <Paper
+                      elevation={0}
+                      sx={{ mb: 4, width: "100%", overflow: "hidden" }}
+                    >
                       <Box sx={boxStyleReport}>
                         <Grid container spacing={2} alignItems="center">
                           <Grid item xs={6} sm={6} md={3} lg={2.5}>
@@ -926,7 +1086,6 @@ const { teacherOptions, subjectOptions, classOptions } = useAcademicOptions()
                               selectOnFocus={true}
                               handleHomeEndKeys={true}
                             />
-
                           </Grid>
                           <Grid item xs={6} sm={6} md={2} lg={2.5}>
                             <CraftIntAutoComplete
@@ -974,16 +1133,42 @@ const { teacherOptions, subjectOptions, classOptions } = useAcademicOptions()
                       {isLoading ? (
                         <Box sx={{ p: 2 }}>
                           {Array.from(new Array(5)).map((_, index) => (
-                            <Box key={index} sx={{ display: "flex", py: 2, px: 2, alignItems: "center" }}>
-                              <Skeleton variant="circular" width={40} height={40} sx={{ mr: 2 }} />
+                            <Box
+                              key={index}
+                              sx={{
+                                display: "flex",
+                                py: 2,
+                                px: 2,
+                                alignItems: "center",
+                              }}
+                            >
+                              <Skeleton
+                                variant="circular"
+                                width={40}
+                                height={40}
+                                sx={{ mr: 2 }}
+                              />
                               <Box sx={{ width: "100%" }}>
-                                <Skeleton variant="text" width="40%" height={30} />
+                                <Skeleton
+                                  variant="text"
+                                  width="40%"
+                                  height={30}
+                                />
                                 <Box sx={{ display: "flex", mt: 1 }}>
-                                  <Skeleton variant="text" width="20%" sx={{ mr: 2 }} />
+                                  <Skeleton
+                                    variant="text"
+                                    width="20%"
+                                    sx={{ mr: 2 }}
+                                  />
                                   <Skeleton variant="text" width="30%" />
                                 </Box>
                               </Box>
-                              <Skeleton variant="rectangular" width={100} height={36} sx={{ borderRadius: 1 }} />
+                              <Skeleton
+                                variant="rectangular"
+                                width={100}
+                                height={36}
+                                sx={{ borderRadius: 1 }}
+                              />
                             </Box>
                           ))}
                         </Box>
@@ -993,29 +1178,39 @@ const { teacherOptions, subjectOptions, classOptions } = useAcademicOptions()
                             <Tooltip title="Disable all tasks">
                               <FormControlLabel
                                 control={
-                                  <Switch checked={noTaskForClass} onChange={handleNoTaskChange} color="primary" />
+                                  <Switch
+                                    checked={noTaskForClass}
+                                    onChange={handleNoTaskChange}
+                                    color="primary"
+                                  />
                                 }
                                 label={
-                                  <Typography variant="caption" sx={{ fontSize: 15 }}>
+                                  <Typography
+                                    variant="caption"
+                                    sx={{ fontSize: 15 }}
+                                  >
                                     আজকে কোন পাঠ নেই
                                   </Typography>
                                 }
                                 labelPlacement="start"
                               />
                             </Tooltip>
-                          </div>                      
+                          </div>
 
                           <div className="max-[320px]:block max-[320px]:w-[250px] max-[375px]:block max-[375px]:w-[300px] max-[425px]:block max-[425px]:w-[380px] max-[800px]:border max-[800px]:border-gray-300 max-[800px]:rounded   max-[800px]:block max-[800px]:max-w-[100vw] max-[800px]:relative max-[800px]:whitespace-nowrap max-[800px]:overflow-x-auto">
-
                             <Table
                               sx={{
                                 minWidth: 900,
                                 "@media (min-width: 900px)": {
                                   width: "100%",
                                   minWidth: "100%",
-                                  tableLayout: { sm: "auto", md: "fixed", lg: "fixed" },
-                                  px:10
-                                }, 
+                                  tableLayout: {
+                                    sm: "auto",
+                                    md: "fixed",
+                                    lg: "fixed",
+                                  },
+                                  px: 10,
+                                },
                               }}
                             >
                               <TableHead>
@@ -1031,13 +1226,18 @@ const { teacherOptions, subjectOptions, classOptions } = useAcademicOptions()
                                           control={
                                             <Switch
                                               checked={lessonEvaluationTask}
-                                              onChange={handleLessonEvaluationTaskChange}
+                                              onChange={
+                                                handleLessonEvaluationTaskChange
+                                              }
                                               color="primary"
                                               disabled={noTaskForClass}
                                             />
                                           }
                                           label={
-                                            <Typography variant="caption" sx={{ fontSize: 15 }}>
+                                            <Typography
+                                              variant="caption"
+                                              sx={{ fontSize: 15 }}
+                                            >
                                               পাঠ মূল্যায়ন
                                             </Typography>
                                           }
@@ -1054,13 +1254,18 @@ const { teacherOptions, subjectOptions, classOptions } = useAcademicOptions()
                                           control={
                                             <Switch
                                               checked={handwrittenTask}
-                                              onChange={handleHandwrittenTaskChange}
+                                              onChange={
+                                                handleHandwrittenTaskChange
+                                              }
                                               color="primary"
                                               disabled={noTaskForClass}
                                             />
                                           }
                                           label={
-                                            <Typography variant="caption" sx={{ fontSize: 15 }}>
+                                            <Typography
+                                              variant="caption"
+                                              sx={{ fontSize: 15 }}
+                                            >
                                               হাতের লিখা
                                             </Typography>
                                           }
@@ -1072,7 +1277,10 @@ const { teacherOptions, subjectOptions, classOptions } = useAcademicOptions()
                                   <TableCell align="center" width="10%">
                                     অভিভাবকের স্বাক্ষর
                                   </TableCell>
-                                  <TableCell align="center" sx={{ minWidth: 200 }}>
+                                  <TableCell
+                                    align="center"
+                                    sx={{ minWidth: 200 }}
+                                  >
                                     মন্তব্য
                                   </TableCell>
                                 </TableRow>
@@ -1080,14 +1288,28 @@ const { teacherOptions, subjectOptions, classOptions } = useAcademicOptions()
                               <TableBody>
                                 {students.length === 0 && (
                                   <TableRow>
-                                    <TableCell colSpan={6} align="center" sx={{ py: 8 }}>
+                                    <TableCell
+                                      colSpan={6}
+                                      align="center"
+                                      sx={{ py: 8 }}
+                                    >
                                       <Box sx={{ textAlign: "center" }}>
-                                        <SearchIcon sx={{ fontSize: 48, color: "text.disabled", mb: 2 }} />
+                                        <SearchIcon
+                                          sx={{
+                                            fontSize: 48,
+                                            color: "text.disabled",
+                                            mb: 2,
+                                          }}
+                                        />
                                         <Typography variant="h6" gutterBottom>
                                           No students found
                                         </Typography>
-                                        <Typography variant="body2" color="text.secondary">
-                                          Try adjusting your search or filter to find what you&apos;re looking for.
+                                        <Typography
+                                          variant="body2"
+                                          color="text.secondary"
+                                        >
+                                          Try adjusting your search or filter to
+                                          find what you&apos;re looking for.
                                         </Typography>
                                       </Box>
                                     </TableCell>
@@ -1096,26 +1318,45 @@ const { teacherOptions, subjectOptions, classOptions } = useAcademicOptions()
 
                                 {students.length > 0 ? (
                                   students.map((student: any) => {
-                                    const evaluation = getStudentEvaluation(student._id)
-                                    const isAbsent = evaluation.attendance !== "উপস্থিত"
+                                    const evaluation = getStudentEvaluation(
+                                      student._id
+                                    );
+                                    const isAbsent =
+                                      evaluation.attendance !== "উপস্থিত";
                                     return (
-                                      <TableRow key={student._id} sx={{ transition: "all 0.2s" }}>
+                                      <TableRow
+                                        key={student._id}
+                                        sx={{ transition: "all 0.2s" }}
+                                      >
                                         <TableCell component="th" scope="row">
-                                          <Typography variant="subtitle2" sx={{ fontWeight: 600 }}>
+                                          <Typography
+                                            variant="subtitle2"
+                                            sx={{ fontWeight: 600 }}
+                                          >
                                             {student.name}
                                           </Typography>
-                                          <Typography variant="caption" color="text.secondary">
-                                            {student.studentId} • {student.className}, {student.section}
+                                          <Typography
+                                            variant="caption"
+                                            color="text.secondary"
+                                          >
+                                            {student.studentId} •{" "}
+                                            {student.className},{" "}
+                                            {student.section}
                                           </Typography>
                                         </TableCell>
                                         <TableCell align="center">
                                           <Checkbox
                                             color="primary"
-                                            checked={evaluation.attendance === "উপস্থিত"}
+                                            checked={
+                                              evaluation.attendance ===
+                                              "উপস্থিত"
+                                            }
                                             onChange={(e) =>
                                               handleAttendanceChange(
                                                 student._id,
-                                                e.target.checked ? "উপস্থিত" : "অনুপস্থিত",
+                                                e.target.checked
+                                                  ? "উপস্থিত"
+                                                  : "অনুপস্থিত"
                                               )
                                             }
                                           />
@@ -1123,22 +1364,42 @@ const { teacherOptions, subjectOptions, classOptions } = useAcademicOptions()
                                         <TableCell align="center">
                                           <FormControl
                                             fullWidth
-                                            sx={{ minWidth: { xs: 120, sm: 140, md: 160 } }}
-                                            disabled={isAbsent || noTaskForClass || lessonEvaluationTask}
+                                            sx={{
+                                              minWidth: {
+                                                xs: 120,
+                                                sm: 140,
+                                                md: 160,
+                                              },
+                                            }}
+                                            disabled={
+                                              isAbsent ||
+                                              noTaskForClass ||
+                                              lessonEvaluationTask
+                                            }
                                           >
-                                            <InputLabel id={`lesson-label-${student._id}`}>
+                                            <InputLabel
+                                              id={`lesson-label-${student._id}`}
+                                            >
                                               Lesson Evaluation
                                             </InputLabel>
                                             <Select
                                               labelId={`lesson-label-${student._id}`}
-                                              value={evaluation.lessonEvaluation}
+                                              value={
+                                                evaluation.lessonEvaluation
+                                              }
                                               label="Lesson Evaluation"
                                               onChange={(e) =>
-                                                handleLessonEvaluationChange(student._id, e.target.value)
+                                                handleLessonEvaluationChange(
+                                                  student._id,
+                                                  e.target.value
+                                                )
                                               }
                                             >
                                               {lessonEvaluation.map((item) => (
-                                                <MenuItem key={item} value={item}>
+                                                <MenuItem
+                                                  key={item}
+                                                  value={item}
+                                                >
                                                   {item}
                                                 </MenuItem>
                                               ))}
@@ -1149,20 +1410,43 @@ const { teacherOptions, subjectOptions, classOptions } = useAcademicOptions()
                                         <TableCell align="center">
                                           <FormControl
                                             fullWidth
-                                            sx={{ minWidth: { xs: 120, sm: 140, md: 160 } }}
-                                            disabled={isAbsent || noTaskForClass || handwrittenTask}
+                                            sx={{
+                                              minWidth: {
+                                                xs: 120,
+                                                sm: 140,
+                                                md: 160,
+                                              },
+                                            }}
+                                            disabled={
+                                              isAbsent ||
+                                              noTaskForClass ||
+                                              handwrittenTask
+                                            }
                                           >
-                                            <InputLabel id={`handwriting-label-${student._id}`}>
+                                            <InputLabel
+                                              id={`handwriting-label-${student._id}`}
+                                            >
                                               Handwriting
                                             </InputLabel>
                                             <Select
                                               labelId={`handwriting-label-${student._id}`}
-                                              value={evaluation.handwriting || "লিখেছে"}
+                                              value={
+                                                evaluation.handwriting ||
+                                                "লিখেছে"
+                                              }
                                               label="Handwriting"
-                                              onChange={(e) => handleHandwritingChange(student._id, e.target.value)}
+                                              onChange={(e) =>
+                                                handleHandwritingChange(
+                                                  student._id,
+                                                  e.target.value
+                                                )
+                                              }
                                             >
                                               {handWritting.map((item) => (
-                                                <MenuItem key={item} value={item}>
+                                                <MenuItem
+                                                  key={item}
+                                                  value={item}
+                                                >
                                                   {item}
                                                 </MenuItem>
                                               ))}
@@ -1173,12 +1457,21 @@ const { teacherOptions, subjectOptions, classOptions } = useAcademicOptions()
                                         <TableCell align="center">
                                           <Checkbox
                                             color="primary"
-                                            checked={evaluation.parentSignature === true}
+                                            checked={
+                                              evaluation.parentSignature ===
+                                              true
+                                            }
                                             onChange={(e) =>
-                                              handleParentSignatureChange(student._id, e.target.checked)
+                                              handleParentSignatureChange(
+                                                student._id,
+                                                e.target.checked
+                                              )
                                             }
                                             disabled={
-                                              isAbsent || noTaskForClass || (lessonEvaluationTask && handwrittenTask)
+                                              isAbsent ||
+                                              noTaskForClass ||
+                                              (lessonEvaluationTask &&
+                                                handwrittenTask)
                                             }
                                           />
                                         </TableCell>
@@ -1190,23 +1483,44 @@ const { teacherOptions, subjectOptions, classOptions } = useAcademicOptions()
                                             label="মন্তব্য"
                                             placeholder="মন্তব্য"
                                             value={evaluation.comments || ""}
-                                            onChange={(e) => handleCommentsChange(student._id, e.target.value)}
-                                            disabled={isAbsent || noTaskForClass}
+                                            onChange={(e) =>
+                                              handleCommentsChange(
+                                                student._id,
+                                                e.target.value
+                                              )
+                                            }
+                                            disabled={
+                                              isAbsent || noTaskForClass
+                                            }
                                           />
                                         </TableCell>
                                       </TableRow>
-                                    )
+                                    );
                                   })
                                 ) : (
                                   <TableRow>
-                                    <TableCell colSpan={8} align="center" sx={{ py: 8 }}>
+                                    <TableCell
+                                      colSpan={8}
+                                      align="center"
+                                      sx={{ py: 8 }}
+                                    >
                                       <Box sx={{ textAlign: "center" }}>
-                                        <SearchIcon sx={{ fontSize: 48, color: "text.disabled", mb: 2 }} />
+                                        <SearchIcon
+                                          sx={{
+                                            fontSize: 48,
+                                            color: "text.disabled",
+                                            mb: 2,
+                                          }}
+                                        />
                                         <Typography variant="h6" gutterBottom>
                                           No students found
                                         </Typography>
-                                        <Typography variant="body2" color="text.secondary">
-                                          Try adjusting your search or filter to find what you&apos;re looking for.
+                                        <Typography
+                                          variant="body2"
+                                          color="text.secondary"
+                                        >
+                                          Try adjusting your search or filter to
+                                          find what you&apos;re looking for.
                                         </Typography>
                                       </Box>
                                     </TableCell>
@@ -1238,15 +1552,24 @@ const { teacherOptions, subjectOptions, classOptions } = useAcademicOptions()
               }}
             >
               <MenuItem onClick={handleMenuClose} sx={{ py: 1.5 }}>
-                <VisibilityIcon fontSize="small" sx={{ mr: 2, color: "info.main" }} />
+                <VisibilityIcon
+                  fontSize="small"
+                  sx={{ mr: 2, color: "info.main" }}
+                />
                 View Details
               </MenuItem>
               <MenuItem onClick={handleMenuClose} sx={{ py: 1.5 }}>
-                <EditIcon fontSize="small" sx={{ mr: 2, color: "warning.main" }} />
+                <EditIcon
+                  fontSize="small"
+                  sx={{ mr: 2, color: "warning.main" }}
+                />
                 Edit
               </MenuItem>
               <Divider />
-              <MenuItem onClick={handleDeleteClick} sx={{ py: 1.5, color: "error.main" }}>
+              <MenuItem
+                onClick={handleDeleteClick}
+                sx={{ py: 1.5, color: "error.main" }}
+              >
                 <DeleteIcon fontSize="small" sx={{ mr: 2 }} />
                 Delete
               </MenuItem>
@@ -1264,14 +1587,18 @@ const { teacherOptions, subjectOptions, classOptions } = useAcademicOptions()
               }}
             >
               <DialogTitle sx={{ pb: 1 }}>
-                <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
+                <Typography
+                  variant="h6"
+                  component="div"
+                  sx={{ fontWeight: 600 }}
+                >
                   Delete Student
                 </Typography>
               </DialogTitle>
               <DialogContent>
                 <DialogContentText>
-                  Are you sure you want to delete the student &#34;{selectedStudent?.name}&#34;? This action cannot be
-                  undone.
+                  Are you sure you want to delete the student &#34;
+                  {selectedStudent?.name}&#34;? This action cannot be undone.
                 </DialogContentText>
               </DialogContent>
               <DialogActions sx={{ px: 3, pb: 3 }}>
@@ -1283,15 +1610,17 @@ const { teacherOptions, subjectOptions, classOptions } = useAcademicOptions()
                 >
                   Cancel
                 </Button>
-                <Button onClick={handleDeleteConfirm} variant="contained" color="error" sx={{ ml: 2 }}>
+                <Button
+                  onClick={handleDeleteConfirm}
+                  variant="contained"
+                  color="error"
+                  sx={{ ml: 2 }}
+                >
                   Delete
                 </Button>
               </DialogActions>
             </Dialog>
-
-
           </CraftForm>
-
 
           <TodayLesson
             id={todayLessonId}
@@ -1309,5 +1638,5 @@ const { teacherOptions, subjectOptions, classOptions } = useAcademicOptions()
         </>
       )}
     </ThemeProvider>
-  )
+  );
 }

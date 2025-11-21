@@ -9,7 +9,7 @@ export const transformApiDataToFormFields = (apiData: any) => {
     formFields.reportDate = apiData.reportDate || "";
     formFields.month = apiData.month || "";
     formFields.weeklyTarget = apiData.weeklyTarget || "";
-    
+
     // Format teacherName and studentName as objects for the autocomplete
     if (apiData.teacherName) {
         formFields.teacherName = {
@@ -17,7 +17,7 @@ export const transformApiDataToFormFields = (apiData: any) => {
             value: apiData.teacherName
         };
     }
-    
+
     if (apiData.studentName) {
         formFields.studentName = {
             label: apiData.studentName,
@@ -29,25 +29,25 @@ export const transformApiDataToFormFields = (apiData: any) => {
     if (apiData.dailyEntries) {
         Object.keys(apiData.dailyEntries).forEach(day => {
             const dayData = apiData.dailyEntries[day];
-            
+
             // Handle sobok
             if (dayData.sobok) {
                 formFields[`${day}SobokPara`] = dayData.sobok.para || '';
                 formFields[`${day}SobokPage`] = dayData.sobok.page || '';
             }
-            
+
             // Handle sabakSeven
             if (dayData.sabakSeven) {
                 formFields[`${day}SabakSevenPara`] = dayData.sabakSeven.para || '';
                 formFields[`${day}SabakSevenPage`] = dayData.sabakSeven.page || '';
             }
-            
+
             // Handle sabakAmukta
             if (dayData.sabakAmukta) {
                 formFields[`${day}SabakAmuktaPara`] = dayData.sabakAmukta.para || '';
                 formFields[`${day}SabakAmuktaPage`] = dayData.sabakAmukta.page || '';
             }
-            
+
             // Handle satSobok
             if (dayData.satSobok) {
                 formFields[`${day}SatSobokPara`] = dayData.satSobok.para || '';
@@ -55,7 +55,7 @@ export const transformApiDataToFormFields = (apiData: any) => {
                 formFields[`${day}SatSobokAmount`] = dayData.satSobok.amount || '';
                 formFields[`${day}SatSobokWrong`] = dayData.satSobok.wrong || '';
             }
-            
+
             // Handle other fields
             formFields[`${day}TilawaAmount`] = dayData.tilawaAmount || '';
             formFields[`${day}Mashq`] = dayData.mashq || '';
@@ -78,7 +78,9 @@ export const formatReportData = (formData: any, weeklyTotals: any, month: string
         dailyEntries[day] = {
             sobok: {
                 para: formData[`${day}SobokPara`] || '',
-                page: formData[`${day}SobokPage`] || ''
+                page: formData[`${day}SobokPage`] || '',
+                amount: formData[`${day}SobokAmount`] || '',
+                wrong: formData[`${day}SobokWrong`] || ''
             },
             sabakSeven: {
                 para: formData[`${day}SabakSevenPara`] || '',
@@ -100,6 +102,7 @@ export const formatReportData = (formData: any, weeklyTotals: any, month: string
             teacherSignature: formData[`${day}TeacherSignature`] || '',
             thursdayWeeklyRevision: formData[`${day}ThursdayWeeklyRevision`] || ''
         };
+
     });
 
     // Handle teacherName and studentName properly
