@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // components/FeeAdjustmentModal.tsx
 import { useState, useEffect } from "react";
 import {

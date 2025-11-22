@@ -37,6 +37,7 @@ import {
   Remove,
   School,
   Work,
+  Percent,
 } from "@mui/icons-material";
 import {
   Alert,
@@ -47,9 +48,13 @@ import {
   CardContent,
   CircularProgress,
   Container,
+  FormControl,
   Grid,
   IconButton,
+  InputLabel,
+  MenuItem,
   Paper,
+  Select,
   Typography,
 } from "@mui/material";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -57,7 +62,7 @@ import { useEffect, useState } from "react";
 import { useFieldArray, useFormContext } from "react-hook-form";
 import toast from "react-hot-toast";
 
-// FeeAmountHandler component - UPDATED WITH DISCOUNT/WAIVER SUPPORT
+// FeeAmountHandler component - ENHANCED WITH PERCENTAGE/FLAT DISCOUNT/WAIVER SUPPORT
 const FeeAmountHandler = ({
   feeIndex,
   feeCategoryData,
@@ -70,9 +75,35 @@ const FeeAmountHandler = ({
   const selectedClass = watch(`fees.${feeIndex}.className`);
   const feeAmount = watch(`fees.${feeIndex}.feeAmount`);
   const paidAmount = watch(`fees.${feeIndex}.paidAmount`);
-  const discount = watch(`fees.${feeIndex}.discount`);
-  const waiver = watch(`fees.${feeIndex}.waiver`);
+  const discountType = watch(`fees.${feeIndex}.discountType`) || "flat";
+  const discountValue = watch(`fees.${feeIndex}.discountValue`) || "0";
+  const waiverType = watch(`fees.${feeIndex}.waiverType`) || "flat";
+  const waiverValue = watch(`fees.${feeIndex}.waiverValue`) || "0";
   const isYearlyFee = watch(`fees.${feeIndex}.isYearlyFee`);
+
+  // Calculate discount amount based on type
+  const calculateDiscountAmount = () => {
+    const fee = parseFloat(feeAmount) || 0;
+    const value = parseFloat(discountValue) || 0;
+
+    if (discountType === "percentage") {
+      return Math.min((fee * value) / 100, fee);
+    } else {
+      return Math.min(value, fee);
+    }
+  };
+
+  // Calculate waiver amount based on type
+  const calculateWaiverAmount = () => {
+    const fee = parseFloat(feeAmount) || 0;
+    const value = parseFloat(waiverValue) || 0;
+
+    if (waiverType === "percentage") {
+      return Math.min((fee * value) / 100, fee);
+    } else {
+      return Math.min(value, fee);
+    }
+  };
 
   // Auto-populate fee amount based on fee type and class
   useEffect(() => {
@@ -133,8 +164,8 @@ const FeeAmountHandler = ({
     if (feeAmount !== undefined && paidAmount !== undefined) {
       const fee = parseFloat(feeAmount) || 0;
       const paid = parseFloat(paidAmount) || 0;
-      const discountAmount = parseFloat(discount) || 0;
-      const waiverAmount = parseFloat(waiver) || 0;
+      const discountAmount = calculateDiscountAmount();
+      const waiverAmount = calculateWaiverAmount();
 
       // Calculate due amount after all adjustments
       const due = Math.max(0, fee - paid - discountAmount - waiverAmount);
@@ -144,13 +175,17 @@ const FeeAmountHandler = ({
         `fees.${feeIndex}.paymentStatus`,
         due <= 0 ? "paid" : paid > 0 ? "partial" : "unpaid"
       );
+
+      // Set calculated amounts for display
+      setValue(`fees.${feeIndex}.calculatedDiscount`, discountAmount.toString());
+      setValue(`fees.${feeIndex}.calculatedWaiver`, waiverAmount.toString());
     }
-  }, [feeAmount, paidAmount, discount, waiver, setValue, feeIndex]);
+  }, [feeAmount, paidAmount, discountType, discountValue, waiverType, waiverValue, setValue, feeIndex]);
 
   return null;
 };
 
-// DynamicFeeFields component - UPDATED WITH DISCOUNT/WAIVER FIELDS
+// DynamicFeeFields component - ENHANCED WITH PERCENTAGE/FLAT DISCOUNT/WAIVER FIELDS
 const DynamicFeeFields = ({
   classOptions,
   feeCategoryOptions,
@@ -209,8 +244,14 @@ const DynamicFeeFields = ({
       yearlyAmount: "",
       monthlyAmount: "",
       paidAmount: "",
-      discount: "", // NEW: Discount field
-      waiver: "", // NEW: Waiver field
+      discountType: "flat", // NEW: Discount type (flat/percentage)
+      discountValue: "0", // NEW: Discount value
+      discountReason: "", // NEW: Reason for discount
+      waiverType: "flat", // NEW: Waiver type (flat/percentage)
+      waiverValue: "0", // NEW: Waiver value
+      waiverReason: "", // NEW: Reason for waiver
+      calculatedDiscount: "0", // NEW: Calculated discount amount
+      calculatedWaiver: "0", // NEW: Calculated waiver amount
       dueAmount: "",
       paymentStatus: "unpaid",
       isYearlyFee: false,
@@ -262,10 +303,13 @@ const DynamicFeeFields = ({
           const filteredFeeOptions = getFilteredFeeOptions(feeClassName);
           const isYearlyFee = watch(`fees.${index}.isYearlyFee`);
           const feeAmount = parseFloat(watch(`fees.${index}.feeAmount`)) || 0;
-          const discountAmount =
-            parseFloat(watch(`fees.${index}.discount`)) || 0;
-          const waiverAmount = parseFloat(watch(`fees.${index}.waiver`)) || 0;
-          const totalAdjustments = discountAmount + waiverAmount;
+          const discountType = watch(`fees.${index}.discountType`) || "flat";
+          const discountValue = parseFloat(watch(`fees.${index}.discountValue`)) || 0;
+          const waiverType = watch(`fees.${index}.waiverType`) || "flat";
+          const waiverValue = parseFloat(watch(`fees.${index}.waiverValue`)) || 0;
+          const calculatedDiscount = parseFloat(watch(`fees.${index}.calculatedDiscount`)) || 0;
+          const calculatedWaiver = parseFloat(watch(`fees.${index}.calculatedWaiver`)) || 0;
+          const totalAdjustments = calculatedDiscount + calculatedWaiver;
 
           return (
             <Box
@@ -307,7 +351,7 @@ const DynamicFeeFields = ({
                       fontWeight: "bold",
                     }}
                   >
-                    (Adjustments: ৳{totalAdjustments})
+                    (Adjustments: ৳{totalAdjustments.toFixed(2)})
                   </Typography>
                 )}
               </Typography>
@@ -378,44 +422,130 @@ const DynamicFeeFields = ({
                   </Grid>
                 )}
 
-                {/* Discount Field */}
-                <Grid item xs={12} md={4}>
+                {/* Discount Section */}
+                <Grid item xs={12}>
+                  <Typography variant="subtitle2" sx={{ mb: 1, color: "success.main", display: 'flex', alignItems: 'center' }}>
+                    <Discount sx={{ mr: 1 }} />
+                    Discount Settings
+                  </Typography>
+                </Grid>
+
+                <Grid item xs={12} md={3}>
+                  <FormControl fullWidth size="small">
+                    <InputLabel>Discount Type</InputLabel>
+                    <Select
+                      name={`fees.${index}.discountType`}
+                      value={discountType}
+                      label="Discount Type"
+                      onChange={(e) => setValue(`fees.${index}.discountType`, e.target.value)}
+                    >
+                      <MenuItem value="flat">Flat Amount (৳)</MenuItem>
+                      <MenuItem value="percentage">Percentage (%)</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+
+                <Grid item xs={12} md={3}>
                   <CraftInputWithIcon
-                    name={`fees.${index}.discount`}
-                    label="Discount Amount"
+                    name={`fees.${index}.discountValue`}
+                    label={discountType === "percentage" ? "Discount %" : "Discount Amount"}
                     fullWidth
                     size="small"
                     type="number"
                     InputProps={{
-                      startAdornment: (
+                      startAdornment: discountType === "percentage" ? (
+                        <Percent sx={{ color: "success.main", mr: 1 }} />
+                      ) : (
                         <Discount sx={{ color: "success.main", mr: 1 }} />
                       ),
                     }}
-                    helperText={`Max: ৳${feeAmount}`}
+                    helperText={
+                      discountType === "percentage"
+                        ? `Max: 100% (৳${(feeAmount * 1).toFixed(2)})`
+                        : `Max: ৳${feeAmount.toFixed(2)}`
+                    }
                     inputProps={{
-                      max: feeAmount,
+                      max: discountType === "percentage" ? 100 : feeAmount,
                       min: 0,
                     }}
                   />
                 </Grid>
 
-                {/* Waiver Field */}
-                <Grid item xs={12} md={4}>
+                <Grid item xs={12} md={6}>
                   <CraftInputWithIcon
-                    name={`fees.${index}.waiver`}
-                    label="Waiver Amount"
+                    name={`fees.${index}.discountReason`}
+                    label="Discount Reason"
+                    fullWidth
+                    size="small"
+                    placeholder="Reason for discount"
+                    InputProps={{
+                      startAdornment: (
+                        <Description sx={{ color: "success.main", mr: 1 }} />
+                      ),
+                    }}
+                  />
+                </Grid>
+
+                {/* Waiver Section */}
+                <Grid item xs={12}>
+                  <Typography variant="subtitle2" sx={{ mb: 1, color: "info.main", display: 'flex', alignItems: 'center' }}>
+                    <MoneyOff sx={{ mr: 1 }} />
+                    Waiver Settings
+                  </Typography>
+                </Grid>
+
+                <Grid item xs={12} md={3}>
+                  <FormControl fullWidth size="small">
+                    <InputLabel>Waiver Type</InputLabel>
+                    <Select
+                      name={`fees.${index}.waiverType`}
+                      value={waiverType}
+                      label="Waiver Type"
+                      onChange={(e) => setValue(`fees.${index}.waiverType`, e.target.value)}
+                    >
+                      <MenuItem value="flat">Flat Amount (৳)</MenuItem>
+                      <MenuItem value="percentage">Percentage (%)</MenuItem>
+                    </Select>
+                  </FormControl>
+                </Grid>
+
+                <Grid item xs={12} md={3}>
+                  <CraftInputWithIcon
+                    name={`fees.${index}.waiverValue`}
+                    label={waiverType === "percentage" ? "Waiver %" : "Waiver Amount"}
                     fullWidth
                     size="small"
                     type="number"
                     InputProps={{
-                      startAdornment: (
+                      startAdornment: waiverType === "percentage" ? (
+                        <Percent sx={{ color: "info.main", mr: 1 }} />
+                      ) : (
                         <MoneyOff sx={{ color: "info.main", mr: 1 }} />
                       ),
                     }}
-                    helperText={`Max: ৳${feeAmount}`}
+                    helperText={
+                      waiverType === "percentage"
+                        ? `Max: 100% (৳${(feeAmount * 1).toFixed(2)})`
+                        : `Max: ৳${feeAmount.toFixed(2)}`
+                    }
                     inputProps={{
-                      max: feeAmount,
+                      max: waiverType === "percentage" ? 100 : feeAmount,
                       min: 0,
+                    }}
+                  />
+                </Grid>
+
+                <Grid item xs={12} md={6}>
+                  <CraftInputWithIcon
+                    name={`fees.${index}.waiverReason`}
+                    label="Waiver Reason"
+                    fullWidth
+                    size="small"
+                    placeholder="Reason for waiver"
+                    InputProps={{
+                      startAdornment: (
+                        <Description sx={{ color: "info.main", mr: 1 }} />
+                      ),
                     }}
                   />
                 </Grid>
@@ -470,9 +600,14 @@ const DynamicFeeFields = ({
                   <Typography variant="body2">
                     <strong>Adjustments Applied:</strong>
                     <br />
-                    Discount: ৳{discountAmount} | Waiver: ৳{waiverAmount}
+                    Discount: ৳{calculatedDiscount.toFixed(2)} {discountType === "percentage" && `(${discountValue}%)`}
                     <br />
-                    <strong>Total Adjustments:</strong> ৳{totalAdjustments}
+                    Waiver: ৳{calculatedWaiver.toFixed(2)} {waiverType === "percentage" && `(${waiverValue}%)`}
+                    <br />
+                    <strong>Total Adjustments:</strong> ৳{totalAdjustments.toFixed(2)}
+                    {discountType === "percentage" || waiverType === "percentage" && (
+                      <><br /><em>Percentage values are converted to flat amounts</em></>
+                    )}
                   </Typography>
                 </Alert>
               )}
@@ -485,10 +620,10 @@ const DynamicFeeFields = ({
               )}
 
               {/* Validation warning if adjustments exceed fee amount */}
-              {discountAmount + waiverAmount > feeAmount && (
+              {calculatedDiscount + calculatedWaiver > feeAmount && (
                 <Alert severity="error" sx={{ mt: 2 }}>
-                  Total adjustments (৳{discountAmount + waiverAmount}) cannot
-                  exceed fee amount (৳{feeAmount})
+                  Total adjustments (৳{(calculatedDiscount + calculatedWaiver).toFixed(2)}) cannot
+                  exceed fee amount (৳{feeAmount.toFixed(2)})
                 </Alert>
               )}
             </Box>
@@ -628,8 +763,14 @@ const StudentSelector = ({ studentData, classOptions }: any) => {
           paidAmount: "",
           monthlyAmount: "",
           yearlyAmount: "",
-          discount: "", // NEW: Discount field
-          waiver: "", // NEW: Waiver field
+          discountType: "flat", // NEW: Discount type
+          discountValue: "0", // NEW: Discount value
+          discountReason: "", // NEW: Reason for discount
+          waiverType: "flat", // NEW: Waiver type
+          waiverValue: "0", // NEW: Waiver value
+          waiverReason: "", // NEW: Reason for waiver
+          calculatedDiscount: "0", // NEW: Calculated discount amount
+          calculatedWaiver: "0", // NEW: Calculated waiver amount
           dueAmount: "",
           paymentStatus: "unpaid",
         },
@@ -762,7 +903,7 @@ const StudentSelector = ({ studentData, classOptions }: any) => {
   );
 };
 
-// Helper function to transform API data to form format
+// Helper function to transform API data to form format - UPDATED WITH NEW FIELDS
 const transformEnrollmentDataToForm = (
   enrollmentData: any,
   classOptions: any[],
@@ -835,7 +976,7 @@ const transformEnrollmentDataToForm = (
     }
   };
 
-  // Helper function to format fee data - UPDATED WITH DISCOUNT/WAIVER
+  // Helper function to format fee data - UPDATED WITH PERCENTAGE/FLAT SUPPORT
   const formatFeeForForm = (fees: any[], classData: any) => {
     if (!fees || !Array.isArray(fees) || fees.length === 0) {
       return [
@@ -846,8 +987,14 @@ const transformEnrollmentDataToForm = (
           paidAmount: "",
           monthlyAmount: "",
           yearlyAmount: "",
-          discount: "", // NEW: Discount field
-          waiver: "", // NEW: Waiver field
+          discountType: "flat", // NEW: Discount type
+          discountValue: "0", // NEW: Discount value
+          discountReason: "", // NEW: Reason for discount
+          waiverType: "flat", // NEW: Waiver type
+          waiverValue: "0", // NEW: Waiver value
+          waiverReason: "", // NEW: Reason for waiver
+          calculatedDiscount: "0", // NEW: Calculated discount amount
+          calculatedWaiver: "0", // NEW: Calculated waiver amount
           dueAmount: "",
           paymentStatus: "unpaid",
         },
@@ -862,12 +1009,18 @@ const transformEnrollmentDataToForm = (
 
       const feeAmount = fee.amount || fee.feeAmount || 0;
       const paidAmount = fee.paidAmount || 0;
-      const discountAmount = fee.discount || 0; // NEW: Get discount
-      const waiverAmount = fee.waiver || 0; // NEW: Get waiver
+      const discountAmount = fee.discount || 0;
+      const waiverAmount = fee.waiver || 0;
       const dueAmount = Math.max(
         0,
         feeAmount - paidAmount - discountAmount - waiverAmount
       );
+
+      // Determine discount type (percentage or flat)
+      const discountType = fee.discountType || "flat";
+      const discountValue = fee.discountValue || discountAmount.toString();
+      const waiverType = fee.waiverType || "flat";
+      const waiverValue = fee.waiverValue || waiverAmount.toString();
 
       return {
         feeType: matchedFeeType
@@ -883,8 +1036,14 @@ const transformEnrollmentDataToForm = (
         paidAmount: paidAmount.toString(),
         monthlyAmount: ((feeAmount || 0) / 12).toFixed(2),
         yearlyAmount: feeAmount.toString(),
-        discount: discountAmount.toString(), // NEW: Include discount
-        waiver: waiverAmount.toString(), // NEW: Include waiver
+        discountType: discountType, // NEW: Include discount type
+        discountValue: discountValue, // NEW: Include discount value
+        discountReason: fee.discountReason || "", // NEW: Include discount reason
+        waiverType: waiverType, // NEW: Include waiver type
+        waiverValue: waiverValue, // NEW: Include waiver value
+        waiverReason: fee.waiverReason || "", // NEW: Include waiver reason
+        calculatedDiscount: discountAmount.toString(), // NEW: Include calculated discount
+        calculatedWaiver: waiverAmount.toString(), // NEW: Include calculated waiver
         dueAmount: dueAmount.toString(),
         paymentStatus:
           dueAmount <= 0 ? "paid" : paidAmount > 0 ? "partial" : "unpaid",
@@ -991,7 +1150,7 @@ const transformEnrollmentDataToForm = (
     // Terms & Conditions
     termsAccepted: formatBooleanForSelect(data.termsAccepted || false),
 
-    // Fees - UPDATED WITH DISCOUNT/WAIVER
+    // Fees - UPDATED WITH PERCENTAGE/FLAT SUPPORT
     fees: formatFeeForForm(data.fees, data.className),
     admissionFee: data.admissionFee || data.student?.admissionFee || 0,
     monthlyFee: data.monthlyFee || data.student?.monthlyFee || 0,
@@ -1052,7 +1211,7 @@ const EnrollmentForm = () => {
         setFormKey((prev) => prev + 1);
       }
     } else if (!id) {
-      // Set empty default values for new enrollment - UPDATED WITH DISCOUNT/WAIVER
+      // Set empty default values for new enrollment - UPDATED WITH PERCENTAGE/FLAT SUPPORT
       setDefaultValues({
         studentNameBangla: "",
         studentPhoto: "",
@@ -1114,8 +1273,14 @@ const EnrollmentForm = () => {
             paidAmount: "",
             monthlyAmount: "",
             yearlyAmount: "",
-            discount: "", // NEW: Discount field
-            waiver: "", // NEW: Waiver field
+            discountType: "flat", // NEW: Discount type
+            discountValue: "0", // NEW: Discount value
+            discountReason: "", // NEW: Reason for discount
+            waiverType: "flat", // NEW: Waiver type
+            waiverValue: "0", // NEW: Waiver value
+            waiverReason: "", // NEW: Reason for waiver
+            calculatedDiscount: "0", // NEW: Calculated discount amount
+            calculatedWaiver: "0", // NEW: Calculated waiver amount
             dueAmount: "",
             paymentStatus: "unpaid",
           },
@@ -1129,7 +1294,7 @@ const EnrollmentForm = () => {
     }
   }, [id, singleEnrollment, classOptions, feeCategoryOptions]);
 
-  // Handle Submit Function - UPDATED WITH DISCOUNT/WAIVER
+  // Handle Submit Function - UPDATED WITH PERCENTAGE/FLAT SUPPORT
   const handleSubmit = async (data: any) => {
     try {
       setSubmitting(true);
@@ -1150,7 +1315,7 @@ const EnrollmentForm = () => {
         return;
       }
 
-      // Fees processing with discount/waiver
+      // Fees processing with percentage/flat discount/waiver
       const transformedFees = Array.isArray(submitData.fees)
         ? submitData.fees
           .filter(
@@ -1168,13 +1333,27 @@ const EnrollmentForm = () => {
               fee.className[0]?.label || fee.className[0] || "";
             const feeAmount = Number(fee.feeAmount) || 0;
             const paidAmount = Number(fee.paidAmount) || 0;
-            const discount = Number(fee.discount) || 0; // NEW: Get discount
-            const waiver = Number(fee.waiver) || 0; // NEW: Get waiver
+
+            // Calculate discount amount based on type
+            let discountAmount = 0;
+            if (fee.discountType === "percentage") {
+              discountAmount = Math.min((feeAmount * Number(fee.discountValue || 0)) / 100, feeAmount);
+            } else {
+              discountAmount = Math.min(Number(fee.discountValue || 0), feeAmount);
+            }
+
+            // Calculate waiver amount based on type
+            let waiverAmount = 0;
+            if (fee.waiverType === "percentage") {
+              waiverAmount = Math.min((feeAmount * Number(fee.waiverValue || 0)) / 100, feeAmount);
+            } else {
+              waiverAmount = Math.min(Number(fee.waiverValue || 0), feeAmount);
+            }
 
             // Validate that discount + waiver doesn't exceed fee amount
-            if (discount + waiver > feeAmount) {
+            if (discountAmount + waiverAmount > feeAmount) {
               throw new Error(
-                `Total adjustments (${discount + waiver}) cannot exceed fee amount (${feeAmount}) for ${feeType}`
+                `Total adjustments (${discountAmount + waiverAmount}) cannot exceed fee amount (${feeAmount}) for ${feeType}`
               );
             }
 
@@ -1183,8 +1362,14 @@ const EnrollmentForm = () => {
               className: className,
               feeAmount: feeAmount,
               paidAmount: paidAmount,
-              discount: discount, // NEW: Include discount
-              waiver: waiver, // NEW: Include waiver
+              discount: discountAmount, // Final calculated discount amount
+              discountType: fee.discountType || "flat", // NEW: Discount type
+              discountValue: fee.discountValue || "0", // NEW: Discount value
+              discountReason: fee.discountReason || "", // NEW: Reason for discount
+              waiver: waiverAmount, // Final calculated waiver amount
+              waiverType: fee.waiverType || "flat", // NEW: Waiver type
+              waiverValue: fee.waiverValue || "0", // NEW: Waiver value
+              waiverReason: fee.waiverReason || "", // NEW: Reason for waiver
               monthlyAmount: fee.monthlyAmount || "",
             };
           })
@@ -1286,7 +1471,7 @@ const EnrollmentForm = () => {
           photographs: transformBoolean(submitData.photographs),
         },
 
-        // Fees - INCLUDES DISCOUNT/WAIVER
+        // Fees - INCLUDES PERCENTAGE/FLAT DISCOUNT/WAIVER
         fees: transformedFees,
 
         // Terms & Conditions
@@ -1681,7 +1866,7 @@ const EnrollmentForm = () => {
             </CardContent>
           </Card>
 
-          {/* Dynamic Fee Fields - NOW WITH DISCOUNT/WAIVER SUPPORT */}
+          {/* Dynamic Fee Fields - NOW WITH PERCENTAGE/FLAT DISCOUNT/WAIVER SUPPORT */}
           <DynamicFeeFields
             classOptions={classOptions}
             feeCategoryOptions={feeCategoryOptions}
