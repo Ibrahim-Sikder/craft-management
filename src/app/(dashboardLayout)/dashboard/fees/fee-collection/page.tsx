@@ -260,13 +260,13 @@ const AllDueFees = () => {
             size="small"
             variant="outlined"
             color={
-              value.toLowerCase().includes("admission")
+              value?.toLowerCase().includes("admission")
                 ? "primary"
-                : value.toLowerCase().includes("monthly")
+                : value?.toLowerCase().includes("monthly")
                   ? "secondary"
-                  : value.toLowerCase().includes("exam")
+                  : value?.toLowerCase().includes("exam")
                     ? "warning"
-                    : value.toLowerCase().includes("form")
+                    : value?.toLowerCase().includes("form")
                       ? "info"
                       : "default"
             }

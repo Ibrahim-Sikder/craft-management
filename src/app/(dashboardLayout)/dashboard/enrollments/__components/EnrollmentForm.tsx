@@ -27,9 +27,11 @@ import {
   Check,
   Class,
   Description,
+  Discount,
   Flag,
   Group,
   Money,
+  MoneyOff,
   Person,
   Phone,
   Remove,
@@ -55,7 +57,7 @@ import { useEffect, useState } from "react";
 import { useFieldArray, useFormContext } from "react-hook-form";
 import toast from "react-hot-toast";
 
-// FeeAmountHandler component update
+// FeeAmountHandler component - UPDATED WITH DISCOUNT/WAIVER SUPPORT
 const FeeAmountHandler = ({
   feeIndex,
   feeCategoryData,
@@ -68,6 +70,8 @@ const FeeAmountHandler = ({
   const selectedClass = watch(`fees.${feeIndex}.className`);
   const feeAmount = watch(`fees.${feeIndex}.feeAmount`);
   const paidAmount = watch(`fees.${feeIndex}.paidAmount`);
+  const discount = watch(`fees.${feeIndex}.discount`);
+  const waiver = watch(`fees.${feeIndex}.waiver`);
   const isYearlyFee = watch(`fees.${feeIndex}.isYearlyFee`);
 
   // Auto-populate fee amount based on fee type and class
@@ -124,12 +128,16 @@ const FeeAmountHandler = ({
     }
   }, [feeAmount, selectedFees, setValue, feeIndex]);
 
-  // Calculate due amount whenever fee amount or paid amount changes
+  // Calculate due amount whenever fee amount, paid amount, discount, or waiver changes
   useEffect(() => {
     if (feeAmount !== undefined && paidAmount !== undefined) {
       const fee = parseFloat(feeAmount) || 0;
       const paid = parseFloat(paidAmount) || 0;
-      const due = fee - paid;
+      const discountAmount = parseFloat(discount) || 0;
+      const waiverAmount = parseFloat(waiver) || 0;
+
+      // Calculate due amount after all adjustments
+      const due = Math.max(0, fee - paid - discountAmount - waiverAmount);
 
       setValue(`fees.${feeIndex}.dueAmount`, due > 0 ? due.toString() : "0");
       setValue(
@@ -137,12 +145,12 @@ const FeeAmountHandler = ({
         due <= 0 ? "paid" : paid > 0 ? "partial" : "unpaid"
       );
     }
-  }, [feeAmount, paidAmount, setValue, feeIndex]);
+  }, [feeAmount, paidAmount, discount, waiver, setValue, feeIndex]);
 
   return null;
 };
 
-// DynamicFeeFields component update
+// DynamicFeeFields component - UPDATED WITH DISCOUNT/WAIVER FIELDS
 const DynamicFeeFields = ({
   classOptions,
   feeCategoryOptions,
@@ -201,9 +209,11 @@ const DynamicFeeFields = ({
       yearlyAmount: "",
       monthlyAmount: "",
       paidAmount: "",
+      discount: "", // NEW: Discount field
+      waiver: "", // NEW: Waiver field
       dueAmount: "",
       paymentStatus: "unpaid",
-      isYearlyFee: false, // Add this field
+      isYearlyFee: false,
     });
   };
 
@@ -251,6 +261,11 @@ const DynamicFeeFields = ({
           const feeClassName = watch(`fees.${index}.className`);
           const filteredFeeOptions = getFilteredFeeOptions(feeClassName);
           const isYearlyFee = watch(`fees.${index}.isYearlyFee`);
+          const feeAmount = parseFloat(watch(`fees.${index}.feeAmount`)) || 0;
+          const discountAmount =
+            parseFloat(watch(`fees.${index}.discount`)) || 0;
+          const waiverAmount = parseFloat(watch(`fees.${index}.waiver`)) || 0;
+          const totalAdjustments = discountAmount + waiverAmount;
 
           return (
             <Box
@@ -261,15 +276,17 @@ const DynamicFeeFields = ({
                 border: "1px solid #e0e0e0",
                 borderRadius: 2,
                 backgroundColor: index === 0 ? "#f8f9fa" : "white",
+                position: "relative",
               }}
             >
               {index > 0 && (
                 <IconButton
                   onClick={() => removeFeeField(index)}
                   sx={{
-                    float: "right",
+                    position: "absolute",
+                    top: 8,
+                    right: 8,
                     color: "error.main",
-                    mb: 2,
                   }}
                 >
                   <Remove />
@@ -281,6 +298,18 @@ const DynamicFeeFields = ({
                 sx={{ mb: 2, fontWeight: "bold" }}
               >
                 Fee Entry #{index + 1}
+                {totalAdjustments > 0 && (
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      ml: 2,
+                      color: "success.main",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    (Adjustments: ৳{totalAdjustments})
+                  </Typography>
+                )}
               </Typography>
 
               <FeeAmountHandler
@@ -349,6 +378,48 @@ const DynamicFeeFields = ({
                   </Grid>
                 )}
 
+                {/* Discount Field */}
+                <Grid item xs={12} md={4}>
+                  <CraftInputWithIcon
+                    name={`fees.${index}.discount`}
+                    label="Discount Amount"
+                    fullWidth
+                    size="small"
+                    type="number"
+                    InputProps={{
+                      startAdornment: (
+                        <Discount sx={{ color: "success.main", mr: 1 }} />
+                      ),
+                    }}
+                    helperText={`Max: ৳${feeAmount}`}
+                    inputProps={{
+                      max: feeAmount,
+                      min: 0,
+                    }}
+                  />
+                </Grid>
+
+                {/* Waiver Field */}
+                <Grid item xs={12} md={4}>
+                  <CraftInputWithIcon
+                    name={`fees.${index}.waiver`}
+                    label="Waiver Amount"
+                    fullWidth
+                    size="small"
+                    type="number"
+                    InputProps={{
+                      startAdornment: (
+                        <MoneyOff sx={{ color: "info.main", mr: 1 }} />
+                      ),
+                    }}
+                    helperText={`Max: ৳${feeAmount}`}
+                    inputProps={{
+                      max: feeAmount,
+                      min: 0,
+                    }}
+                  />
+                </Grid>
+
                 {/* Paid Amount */}
                 <Grid item xs={12} md={4}>
                   <CraftInputWithIcon
@@ -366,7 +437,7 @@ const DynamicFeeFields = ({
                 </Grid>
 
                 {/* Due Amount */}
-                <Grid item xs={12} md={6}>
+                <Grid item xs={12} md={4}>
                   <CraftInputWithIcon
                     name={`fees.${index}.dueAmount`}
                     label="Due Amount (Auto)"
@@ -382,7 +453,7 @@ const DynamicFeeFields = ({
                 </Grid>
 
                 {/* Payment Status */}
-                <Grid item xs={12} md={6}>
+                <Grid item xs={12} md={4}>
                   <CraftSelectWithIcon
                     name={`fees.${index}.paymentStatus`}
                     label="Payment Status"
@@ -393,10 +464,31 @@ const DynamicFeeFields = ({
                 </Grid>
               </Grid>
 
+              {/* Adjustment Summary */}
+              {totalAdjustments > 0 && (
+                <Alert severity="info" sx={{ mt: 2 }} icon={<Discount />}>
+                  <Typography variant="body2">
+                    <strong>Adjustments Applied:</strong>
+                    <br />
+                    Discount: ৳{discountAmount} | Waiver: ৳{waiverAmount}
+                    <br />
+                    <strong>Total Adjustments:</strong> ৳{totalAdjustments}
+                  </Typography>
+                </Alert>
+              )}
+
               {/* Show info when class is not selected */}
               {(!feeClassName || feeClassName.length === 0) && (
                 <Alert severity="warning" sx={{ mt: 2 }}>
                   Please select a class to see available fee types
+                </Alert>
+              )}
+
+              {/* Validation warning if adjustments exceed fee amount */}
+              {discountAmount + waiverAmount > feeAmount && (
+                <Alert severity="error" sx={{ mt: 2 }}>
+                  Total adjustments (৳{discountAmount + waiverAmount}) cannot
+                  exceed fee amount (৳{feeAmount})
                 </Alert>
               )}
             </Box>
@@ -536,6 +628,8 @@ const StudentSelector = ({ studentData, classOptions }: any) => {
           paidAmount: "",
           monthlyAmount: "",
           yearlyAmount: "",
+          discount: "", // NEW: Discount field
+          waiver: "", // NEW: Waiver field
           dueAmount: "",
           paymentStatus: "unpaid",
         },
@@ -669,7 +763,6 @@ const StudentSelector = ({ studentData, classOptions }: any) => {
 };
 
 // Helper function to transform API data to form format
-// Helper function to transform API data to form format
 const transformEnrollmentDataToForm = (
   enrollmentData: any,
   classOptions: any[],
@@ -689,7 +782,7 @@ const transformEnrollmentDataToForm = (
       return classData.map((cls: any) => {
         // Try to find a matching class in the options
         const classId = cls._id || cls;
-        const classNameValue = cls.className || cls; // Renamed to avoid conflict
+        const classNameValue = cls.className || cls;
 
         // First try to match by ID
         let matchedClass = classOptions?.find(
@@ -716,7 +809,7 @@ const transformEnrollmentDataToForm = (
     } else {
       // Handle single class object or string
       const classId = classData._id || classData;
-      const classNameValue = classData.className || classData; // Renamed to avoid conflict
+      const classNameValue = classData.className || classData;
 
       // First try to match by ID
       let matchedClass = classOptions?.find(
@@ -742,7 +835,7 @@ const transformEnrollmentDataToForm = (
     }
   };
 
-  // Helper function to format fee data
+  // Helper function to format fee data - UPDATED WITH DISCOUNT/WAIVER
   const formatFeeForForm = (fees: any[], classData: any) => {
     if (!fees || !Array.isArray(fees) || fees.length === 0) {
       return [
@@ -753,6 +846,8 @@ const transformEnrollmentDataToForm = (
           paidAmount: "",
           monthlyAmount: "",
           yearlyAmount: "",
+          discount: "", // NEW: Discount field
+          waiver: "", // NEW: Waiver field
           dueAmount: "",
           paymentStatus: "unpaid",
         },
@@ -767,22 +862,29 @@ const transformEnrollmentDataToForm = (
 
       const feeAmount = fee.amount || fee.feeAmount || 0;
       const paidAmount = fee.paidAmount || 0;
-      const dueAmount = feeAmount - paidAmount;
+      const discountAmount = fee.discount || 0; // NEW: Get discount
+      const waiverAmount = fee.waiver || 0; // NEW: Get waiver
+      const dueAmount = Math.max(
+        0,
+        feeAmount - paidAmount - discountAmount - waiverAmount
+      );
 
       return {
         feeType: matchedFeeType
           ? [matchedFeeType]
           : [
-              {
-                value: fee.feeType,
-                label: fee.feeType,
-              },
-            ],
+            {
+              value: fee.feeType,
+              label: fee.feeType,
+            },
+          ],
         className: formatClassForForm(classData),
         feeAmount: feeAmount.toString(),
         paidAmount: paidAmount.toString(),
         monthlyAmount: ((feeAmount || 0) / 12).toFixed(2),
         yearlyAmount: feeAmount.toString(),
+        discount: discountAmount.toString(), // NEW: Include discount
+        waiver: waiverAmount.toString(), // NEW: Include waiver
         dueAmount: dueAmount.toString(),
         paymentStatus:
           dueAmount <= 0 ? "paid" : paidAmount > 0 ? "partial" : "unpaid",
@@ -889,7 +991,7 @@ const transformEnrollmentDataToForm = (
     // Terms & Conditions
     termsAccepted: formatBooleanForSelect(data.termsAccepted || false),
 
-    // Fees
+    // Fees - UPDATED WITH DISCOUNT/WAIVER
     fees: formatFeeForForm(data.fees, data.className),
     admissionFee: data.admissionFee || data.student?.admissionFee || 0,
     monthlyFee: data.monthlyFee || data.student?.monthlyFee || 0,
@@ -912,7 +1014,7 @@ const EnrollmentForm = () => {
 
   const { classOptions, feeCategoryOptions, feeCategoryData } =
     useAcademicOption();
-  console.log("fee category data", feeCategoryData);
+
   const [createEnrollment] = useCreateEnrollmentMutation();
   const [updateEnrollment] = useUpdateEnrollmentMutation();
   const { data: singleEnrollment, isLoading: enrollmentLoading } =
@@ -950,7 +1052,7 @@ const EnrollmentForm = () => {
         setFormKey((prev) => prev + 1);
       }
     } else if (!id) {
-      // Set empty default values for new enrollment
+      // Set empty default values for new enrollment - UPDATED WITH DISCOUNT/WAIVER
       setDefaultValues({
         studentNameBangla: "",
         studentPhoto: "",
@@ -1012,6 +1114,8 @@ const EnrollmentForm = () => {
             paidAmount: "",
             monthlyAmount: "",
             yearlyAmount: "",
+            discount: "", // NEW: Discount field
+            waiver: "", // NEW: Waiver field
             dueAmount: "",
             paymentStatus: "unpaid",
           },
@@ -1025,7 +1129,7 @@ const EnrollmentForm = () => {
     }
   }, [id, singleEnrollment, classOptions, feeCategoryOptions]);
 
-  // Handle Submit Function
+  // Handle Submit Function - UPDATED WITH DISCOUNT/WAIVER
   const handleSubmit = async (data: any) => {
     try {
       setSubmitting(true);
@@ -1036,8 +1140,8 @@ const EnrollmentForm = () => {
       const classNameArray =
         submitData.className && submitData.className.length > 0
           ? submitData.className
-              .map((cls: any) => cls.value || cls)
-              .filter(Boolean)
+            .map((cls: any) => cls.value || cls)
+            .filter(Boolean)
           : [];
 
       if (!classNameArray.length) {
@@ -1046,35 +1150,44 @@ const EnrollmentForm = () => {
         return;
       }
 
-      // Fees processing
-      // In the handleSubmit function, update the fees processing part:
-      // In the handleSubmit function, update the fees processing:
+      // Fees processing with discount/waiver
       const transformedFees = Array.isArray(submitData.fees)
         ? submitData.fees
-            .filter(
-              (fee: any) =>
-                fee.feeType &&
-                fee.feeType.length > 0 &&
-                fee.className &&
-                fee.className.length > 0 &&
-                fee.feeAmount && // Ensure fee amount exists
-                Number(fee.feeAmount) > 0 // Ensure fee amount is greater than 0
-            )
-            .map((fee: any) => {
-              const feeType = fee.feeType[0]?.label || fee.feeType[0] || "";
-              const className =
-                fee.className[0]?.label || fee.className[0] || "";
-              const feeAmount = Number(fee.feeAmount) || 0;
-              const paidAmount = Number(fee.paidAmount) || 0;
+          .filter(
+            (fee: any) =>
+              fee.feeType &&
+              fee.feeType.length > 0 &&
+              fee.className &&
+              fee.className.length > 0 &&
+              fee.feeAmount && // Ensure fee amount exists
+              Number(fee.feeAmount) > 0 // Ensure fee amount is greater than 0
+          )
+          .map((fee: any) => {
+            const feeType = fee.feeType[0]?.label || fee.feeType[0] || "";
+            const className =
+              fee.className[0]?.label || fee.className[0] || "";
+            const feeAmount = Number(fee.feeAmount) || 0;
+            const paidAmount = Number(fee.paidAmount) || 0;
+            const discount = Number(fee.discount) || 0; // NEW: Get discount
+            const waiver = Number(fee.waiver) || 0; // NEW: Get waiver
 
-              return {
-                feeType: feeType,
-                className: className,
-                feeAmount: feeAmount,
-                paidAmount: paidAmount,
-                monthlyAmount: fee.monthlyAmount || "",
-              };
-            })
+            // Validate that discount + waiver doesn't exceed fee amount
+            if (discount + waiver > feeAmount) {
+              throw new Error(
+                `Total adjustments (${discount + waiver}) cannot exceed fee amount (${feeAmount}) for ${feeType}`
+              );
+            }
+
+            return {
+              feeType: feeType,
+              className: className,
+              feeAmount: feeAmount,
+              paidAmount: paidAmount,
+              discount: discount, // NEW: Include discount
+              waiver: waiver, // NEW: Include waiver
+              monthlyAmount: fee.monthlyAmount || "",
+            };
+          })
         : [];
 
       // Make sure we have at least one valid fee
@@ -1173,7 +1286,7 @@ const EnrollmentForm = () => {
           photographs: transformBoolean(submitData.photographs),
         },
 
-        // Fees
+        // Fees - INCLUDES DISCOUNT/WAIVER
         fees: transformedFees,
 
         // Terms & Conditions
@@ -1233,6 +1346,8 @@ const EnrollmentForm = () => {
         router.push("/login");
       } else if (errorMessage.includes("duplicate")) {
         toast.error("Student already exists with same mobile number or name");
+      } else if (errorMessage.includes("cannot exceed fee amount")) {
+        toast.error(errorMessage);
       } else {
         toast.error(errorMessage);
       }
@@ -1566,7 +1681,7 @@ const EnrollmentForm = () => {
             </CardContent>
           </Card>
 
-          {/* Dynamic Fee Fields */}
+          {/* Dynamic Fee Fields - NOW WITH DISCOUNT/WAIVER SUPPORT */}
           <DynamicFeeFields
             classOptions={classOptions}
             feeCategoryOptions={feeCategoryOptions}
