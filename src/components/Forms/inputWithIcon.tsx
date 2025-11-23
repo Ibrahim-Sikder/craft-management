@@ -22,8 +22,8 @@ type TInputProps = {
   onChange?: (event: ChangeEvent<HTMLInputElement>) => void;
   startAdornment?: React.ReactNode;
   InputProps?: MUIInputProps;
-  helperText?: React.ReactNode; // Custom helper text
-  inputProps?: InputHTMLAttributes<HTMLInputElement>; // min/max etc.
+  helperText?: React.ReactNode;
+  inputProps?: InputHTMLAttributes<HTMLInputElement>;
 };
 
 const CraftInputWithIcon = ({

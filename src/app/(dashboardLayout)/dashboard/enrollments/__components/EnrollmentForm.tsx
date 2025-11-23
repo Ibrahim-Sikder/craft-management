@@ -61,8 +61,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useFieldArray, useFormContext } from "react-hook-form";
 import toast from "react-hot-toast";
-
-// FeeAmountHandler component - ENHANCED WITH PERCENTAGE/FLAT DISCOUNT/WAIVER SUPPORT
 const FeeAmountHandler = ({
   feeIndex,
   feeCategoryData,
@@ -81,7 +79,7 @@ const FeeAmountHandler = ({
   const waiverValue = watch(`fees.${feeIndex}.waiverValue`) || "0";
   const isYearlyFee = watch(`fees.${feeIndex}.isYearlyFee`);
 
-  // Calculate discount amount based on type
+
   const calculateDiscountAmount = () => {
     const fee = parseFloat(feeAmount) || 0;
     const value = parseFloat(discountValue) || 0;
@@ -93,7 +91,6 @@ const FeeAmountHandler = ({
     }
   };
 
-  // Calculate waiver amount based on type
   const calculateWaiverAmount = () => {
     const fee = parseFloat(feeAmount) || 0;
     const value = parseFloat(waiverValue) || 0;
@@ -105,7 +102,6 @@ const FeeAmountHandler = ({
     }
   };
 
-  // Auto-populate fee amount based on fee type and class
   useEffect(() => {
     if (
       selectedFees &&
@@ -116,7 +112,6 @@ const FeeAmountHandler = ({
       const selectedFeeType = selectedFees[0]?.label || selectedFees[0];
       const selectedClassName = selectedClass[0]?.label || selectedClass[0];
 
-      // Find matching fee in feeCategoryData
       const matchingFee = feeCategoryData?.data?.data?.find(
         (fee: any) =>
           fee.feeType.toLowerCase() === selectedFeeType.toLowerCase() &&
@@ -129,7 +124,6 @@ const FeeAmountHandler = ({
           matchingFee.feeAmount.toString()
         );
 
-        // Auto-detect if this is a yearly fee
         const feeType = selectedFeeType.toLowerCase();
         const isYearly =
           feeType.includes("yearly") || feeType.includes("annual");
@@ -138,7 +132,6 @@ const FeeAmountHandler = ({
     }
   }, [selectedFees, selectedClass, setValue, feeIndex, feeCategoryData]);
 
-  // Calculate monthly fee when yearly fee is entered
   useEffect(() => {
     if (feeAmount && selectedFees && selectedFees.length > 0) {
       const selectedFee = selectedFees[0];
@@ -159,15 +152,12 @@ const FeeAmountHandler = ({
     }
   }, [feeAmount, selectedFees, setValue, feeIndex]);
 
-  // Calculate due amount whenever fee amount, paid amount, discount, or waiver changes
   useEffect(() => {
     if (feeAmount !== undefined && paidAmount !== undefined) {
       const fee = parseFloat(feeAmount) || 0;
       const paid = parseFloat(paidAmount) || 0;
       const discountAmount = calculateDiscountAmount();
       const waiverAmount = calculateWaiverAmount();
-
-      // Calculate due amount after all adjustments
       const due = Math.max(0, fee - paid - discountAmount - waiverAmount);
 
       setValue(`fees.${feeIndex}.dueAmount`, due > 0 ? due.toString() : "0");
@@ -176,7 +166,6 @@ const FeeAmountHandler = ({
         due <= 0 ? "paid" : paid > 0 ? "partial" : "unpaid"
       );
 
-      // Set calculated amounts for display
       setValue(`fees.${feeIndex}.calculatedDiscount`, discountAmount.toString());
       setValue(`fees.${feeIndex}.calculatedWaiver`, waiverAmount.toString());
     }
@@ -185,7 +174,6 @@ const FeeAmountHandler = ({
   return null;
 };
 
-// DynamicFeeFields component - ENHANCED WITH PERCENTAGE/FLAT DISCOUNT/WAIVER FIELDS
 const DynamicFeeFields = ({
   classOptions,
   feeCategoryOptions,
@@ -199,24 +187,19 @@ const DynamicFeeFields = ({
 
   const mainClassName = watch("className");
 
-  // Filter fee types based on selected class in EACH fee entry
   const getFilteredFeeOptions = (feeClassName: any) => {
     if (feeClassName && feeClassName.length > 0) {
-      // Get the selected class names for this specific fee entry
       const selectedClassNames = feeClassName.map(
         (cls: any) => cls.label || cls
       );
 
-      // Filter fee options based on selected classes
       const filtered = feeCategoryData?.data?.data?.filter((fee: any) =>
         selectedClassNames.includes(fee.class)
       );
 
-      // Create unique fee type options
       const uniqueFeeTypes = Array.from(
         new Set(filtered.map((fee: any) => fee.feeType))
       ).map((feeType) => {
-        // Find a matching fee type in the original options
         const originalOption = feeCategoryOptions.find(
           (option: any) => option.label === feeType
         );
@@ -225,13 +208,11 @@ const DynamicFeeFields = ({
 
       return uniqueFeeTypes;
     } else {
-      // If no class selected in this fee entry, return all fee options
       return feeCategoryOptions;
     }
   };
 
   const addFeeField = () => {
-    // Use the main class name from academic info, or empty array if not selected
     const classNameValue =
       mainClassName && mainClassName.length > 0
         ? JSON.parse(JSON.stringify(mainClassName))
@@ -239,19 +220,19 @@ const DynamicFeeFields = ({
 
     append({
       feeType: [],
-      className: classNameValue, // Always use the main class name
+      className: classNameValue,
       feeAmount: "",
       yearlyAmount: "",
       monthlyAmount: "",
       paidAmount: "",
-      discountType: "flat", // NEW: Discount type (flat/percentage)
-      discountValue: "0", // NEW: Discount value
-      discountReason: "", // NEW: Reason for discount
-      waiverType: "flat", // NEW: Waiver type (flat/percentage)
-      waiverValue: "0", // NEW: Waiver value
-      waiverReason: "", // NEW: Reason for waiver
-      calculatedDiscount: "0", // NEW: Calculated discount amount
-      calculatedWaiver: "0", // NEW: Calculated waiver amount
+      discountType: "flat",
+      discountValue: "0",
+      discountReason: "",
+      waiverType: "flat",
+      waiverValue: "0",
+      waiverReason: "",
+      calculatedDiscount: "0",
+      calculatedWaiver: "0",
       dueAmount: "",
       paymentStatus: "unpaid",
       isYearlyFee: false,
@@ -1866,14 +1847,13 @@ const EnrollmentForm = () => {
             </CardContent>
           </Card>
 
-          {/* Dynamic Fee Fields - NOW WITH PERCENTAGE/FLAT DISCOUNT/WAIVER SUPPORT */}
+
           <DynamicFeeFields
             classOptions={classOptions}
             feeCategoryOptions={feeCategoryOptions}
             feeCategoryData={feeCategoryData}
           />
 
-          {/* Parent Information */}
           <Card elevation={2} sx={{ mb: 3, borderRadius: 2 }}>
             <CardContent sx={{ p: 3 }}>
               <Typography variant="h6" gutterBottom>

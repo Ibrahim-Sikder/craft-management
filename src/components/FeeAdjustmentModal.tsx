@@ -1,5 +1,4 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// components/FeeAdjustmentModal.tsx
 import { useState, useEffect } from "react";
 import {
   Modal,
@@ -45,8 +44,6 @@ const FeeAdjustmentModal = ({
 
   const [loading, setLoading] = useState(false);
   const [calculatedAmount, setCalculatedAmount] = useState(0);
-
-  // Reset form when modal opens with new fee
   useEffect(() => {
     if (open && fee) {
       const currentMonth =
@@ -66,17 +63,15 @@ const FeeAdjustmentModal = ({
     }
   }, [open, fee]);
 
-  // Calculate adjustment amount
+
   useEffect(() => {
     if (fee && formData.value && !isNaN(Number(formData.value))) {
       const numericValue = Number(formData.value);
 
       if (formData.adjustmentType === "percentage") {
-        // Percentage calculation - limit to 100%
         const percentage = Math.min(numericValue, 100);
         setCalculatedAmount((fee.amount * percentage) / 100);
       } else {
-        // Flat amount calculation - limit to due amount
         const maxAllowed = fee.dueAmount || fee.amount;
         setCalculatedAmount(Math.min(numericValue, maxAllowed));
       }
@@ -93,7 +88,6 @@ const FeeAdjustmentModal = ({
   };
 
   const handleValueChange = (value: string) => {
-    // Allow only numbers and decimal point
     if (value === "" || /^\d*\.?\d*$/.test(value)) {
       setFormData((prev) => ({
         ...prev,
@@ -112,8 +106,6 @@ const FeeAdjustmentModal = ({
       alert("Please fill all required fields with valid values");
       return;
     }
-
-    // Validate value limits
     const numericValue = Number(formData.value);
     if (formData.adjustmentType === "percentage" && numericValue > 100) {
       alert("Percentage cannot exceed 100%");
@@ -135,7 +127,7 @@ const FeeAdjustmentModal = ({
         fee: fee._id,
         enrollment: fee.enrollment?._id || fee.enrollment,
         ...formData,
-        value: numericValue, // Convert to number before sending
+        value: numericValue,
         academicYear: fee.academicYear || new Date().getFullYear().toString(),
       });
 
@@ -196,8 +188,6 @@ const FeeAdjustmentModal = ({
             <Close />
           </Button>
         </Box>
-
-        {/* Fee Information */}
         <Paper sx={{ p: 2, mb: 3, bgcolor: "grey.50" }}>
           <Typography variant="subtitle2" gutterBottom>
             Fee Details
@@ -228,7 +218,7 @@ const FeeAdjustmentModal = ({
         </Paper>
 
         <Grid container spacing={3}>
-          {/* Adjustment Type */}
+
           <Grid item xs={6}>
             <FormControl fullWidth size="small">
               <InputLabel>Adjustment Type</InputLabel>
@@ -244,7 +234,7 @@ const FeeAdjustmentModal = ({
             </FormControl>
           </Grid>
 
-          {/* Calculation Type */}
+
           <Grid item xs={6}>
             <FormControl fullWidth size="small">
               <InputLabel>Calculation Type</InputLabel>
@@ -253,7 +243,7 @@ const FeeAdjustmentModal = ({
                 label="Calculation Type"
                 onChange={(e) => {
                   handleInputChange("adjustmentType", e.target.value);
-                  // Reset value when calculation type changes
+
                   handleInputChange("value", "");
                 }}
                 disabled={loading}
@@ -263,14 +253,12 @@ const FeeAdjustmentModal = ({
               </Select>
             </FormControl>
           </Grid>
-
-          {/* Value Input */}
           <Grid item xs={6}>
             <TextField
               fullWidth
               size="small"
               label={`Value ${formData.adjustmentType === "percentage" ? "(%)" : "(৳)"}`}
-              type="text" // Use text to handle input properly
+              type="text"
               value={formData.value}
               onChange={(e) => handleValueChange(e.target.value)}
               placeholder={
@@ -288,7 +276,6 @@ const FeeAdjustmentModal = ({
             />
           </Grid>
 
-          {/* Calculated Amount */}
           <Grid item xs={6}>
             <TextField
               fullWidth
@@ -307,7 +294,6 @@ const FeeAdjustmentModal = ({
             />
           </Grid>
 
-          {/* Reason */}
           <Grid item xs={12}>
             <TextField
               fullWidth
@@ -323,7 +309,6 @@ const FeeAdjustmentModal = ({
             />
           </Grid>
 
-          {/* Month Range */}
           <Grid item xs={6}>
             <TextField
               fullWidth
@@ -347,7 +332,6 @@ const FeeAdjustmentModal = ({
             />
           </Grid>
 
-          {/* Recurring Option */}
           <Grid item xs={12}>
             <FormControlLabel
               control={
@@ -364,7 +348,6 @@ const FeeAdjustmentModal = ({
           </Grid>
         </Grid>
 
-        {/* Summary */}
         {calculatedAmount > 0 && (
           <Alert
             severity="info"
@@ -383,7 +366,6 @@ const FeeAdjustmentModal = ({
           </Alert>
         )}
 
-        {/* Validation Errors */}
         {formData.value && Number(formData.value) <= 0 && (
           <Alert severity="error" sx={{ mt: 2 }}>
             Value must be greater than 0
@@ -407,7 +389,6 @@ const FeeAdjustmentModal = ({
             </Alert>
           )}
 
-        {/* Actions */}
         <Box
           sx={{ display: "flex", gap: 2, justifyContent: "flex-end", mt: 3 }}
         >
