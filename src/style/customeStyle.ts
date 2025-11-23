@@ -477,3 +477,23 @@ export const tableStyle = {
 };
 
 export const tableRowCellStyle = { fontWeight: 600, fontSize: "0.75rem", p: 1 }
+
+export const buttonStyle = {
+  background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+  color: "white",
+  textTransform: "none",
+  borderRadius: "8px",
+  fontSize: "0.9rem",
+
+}
+
+export const inputStyle = {
+  "& .MuiOutlinedInput-root": {
+
+    borderRadius: "12px",
+    backgroundColor: "white",
+    "&:hover fieldset": {
+      borderColor: "#3b82f6",
+    },
+  }
+}
