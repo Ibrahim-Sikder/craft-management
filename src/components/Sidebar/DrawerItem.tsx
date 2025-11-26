@@ -77,9 +77,6 @@ export const navigationItems: NavigationItem[] = [
       </ColorfulIcon>
     ),
     path: "/dashboard",
-<<<<<<< HEAD
-    roles: ["admin", "teacher", "student", "super_admin", "class_teacher", 'accountant'], //this is for role
-=======
     roles: [
       "admin",
       "teacher",
@@ -88,7 +85,6 @@ export const navigationItems: NavigationItem[] = [
       "class_teacher",
       "accountant",
     ],
->>>>>>> 28afc918954c3e9ff7017556046ba3fcedccba15
   },
   // Website
   {
@@ -1108,3 +1104,4 @@ export const navigationItems: NavigationItem[] = [
     ],
   },
 ];
+
