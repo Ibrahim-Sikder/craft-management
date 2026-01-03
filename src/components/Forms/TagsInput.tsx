@@ -34,7 +34,7 @@ const CraftTagsInput = ({
             multiple
             size="small"
             freeSolo
-            options={options} // Predefined options for tags
+            options={options} 
             value={field.value || []}
             onChange={(event, newValue) => {
               field.onChange(newValue);
