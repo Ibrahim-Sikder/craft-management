@@ -255,48 +255,32 @@ const StudentProfile = ({ params }: PageProps) => {
         {/* <TabPanel value={tabValue} index={0}>
           <StudentOverview student={singleStudent?.data} />
         </TabPanel> */}
-
-        {/* Results Tab */}
         <TabPanel value={tabValue} index={1}>
           <StudentResult />
         </TabPanel>
-
-        {/* Homework Tab */}
         <TabPanel value={tabValue} index={2}>
           <StudentHomeWork />
         </TabPanel>
-
-        {/* Attendance Tab */}
         <TabPanel value={tabValue} index={3}></TabPanel>
-
-        {/* Subjects Tab */}
         <TabPanel value={tabValue} index={4}>
           <StudentSubject />
         </TabPanel>
 
-        {/* Timetable Tab */}
         <TabPanel value={tabValue} index={5}>
           <StudentTimetable />
         </TabPanel>
-
-        {/* Fees Tab */}
         <TabPanel value={tabValue} index={6}>
           <StudentFee studentFees={singleStudent?.data?.fees} />
         </TabPanel>
         <TabPanel value={tabValue} index={7}>
-          <PaymentHistory />
+          <PaymentHistory payments={singleStudent?.data?.payments} />
         </TabPanel>
-        {/* Announcements Tab */}
         <TabPanel value={tabValue} index={8}>
           <StudentAnnouncement />
         </TabPanel>
-
-        {/* Documents Tab */}
         <TabPanel value={tabValue} index={9}>
           <StudentDocument />
         </TabPanel>
-
-        {/* Achievements Tab */}
         <TabPanel value={tabValue} index={10}>
           <StudentAchivement />
         </TabPanel>

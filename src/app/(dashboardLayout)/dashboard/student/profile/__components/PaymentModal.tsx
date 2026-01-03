@@ -84,8 +84,6 @@ const PaymentModal = ({
         transactionId: transactionId || `TXN-${Date.now()}`,
         receiptNo: `RCP-${Date.now()}`,
       };
-
-      // Call API
       const response = await fetch("http://localhost:5000/api/v1/fees/pay", {
         method: "POST",
         headers: {
