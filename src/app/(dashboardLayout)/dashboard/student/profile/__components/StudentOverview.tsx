@@ -14,7 +14,7 @@ import {
   Paper,
   alpha,
   useTheme,
-} from "@mui/material"
+} from "@mui/material";
 import {
   Home,
   LocalLibrary,
@@ -28,60 +28,72 @@ import {
   Bloodtype,
   Badge,
   Class,
-  Numbers,
   Verified,
   ContactPhone,
   FamilyRestroom,
   Book,
-} from "@mui/icons-material"
-import { format } from "date-fns"
+} from "@mui/icons-material";
+import { format } from "date-fns";
 
-// Helper function to get status color
 const getStatusColor = (status: string) => {
   switch (status?.toLowerCase()) {
     case "active":
-      return "success"
+      return "success";
     case "inactive":
-      return "error"
+      return "error";
     case "pending":
-      return "warning"
+      return "warning";
     case "graduated":
-      return "info"
+      return "info";
     default:
-      return "default"
+      return "default";
   }
-}
+};
 
-// Helper function to format date
 const formatDate = (dateString: string) => {
-  if (!dateString) return "N/A"
+  if (!dateString) return "N/A";
   try {
-    return format(new Date(dateString), "MMMM dd, yyyy")
+    return format(new Date(dateString), "MMMM dd, yyyy");
   } catch (error) {
-    return dateString
+    return dateString;
   }
-}
+};
 
-// Sample subject data (since it's not in the backend data)
 const sampleSubjects = [
   { name: "Mathematics", progress: 85 },
   { name: "Science", progress: 92 },
   { name: "English", progress: 78 },
   { name: "Social Studies", progress: 88 },
   { name: "Computer Science", progress: 95 },
-]
+];
 
 const StudentOverview = ({ student }: { student: any }) => {
-  const theme = useTheme()
+  const theme = useTheme();
 
-  // Handle case where student data is not provided
   if (!student) {
     return (
       <Alert severity="warning" sx={{ mt: 2 }}>
         Student data not available
       </Alert>
-    )
+    );
   }
+
+  const studentData = student.data || student;
+
+  const className = studentData.className?.[0]?.className || "N/A";
+  const sections = studentData.section || [];
+
+  const totalFees =
+    studentData.fees?.reduce(
+      (sum: number, fee: any) => sum + (fee.amount || 0),
+      0
+    ) || 0;
+  const totalPaid =
+    studentData.payments?.reduce(
+      (sum: number, payment: any) => sum + (payment.amountPaid || 0),
+      0
+    ) || 0;
+  const balance = totalFees - totalPaid + (studentData.advanceBalance || 0);
 
   return (
     <Grid container spacing={3}>
@@ -95,101 +107,147 @@ const StudentOverview = ({ student }: { student: any }) => {
             height: "100%",
           }}
         >
-          <Typography variant="h6" gutterBottom sx={{ display: "flex", alignItems: "center" }}>
-            <Person sx={{ mr: 1, color: theme.palette.primary.main }} /> Personal Information
+          <Typography
+            variant="h6"
+            gutterBottom
+            sx={{ display: "flex", alignItems: "center" }}
+          >
+            <Person sx={{ mr: 1, color: theme.palette.primary.main }} />{" "}
+            Personal Information
           </Typography>
           <Divider sx={{ mb: 2 }} />
           <Grid container spacing={2}>
             <Grid item xs={6}>
-              <Typography variant="subtitle2" color="text.secondary" sx={{ display: "flex", alignItems: "center" }}>
-                <Person fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} /> Full Name
+              <Typography
+                variant="subtitle2"
+                color="text.secondary"
+                sx={{ display: "flex", alignItems: "center" }}
+              >
+                <Person fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} /> Full
+                Name
               </Typography>
               <Typography variant="body1" fontWeight="medium">
-                {student.name || "N/A"}
+                {studentData.name || "N/A"}
               </Typography>
             </Grid>
             <Grid item xs={6}>
-              <Typography variant="subtitle2" color="text.secondary" sx={{ display: "flex", alignItems: "center" }}>
-                <Badge fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} /> Student ID
+              <Typography
+                variant="subtitle2"
+                color="text.secondary"
+                sx={{ display: "flex", alignItems: "center" }}
+              >
+                <Badge fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} />{" "}
+                Student ID
               </Typography>
               <Typography variant="body1" fontWeight="medium">
-                {student.studentId || "N/A"}
+                {studentData.studentId || "N/A"}
               </Typography>
             </Grid>
             <Grid item xs={6}>
-              <Typography variant="subtitle2" color="text.secondary" sx={{ display: "flex", alignItems: "center" }}>
-                <CalendarMonth fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} /> Date of Birth
+              <Typography
+                variant="subtitle2"
+                color="text.secondary"
+                sx={{ display: "flex", alignItems: "center" }}
+              >
+                <CalendarMonth
+                  fontSize="small"
+                  sx={{ mr: 0.5, opacity: 0.7 }}
+                />{" "}
+                Date of Birth
               </Typography>
               <Typography variant="body1" fontWeight="medium">
-                {formatDate(student.birthDate)}
+                {formatDate(studentData.birthDate)}
               </Typography>
             </Grid>
             <Grid item xs={6}>
-              <Typography variant="subtitle2" color="text.secondary" sx={{ display: "flex", alignItems: "center" }}>
-                <Person fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} /> Gender
+              <Typography
+                variant="subtitle2"
+                color="text.secondary"
+                sx={{ display: "flex", alignItems: "center" }}
+              >
+                <Person fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} /> Name
+                (Bangla)
               </Typography>
               <Typography variant="body1" fontWeight="medium">
-                {student.gender || "N/A"}
+                {studentData.nameBangla || "N/A"}
               </Typography>
             </Grid>
             <Grid item xs={6}>
-              <Typography variant="subtitle2" color="text.secondary" sx={{ display: "flex", alignItems: "center" }}>
-                <Bloodtype fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} /> Blood Group
+              <Typography
+                variant="subtitle2"
+                color="text.secondary"
+                sx={{ display: "flex", alignItems: "center" }}
+              >
+                <Bloodtype fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} />{" "}
+                Blood Group
               </Typography>
               <Typography variant="body1" fontWeight="medium">
-                {student.bloodGroup || "N/A"}
+                {studentData.bloodGroup || "N/A"}
               </Typography>
             </Grid>
             <Grid item xs={6}>
-              <Typography variant="subtitle2" color="text.secondary" sx={{ display: "flex", alignItems: "center" }}>
+              <Typography
+                variant="subtitle2"
+                color="text.secondary"
+                sx={{ display: "flex", alignItems: "center" }}
+              >
                 <Phone fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} /> Mobile
               </Typography>
               <Typography variant="body1" fontWeight="medium">
-                {student.mobile || "N/A"}
+                {studentData.mobile || "N/A"}
               </Typography>
             </Grid>
             <Grid item xs={6}>
-              <Typography variant="subtitle2" color="text.secondary" sx={{ display: "flex", alignItems: "center" }}>
+              <Typography
+                variant="subtitle2"
+                color="text.secondary"
+                sx={{ display: "flex", alignItems: "center" }}
+              >
                 <Email fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} /> Email
               </Typography>
               <Typography variant="body1" fontWeight="medium">
-                {student.email || "N/A"}
+                {studentData.email || "N/A"}
               </Typography>
             </Grid>
             <Grid item xs={6}>
-              <Typography variant="subtitle2" color="text.secondary" sx={{ display: "flex", alignItems: "center" }}>
-                <CalendarMonth fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} /> Admission Date
+              <Typography
+                variant="subtitle2"
+                color="text.secondary"
+                sx={{ display: "flex", alignItems: "center" }}
+              >
+                <CalendarMonth
+                  fontSize="small"
+                  sx={{ mr: 0.5, opacity: 0.7 }}
+                />{" "}
+                Admission Date
               </Typography>
               <Typography variant="body1" fontWeight="medium">
-                {formatDate(student.createdAt)}
+                {formatDate(studentData.createdAt)}
               </Typography>
             </Grid>
           </Grid>
 
-          <Typography variant="h6" gutterBottom sx={{ mt: 4, display: "flex", alignItems: "center" }}>
-            <Home sx={{ mr: 1, color: theme.palette.primary.main }} /> Address Information
+          <Typography
+            variant="h6"
+            gutterBottom
+            sx={{ mt: 4, display: "flex", alignItems: "center" }}
+          >
+            <Home sx={{ mr: 1, color: theme.palette.primary.main }} /> Address
+            Information
           </Typography>
           <Divider sx={{ mb: 2 }} />
-          
+
           <Box sx={{ mb: 3 }}>
-            <Typography variant="subtitle2" color="text.secondary" sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-              <LocationOn fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} /> Present Address
+            <Typography
+              variant="subtitle2"
+              color="text.secondary"
+              sx={{ display: "flex", alignItems: "center", mb: 1 }}
+            >
+              <LocationOn fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} />{" "}
+              Same as Permanent Address
             </Typography>
             <Typography variant="body1" fontWeight="medium">
-              {student.presentAddress || "N/A"}
-              {student.presentThana && `, ${student.presentThana}`}
-              {student.presentDistrict && `, ${student.presentDistrict}`}
-            </Typography>
-          </Box>
-          
-          <Box>
-            <Typography variant="subtitle2" color="text.secondary" sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-              <Home fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} /> Permanent Address
-            </Typography>
-            <Typography variant="body1" fontWeight="medium">
-              {student.permanentAddress || "N/A"}
-              {student.permanentThana && `, ${student.permanentThana}`}
-              {student.permanentDistrict && `, ${student.permanentDistrict}`}
+              {studentData.sameAsPermanent ? "Yes" : "No"}
             </Typography>
           </Box>
         </Paper>
@@ -205,130 +263,245 @@ const StudentOverview = ({ student }: { student: any }) => {
             height: "100%",
           }}
         >
-          <Typography variant="h6" gutterBottom sx={{ display: "flex", alignItems: "center" }}>
-            <School sx={{ mr: 1, color: theme.palette.primary.main }} /> Academic Information
+          <Typography
+            variant="h6"
+            gutterBottom
+            sx={{ display: "flex", alignItems: "center" }}
+          >
+            <School sx={{ mr: 1, color: theme.palette.primary.main }} />{" "}
+            Academic Information
           </Typography>
           <Divider sx={{ mb: 2 }} />
           <Grid container spacing={2}>
             <Grid item xs={6}>
-              <Typography variant="subtitle2" color="text.secondary" sx={{ display: "flex", alignItems: "center" }}>
+              <Typography
+                variant="subtitle2"
+                color="text.secondary"
+                sx={{ display: "flex", alignItems: "center" }}
+              >
                 <Class fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} /> Class
               </Typography>
               <Typography variant="body1" fontWeight="medium">
-                {Array.isArray(student.className) && student.className.length > 0
-                  ? student.className.join(", ")
-                  : "N/A"}
+                {className}
               </Typography>
             </Grid>
             <Grid item xs={6}>
-              <Typography variant="subtitle2" color="text.secondary" sx={{ display: "flex", alignItems: "center" }}>
-                <Class fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} /> Section
+              <Typography
+                variant="subtitle2"
+                color="text.secondary"
+                sx={{ display: "flex", alignItems: "center" }}
+              >
+                <Class fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} />{" "}
+                Section
               </Typography>
               <Typography variant="body1" fontWeight="medium">
-                {Array.isArray(student.section) && student.section.length > 0 ? student.section.join(", ") : "N/A"}
+                {sections.length > 0 ? sections.join(", ") : "N/A"}
               </Typography>
             </Grid>
             <Grid item xs={6}>
-              <Typography variant="subtitle2" color="text.secondary" sx={{ display: "flex", alignItems: "center" }}>
-                <Numbers fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} /> Roll Number
+              <Typography
+                variant="subtitle2"
+                color="text.secondary"
+                sx={{ display: "flex", alignItems: "center" }}
+              >
+                <School fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} />{" "}
+                Department
               </Typography>
               <Typography variant="body1" fontWeight="medium">
-                {student.studentClassRoll || "N/A"}
+                {studentData.studentDepartment || "N/A"}
               </Typography>
             </Grid>
             <Grid item xs={6}>
-              <Typography variant="subtitle2" color="text.secondary" sx={{ display: "flex", alignItems: "center" }}>
-                <Verified fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} /> Status
+              <Typography
+                variant="subtitle2"
+                color="text.secondary"
+                sx={{ display: "flex", alignItems: "center" }}
+              >
+                <Verified fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} />{" "}
+                Status
               </Typography>
               <Chip
-                label={student.status || "N/A"}
+                label={studentData.status || "N/A"}
                 size="small"
-                color={getStatusColor(student.status) as any}
+                color={getStatusColor(studentData.status) as any}
                 sx={{ fontWeight: "medium" }}
               />
             </Grid>
             <Grid item xs={6}>
-              <Typography variant="subtitle2" color="text.secondary" sx={{ display: "flex", alignItems: "center" }}>
-                <Badge fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} /> Smart ID Card
+              <Typography
+                variant="subtitle2"
+                color="text.secondary"
+                sx={{ display: "flex", alignItems: "center" }}
+              >
+                <Badge fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} /> Smart
+                ID Card
               </Typography>
               <Typography variant="body1" fontWeight="medium">
-                {student.smartIdCard || "N/A"}
+                {studentData.smartIdCard || "N/A"}
               </Typography>
             </Grid>
             <Grid item xs={6}>
-              <Typography variant="subtitle2" color="text.secondary" sx={{ display: "flex", alignItems: "center" }}>
-                <School fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} /> Student Type
+              <Typography
+                variant="subtitle2"
+                color="text.secondary"
+                sx={{ display: "flex", alignItems: "center" }}
+              >
+                <CalendarMonth
+                  fontSize="small"
+                  sx={{ mr: 0.5, opacity: 0.7 }}
+                />{" "}
+                Last Updated
               </Typography>
               <Typography variant="body1" fontWeight="medium">
-                {student.studentType || "N/A"}
+                {formatDate(studentData.updatedAt)}
               </Typography>
             </Grid>
           </Grid>
 
-          <Typography variant="h6" gutterBottom sx={{ mt: 4, display: "flex", alignItems: "center" }}>
-            <People sx={{ mr: 1, color: theme.palette.primary.main }} /> Guardian Information
+          <Typography
+            variant="h6"
+            gutterBottom
+            sx={{ mt: 4, display: "flex", alignItems: "center" }}
+          >
+            <People sx={{ mr: 1, color: theme.palette.primary.main }} />{" "}
+            Guardian Information
           </Typography>
           <Divider sx={{ mb: 2 }} />
           <Grid container spacing={2}>
             <Grid item xs={6}>
-              <Typography variant="subtitle2" color="text.secondary" sx={{ display: "flex", alignItems: "center" }}>
-                <FamilyRestroom fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} /> Guardian Name
+              <Typography
+                variant="subtitle2"
+                color="text.secondary"
+                sx={{ display: "flex", alignItems: "center" }}
+              >
+                <FamilyRestroom
+                  fontSize="small"
+                  sx={{ mr: 0.5, opacity: 0.7 }}
+                />{" "}
+                Father's Name
               </Typography>
               <Typography variant="body1" fontWeight="medium">
-                {student.guardianName || "N/A"}
+                {studentData.fatherName || "N/A"}
               </Typography>
             </Grid>
             <Grid item xs={6}>
-              <Typography variant="subtitle2" color="text.secondary" sx={{ display: "flex", alignItems: "center" }}>
-                <ContactPhone fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} /> Guardian Mobile
+              <Typography
+                variant="subtitle2"
+                color="text.secondary"
+                sx={{ display: "flex", alignItems: "center" }}
+              >
+                <ContactPhone fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} />{" "}
+                Father's Mobile
               </Typography>
               <Typography variant="body1" fontWeight="medium">
-                {student.guardianMobile || "N/A"}
+                {studentData.fatherMobile || "N/A"}
               </Typography>
             </Grid>
             <Grid item xs={6}>
-              <Typography variant="subtitle2" color="text.secondary" sx={{ display: "flex", alignItems: "center" }}>
-                <Person fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} /> Father's Name
+              <Typography
+                variant="subtitle2"
+                color="text.secondary"
+                sx={{ display: "flex", alignItems: "center" }}
+              >
+                <Person fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} />{" "}
+                Mother's Name
               </Typography>
               <Typography variant="body1" fontWeight="medium">
-                {student.fatherName || "N/A"}
+                {studentData.motherName || "N/A"}
               </Typography>
             </Grid>
             <Grid item xs={6}>
-              <Typography variant="subtitle2" color="text.secondary" sx={{ display: "flex", alignItems: "center" }}>
-                <Person fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} /> Mother's Name
+              <Typography
+                variant="subtitle2"
+                color="text.secondary"
+                sx={{ display: "flex", alignItems: "center" }}
+              >
+                <ContactPhone fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} />{" "}
+                Mother's Mobile
               </Typography>
               <Typography variant="body1" fontWeight="medium">
-                {student.motherName || "N/A"}
-              </Typography>
-            </Grid>
-            <Grid item xs={6}>
-              <Typography variant="subtitle2" color="text.secondary" sx={{ display: "flex", alignItems: "center" }}>
-                <Badge fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} /> NID Information
-              </Typography>
-              <Typography variant="body1" fontWeight="medium">
-                {student.nidFatherMotherGuardian || "N/A"}
-              </Typography>
-            </Grid>
-            <Grid item xs={6}>
-              <Typography variant="subtitle2" color="text.secondary" sx={{ display: "flex", alignItems: "center" }}>
-                <People fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} /> Relation
-              </Typography>
-              <Typography variant="body1" fontWeight="medium">
-                {student.relation || "N/A"}
+                {studentData.motherMobile || "N/A"}
               </Typography>
             </Grid>
           </Grid>
 
-          <Typography variant="h6" gutterBottom sx={{ mt: 4, display: "flex", alignItems: "center" }}>
-            <LocalLibrary sx={{ mr: 1, color: theme.palette.primary.main }} /> Subject Progress
+          <Typography
+            variant="h6"
+            gutterBottom
+            sx={{ mt: 4, display: "flex", alignItems: "center" }}
+          >
+            <School sx={{ mr: 1, color: theme.palette.primary.main }} />{" "}
+            Financial Summary
+          </Typography>
+          <Divider sx={{ mb: 2 }} />
+          <Grid container spacing={2}>
+            <Grid item xs={6}>
+              <Typography variant="subtitle2" color="text.secondary">
+                Total Fees
+              </Typography>
+              <Typography variant="body1" fontWeight="medium">
+                ৳{totalFees.toFixed(2)}
+              </Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography variant="subtitle2" color="text.secondary">
+                Total Paid
+              </Typography>
+              <Typography
+                variant="body1"
+                fontWeight="medium"
+                color="success.main"
+              >
+                ৳{totalPaid.toFixed(2)}
+              </Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography variant="subtitle2" color="text.secondary">
+                Advance Balance
+              </Typography>
+              <Typography variant="body1" fontWeight="medium" color="info.main">
+                ৳{studentData.advanceBalance?.toFixed(2) || "0.00"}
+              </Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography variant="subtitle2" color="text.secondary">
+                Current Balance
+              </Typography>
+              <Typography
+                variant="body1"
+                fontWeight="medium"
+                color={balance >= 0 ? "error.main" : "success.main"}
+              >
+                ৳{balance.toFixed(2)}
+              </Typography>
+            </Grid>
+          </Grid>
+
+          <Typography
+            variant="h6"
+            gutterBottom
+            sx={{ mt: 4, display: "flex", alignItems: "center" }}
+          >
+            <LocalLibrary sx={{ mr: 1, color: theme.palette.primary.main }} />{" "}
+            Subject Progress
           </Typography>
           <Divider sx={{ mb: 2 }} />
           {sampleSubjects.slice(0, 3).map((subject, index) => (
             <Box key={index} sx={{ mb: 2 }}>
-              <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.5, alignItems: "center" }}>
-                <Typography variant="body2" sx={{ display: "flex", alignItems: "center" }}>
-                  <Book fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} /> {subject.name}
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  mb: 0.5,
+                  alignItems: "center",
+                }}
+              >
+                <Typography
+                  variant="body2"
+                  sx={{ display: "flex", alignItems: "center" }}
+                >
+                  <Book fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} />{" "}
+                  {subject.name}
                 </Typography>
                 <Typography variant="body2" fontWeight="medium">
                   {subject.progress}%
@@ -341,24 +514,24 @@ const StudentOverview = ({ student }: { student: any }) => {
                   subject.progress >= 90
                     ? "success"
                     : subject.progress >= 70
-                    ? "primary"
-                    : subject.progress >= 50
-                    ? "warning"
-                    : "error"
+                      ? "primary"
+                      : subject.progress >= 50
+                        ? "warning"
+                        : "error"
                 }
                 sx={{ height: 8, borderRadius: 1 }}
               />
             </Box>
           ))}
-          <Button 
-            variant="text" 
-            size="small" 
-            sx={{ 
+          <Button
+            variant="text"
+            size="small"
+            sx={{
               mt: 1,
               color: theme.palette.primary.main,
               "&:hover": {
-                backgroundColor: alpha(theme.palette.primary.main, 0.1)
-              }
+                backgroundColor: alpha(theme.palette.primary.main, 0.1),
+              },
             }}
           >
             View All Subjects
@@ -366,7 +539,7 @@ const StudentOverview = ({ student }: { student: any }) => {
         </Paper>
       </Grid>
     </Grid>
-  )
-}
+  );
+};
 
-export default StudentOverview
+export default StudentOverview;

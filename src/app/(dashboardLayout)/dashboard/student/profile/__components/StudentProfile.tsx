@@ -252,9 +252,9 @@ const StudentProfile = ({ params }: PageProps) => {
         </Box>
 
         {/* Overview Tab */}
-        {/* <TabPanel value={tabValue} index={0}>
+        <TabPanel value={tabValue} index={0}>
           <StudentOverview student={singleStudent?.data} />
-        </TabPanel> */}
+        </TabPanel>
         <TabPanel value={tabValue} index={1}>
           <StudentResult />
         </TabPanel>
