@@ -1314,9 +1314,16 @@ export default function ClassReportForm({ id }: any) {
                                             variant="caption"
                                             color="text.secondary"
                                           >
-                                            {student.studentId} •{" "}
-                                            {student.className},{" "}
-                                            {student.section}
+                                            {student.studentId} •
+                                            {student.className &&
+                                            student.className.length > 0
+                                              ? student.className[0].className
+                                              : "No Class"}
+                                            ,
+                                            {student.section &&
+                                            student.section.length > 0
+                                              ? student.section[0]
+                                              : "No Section"}
                                           </Typography>
                                         </TableCell>
                                         <TableCell align="center">
