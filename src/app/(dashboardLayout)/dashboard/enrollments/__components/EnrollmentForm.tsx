@@ -46,7 +46,6 @@ import {
   FamilyRestroom,
   Description as DocumentIcon,
   Payment,
-  Edit,
   Save,
 } from "@mui/icons-material";
 import {
@@ -80,6 +79,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useFieldArray, useFormContext } from "react-hook-form";
 import toast from "react-hot-toast";
+import FeeCategoryModal from "../../fees/__components/FeeCategoryModal";
 
 const FeeAmountHandler = ({
   feeIndex,
@@ -229,7 +229,9 @@ const DynamicFeeFields = ({
     control,
     name: "fees",
   });
-
+  const [openFeeModal, setOpenFeeModal] = useState(false);
+  const handleOpenFeeModal = () => setOpenFeeModal(true);
+  const handleCloseFeeModal = () => setOpenFeeModal(false);
   const mainClassName = watch("className");
 
   useEffect(() => {
@@ -308,213 +310,215 @@ const DynamicFeeFields = ({
   };
 
   return (
-    <Card
-      elevation={0}
-      sx={{
-        mb: 4,
-        borderRadius: 4,
-        overflow: "hidden",
-        border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-        background: `linear-gradient(135deg, ${alpha(
-          theme.palette.primary.main,
-          0.02
-        )} 0%, ${alpha(theme.palette.secondary.main, 0.02)} 100%)`,
-      }}
-    >
-      <Box
+    <>
+      <Card
+        elevation={0}
         sx={{
-          background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-          p: 3,
-          color: "white",
+          mb: 4,
+          borderRadius: 4,
+          overflow: "hidden",
+          border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+          background: `linear-gradient(135deg, ${alpha(
+            theme.palette.primary.main,
+            0.02
+          )} 0%, ${alpha(theme.palette.secondary.main, 0.02)} 100%)`,
         }}
       >
         <Box
           sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
+            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+            p: 3,
+            color: "white",
           }}
         >
-          <Box sx={{ display: "flex", alignItems: "center" }}>
-            <Payment sx={{ fontSize: 32, mr: 2 }} />
-            <Typography variant="h5" fontWeight="bold">
-              Fee Information
-            </Typography>
-            <Chip
-              label="Required"
-              size="small"
-              sx={{
-                ml: 2,
-                bgcolor: alpha("#fff", 0.2),
-                color: "white",
-                fontWeight: "bold",
-              }}
-            />
-          </Box>
-          <Tooltip title="Add Fee Entry">
-            <IconButton
-              onClick={addFeeField}
-              sx={{
-                bgcolor: alpha("#fff", 0.2),
-                color: "white",
-                "&:hover": {
-                  bgcolor: alpha("#fff", 0.3),
-                },
-              }}
-            >
-              <Add />
-            </IconButton>
-          </Tooltip>
-        </Box>
-      </Box>
-
-      <CardContent sx={{ p: 3 }}>
-        {fields.map((field, index) => {
-          const feeClassName = watch(`fees.${index}.className`);
-          const filteredFeeOptions = getFilteredFeeOptions(feeClassName);
-          const isYearlyFee = watch(`fees.${index}.isYearlyFee`);
-          const feeAmount = parseFloat(watch(`fees.${index}.feeAmount`)) || 0;
-          const discountType = watch(`fees.${index}.discountType`) || "flat";
-          const discountValue =
-            parseFloat(watch(`fees.${index}.discountValue`)) || 0;
-          const waiverType = watch(`fees.${index}.waiverType`) || "flat";
-          const waiverValue =
-            parseFloat(watch(`fees.${index}.waiverValue`)) || 0;
-          const calculatedDiscount =
-            parseFloat(watch(`fees.${index}.calculatedDiscount`)) || 0;
-          const calculatedWaiver =
-            parseFloat(watch(`fees.${index}.calculatedWaiver`)) || 0;
-          const totalAdjustments = calculatedDiscount + calculatedWaiver;
-
-          return (
-            <Box
-              key={field.id}
-              sx={{
-                mb: 3,
-                p: 3,
-                borderRadius: 3,
-                background: `linear-gradient(135deg, ${alpha(
-                  theme.palette.background.paper,
-                  0.9
-                )} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
-                boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
-                border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-                position: "relative",
-                overflow: "hidden",
-                "&:before": {
-                  content: '""',
-                  position: "absolute",
-                  top: 0,
-                  left: 0,
-                  width: "5px",
-                  height: "100%",
-                  background: `linear-gradient(to bottom, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
-                },
-              }}
-            >
-              {index > 0 && (
-                <Tooltip title="Remove Fee Entry">
-                  <IconButton
-                    onClick={() => removeFeeField(index)}
-                    sx={{
-                      position: "absolute",
-                      top: 8,
-                      right: 8,
-                      color: "error.main",
-                      bgcolor: alpha(theme.palette.error.main, 0.1),
-                      "&:hover": {
-                        bgcolor: alpha(theme.palette.error.main, 0.2),
-                      },
-                    }}
-                  >
-                    <Remove />
-                  </IconButton>
-                </Tooltip>
-              )}
-
-              <Box
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+            }}
+          >
+            <Box sx={{ display: "flex", alignItems: "center" }}>
+              <Payment sx={{ fontSize: 32, mr: 2 }} />
+              <Typography variant="h5" fontWeight="bold">
+                Fee Information
+              </Typography>
+              <Chip
+                label="Required"
+                size="small"
                 sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  mb: 2,
+                  ml: 2,
+                  bgcolor: alpha("#fff", 0.2),
+                  color: "white",
+                  fontWeight: "bold",
+                }}
+              />
+            </Box>
+            <Tooltip title="Add Fee Entry">
+              <IconButton
+                onClick={addFeeField}
+                sx={{
+                  bgcolor: alpha("#fff", 0.2),
+                  color: "white",
+                  "&:hover": {
+                    bgcolor: alpha("#fff", 0.3),
+                  },
                 }}
               >
-                <Typography
-                  variant="h6"
-                  sx={{ fontWeight: "bold", color: theme.palette.primary.main }}
-                >
-                  Fee Entry #{index + 1}
-                </Typography>
-                {totalAdjustments > 0 && (
-                  <Chip
-                    label={`Adjustments: ৳${totalAdjustments.toFixed(2)}`}
-                    size="small"
-                    color="success"
-                    variant="outlined"
-                  />
+                <Add />
+              </IconButton>
+            </Tooltip>
+          </Box>
+        </Box>
+
+        <CardContent sx={{ p: 3 }}>
+          {fields.map((field, index) => {
+            const feeClassName = watch(`fees.${index}.className`);
+            const filteredFeeOptions = getFilteredFeeOptions(feeClassName);
+            const isYearlyFee = watch(`fees.${index}.isYearlyFee`);
+            const feeAmount = parseFloat(watch(`fees.${index}.feeAmount`)) || 0;
+            const discountType = watch(`fees.${index}.discountType`) || "flat";
+            const discountValue =
+              parseFloat(watch(`fees.${index}.discountValue`)) || 0;
+            const waiverType = watch(`fees.${index}.waiverType`) || "flat";
+            const waiverValue =
+              parseFloat(watch(`fees.${index}.waiverValue`)) || 0;
+            const calculatedDiscount =
+              parseFloat(watch(`fees.${index}.calculatedDiscount`)) || 0;
+            const calculatedWaiver =
+              parseFloat(watch(`fees.${index}.calculatedWaiver`)) || 0;
+            const totalAdjustments = calculatedDiscount + calculatedWaiver;
+
+            return (
+              <Box
+                key={field.id}
+                sx={{
+                  mb: 3,
+                  p: 3,
+                  borderRadius: 3,
+                  background: `linear-gradient(135deg, ${alpha(
+                    theme.palette.background.paper,
+                    0.9
+                  )} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
+                  boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
+                  border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+                  position: "relative",
+                  overflow: "hidden",
+                  "&:before": {
+                    content: '""',
+                    position: "absolute",
+                    top: 0,
+                    left: 0,
+                    width: "5px",
+                    height: "100%",
+                    background: `linear-gradient(to bottom, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+                  },
+                }}
+              >
+                {index > 0 && (
+                  <Tooltip title="Remove Fee Entry">
+                    <IconButton
+                      onClick={() => removeFeeField(index)}
+                      sx={{
+                        position: "absolute",
+                        top: 8,
+                        right: 8,
+                        color: "error.main",
+                        bgcolor: alpha(theme.palette.error.main, 0.1),
+                        "&:hover": {
+                          bgcolor: alpha(theme.palette.error.main, 0.2),
+                        },
+                      }}
+                    >
+                      <Remove />
+                    </IconButton>
+                  </Tooltip>
                 )}
-              </Box>
 
-              <FeeAmountHandler
-                feeIndex={index}
-                feeCategoryData={feeCategoryData}
-              />
-
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
-                  <CraftIntAutoCompleteWithIcon
-                    name={`fees.${index}.className`}
-                    label="Class"
-                    placeholder="Select Class"
-                    options={classOptions}
-                    fullWidth
-                    multiple
-                    icon={<Class color="primary" />}
-                    disabled={mainClassName && mainClassName.length > 0}
-                    helperText={
-                      mainClassName && mainClassName.length > 0
-                        ? "Class is synced with Academic Information"
-                        : "Select Class"
-                    }
-                  />
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <CraftIntAutoCompleteWithIcon
-                    name={`fees.${index}.feeType`}
-                    label="Fee Type"
-                    placeholder="Select Fee Type"
-                    options={filteredFeeOptions}
-                    fullWidth
-                    multiple
-                    icon={<Money color="primary" />}
-                  />
-                </Grid>
-
-                {/* Fix: Use CraftInputWithIcon instead of hidden input for feeAmount */}
-                <Grid item xs={12} md={4}>
-                  <CraftInputWithIcon
-                    name={`fees.${index}.feeAmount`}
-                    label="Fee Amount"
-                    fullWidth
-                    size="small"
-                    type="number"
-                    InputProps={{
-                      startAdornment: (
-                        <Money sx={{ color: "text.secondary", mr: 1 }} />
-                      ),
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    mb: 2,
+                  }}
+                >
+                  <Typography
+                    variant="h6"
+                    sx={{
+                      fontWeight: "bold",
+                      color: theme.palette.primary.main,
                     }}
-                  />
-                </Grid>
+                  >
+                    Fee Entry #{index + 1}
+                  </Typography>
+                  {totalAdjustments > 0 && (
+                    <Chip
+                      label={`Adjustments: ৳${totalAdjustments.toFixed(2)}`}
+                      size="small"
+                      color="success"
+                      variant="outlined"
+                    />
+                  )}
+                </Box>
 
-                {isYearlyFee && (
+                <FeeAmountHandler
+                  feeIndex={index}
+                  feeCategoryData={feeCategoryData}
+                />
+
+                <Grid container spacing={3}>
+                  <Grid item xs={12} md={4}>
+                    <CraftIntAutoCompleteWithIcon
+                      name={`fees.${index}.className`}
+                      label="Class"
+                      placeholder="Select Class"
+                      options={classOptions}
+                      fullWidth
+                      multiple
+                      icon={<Class color="primary" />}
+                      disabled={mainClassName && mainClassName.length > 0}
+                      helperText={
+                        mainClassName && mainClassName.length > 0
+                          ? "Class is synced with Academic Information"
+                          : "Select Class"
+                      }
+                    />
+                  </Grid>
+                  <Grid item xs={12} md={4}>
+                    <Grid container spacing={1}>
+                      <Grid item xs={12} md={9}>
+                        <CraftIntAutoCompleteWithIcon
+                          name={`fees.${index}.feeType`}
+                          label="Fee Type"
+                          placeholder="Select Fee Type"
+                          options={filteredFeeOptions}
+                          fullWidth
+                          multiple
+                          icon={<Money color="primary" />}
+                        />
+                      </Grid>
+                      <Grid item xs={12} md={2}>
+                        <Button
+                          onClick={handleOpenFeeModal}
+                          size="small"
+                          startIcon={<Add />}
+                          sx={{ mt: 2 }}
+                        >
+                          Add
+                        </Button>
+                      </Grid>
+                    </Grid>
+                  </Grid>
+
+                  {/* Fix: Use CraftInputWithIcon instead of hidden input for feeAmount */}
                   <Grid item xs={12} md={4}>
                     <CraftInputWithIcon
-                      name={`fees.${index}.monthlyAmount`}
-                      label="Monthly Amount (Auto)"
+                      name={`fees.${index}.feeAmount`}
+                      label="Fee Amount"
                       fullWidth
                       size="small"
-                      disabled
+                      type="number"
                       InputProps={{
                         startAdornment: (
                           <Money sx={{ color: "text.secondary", mr: 1 }} />
@@ -522,16 +526,12 @@ const DynamicFeeFields = ({
                       }}
                     />
                   </Grid>
-                )}
 
-                {!isYearlyFee &&
-                  watch(`fees.${index}.feeType`)?.some((fee: any) =>
-                    (fee.label || fee).toLowerCase().includes("monthly")
-                  ) && (
+                  {isYearlyFee && (
                     <Grid item xs={12} md={4}>
                       <CraftInputWithIcon
-                        name={`fees.${index}.yearlyAmount`}
-                        label="Yearly Total (Auto)"
+                        name={`fees.${index}.monthlyAmount`}
+                        label="Monthly Amount (Auto)"
                         fullWidth
                         size="small"
                         disabled
@@ -544,280 +544,305 @@ const DynamicFeeFields = ({
                     </Grid>
                   )}
 
-                {/* Discount Section */}
-                <Grid item xs={12}>
-                  <Divider sx={{ my: 1 }} />
-                  <Typography
-                    variant="subtitle1"
-                    sx={{
-                      mt: 2,
-                      mb: 1,
-                      color: theme.palette.success.main,
-                      display: "flex",
-                      alignItems: "center",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    <Discount sx={{ mr: 1 }} />
-                    Discount Settings
-                  </Typography>
-                </Grid>
+                  {!isYearlyFee &&
+                    watch(`fees.${index}.feeType`)?.some((fee: any) =>
+                      (fee.label || fee).toLowerCase().includes("monthly")
+                    ) && (
+                      <Grid item xs={12} md={4}>
+                        <CraftInputWithIcon
+                          name={`fees.${index}.yearlyAmount`}
+                          label="Yearly Total (Auto)"
+                          fullWidth
+                          size="small"
+                          disabled
+                          InputProps={{
+                            startAdornment: (
+                              <Money sx={{ color: "text.secondary", mr: 1 }} />
+                            ),
+                          }}
+                        />
+                      </Grid>
+                    )}
 
-                <Grid item xs={12} md={3}>
-                  <FormControl fullWidth size="small">
-                    <InputLabel>Discount Type</InputLabel>
-                    <Select
-                      name={`fees.${index}.discountType`}
-                      value={discountType}
-                      label="Discount Type"
-                      onChange={(e) =>
-                        setValue(`fees.${index}.discountType`, e.target.value)
-                      }
+                  {/* Discount Section */}
+                  <Grid item xs={12}>
+                    <Divider sx={{ my: 1 }} />
+                    <Typography
+                      variant="subtitle1"
+                      sx={{
+                        mt: 2,
+                        mb: 1,
+                        color: theme.palette.success.main,
+                        display: "flex",
+                        alignItems: "center",
+                        fontWeight: "bold",
+                      }}
                     >
-                      <MenuItem value="flat">Flat Amount (৳)</MenuItem>
-                      <MenuItem value="percentage">Percentage (%)</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Grid>
+                      <Discount sx={{ mr: 1 }} />
+                      Discount Settings
+                    </Typography>
+                  </Grid>
 
-                <Grid item xs={12} md={3}>
-                  <CraftInputWithIcon
-                    name={`fees.${index}.discountValue`}
-                    label={
-                      discountType === "percentage"
-                        ? "Discount %"
-                        : "Discount Amount"
-                    }
-                    fullWidth
-                    size="small"
-                    type="number"
-                    InputProps={{
-                      startAdornment:
-                        discountType === "percentage" ? (
-                          <Percent sx={{ color: "success.main", mr: 1 }} />
-                        ) : (
-                          <Discount sx={{ color: "success.main", mr: 1 }} />
-                        ),
-                    }}
-                    helperText={
-                      discountType === "percentage"
-                        ? `Max: 100% (৳${(feeAmount * 1).toFixed(2)})`
-                        : `Max: ৳${feeAmount.toFixed(2)}`
-                    }
-                    inputProps={{
-                      max: discountType === "percentage" ? 100 : feeAmount,
-                      min: 0,
-                    }}
-                  />
-                </Grid>
+                  <Grid item xs={12} md={3}>
+                    <FormControl fullWidth size="small">
+                      <InputLabel>Discount Type</InputLabel>
+                      <Select
+                        name={`fees.${index}.discountType`}
+                        value={discountType}
+                        label="Discount Type"
+                        onChange={(e) =>
+                          setValue(`fees.${index}.discountType`, e.target.value)
+                        }
+                      >
+                        <MenuItem value="flat">Flat Amount (৳)</MenuItem>
+                        <MenuItem value="percentage">Percentage (%)</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
 
-                <Grid item xs={12} md={6}>
-                  <CraftInputWithIcon
-                    name={`fees.${index}.discountReason`}
-                    label="Discount Reason"
-                    fullWidth
-                    size="small"
-                    placeholder="Reason for discount"
-                    InputProps={{
-                      startAdornment: (
-                        <Description sx={{ color: "success.main", mr: 1 }} />
-                      ),
-                    }}
-                  />
-                </Grid>
-
-                {/* Waiver Section */}
-                <Grid item xs={12}>
-                  <Divider sx={{ my: 1 }} />
-                  <Typography
-                    variant="subtitle1"
-                    sx={{
-                      mt: 2,
-                      mb: 1,
-                      color: theme.palette.info.main,
-                      display: "flex",
-                      alignItems: "center",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    <MoneyOff sx={{ mr: 1 }} />
-                    Waiver Settings
-                  </Typography>
-                </Grid>
-
-                <Grid item xs={12} md={3}>
-                  <FormControl fullWidth size="small">
-                    <InputLabel>Waiver Type</InputLabel>
-                    <Select
-                      name={`fees.${index}.waiverType`}
-                      value={waiverType}
-                      label="Waiver Type"
-                      onChange={(e) =>
-                        setValue(`fees.${index}.waiverType`, e.target.value)
+                  <Grid item xs={12} md={3}>
+                    <CraftInputWithIcon
+                      name={`fees.${index}.discountValue`}
+                      label={
+                        discountType === "percentage"
+                          ? "Discount %"
+                          : "Discount Amount"
                       }
-                    >
-                      <MenuItem value="flat">Flat Amount (৳)</MenuItem>
-                      <MenuItem value="percentage">Percentage (%)</MenuItem>
-                    </Select>
-                  </FormControl>
-                </Grid>
+                      fullWidth
+                      size="small"
+                      type="number"
+                      InputProps={{
+                        startAdornment:
+                          discountType === "percentage" ? (
+                            <Percent sx={{ color: "success.main", mr: 1 }} />
+                          ) : (
+                            <Discount sx={{ color: "success.main", mr: 1 }} />
+                          ),
+                      }}
+                      helperText={
+                        discountType === "percentage"
+                          ? `Max: 100% (৳${(feeAmount * 1).toFixed(2)})`
+                          : `Max: ৳${feeAmount.toFixed(2)}`
+                      }
+                      inputProps={{
+                        max: discountType === "percentage" ? 100 : feeAmount,
+                        min: 0,
+                      }}
+                    />
+                  </Grid>
 
-                <Grid item xs={12} md={3}>
-                  <CraftInputWithIcon
-                    name={`fees.${index}.waiverValue`}
-                    label={
-                      waiverType === "percentage" ? "Waiver %" : "Waiver Amount"
-                    }
-                    fullWidth
-                    size="small"
-                    type="number"
-                    InputProps={{
-                      startAdornment:
-                        waiverType === "percentage" ? (
-                          <Percent sx={{ color: "info.main", mr: 1 }} />
-                        ) : (
-                          <MoneyOff sx={{ color: "info.main", mr: 1 }} />
+                  <Grid item xs={12} md={6}>
+                    <CraftInputWithIcon
+                      name={`fees.${index}.discountReason`}
+                      label="Discount Reason"
+                      fullWidth
+                      size="small"
+                      placeholder="Reason for discount"
+                      InputProps={{
+                        startAdornment: (
+                          <Description sx={{ color: "success.main", mr: 1 }} />
                         ),
-                    }}
-                    helperText={
-                      waiverType === "percentage"
-                        ? `Max: 100% (৳${(feeAmount * 1).toFixed(2)})`
-                        : `Max: ৳${feeAmount.toFixed(2)}`
-                    }
-                    inputProps={{
-                      max: waiverType === "percentage" ? 100 : feeAmount,
-                      min: 0,
-                    }}
-                  />
+                      }}
+                    />
+                  </Grid>
+
+                  {/* Waiver Section */}
+                  <Grid item xs={12}>
+                    <Divider sx={{ my: 1 }} />
+                    <Typography
+                      variant="subtitle1"
+                      sx={{
+                        mt: 2,
+                        mb: 1,
+                        color: theme.palette.info.main,
+                        display: "flex",
+                        alignItems: "center",
+                        fontWeight: "bold",
+                      }}
+                    >
+                      <MoneyOff sx={{ mr: 1 }} />
+                      Waiver Settings
+                    </Typography>
+                  </Grid>
+
+                  <Grid item xs={12} md={3}>
+                    <FormControl fullWidth size="small">
+                      <InputLabel>Waiver Type</InputLabel>
+                      <Select
+                        name={`fees.${index}.waiverType`}
+                        value={waiverType}
+                        label="Waiver Type"
+                        onChange={(e) =>
+                          setValue(`fees.${index}.waiverType`, e.target.value)
+                        }
+                      >
+                        <MenuItem value="flat">Flat Amount (৳)</MenuItem>
+                        <MenuItem value="percentage">Percentage (%)</MenuItem>
+                      </Select>
+                    </FormControl>
+                  </Grid>
+
+                  <Grid item xs={12} md={3}>
+                    <CraftInputWithIcon
+                      name={`fees.${index}.waiverValue`}
+                      label={
+                        waiverType === "percentage"
+                          ? "Waiver %"
+                          : "Waiver Amount"
+                      }
+                      fullWidth
+                      size="small"
+                      type="number"
+                      InputProps={{
+                        startAdornment:
+                          waiverType === "percentage" ? (
+                            <Percent sx={{ color: "info.main", mr: 1 }} />
+                          ) : (
+                            <MoneyOff sx={{ color: "info.main", mr: 1 }} />
+                          ),
+                      }}
+                      helperText={
+                        waiverType === "percentage"
+                          ? `Max: 100% (৳${(feeAmount * 1).toFixed(2)})`
+                          : `Max: ৳${feeAmount.toFixed(2)}`
+                      }
+                      inputProps={{
+                        max: waiverType === "percentage" ? 100 : feeAmount,
+                        min: 0,
+                      }}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} md={6}>
+                    <CraftInputWithIcon
+                      name={`fees.${index}.waiverReason`}
+                      label="Waiver Reason"
+                      fullWidth
+                      size="small"
+                      placeholder="Reason for waiver"
+                      InputProps={{
+                        startAdornment: (
+                          <Description sx={{ color: "info.main", mr: 1 }} />
+                        ),
+                      }}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12}>
+                    <Divider sx={{ my: 1 }} />
+                    <Typography
+                      variant="subtitle1"
+                      sx={{
+                        mt: 2,
+                        mb: 1,
+                        color: theme.palette.primary.main,
+                        fontWeight: "bold",
+                      }}
+                    >
+                      Payment Information
+                    </Typography>
+                  </Grid>
+
+                  <Grid item xs={12} md={4}>
+                    <CraftInputWithIcon
+                      name={`fees.${index}.paidAmount`}
+                      label="Paid Amount"
+                      fullWidth
+                      size="small"
+                      type="number"
+                      InputProps={{
+                        startAdornment: (
+                          <Money sx={{ color: "text.secondary", mr: 1 }} />
+                        ),
+                      }}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} md={4}>
+                    <CraftInputWithIcon
+                      name={`fees.${index}.dueAmount`}
+                      label="Due Amount (Auto)"
+                      fullWidth
+                      size="small"
+                      disabled
+                      InputProps={{
+                        startAdornment: (
+                          <Money sx={{ color: "text.secondary", mr: 1 }} />
+                        ),
+                      }}
+                    />
+                  </Grid>
+
+                  <Grid item xs={12} md={4}>
+                    <CraftSelectWithIcon
+                      name={`fees.${index}.paymentStatus`}
+                      label="Payment Status"
+                      items={["paid", "partial", "unpaid"]}
+                      adornment={<Money />}
+                      size="small"
+                    />
+                  </Grid>
                 </Grid>
 
-                <Grid item xs={12} md={6}>
-                  <CraftInputWithIcon
-                    name={`fees.${index}.waiverReason`}
-                    label="Waiver Reason"
-                    fullWidth
-                    size="small"
-                    placeholder="Reason for waiver"
-                    InputProps={{
-                      startAdornment: (
-                        <Description sx={{ color: "info.main", mr: 1 }} />
-                      ),
-                    }}
-                  />
-                </Grid>
+                {totalAdjustments > 0 && (
+                  <Alert severity="success" sx={{ mt: 2 }} icon={<Discount />}>
+                    <Typography variant="body2">
+                      <strong>Adjustments Applied:</strong>
+                      <br />
+                      Discount: ৳{calculatedDiscount.toFixed(2)}{" "}
+                      {discountType === "percentage" && `(${discountValue}%)`}
+                      <br />
+                      Waiver: ৳{calculatedWaiver.toFixed(2)}{" "}
+                      {waiverType === "percentage" && `(${waiverValue}%)`}
+                      <br />
+                      <strong>Total Adjustments:</strong> ৳
+                      {totalAdjustments.toFixed(2)}
+                      {discountType === "percentage" ||
+                        (waiverType === "percentage" && (
+                          <>
+                            <br />
+                            <em>
+                              Percentage values are converted to flat amounts
+                            </em>
+                          </>
+                        ))}
+                    </Typography>
+                  </Alert>
+                )}
 
-                <Grid item xs={12}>
-                  <Divider sx={{ my: 1 }} />
-                  <Typography
-                    variant="subtitle1"
-                    sx={{
-                      mt: 2,
-                      mb: 1,
-                      color: theme.palette.primary.main,
-                      fontWeight: "bold",
-                    }}
-                  >
-                    Payment Information
-                  </Typography>
-                </Grid>
+                {(!feeClassName || feeClassName.length === 0) && (
+                  <Alert severity="info" sx={{ mt: 2 }}>
+                    Please select a class to see available fee types
+                  </Alert>
+                )}
 
-                <Grid item xs={12} md={4}>
-                  <CraftInputWithIcon
-                    name={`fees.${index}.paidAmount`}
-                    label="Paid Amount"
-                    fullWidth
-                    size="small"
-                    type="number"
-                    InputProps={{
-                      startAdornment: (
-                        <Money sx={{ color: "text.secondary", mr: 1 }} />
-                      ),
-                    }}
-                  />
-                </Grid>
+                {calculatedDiscount + calculatedWaiver > feeAmount && (
+                  <Alert severity="error" sx={{ mt: 2 }}>
+                    Total adjustments (৳
+                    {(calculatedDiscount + calculatedWaiver).toFixed(2)}) cannot
+                    exceed fee amount (৳{feeAmount.toFixed(2)})
+                  </Alert>
+                )}
+              </Box>
+            );
+          })}
 
-                <Grid item xs={12} md={4}>
-                  <CraftInputWithIcon
-                    name={`fees.${index}.dueAmount`}
-                    label="Due Amount (Auto)"
-                    fullWidth
-                    size="small"
-                    disabled
-                    InputProps={{
-                      startAdornment: (
-                        <Money sx={{ color: "text.secondary", mr: 1 }} />
-                      ),
-                    }}
-                  />
-                </Grid>
-
-                <Grid item xs={12} md={4}>
-                  <CraftSelectWithIcon
-                    name={`fees.${index}.paymentStatus`}
-                    label="Payment Status"
-                    items={["paid", "partial", "unpaid"]}
-                    adornment={<Money />}
-                    size="small"
-                  />
-                </Grid>
-              </Grid>
-
-              {totalAdjustments > 0 && (
-                <Alert severity="success" sx={{ mt: 2 }} icon={<Discount />}>
-                  <Typography variant="body2">
-                    <strong>Adjustments Applied:</strong>
-                    <br />
-                    Discount: ৳{calculatedDiscount.toFixed(2)}{" "}
-                    {discountType === "percentage" && `(${discountValue}%)`}
-                    <br />
-                    Waiver: ৳{calculatedWaiver.toFixed(2)}{" "}
-                    {waiverType === "percentage" && `(${waiverValue}%)`}
-                    <br />
-                    <strong>Total Adjustments:</strong> ৳
-                    {totalAdjustments.toFixed(2)}
-                    {discountType === "percentage" ||
-                      (waiverType === "percentage" && (
-                        <>
-                          <br />
-                          <em>
-                            Percentage values are converted to flat amounts
-                          </em>
-                        </>
-                      ))}
-                  </Typography>
-                </Alert>
-              )}
-
-              {(!feeClassName || feeClassName.length === 0) && (
-                <Alert severity="info" sx={{ mt: 2 }}>
-                  Please select a class to see available fee types
-                </Alert>
-              )}
-
-              {calculatedDiscount + calculatedWaiver > feeAmount && (
-                <Alert severity="error" sx={{ mt: 2 }}>
-                  Total adjustments (৳
-                  {(calculatedDiscount + calculatedWaiver).toFixed(2)}) cannot
-                  exceed fee amount (৳{feeAmount.toFixed(2)})
-                </Alert>
-              )}
+          {fields.length === 0 && (
+            <Box sx={{ textAlign: "center", py: 4 }}>
+              <Payment sx={{ fontSize: 64, color: "text.secondary", mb: 2 }} />
+              <Typography variant="h6" color="text.secondary">
+                No fee entries added yet
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                Click the + button to add fee entries
+              </Typography>
             </Box>
-          );
-        })}
+          )}
+        </CardContent>
+      </Card>
 
-        {fields.length === 0 && (
-          <Box sx={{ textAlign: "center", py: 4 }}>
-            <Payment sx={{ fontSize: 64, color: "text.secondary", mb: 2 }} />
-            <Typography variant="h6" color="text.secondary">
-              No fee entries added yet
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Click the + button to add fee entries
-            </Typography>
-          </Box>
-        )}
-      </CardContent>
-    </Card>
+      <FeeCategoryModal open={openFeeModal} setOpen={handleCloseFeeModal} />
+    </>
   );
 };
 
@@ -1361,81 +1386,6 @@ const StudentInformationStep = () => {
         </Box>
       </Box>
       <CardContent sx={{ p: 3 }}>
-        <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
-          Student Information (বাংলায়)
-        </Typography>
-        <Grid container spacing={3} mb={3}>
-          <Grid item xs={12} md={4}>
-            <CraftInputWithIcon
-              fullWidth
-              label={
-                <span>
-                  Student Name <span style={{ color: "red" }}>*</span>
-                </span>
-              }
-              name="studentNameBangla"
-              placeholder="Student Name (বাংলায়)"
-              InputProps={{
-                startAdornment: (
-                  <Person sx={{ color: "text.secondary", mr: 1 }} />
-                ),
-              }}
-            />
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <CraftInputWithIcon
-              fullWidth
-              label={
-                <span>
-                  Father's Name<span style={{ color: "red" }}>*</span>
-                </span>
-              }
-              name="fatherNameBangla"
-              placeholder="Father's Name (বাংলায়)"
-              InputProps={{
-                startAdornment: (
-                  <Person sx={{ color: "text.secondary", mr: 1 }} />
-                ),
-              }}
-            />
-          </Grid>
-          <Grid item xs={12} md={4}>
-            <CraftInputWithIcon
-              fullWidth
-              label={
-                <span>
-                  Mother's Name<span style={{ color: "red" }}>*</span>
-                </span>
-              }
-              name="motherNameBangla"
-              placeholder="Mother's Name (বাংলায়)"
-              InputProps={{
-                startAdornment: (
-                  <Person sx={{ color: "text.secondary", mr: 1 }} />
-                ),
-              }}
-            />
-          </Grid>
-        </Grid>
-
-        <Alert
-          severity="info"
-          sx={{
-            mb: 3,
-            borderRadius: 2,
-            bgcolor: alpha(theme.palette.info.main, 0.1),
-            color: theme.palette.info.dark,
-            "& .MuiAlert-icon": {
-              color: theme.palette.info.main,
-            },
-          }}
-        >
-          All information below must be filled in English
-        </Alert>
-
-        <Typography variant="h6" gutterBottom>
-          Personal Information
-        </Typography>
         <Grid container spacing={3}>
           <Grid item xs={12} md={4}>
             <FileUploadWithIcon name="studentPhoto" label="Student Photo" />
@@ -1449,6 +1399,23 @@ const StudentInformationStep = () => {
               InputProps={{
                 startAdornment: (
                   <Description sx={{ color: "text.secondary", mr: 1 }} />
+                ),
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} md={4}>
+            <CraftInputWithIcon
+              fullWidth
+              label={
+                <span>
+                  Student Name <span style={{ color: "red" }}>*</span>
+                </span>
+              }
+              name="studentNameBangla"
+              placeholder="Student Name (বাংলায়)"
+              InputProps={{
+                startAdornment: (
+                  <Person sx={{ color: "text.secondary", mr: 1 }} />
                 ),
               }}
             />
@@ -1689,41 +1656,6 @@ const AcademicStep = ({ classOptions }: any) => {
 };
 
 // Step 3: Fee Information Component (separate from academic information)
-const FeeStep = ({
-  classOptions,
-  feeCategoryOptions,
-  feeCategoryData,
-}: any) => {
-  const theme = useTheme();
-  const { watch } = useFormContext();
-  const mainClassName = watch("className");
-
-  return (
-    <>
-      <Alert
-        severity="info"
-        sx={{
-          mb: 3,
-          borderRadius: 2,
-          bgcolor: alpha(theme.palette.info.main, 0.1),
-          color: theme.palette.info.dark,
-          "& .MuiAlert-icon": {
-            color: theme.palette.info.main,
-          },
-        }}
-      >
-        Fee types and amounts are automatically populated based on the class
-        selected in the Academic Information step.
-      </Alert>
-
-      <DynamicFeeFields
-        classOptions={classOptions}
-        feeCategoryOptions={feeCategoryOptions}
-        feeCategoryData={feeCategoryData}
-      />
-    </>
-  );
-};
 
 // Step 4: Parent and Guardian Information Component (without animations)
 const ParentGuardianStep = () => {
@@ -1761,7 +1693,7 @@ const ParentGuardianStep = () => {
           Father's Information
         </Typography>
         <Grid container spacing={3} mb={4}>
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} md={4}>
             <CraftInputWithIcon
               fullWidth
               label="Father's Name"
@@ -1774,7 +1706,25 @@ const ParentGuardianStep = () => {
               }}
             />
           </Grid>
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} md={4}>
+            <CraftInputWithIcon
+              fullWidth
+              label={
+                <span>
+                  Father's Name Bangla <span style={{ color: "red" }}>*</span>
+                </span>
+              }
+              name="fatherNameBangla"
+              placeholder="Father's Name (বাংলায়)"
+              InputProps={{
+                startAdornment: (
+                  <Person sx={{ color: "text.secondary", mr: 1 }} />
+                ),
+              }}
+            />
+          </Grid>
+
+          <Grid item xs={12} md={4}>
             <CraftInputWithIcon
               fullWidth
               label="Mobile"
@@ -1833,7 +1783,7 @@ const ParentGuardianStep = () => {
           Mother's Information
         </Typography>
         <Grid container spacing={3} mb={4}>
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} md={4}>
             <CraftInputWithIcon
               fullWidth
               label="Mother's Name"
@@ -1846,7 +1796,24 @@ const ParentGuardianStep = () => {
               }}
             />
           </Grid>
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12} md={4}>
+            <CraftInputWithIcon
+              fullWidth
+              label={
+                <span>
+                  Mother's Name Bangla<span style={{ color: "red" }}>*</span>
+                </span>
+              }
+              name="motherNameBangla"
+              placeholder="Mother's Name (বাংলায়)"
+              InputProps={{
+                startAdornment: (
+                  <Person sx={{ color: "text.secondary", mr: 1 }} />
+                ),
+              }}
+            />
+          </Grid>
+          <Grid item xs={12} md={4}>
             <CraftInputWithIcon
               fullWidth
               label="Mobile"
@@ -2383,6 +2350,41 @@ const AddressDocumentsStep = () => {
     </>
   );
 };
+const FeeStep = ({
+  classOptions,
+  feeCategoryOptions,
+  feeCategoryData,
+}: any) => {
+  const theme = useTheme();
+  const { watch } = useFormContext();
+  const mainClassName = watch("className");
+
+  return (
+    <>
+      <Alert
+        severity="info"
+        sx={{
+          mb: 3,
+          borderRadius: 2,
+          bgcolor: alpha(theme.palette.info.main, 0.1),
+          color: theme.palette.info.dark,
+          "& .MuiAlert-icon": {
+            color: theme.palette.info.main,
+          },
+        }}
+      >
+        Fee types and amounts are automatically populated based on the class
+        selected in the Academic Information step.
+      </Alert>
+
+      <DynamicFeeFields
+        classOptions={classOptions}
+        feeCategoryOptions={feeCategoryOptions}
+        feeCategoryData={feeCategoryData}
+      />
+    </>
+  );
+};
 
 // Main EnrollmentForm Component with Stepper (without animations)
 const EnrollmentForm = () => {
@@ -2393,6 +2395,7 @@ const EnrollmentForm = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
+  const [open, setOpen] = useState(false);
 
   const { classOptions, feeCategoryOptions, feeCategoryData } =
     useAcademicOption();
@@ -2428,11 +2431,7 @@ const EnrollmentForm = () => {
       icon: <SchoolIcon />,
       description: "Academic details",
     },
-    {
-      label: "Fee Information",
-      icon: <Payment />,
-      description: "Fee details",
-    },
+
     {
       label: "Parent & Guardian",
       icon: <FamilyRestroom />,
@@ -2442,6 +2441,11 @@ const EnrollmentForm = () => {
       label: "Address & Documents",
       icon: <Home />,
       description: "Address and documents",
+    },
+    {
+      label: "Fee Information",
+      icon: <Payment />,
+      description: "Fee details",
     },
   ];
 
@@ -2990,17 +2994,16 @@ const EnrollmentForm = () => {
           <Box>
             {activeStep === 0 && <StudentInformationStep />}
             {activeStep === 1 && <AcademicStep classOptions={classOptions} />}
-            {activeStep === 2 && (
+            {activeStep === 2 && <ParentGuardianStep />}
+            {activeStep === 3 && <AddressDocumentsStep />}
+            {activeStep === 4 && (
               <FeeStep
                 classOptions={classOptions}
                 feeCategoryOptions={feeCategoryOptions}
                 feeCategoryData={feeCategoryData}
               />
             )}
-            {activeStep === 3 && <ParentGuardianStep />}
-            {activeStep === 4 && <AddressDocumentsStep />}
           </Box>
-
           {/* Navigation Buttons */}
           <Box
             sx={{

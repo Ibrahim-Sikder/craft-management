@@ -186,6 +186,8 @@ export interface EnhancedTableProps {
   onExport?: () => void;
   onPrint?: () => void;
   onAdd?: () => void;
+  onSortChange?: (sortColumn: string, sortDirection: "asc" | "desc") => void;
+  onSearchChange?: (searchTerm: string) => void;
   rowActions?: RowAction[];
   bulkActions?: BulkAction[];
   selectable?: boolean;
@@ -193,6 +195,7 @@ export interface EnhancedTableProps {
   filterable?: boolean;
   sortable?: boolean;
   pagination?: boolean;
+  serverSideSorting?: boolean;
   emptyStateMessage?: string;
   className?: string;
   idField?: string;
@@ -233,6 +236,8 @@ const CraftTable: React.FC<EnhancedTableProps> = ({
   onExport,
   onPrint,
   onAdd,
+  onSortChange,
+  onSearchChange,
   rowActions = [],
   bulkActions = [],
   selectable = false,
@@ -240,10 +245,11 @@ const CraftTable: React.FC<EnhancedTableProps> = ({
   filterable = true,
   sortable = true,
   pagination = true,
+  serverSideSorting = false,
   emptyStateMessage = "No data available",
   className,
   idField = "id",
-  defaultSortColumn,
+  defaultSortColumn = "",
   defaultSortDirection = "asc",
   height,
   maxHeight = "70vh",
@@ -292,6 +298,9 @@ const CraftTable: React.FC<EnhancedTableProps> = ({
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [pageState, setPageState] = useState(page);
   const [rowsPerPageState, setRowsPerPageState] = useState(rowsPerPage);
+  const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(
+    null
+  );
 
   // Sync with props
   useEffect(() => {
@@ -306,8 +315,8 @@ const CraftTable: React.FC<EnhancedTableProps> = ({
   const processedData = useMemo(() => {
     let filteredData = [...data];
 
-    // Apply search filter
-    if (searchTerm) {
+    // Apply search filter (only for client-side filtering when not using server-side)
+    if (searchTerm && !serverSideSorting) {
       filteredData = filteredData.filter((row) =>
         columns.some((column) => {
           if (!column.visible && column.visible !== undefined) return false;
@@ -321,22 +330,24 @@ const CraftTable: React.FC<EnhancedTableProps> = ({
       );
     }
 
-    // Apply column filters
-    Object.entries(filters).forEach(([columnId, filterValue]) => {
-      if (filterValue) {
-        filteredData = filteredData.filter((row) => {
-          const value = row[columnId];
-          return (
-            value !== null &&
-            value !== undefined &&
-            String(value).toLowerCase().includes(filterValue.toLowerCase())
-          );
-        });
-      }
-    });
+    // Apply column filters (client-side only)
+    if (!serverSideSorting) {
+      Object.entries(filters).forEach(([columnId, filterValue]) => {
+        if (filterValue) {
+          filteredData = filteredData.filter((row) => {
+            const value = row[columnId];
+            return (
+              value !== null &&
+              value !== undefined &&
+              String(value).toLowerCase().includes(filterValue.toLowerCase())
+            );
+          });
+        }
+      });
+    }
 
-    // Apply sorting
-    if (sortColumn) {
+    // Apply sorting (client-side only when not using server-side sorting)
+    if (sortColumn && !serverSideSorting) {
       filteredData.sort((a, b) => {
         const aValue = a[sortColumn];
         const bValue = b[sortColumn];
@@ -356,23 +367,44 @@ const CraftTable: React.FC<EnhancedTableProps> = ({
     }
 
     return filteredData;
-  }, [data, searchTerm, filters, sortColumn, sortDirection, columns]);
+  }, [
+    data,
+    searchTerm,
+    filters,
+    sortColumn,
+    sortDirection,
+    columns,
+    serverSideSorting,
+  ]);
 
   // Pagination
   const paginatedData = useMemo(() => {
-    if (!pagination) return processedData;
+    if (!pagination || serverSideSorting) return processedData;
 
     const startIndex = pageState * rowsPerPageState;
     return processedData.slice(startIndex, startIndex + rowsPerPageState);
-  }, [processedData, pageState, rowsPerPageState, pagination]);
+  }, [
+    processedData,
+    pageState,
+    rowsPerPageState,
+    pagination,
+    serverSideSorting,
+  ]);
 
   // Event handlers
   const handleSort = (columnId: string) => {
     if (!sortable) return;
 
     const isAsc = sortColumn === columnId && sortDirection === "asc";
-    setSortDirection(isAsc ? "desc" : "asc");
+    const newDirection = isAsc ? "desc" : "asc";
+
+    setSortDirection(newDirection);
     setSortColumn(columnId);
+
+    // Call server-side sort if enabled
+    if (serverSideSorting && onSortChange) {
+      onSortChange(columnId, newDirection);
+    }
   };
 
   const handleSelectAll = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -412,6 +444,7 @@ const CraftTable: React.FC<EnhancedTableProps> = ({
   const handleClearFilters = () => {
     setFilters({});
     setSearchTerm("");
+    if (onSearchChange) onSearchChange("");
   };
 
   const handleToggleColumnVisibility = (columnId: string) => {
@@ -442,6 +475,35 @@ const CraftTable: React.FC<EnhancedTableProps> = ({
   const handleActionMenuClose = () => {
     setActionMenuAnchor(null);
     setCurrentRow(null);
+  };
+
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setSearchTerm(value);
+
+    // Clear previous timeout
+    if (searchTimeout) {
+      clearTimeout(searchTimeout);
+    }
+
+    // Set new timeout for debouncing
+    const timeout = setTimeout(() => {
+      if (onSearchChange) {
+        onSearchChange(value);
+      }
+    }, 500);
+
+    setSearchTimeout(timeout);
+  };
+
+  const handleClearSearch = () => {
+    setSearchTerm("");
+    if (onSearchChange) {
+      onSearchChange("");
+    }
+    if (searchTimeout) {
+      clearTimeout(searchTimeout);
+    }
   };
 
   // Render cell content based on column type
@@ -685,6 +747,13 @@ const CraftTable: React.FC<EnhancedTableProps> = ({
     (action) => action.inMenu && action.label !== "Delete" && !action.alwaysShow
   );
 
+  // Calculate total rows count (for server-side pagination)
+  const totalRowCount = serverSideSorting
+    ? data.length > 0
+      ? 1000
+      : 0
+    : processedData.length;
+
   return (
     <Fade in={true} timeout={500}>
       <GradientCard
@@ -756,7 +825,7 @@ const CraftTable: React.FC<EnhancedTableProps> = ({
                   size="small"
                   placeholder="Search records..."
                   value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
+                  onChange={handleSearchChange}
                   InputProps={{
                     startAdornment: (
                       <InputAdornment position="start">
@@ -767,7 +836,7 @@ const CraftTable: React.FC<EnhancedTableProps> = ({
                       <InputAdornment position="end">
                         <IconButton
                           size="small"
-                          onClick={() => setSearchTerm("")}
+                          onClick={handleClearSearch}
                           edge="end"
                         >
                           <Clear fontSize="small" />
@@ -779,7 +848,7 @@ const CraftTable: React.FC<EnhancedTableProps> = ({
                 />
               )}
 
-              {filterable && (
+              {filterable && !serverSideSorting && (
                 <Tooltip title="Filters">
                   <Button
                     size="small"
@@ -1301,7 +1370,7 @@ const CraftTable: React.FC<EnhancedTableProps> = ({
           <TablePagination
             rowsPerPageOptions={[5, 10, 25, 50, 100]}
             component="div"
-            count={processedData.length}
+            count={serverSideSorting ? totalRowCount : processedData.length}
             rowsPerPage={rowsPerPageState}
             page={pageState}
             onPageChange={handleChangePage}
