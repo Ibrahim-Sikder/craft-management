@@ -1,6 +1,6 @@
 "use client";
 
-import { Category, AttachMoney, School } from "@mui/icons-material";
+import { Category, School } from "@mui/icons-material";
 import {
   Avatar,
   Box,
@@ -102,19 +102,10 @@ const FeeCategoryStats = ({
             >
               <div>
                 <Typography variant="h3" fontWeight="bold">
-                  ${totalFeeAmount.toLocaleString()}
+                  ৳ {totalFeeAmount.toLocaleString()}
                 </Typography>
                 <Typography variant="h6">Total Fees</Typography>
               </div>
-              <Avatar
-                sx={{
-                  bgcolor: "rgba(255,255,255,0.2)",
-                  width: 60,
-                  height: 60,
-                }}
-              >
-                <AttachMoney sx={{ fontSize: 30 }} />
-              </Avatar>
             </Box>
           </CardContent>
         </Card>
