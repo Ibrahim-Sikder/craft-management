@@ -26,7 +26,9 @@ type TStateProps = {
   label?: React.ReactNode;
   fullWidth?: boolean;
   sx?: SxProps;
+  helperText?: React.ReactNode;
   required?: boolean;
+  disabled?: boolean;
   options: Option[];
   size?: "small" | "medium";
   multiple?: boolean;
@@ -59,6 +61,7 @@ const CraftIntAutoCompleteWithIcon = ({
   multiple = true,
   freeSolo = true,
   defaultValue = [],
+  disabled = false,
   placeholder = "Select options",
   onInputChange,
   onChange,
@@ -88,6 +91,7 @@ const CraftIntAutoCompleteWithIcon = ({
           getOptionLabel={getOptionLabel}
           value={field.value || defaultValue}
           renderOption={renderOption}
+          disabled={disabled}
           renderTags={
             renderTags ||
             ((value: readonly any[], getTagProps) =>

@@ -1,3 +1,4 @@
+// /* eslint-disable react-hooks/exhaustive-deps */
 // /* eslint-disable @typescript-eslint/no-unused-vars */
 // /* eslint-disable @typescript-eslint/no-explicit-any */
 // /* eslint-disable react/no-unescaped-entities */
@@ -26,14 +27,27 @@
 //   Check,
 //   Class,
 //   Description,
+//   Discount,
 //   Flag,
 //   Group,
 //   Money,
+//   MoneyOff,
 //   Person,
 //   Phone,
 //   Remove,
 //   School,
 //   Work,
+//   Percent,
+//   ArrowBack,
+//   ArrowForward,
+//   AccountCircle,
+//   Home,
+//   School as SchoolIcon,
+//   FamilyRestroom,
+//   Description as DocumentIcon,
+//   Payment,
+//   Edit,
+//   Save,
 // } from "@mui/icons-material";
 // import {
 //   Alert,
@@ -44,83 +58,243 @@
 //   CardContent,
 //   CircularProgress,
 //   Container,
+//   FormControl,
+//   FormControlLabel,
 //   Grid,
 //   IconButton,
+//   InputLabel,
+//   MenuItem,
 //   Paper,
+//   Select,
 //   Typography,
+//   LinearProgress,
+//   Divider,
+//   Chip,
+//   Tooltip,
+//   alpha,
+//   useTheme,
+//   Switch,
+//   Checkbox,
 // } from "@mui/material";
 // import { useRouter, useSearchParams } from "next/navigation";
 // import { useEffect, useState } from "react";
 // import { useFieldArray, useFormContext } from "react-hook-form";
 // import toast from "react-hot-toast";
-
-// type TProps = {
-//   id?: string | string[];
-// };
-
-// // Fee Amount Handler Component
 // const FeeAmountHandler = ({
-//   feeCategoryData,
 //   feeIndex,
+//   feeCategoryData,
 // }: {
-//   feeCategoryData: any;
 //   feeIndex: number;
+//   feeCategoryData: any;
 // }) => {
 //   const { watch, setValue } = useFormContext();
 //   const selectedFees = watch(`fees.${feeIndex}.feeType`);
-//   const selectedClasses = watch(`fees.${feeIndex}.className`);
+//   const selectedClass = watch(`fees.${feeIndex}.className`);
+//   const feeAmount = watch(`fees.${feeIndex}.feeAmount`);
+//   const paidAmount = watch(`fees.${feeIndex}.paidAmount`);
+//   const discountType = watch(`fees.${feeIndex}.discountType`) || "flat";
+//   const discountValue = watch(`fees.${feeIndex}.discountValue`) || "0";
+//   const waiverType = watch(`fees.${feeIndex}.waiverType`) || "flat";
+//   const waiverValue = watch(`fees.${feeIndex}.waiverValue`) || "0";
+
+//   const calculateDiscountAmount = () => {
+//     const fee = parseFloat(feeAmount) || 0;
+//     const value = parseFloat(discountValue) || 0;
+
+//     if (discountType === "percentage") {
+//       return Math.min((fee * value) / 100, fee);
+//     } else {
+//       return Math.min(value, fee);
+//     }
+//   };
+
+//   const calculateWaiverAmount = () => {
+//     const fee = parseFloat(feeAmount) || 0;
+//     const value = parseFloat(waiverValue) || 0;
+
+//     if (waiverType === "percentage") {
+//       return Math.min((fee * value) / 100, fee);
+//     } else {
+//       return Math.min(value, fee);
+//     }
+//   };
 
 //   useEffect(() => {
 //     if (
 //       selectedFees &&
 //       selectedFees.length > 0 &&
-//       selectedClasses &&
-//       selectedClasses.length > 0
+//       selectedClass &&
+//       selectedClass.length > 0
 //     ) {
-//       const selectedFee = selectedFees[0];
-//       const selectedClass = selectedClasses[0];
+//       const selectedFeeLabel = selectedFees[0]?.label || selectedFees[0];
+//       const selectedFeeType = selectedFeeLabel.split(" - ")[0];
+//       const selectedClassName = selectedClass[0]?.label || selectedClass[0];
+
 //       const matchingFee = feeCategoryData?.data?.data?.find(
 //         (fee: any) =>
-//           fee.feeType === (selectedFee.label || selectedFee) &&
-//           fee.class === (selectedClass.label || selectedClass)
+//           fee.feeType.toLowerCase() === selectedFeeType.toLowerCase() &&
+//           fee.class === selectedClassName
 //       );
+
 //       if (matchingFee) {
 //         setValue(
 //           `fees.${feeIndex}.feeAmount`,
 //           matchingFee.feeAmount.toString()
 //         );
+
+//         const feeType = selectedFeeType.toLowerCase();
+//         const isYearly =
+//           feeType.includes("yearly") || feeType.includes("annual");
+//         setValue(`fees.${feeIndex}.isYearlyFee`, isYearly);
 //       }
 //     }
-//   }, [selectedFees, selectedClasses, feeCategoryData, setValue, feeIndex]);
+//   }, [selectedFees, selectedClass, setValue, feeIndex, feeCategoryData]);
+
+//   useEffect(() => {
+//     if (feeAmount && selectedFees && selectedFees.length > 0) {
+//       const selectedFee = selectedFees[0];
+//       const feeLabel = selectedFee.label || selectedFee;
+//       const feeType = feeLabel.split(" - ")[0];
+
+//       if (
+//         feeType.toLowerCase().includes("yearly") ||
+//         feeType.toLowerCase().includes("annual")
+//       ) {
+//         const yearlyAmount = parseFloat(feeAmount);
+//         if (!isNaN(yearlyAmount)) {
+//           const monthlyAmount = (yearlyAmount / 12).toFixed(2);
+//           setValue(`fees.${feeIndex}.monthlyAmount`, monthlyAmount);
+//           setValue(`fees.${feeIndex}.yearlyAmount`, yearlyAmount.toString());
+//           setValue(`fees.${feeIndex}.isYearlyFee`, true);
+//         }
+//       } else if (feeType.toLowerCase().includes("monthly")) {
+//         const monthlyAmount = parseFloat(feeAmount);
+//         if (!isNaN(monthlyAmount)) {
+//           const yearlyAmount = (monthlyAmount * 12).toFixed(2);
+//           setValue(`fees.${feeIndex}.monthlyAmount`, monthlyAmount.toString());
+//           setValue(`fees.${feeIndex}.yearlyAmount`, yearlyAmount);
+//           setValue(`fees.${feeIndex}.isYearlyFee`, false);
+//         }
+//       } else {
+//         setValue(`fees.${feeIndex}.monthlyAmount`, "");
+//         setValue(`fees.${feeIndex}.yearlyAmount`, "");
+//         setValue(`fees.${feeIndex}.isYearlyFee`, false);
+//       }
+//     }
+//   }, [feeAmount, selectedFees, setValue, feeIndex]);
+
+//   useEffect(() => {
+//     if (feeAmount !== undefined && paidAmount !== undefined) {
+//       const fee = parseFloat(feeAmount) || 0;
+//       const paid = parseFloat(paidAmount) || 0;
+//       const discountAmount = calculateDiscountAmount();
+//       const waiverAmount = calculateWaiverAmount();
+//       const due = Math.max(0, fee - paid - discountAmount - waiverAmount);
+
+//       setValue(`fees.${feeIndex}.dueAmount`, due > 0 ? due.toString() : "0");
+//       setValue(
+//         `fees.${feeIndex}.paymentStatus`,
+//         due <= 0 ? "paid" : paid > 0 ? "partial" : "unpaid"
+//       );
+
+//       setValue(
+//         `fees.${feeIndex}.calculatedDiscount`,
+//         discountAmount.toString()
+//       );
+//       setValue(`fees.${feeIndex}.calculatedWaiver`, waiverAmount.toString());
+//     }
+//   }, [
+//     feeAmount,
+//     paidAmount,
+//     discountType,
+//     discountValue,
+//     waiverType,
+//     waiverValue,
+//     setValue,
+//     feeIndex,
+//   ]);
 
 //   return null;
 // };
 
-// // Dynamic Fee Fields Component
 // const DynamicFeeFields = ({
-//   feeCategoryData,
 //   classOptions,
 //   feeCategoryOptions,
+//   feeCategoryData,
 // }: any) => {
+//   const theme = useTheme();
 //   const { control, watch, setValue } = useFormContext();
 //   const { fields, append, remove } = useFieldArray({
 //     control,
 //     name: "fees",
 //   });
 
-//   // Watch the main className from academic information
 //   const mainClassName = watch("className");
 
+//   useEffect(() => {
+//     if (mainClassName && mainClassName.length > 0) {
+//       fields.forEach((_, index) => {
+//         setValue(`fees.${index}.className`, mainClassName);
+//       });
+//     }
+//   }, [mainClassName, fields, setValue]);
+
+//   const getFilteredFeeOptions = (feeClassName: any) => {
+//     if (feeClassName && feeClassName.length > 0) {
+//       const selectedClassNames = feeClassName.map(
+//         (cls: any) => cls.label || cls
+//       );
+
+//       const filtered = feeCategoryData?.data?.data?.filter((fee: any) =>
+//         selectedClassNames.includes(fee.class)
+//       );
+
+//       const uniqueFeeTypes = Array.from(
+//         new Set(filtered.map((fee: any) => fee.feeType))
+//       ).map((feeType) => {
+//         const feeData = filtered.find((fee: any) => fee.feeType === feeType);
+//         const feeAmount = feeData ? feeData.feeAmount : 0;
+//         const labelWithAmount = `${feeType} - ৳${feeAmount}`;
+
+//         const originalOption = feeCategoryOptions.find(
+//           (option: any) => option.label === feeType
+//         );
+
+//         return originalOption
+//           ? { ...originalOption, label: labelWithAmount }
+//           : { value: feeType, label: labelWithAmount };
+//       });
+
+//       return uniqueFeeTypes;
+//     } else {
+//       return feeCategoryOptions;
+//     }
+//   };
+
 //   const addFeeField = () => {
-//     // Use the main className if available, otherwise use empty array
 //     const classNameValue =
-//       mainClassName && mainClassName.length > 0 ? mainClassName : [];
+//       mainClassName && mainClassName.length > 0
+//         ? JSON.parse(JSON.stringify(mainClassName))
+//         : [];
 
 //     append({
 //       feeType: [],
-//       className: classNameValue, // Pre-populate with the main class
+//       className: classNameValue,
 //       feeAmount: "",
+//       yearlyAmount: "",
+//       monthlyAmount: "",
 //       paidAmount: "",
+//       discountType: "flat",
+//       discountValue: "0",
+//       discountReason: "",
+//       waiverType: "flat",
+//       waiverValue: "0",
+//       waiverReason: "",
+//       calculatedDiscount: "0",
+//       calculatedWaiver: "0",
+//       dueAmount: "",
+//       paymentStatus: "unpaid",
+//       isYearlyFee: false,
 //     });
 //   };
 
@@ -132,219 +306,511 @@
 //     }
 //   };
 
-//   // Update all fee entries when the main class changes
-//   useEffect(() => {
-//     if (mainClassName && mainClassName.length > 0) {
-//       fields.forEach((_, index) => {
-//         setValue(`fees.${index}.className`, mainClassName);
-//       });
-//     }
-//   }, [mainClassName, fields, setValue]);
-
 //   return (
-//     <Card elevation={2} sx={{ mb: 3, borderRadius: 2, position: "relative" }}>
-//       <CardContent sx={{ p: 3 }}>
-//         {/* Header with Add Button */}
+//     <Card
+//       elevation={0}
+//       sx={{
+//         mb: 4,
+//         borderRadius: 4,
+//         overflow: "hidden",
+//         border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+//         background: `linear-gradient(135deg, ${alpha(
+//           theme.palette.primary.main,
+//           0.02
+//         )} 0%, ${alpha(theme.palette.secondary.main, 0.02)} 100%)`,
+//       }}
+//     >
+//       <Box
+//         sx={{
+//           background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+//           p: 3,
+//           color: "white",
+//         }}
+//       >
 //         <Box
 //           sx={{
 //             display: "flex",
 //             justifyContent: "space-between",
 //             alignItems: "center",
-//             mb: 3,
-//             pb: 2,
-//             borderBottom: "2px solid",
-//             borderColor: "primary.main",
-//             background: "linear-gradient(135deg, #f5f7fa 0%, #e4edf5 100%)",
-//             borderRadius: 1,
-//             px: 2,
-//             py: 1,
 //           }}
 //         >
-//           <Typography
-//             variant="h6"
-//             sx={{
-//               fontWeight: "bold",
-//               color: "primary.main",
-//               display: "flex",
-//               alignItems: "center",
-//               gap: 1,
-//             }}
-//           >
-//             <Money sx={{ fontSize: 28 }} />
-//             Fee Information <span className="text-red-600">*</span>
-//           </Typography>
-
-//           <IconButton
-//             onClick={addFeeField}
-//             sx={{
-//               backgroundColor: "primary.main",
-//               color: "white",
-//               borderRadius: "50%",
-//               width: 48,
-//               height: 48,
-//               boxShadow: "0 4px 12px rgba(63, 81, 181, 0.3)",
-//               "&:hover": {
-//                 backgroundColor: "primary.dark",
-//                 transform: "scale(1.05)",
-//                 boxShadow: "0 6px 16px rgba(63, 81, 181, 0.4)",
-//               },
-//               transition: "all 0.3s ease-in-out",
-//             }}
-//           >
-//             <Add sx={{ fontSize: 24 }} />
-//           </IconButton>
-//         </Box>
-
-//         {/* Fee Fields */}
-//         {fields.map((field, index) => (
-//           <Box
-//             key={field.id}
-//             sx={{
-//               mb: 3,
-//               p: 3,
-//               border: "2px solid",
-//               borderColor: index === 0 ? "primary.light" : "grey.200",
-//               borderRadius: 2,
-//               backgroundColor: index === 0 ? "primary.50" : "grey.50",
-//               position: "relative",
-//               boxShadow:
-//                 index === 0 ? "0 2px 8px rgba(63, 81, 181, 0.1)" : "none",
-//             }}
-//           >
-//             {/* Remove Button for non-first items */}
-//             {index > 0 && (
-//               <IconButton
-//                 onClick={() => removeFeeField(index)}
-//                 sx={{
-//                   position: "absolute",
-//                   top: -12,
-//                   right: -12,
-//                   backgroundColor: "error.main",
-//                   color: "white",
-//                   width: 32,
-//                   height: 32,
-//                   boxShadow: "0 2px 8px rgba(211, 47, 47, 0.3)",
-//                   "&:hover": {
-//                     backgroundColor: "error.dark",
-//                     transform: "scale(1.1)",
-//                   },
-//                   transition: "all 0.2s ease-in-out",
-//                   zIndex: 1,
-//                 }}
-//               >
-//                 <Remove sx={{ fontSize: 18 }} />
-//               </IconButton>
-//             )}
-
-//             {/* Fee Number Badge */}
-//             <Box
+//           <Box sx={{ display: "flex", alignItems: "center" }}>
+//             <Payment sx={{ fontSize: 32, mr: 2 }} />
+//             <Typography variant="h5" fontWeight="bold">
+//               Fee Information
+//             </Typography>
+//             <Chip
+//               label="Required"
+//               size="small"
 //               sx={{
-//                 position: "absolute",
-//                 top: -12,
-//                 left: 16,
-//                 backgroundColor: index === 0 ? "primary.main" : "grey.500",
+//                 ml: 2,
+//                 bgcolor: alpha("#fff", 0.2),
 //                 color: "white",
-//                 px: 2,
-//                 py: 0.5,
-//                 borderRadius: 4,
-//                 fontSize: "0.75rem",
 //                 fontWeight: "bold",
-//                 boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+//               }}
+//             />
+//           </Box>
+//           <Tooltip title="Add Fee Entry">
+//             <IconButton
+//               onClick={addFeeField}
+//               sx={{
+//                 bgcolor: alpha("#fff", 0.2),
+//                 color: "white",
+//                 "&:hover": {
+//                   bgcolor: alpha("#fff", 0.3),
+//                 },
 //               }}
 //             >
-//               Fee #{index + 1}
-//             </Box>
+//               <Add />
+//             </IconButton>
+//           </Tooltip>
+//         </Box>
+//       </Box>
 
-//             <FeeAmountHandler
-//               feeCategoryData={feeCategoryData}
-//               feeIndex={index}
-//             />
+//       <CardContent sx={{ p: 3 }}>
+//         {fields.map((field, index) => {
+//           const feeClassName = watch(`fees.${index}.className`);
+//           const filteredFeeOptions = getFilteredFeeOptions(feeClassName);
+//           const isYearlyFee = watch(`fees.${index}.isYearlyFee`);
+//           const feeAmount = parseFloat(watch(`fees.${index}.feeAmount`)) || 0;
+//           const discountType = watch(`fees.${index}.discountType`) || "flat";
+//           const discountValue =
+//             parseFloat(watch(`fees.${index}.discountValue`)) || 0;
+//           const waiverType = watch(`fees.${index}.waiverType`) || "flat";
+//           const waiverValue =
+//             parseFloat(watch(`fees.${index}.waiverValue`)) || 0;
+//           const calculatedDiscount =
+//             parseFloat(watch(`fees.${index}.calculatedDiscount`)) || 0;
+//           const calculatedWaiver =
+//             parseFloat(watch(`fees.${index}.calculatedWaiver`)) || 0;
+//           const totalAdjustments = calculatedDiscount + calculatedWaiver;
 
-//             <Grid container spacing={3} alignItems="center">
-//               {/* Class field - Now pre-populated and read-only */}
-//               <Grid item xs={12} md={3}>
-//                 <CraftIntAutoCompleteWithIcon
-//                   name={`fees.${index}.className`}
-//                   label="Class"
-//                   placeholder="Class from Academic Info"
-//                   options={classOptions}
-//                   fullWidth
-//                   multiple
-//                   icon={<Class color="primary" />}
-//                   // disabled
-//                 />
-//               </Grid>
+//           return (
+//             <Box
+//               key={field.id}
+//               sx={{
+//                 mb: 3,
+//                 p: 3,
+//                 borderRadius: 3,
+//                 background: `linear-gradient(135deg, ${alpha(
+//                   theme.palette.background.paper,
+//                   0.9
+//                 )} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
+//                 boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
+//                 border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+//                 position: "relative",
+//                 overflow: "hidden",
+//                 "&:before": {
+//                   content: '""',
+//                   position: "absolute",
+//                   top: 0,
+//                   left: 0,
+//                   width: "5px",
+//                   height: "100%",
+//                   background: `linear-gradient(to bottom, ${theme.palette.primary.main}, ${theme.palette.secondary.main})`,
+//                 },
+//               }}
+//             >
+//               {index > 0 && (
+//                 <Tooltip title="Remove Fee Entry">
+//                   <IconButton
+//                     onClick={() => removeFeeField(index)}
+//                     sx={{
+//                       position: "absolute",
+//                       top: 8,
+//                       right: 8,
+//                       color: "error.main",
+//                       bgcolor: alpha(theme.palette.error.main, 0.1),
+//                       "&:hover": {
+//                         bgcolor: alpha(theme.palette.error.main, 0.2),
+//                       },
+//                     }}
+//                   >
+//                     <Remove />
+//                   </IconButton>
+//                 </Tooltip>
+//               )}
 
-//               <Grid item xs={12} md={3} sm={6}>
-//                 <CraftIntAutoCompleteWithIcon
-//                   name={`fees.${index}.feeType`}
-//                   label="Select Fee"
-//                   placeholder="Select Fee Type"
-//                   options={feeCategoryOptions}
-//                   fullWidth
-//                   multiple
-//                   icon={<Money color="primary" />}
-//                 />
-//               </Grid>
+//               <Box
+//                 sx={{
+//                   display: "flex",
+//                   justifyContent: "space-between",
+//                   alignItems: "center",
+//                   mb: 2,
+//                 }}
+//               >
+//                 <Typography
+//                   variant="h6"
+//                   sx={{ fontWeight: "bold", color: theme.palette.primary.main }}
+//                 >
+//                   Fee Entry #{index + 1}
+//                 </Typography>
+//                 {totalAdjustments > 0 && (
+//                   <Chip
+//                     label={`Adjustments: ৳${totalAdjustments.toFixed(2)}`}
+//                     size="small"
+//                     color="success"
+//                     variant="outlined"
+//                   />
+//                 )}
+//               </Box>
 
-//               <Grid item xs={12} md={3}>
-//                 <CraftInputWithIcon
+//               <FeeAmountHandler
+//                 feeIndex={index}
+//                 feeCategoryData={feeCategoryData}
+//               />
+
+//               <Grid container spacing={3}>
+//                 <Grid item xs={12} md={6}>
+//                   <CraftIntAutoCompleteWithIcon
+//                     name={`fees.${index}.className`}
+//                     label="Class"
+//                     placeholder="Select Class"
+//                     options={classOptions}
+//                     fullWidth
+//                     multiple
+//                     icon={<Class color="primary" />}
+//                     disabled={mainClassName && mainClassName.length > 0}
+//                     helperText={
+//                       mainClassName && mainClassName.length > 0
+//                         ? "Class is synced with Academic Information"
+//                         : "Select Class"
+//                     }
+//                   />
+//                 </Grid>
+//                 <Grid item xs={12} md={6}>
+//                   <CraftIntAutoCompleteWithIcon
+//                     name={`fees.${index}.feeType`}
+//                     label="Fee Type"
+//                     placeholder="Select Fee Type"
+//                     options={filteredFeeOptions}
+//                     fullWidth
+//                     multiple
+//                     icon={<Money color="primary" />}
+//                   />
+//                 </Grid>
+//                 <input
+//                   type="hidden"
 //                   name={`fees.${index}.feeAmount`}
-//                   label="Fee Amount"
-//                   fullWidth
-//                   size="small"
-//                   InputProps={{
-//                     startAdornment: (
-//                       <Money sx={{ color: "text.secondary", mr: 1 }} />
-//                     ),
-//                   }}
-//                   // disabled
+//                   value={watch(`fees.${index}.feeAmount`) || ""}
 //                 />
-//               </Grid>
-//               <Grid item xs={12} md={3}>
-//                 <CraftInputWithIcon
-//                   name={`fees.${index}.paidAmount`}
-//                   label="Paid Amount"
-//                   fullWidth
-//                   size="small"
-//                   InputProps={{
-//                     startAdornment: (
-//                       <Money sx={{ color: "text.secondary", mr: 1 }} />
-//                     ),
-//                   }}
-//                 />
-//               </Grid>
-//             </Grid>
-//           </Box>
-//         ))}
 
-//         {/* Helper Text */}
-//         <Alert
-//           severity="info"
-//           sx={{
-//             mt: 2,
-//             borderRadius: 2,
-//             backgroundColor: "info.50",
-//             "& .MuiAlert-icon": {
-//               alignItems: "center",
-//             },
-//           }}
-//         >
-//           <Typography variant="body2">
-//             <strong>Tip:</strong> The class field is automatically populated
-//             from the Academic Information section. Click{" "}
-//             <Add sx={{ fontSize: 16, verticalAlign: "middle", mx: 0.5 }} />{" "}
-//             button to add multiple fee entries for different fee types
-//             (Admission, Monthly, Exam, etc.)
-//           </Typography>
-//         </Alert>
+//                 {isYearlyFee && (
+//                   <Grid item xs={12} md={4}>
+//                     <CraftInputWithIcon
+//                       name={`fees.${index}.monthlyAmount`}
+//                       label="Monthly Amount (Auto)"
+//                       fullWidth
+//                       size="small"
+//                       disabled
+//                       InputProps={{
+//                         startAdornment: (
+//                           <Money sx={{ color: "text.secondary", mr: 1 }} />
+//                         ),
+//                       }}
+//                     />
+//                   </Grid>
+//                 )}
+
+//                 {!isYearlyFee &&
+//                   watch(`fees.${index}.feeType`)?.some((fee: any) =>
+//                     (fee.label || fee).toLowerCase().includes("monthly")
+//                   ) && (
+//                     <Grid item xs={12} md={4}>
+//                       <CraftInputWithIcon
+//                         name={`fees.${index}.yearlyAmount`}
+//                         label="Yearly Total (Auto)"
+//                         fullWidth
+//                         size="small"
+//                         disabled
+//                         InputProps={{
+//                           startAdornment: (
+//                             <Money sx={{ color: "text.secondary", mr: 1 }} />
+//                           ),
+//                         }}
+//                       />
+//                     </Grid>
+//                   )}
+
+//                 {/* Discount Section */}
+//                 <Grid item xs={12}>
+//                   <Divider sx={{ my: 1 }} />
+//                   <Typography
+//                     variant="subtitle1"
+//                     sx={{
+//                       mt: 2,
+//                       mb: 1,
+//                       color: theme.palette.success.main,
+//                       display: "flex",
+//                       alignItems: "center",
+//                       fontWeight: "bold",
+//                     }}
+//                   >
+//                     <Discount sx={{ mr: 1 }} />
+//                     Discount Settings
+//                   </Typography>
+//                 </Grid>
+
+//                 <Grid item xs={12} md={3}>
+//                   <FormControl fullWidth size="small">
+//                     <InputLabel>Discount Type</InputLabel>
+//                     <Select
+//                       name={`fees.${index}.discountType`}
+//                       value={discountType}
+//                       label="Discount Type"
+//                       onChange={(e) =>
+//                         setValue(`fees.${index}.discountType`, e.target.value)
+//                       }
+//                     >
+//                       <MenuItem value="flat">Flat Amount (৳)</MenuItem>
+//                       <MenuItem value="percentage">Percentage (%)</MenuItem>
+//                     </Select>
+//                   </FormControl>
+//                 </Grid>
+
+//                 <Grid item xs={12} md={3}>
+//                   <CraftInputWithIcon
+//                     name={`fees.${index}.discountValue`}
+//                     label={
+//                       discountType === "percentage"
+//                         ? "Discount %"
+//                         : "Discount Amount"
+//                     }
+//                     fullWidth
+//                     size="small"
+//                     type="number"
+//                     InputProps={{
+//                       startAdornment:
+//                         discountType === "percentage" ? (
+//                           <Percent sx={{ color: "success.main", mr: 1 }} />
+//                         ) : (
+//                           <Discount sx={{ color: "success.main", mr: 1 }} />
+//                         ),
+//                     }}
+//                     helperText={
+//                       discountType === "percentage"
+//                         ? `Max: 100% (৳${(feeAmount * 1).toFixed(2)})`
+//                         : `Max: ৳${feeAmount.toFixed(2)}`
+//                     }
+//                     inputProps={{
+//                       max: discountType === "percentage" ? 100 : feeAmount,
+//                       min: 0,
+//                     }}
+//                   />
+//                 </Grid>
+
+//                 <Grid item xs={12} md={6}>
+//                   <CraftInputWithIcon
+//                     name={`fees.${index}.discountReason`}
+//                     label="Discount Reason"
+//                     fullWidth
+//                     size="small"
+//                     placeholder="Reason for discount"
+//                     InputProps={{
+//                       startAdornment: (
+//                         <Description sx={{ color: "success.main", mr: 1 }} />
+//                       ),
+//                     }}
+//                   />
+//                 </Grid>
+
+//                 {/* Waiver Section */}
+//                 <Grid item xs={12}>
+//                   <Divider sx={{ my: 1 }} />
+//                   <Typography
+//                     variant="subtitle1"
+//                     sx={{
+//                       mt: 2,
+//                       mb: 1,
+//                       color: theme.palette.info.main,
+//                       display: "flex",
+//                       alignItems: "center",
+//                       fontWeight: "bold",
+//                     }}
+//                   >
+//                     <MoneyOff sx={{ mr: 1 }} />
+//                     Waiver Settings
+//                   </Typography>
+//                 </Grid>
+
+//                 <Grid item xs={12} md={3}>
+//                   <FormControl fullWidth size="small">
+//                     <InputLabel>Waiver Type</InputLabel>
+//                     <Select
+//                       name={`fees.${index}.waiverType`}
+//                       value={waiverType}
+//                       label="Waiver Type"
+//                       onChange={(e) =>
+//                         setValue(`fees.${index}.waiverType`, e.target.value)
+//                       }
+//                     >
+//                       <MenuItem value="flat">Flat Amount (৳)</MenuItem>
+//                       <MenuItem value="percentage">Percentage (%)</MenuItem>
+//                     </Select>
+//                   </FormControl>
+//                 </Grid>
+
+//                 <Grid item xs={12} md={3}>
+//                   <CraftInputWithIcon
+//                     name={`fees.${index}.waiverValue`}
+//                     label={
+//                       waiverType === "percentage" ? "Waiver %" : "Waiver Amount"
+//                     }
+//                     fullWidth
+//                     size="small"
+//                     type="number"
+//                     InputProps={{
+//                       startAdornment:
+//                         waiverType === "percentage" ? (
+//                           <Percent sx={{ color: "info.main", mr: 1 }} />
+//                         ) : (
+//                           <MoneyOff sx={{ color: "info.main", mr: 1 }} />
+//                         ),
+//                     }}
+//                     helperText={
+//                       waiverType === "percentage"
+//                         ? `Max: 100% (৳${(feeAmount * 1).toFixed(2)})`
+//                         : `Max: ৳${feeAmount.toFixed(2)}`
+//                     }
+//                     inputProps={{
+//                       max: waiverType === "percentage" ? 100 : feeAmount,
+//                       min: 0,
+//                     }}
+//                   />
+//                 </Grid>
+
+//                 <Grid item xs={12} md={6}>
+//                   <CraftInputWithIcon
+//                     name={`fees.${index}.waiverReason`}
+//                     label="Waiver Reason"
+//                     fullWidth
+//                     size="small"
+//                     placeholder="Reason for waiver"
+//                     InputProps={{
+//                       startAdornment: (
+//                         <Description sx={{ color: "info.main", mr: 1 }} />
+//                       ),
+//                     }}
+//                   />
+//                 </Grid>
+
+//                 <Grid item xs={12}>
+//                   <Divider sx={{ my: 1 }} />
+//                   <Typography
+//                     variant="subtitle1"
+//                     sx={{
+//                       mt: 2,
+//                       mb: 1,
+//                       color: theme.palette.primary.main,
+//                       fontWeight: "bold",
+//                     }}
+//                   >
+//                     Payment Information
+//                   </Typography>
+//                 </Grid>
+
+//                 <Grid item xs={12} md={4}>
+//                   <CraftInputWithIcon
+//                     name={`fees.${index}.paidAmount`}
+//                     label="Paid Amount"
+//                     fullWidth
+//                     size="small"
+//                     type="number"
+//                     InputProps={{
+//                       startAdornment: (
+//                         <Money sx={{ color: "text.secondary", mr: 1 }} />
+//                       ),
+//                     }}
+//                   />
+//                 </Grid>
+
+//                 <Grid item xs={12} md={4}>
+//                   <CraftInputWithIcon
+//                     name={`fees.${index}.dueAmount`}
+//                     label="Due Amount (Auto)"
+//                     fullWidth
+//                     size="small"
+//                     disabled
+//                     InputProps={{
+//                       startAdornment: (
+//                         <Money sx={{ color: "text.secondary", mr: 1 }} />
+//                       ),
+//                     }}
+//                   />
+//                 </Grid>
+
+//                 <Grid item xs={12} md={4}>
+//                   <CraftSelectWithIcon
+//                     name={`fees.${index}.paymentStatus`}
+//                     label="Payment Status"
+//                     items={["paid", "partial", "unpaid"]}
+//                     adornment={<Money />}
+//                     size="small"
+//                   />
+//                 </Grid>
+//               </Grid>
+
+//               {totalAdjustments > 0 && (
+//                 <Alert severity="success" sx={{ mt: 2 }} icon={<Discount />}>
+//                   <Typography variant="body2">
+//                     <strong>Adjustments Applied:</strong>
+//                     <br />
+//                     Discount: ৳{calculatedDiscount.toFixed(2)}{" "}
+//                     {discountType === "percentage" && `(${discountValue}%)`}
+//                     <br />
+//                     Waiver: ৳{calculatedWaiver.toFixed(2)}{" "}
+//                     {waiverType === "percentage" && `(${waiverValue}%)`}
+//                     <br />
+//                     <strong>Total Adjustments:</strong> ৳
+//                     {totalAdjustments.toFixed(2)}
+//                     {discountType === "percentage" ||
+//                       (waiverType === "percentage" && (
+//                         <>
+//                           <br />
+//                           <em>
+//                             Percentage values are converted to flat amounts
+//                           </em>
+//                         </>
+//                       ))}
+//                   </Typography>
+//                 </Alert>
+//               )}
+
+//               {(!feeClassName || feeClassName.length === 0) && (
+//                 <Alert severity="info" sx={{ mt: 2 }}>
+//                   Please select a class to see available fee types
+//                 </Alert>
+//               )}
+
+//               {calculatedDiscount + calculatedWaiver > feeAmount && (
+//                 <Alert severity="error" sx={{ mt: 2 }}>
+//                   Total adjustments (৳
+//                   {(calculatedDiscount + calculatedWaiver).toFixed(2)}) cannot
+//                   exceed fee amount (৳{feeAmount.toFixed(2)})
+//                 </Alert>
+//               )}
+//             </Box>
+//           );
+//         })}
+
+//         {fields.length === 0 && (
+//           <Box sx={{ textAlign: "center", py: 4 }}>
+//             <Payment sx={{ fontSize: 64, color: "text.secondary", mb: 2 }} />
+//             <Typography variant="h6" color="text.secondary">
+//               No fee entries added yet
+//             </Typography>
+//             <Typography variant="body2" color="text.secondary">
+//               Click the + button to add fee entries
+//             </Typography>
+//           </Box>
+//         )}
 //       </CardContent>
 //     </Card>
 //   );
 // };
 
-// // Student Selector Component
 // const StudentSelector = ({ studentData, classOptions }: any) => {
+//   const theme = useTheme();
 //   const { setValue, watch } = useFormContext();
 //   const [selectedStudent, setSelectedStudent] = useState<any>(null);
 
@@ -362,113 +828,118 @@
 //       data: student,
 //     })) || [];
 
-//   const formatClassData = (studentClass: any) => {
-//     if (!studentClass) return [];
-
-//     if (Array.isArray(studentClass)) {
-//       return studentClass.map((c: any) => {
-//         const matchedClass = classOptions?.find(
-//           (option: any) =>
-//             option.value === (c._id || c) || option.label === (c.className || c)
-//         );
-//         return (
-//           matchedClass || {
-//             value: c._id || c,
-//             label: c.className || c,
-//           }
-//         );
-//       });
-//     } else {
-//       const matchedClass = classOptions?.find(
-//         (option: any) =>
-//           option.value === (studentClass._id || studentClass) ||
-//           option.label === (studentClass.className || studentClass)
-//       );
-//       return matchedClass
-//         ? [matchedClass]
-//         : [
-//             {
-//               value: studentClass._id || studentClass,
-//               label: studentClass.className || studentClass,
-//             },
-//           ];
+//   const transformStudentClassToForm = (studentClassName: any[]) => {
+//     if (
+//       !studentClassName ||
+//       !Array.isArray(studentClassName) ||
+//       studentClassName.length === 0
+//     ) {
+//       return [];
 //     }
-//   };
 
+//     return studentClassName.map((cls: any) => {
+//       const className = cls.className || cls;
+
+//       let matchedClass = classOptions?.find(
+//         (option: any) => option.value === cls._id || option.label === className
+//       );
+
+//       if (!matchedClass) {
+//         matchedClass = {
+//           value: cls._id || className,
+//           label: className,
+//         };
+//       }
+
+//       return matchedClass;
+//     });
+//   };
 //   const populateFormWithStudentData = (student: any) => {
 //     if (!student) return;
 
-//     const formattedClassData = formatClassData(student.className);
+//     const formattedClassName = transformStudentClassToForm(student.className);
 
 //     const formValues: any = {
-//       studentNameBangla: student.name || "",
+//       studentNameBangla: student.nameBangla || "",
 //       studentPhoto: student.studentPhoto || "",
 //       fatherNameBangla: student.fatherName || "",
 //       motherNameBangla: student.motherName || "",
 //       studentName: student.name || "",
 //       mobileNo: student.mobile || "",
-//       className: formattedClassData,
-//       session: student.activeSession?.[0] || "",
-//       category: student.studentType?.toLowerCase() || "",
+//       className: formattedClassName,
+//       session:
+//         student.activeSession?.[0] || new Date().getFullYear().toString(),
+//       category: student.studentType?.toLowerCase() || "residential",
 //       dateOfBirth: student.birthDate ? new Date(student.birthDate) : null,
 //       nidBirth: student.birthRegistrationNo || "",
 //       bloodGroup: student.bloodGroup || "",
 //       nationality: "Bangladeshi",
 //       fatherName: student.fatherName || "",
-//       fatherMobile: "",
+//       fatherMobile: student.fatherMobile || "",
 //       fatherNid: student.nidFatherMotherGuardian || "",
-//       fatherProfession: "",
+//       fatherProfession: student.fatherProfession || "",
 //       fatherIncome: student.fatherIncome || 0,
 //       motherName: student.motherName || "",
-//       motherMobile: "",
+//       motherMobile: student.motherMobile || "",
 //       motherNid: student.nidFatherMotherGuardian || "",
-//       motherProfession: "",
+//       motherProfession: student.motherProfession || "",
 //       motherIncome: student.motherIncome || 0,
-//       village: student.presentAddress || "",
-//       postOffice: "",
-//       postCode: "",
-//       policeStation: student.presentThana || "",
-//       district: student.presentDistrict || "",
-//       permVillage: student.permanentAddress || "",
-//       permPostOffice: "",
-//       permPostCode: "",
-//       permPoliceStation: student.permanentThana || "",
-//       permDistrict: student.permanentDistrict || "",
-//       guardianName: student.guardianName || "",
-//       guardianRelation: student.relation || "",
-//       guardianMobile: student.guardianMobile || "",
-//       guardianVillage: student.permanentAddress || "",
+//       village: student.presentAddress?.village || "",
+//       postOffice: student.presentAddress?.postOffice || "",
+//       postCode: student.presentAddress?.postCode || "",
+//       policeStation: student.presentAddress?.policeStation || "",
+//       district: student.presentAddress?.district || "",
+//       permVillage: student.permanentAddress?.village || "",
+//       permPostOffice: student.permanentAddress?.postOffice || "",
+//       permPostCode: student.permanentAddress?.postCode || "",
+//       permPoliceStation: student.permanentAddress?.policeStation || "",
+//       permDistrict: student.permanentAddress?.district || "",
+//       guardianName: student.guardianInfo?.name || "",
+//       guardianRelation: student.guardianInfo?.relation || "",
+//       guardianMobile: student.guardianInfo?.mobile || "",
+//       guardianVillage: student.guardianInfo?.address || "",
 //       formerInstitution: "",
 //       formerVillage: "",
-//       birthCertificate: false,
-//       transferCertificate: false,
-//       characterCertificate: false,
-//       markSheet: false,
-//       photographs: false,
+//       birthCertificate: student.documents?.birthCertificate || false,
+//       transferCertificate: student.documents?.transferCertificate || false,
+//       characterCertificate: student.documents?.characterCertificate || false,
+//       markSheet: student.documents?.markSheet || false,
+//       photographs: student.documents?.photographs || false,
 //       termsAccepted: false,
-//       studentDepartment: student.studentDepartment || "",
+//       studentDepartment: student.studentDepartment || "hifz",
 //       rollNumber: student.studentClassRoll || "",
 //       section: student.section?.[0] || "",
-//       group: "",
+//       group: student.batch || "",
 //       optionalSubject: "",
 //       shift: "",
 //       fees: [
 //         {
 //           feeType: [],
-//           className: formattedClassData,
+//           className: formattedClassName,
 //           feeAmount: "",
 //           paidAmount: "",
+//           monthlyAmount: "",
+//           yearlyAmount: "",
+//           discountType: "flat",
+//           discountValue: "0",
+//           discountReason: "",
+//           waiverType: "flat",
+//           waiverValue: "0",
+//           waiverReason: "",
+//           calculatedDiscount: "0",
+//           calculatedWaiver: "0",
+//           dueAmount: "",
+//           paymentStatus: "unpaid",
 //         },
 //       ],
 //       admissionFee: student.admissionFee || 0,
 //       monthlyFee: student.monthlyFee || 0,
 //     };
-
 //     Object.keys(formValues).forEach((key) => {
 //       setValue(key, formValues[key]);
 //     });
 
-//     toast.success(`Form populated with data for ${student.name}`);
+//     toast.success(`Form populated with student data for ${student.name}.`);
 //   };
 
 //   const handleStudentIdSelection = (value: any) => {
@@ -523,11 +994,34 @@
 //   }, [watch("studentIdSelect"), watch("studentNameSelect")]);
 
 //   return (
-//     <Card elevation={2} sx={{ mb: 3, borderRadius: 2 }}>
+//     <Card
+//       elevation={0}
+//       sx={{
+//         mb: 4,
+//         borderRadius: 4,
+//         overflow: "hidden",
+//         border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+//         background: `linear-gradient(135deg, ${alpha(
+//           theme.palette.primary.main,
+//           0.02
+//         )} 0%, ${alpha(theme.palette.secondary.main, 0.02)} 100%)`,
+//       }}
+//     >
+//       <Box
+//         sx={{
+//           background: `linear-gradient(135deg, ${theme.palette.info.main} 0%, ${theme.palette.info.dark} 100%)`,
+//           p: 3,
+//           color: "white",
+//         }}
+//       >
+//         <Box sx={{ display: "flex", alignItems: "center" }}>
+//           <Person sx={{ fontSize: 32, mr: 2 }} />
+//           <Typography variant="h5" fontWeight="bold">
+//             Select Student to Auto-fill Form
+//           </Typography>
+//         </Box>
+//       </Box>
 //       <CardContent sx={{ p: 3 }}>
-//         <Typography variant="h6" gutterBottom>
-//           Select Student to Auto-fill Form
-//         </Typography>
 //         <Grid container spacing={3}>
 //           <Grid item xs={12} md={6}>
 //             <CraftIntAutoCompleteWithIcon
@@ -563,28 +1057,30 @@
 //             sx={{
 //               mt: 2,
 //               p: 2,
-//               bgcolor: "success.light",
-//               color: "white",
-//               borderRadius: 1,
+//               bgcolor: alpha(theme.palette.info.main, 0.1),
+//               borderRadius: 2,
+//               border: `1px solid ${alpha(theme.palette.info.main, 0.3)}`,
 //             }}
 //           >
-//             <Typography variant="body2">
-//               Selected: {selectedStudent.name} (ID: {selectedStudent.studentId})
-//             </Typography>
-//             <Typography variant="body2">
-//               Class:{" "}
-//               {selectedStudent.className
-//                 ? Array.isArray(selectedStudent.className)
-//                   ? selectedStudent.className
-//                       .map((c: any) => c.className || c)
-//                       .join(", ")
-//                   : selectedStudent.className.className ||
-//                     selectedStudent.className
-//                 : "Not assigned"}
-//             </Typography>
-//             <Typography variant="body2">
-//               Form has been auto-filled with student information.
-//             </Typography>
+//             <Box sx={{ display: "flex", alignItems: "center" }}>
+//               <Avatar
+//                 src={selectedStudent.studentPhoto}
+//                 sx={{ width: 56, height: 56, mr: 2 }}
+//               >
+//                 <AccountCircle />
+//               </Avatar>
+//               <Box>
+//                 <Typography variant="body1" fontWeight="bold">
+//                   {selectedStudent.name}
+//                 </Typography>
+//                 <Typography variant="body2" color="text.secondary">
+//                   ID: {selectedStudent.studentId}
+//                 </Typography>
+//                 <Typography variant="body2" color="text.secondary">
+//                   Class: {selectedStudent.className?.[0]?.className || "N/A"}
+//                 </Typography>
+//               </Box>
+//             </Box>
 //           </Box>
 //         )}
 //       </CardContent>
@@ -592,7 +1088,6 @@
 //   );
 // };
 
-// // Helper function to transform API data to form format
 // const transformEnrollmentDataToForm = (
 //   enrollmentData: any,
 //   classOptions: any[],
@@ -603,71 +1098,103 @@
 //   }
 
 //   const data = enrollmentData.data;
+//   const formatClassForForm = (classData: any) => {
+//     if (!classData || classData.length === 0) return [];
 
-//   // Helper function to format class data
-//   const formatClassForForm = (className: any) => {
-//     if (!className) return [];
+//     if (Array.isArray(classData)) {
+//       return classData.map((cls: any) => {
+//         const classId = cls._id || cls;
+//         const classNameValue = cls.className || cls;
 
-//     console.log("Formatting class:", className);
-
-//     if (Array.isArray(className)) {
-//       return className.map((cls: any) => {
-//         const matchedClass = classOptions?.find(
-//           (option: any) =>
-//             option.value === (cls._id || cls) ||
-//             option.label === (cls.className || cls)
+//         let matchedClass = classOptions?.find(
+//           (option: any) => option.value === classId
 //         );
-//         console.log("Matched class for array:", matchedClass);
-//         return (
-//           matchedClass || {
-//             value: cls._id || cls,
-//             label: cls.className || cls,
-//           }
-//         );
+//         if (!matchedClass) {
+//           matchedClass = classOptions?.find(
+//             (option: any) => option.label === classNameValue
+//           );
+//         }
+//         if (!matchedClass) {
+//           matchedClass = {
+//             value: classId,
+//             label: classNameValue,
+//           };
+//         }
+
+//         return matchedClass;
 //       });
 //     } else {
-//       const matchedClass = classOptions?.find(
-//         (option: any) =>
-//           option.value === (className._id || className) ||
-//           option.label === (className.className || className)
+//       const classId = classData._id || classData;
+//       const classNameValue = classData.className || classData;
+
+//       // First try to match by ID
+//       let matchedClass = classOptions?.find(
+//         (option: any) => option.value === classId
 //       );
-//       console.log("Matched class for single:", matchedClass);
-//       return matchedClass
-//         ? [matchedClass]
-//         : [
-//             {
-//               value: className._id || className,
-//               label: className.className || className,
-//             },
-//           ];
+
+//       // If not found by ID, try to match by name
+//       if (!matchedClass) {
+//         matchedClass = classOptions?.find(
+//           (option: any) => option.label === classNameValue
+//         );
+//       }
+
+//       // If still not found, create a new option
+//       if (!matchedClass) {
+//         matchedClass = {
+//           value: classId,
+//           label: classNameValue,
+//         };
+//       }
+
+//       return [matchedClass];
 //     }
 //   };
 
-//   // Helper function to format fee data - FIXED VERSION
-//   const formatFeeForForm = (fees: any[], className: any) => {
+//   const formatFeeForForm = (fees: any[], classData: any) => {
 //     if (!fees || !Array.isArray(fees) || fees.length === 0) {
-//       console.log("No fees found, returning default fee structure");
 //       return [
 //         {
 //           feeType: [],
-//           className: formatClassForForm(className),
+//           className: formatClassForForm(classData),
 //           feeAmount: "",
 //           paidAmount: "",
+//           monthlyAmount: "",
+//           yearlyAmount: "",
+//           discountType: "flat",
+//           discountValue: "0",
+//           discountReason: "",
+//           waiverType: "flat",
+//           waiverValue: "0",
+//           waiverReason: "",
+//           calculatedDiscount: "0",
+//           calculatedWaiver: "0",
+//           dueAmount: "",
+//           paymentStatus: "unpaid",
 //         },
 //       ];
 //     }
 
-//     console.log("Formatting fees:", fees);
-
 //     return fees.map((fee: any) => {
-//       // Find matching fee type from feeCategoryOptions
 //       const matchedFeeType = feeCategoryOptions?.find(
 //         (option: any) =>
 //           option.value === fee.feeType || option.label === fee.feeType
 //       );
 
-//       console.log("Fee feeType:", fee.feeType);
-//       console.log("Matched fee type:", matchedFeeType);
+//       const feeAmount = fee.amount || fee.feeAmount || 0;
+//       const paidAmount = fee.paidAmount || 0;
+//       const discountAmount = fee.discount || 0;
+//       const waiverAmount = fee.waiver || 0;
+//       const dueAmount = Math.max(
+//         0,
+//         feeAmount - paidAmount - discountAmount - waiverAmount
+//       );
+
+//       // Determine discount type (percentage or flat)
+//       const discountType = fee.discountType || "flat";
+//       const discountValue = fee.discountValue || discountAmount.toString();
+//       const waiverType = fee.waiverType || "flat";
+//       const waiverValue = fee.waiverValue || waiverAmount.toString();
 
 //       return {
 //         feeType: matchedFeeType
@@ -678,14 +1205,26 @@
 //                 label: fee.feeType,
 //               },
 //             ],
-//         className: formatClassForForm(className),
-//         feeAmount: fee.amount?.toString() || fee.feeAmount?.toString() || "",
-//         paidAmount: fee.paidAmount?.toString() || "",
+//         className: formatClassForForm(classData),
+//         feeAmount: feeAmount.toString(),
+//         paidAmount: paidAmount.toString(),
+//         monthlyAmount: ((feeAmount || 0) / 12).toFixed(2),
+//         yearlyAmount: feeAmount.toString(),
+//         discountType: discountType,
+//         discountValue: discountValue,
+//         discountReason: fee.discountReason || "",
+//         waiverType: waiverType,
+//         waiverValue: waiverValue,
+//         waiverReason: fee.waiverReason || "",
+//         calculatedDiscount: discountAmount.toString(),
+//         calculatedWaiver: waiverAmount.toString(),
+//         dueAmount: dueAmount.toString(),
+//         paymentStatus:
+//           dueAmount <= 0 ? "paid" : paidAmount > 0 ? "partial" : "unpaid",
 //       };
 //     });
 //   };
 
-//   // Helper function to format date
 //   const formatDate = (dateString: string) => {
 //     if (!dateString) return null;
 //     try {
@@ -695,14 +1234,9 @@
 //     }
 //   };
 
-//   // Helper function to format boolean for select
-//   const formatBooleanForSelect = (value: boolean) => {
-//     return value ? "Yes" : "No";
-//   };
-
 //   const transformedData = {
 //     // Student Information (Bangla)
-//     studentNameBangla: data.nameBangla || data.student?.name || "",
+//     studentNameBangla: data.nameBangla || data.student?.nameBangla || "",
 //     studentPhoto: data.studentPhoto || data.student?.studentPhoto || "",
 //     fatherNameBangla: data.fatherNameBangla || data.student?.fatherName || "",
 //     motherNameBangla: data.motherNameBangla || data.student?.motherName || "",
@@ -710,84 +1244,75 @@
 //     // Personal Information
 //     studentName: data.name || data.student?.name || "",
 //     mobileNo: data.mobileNo || data.student?.mobile || "",
-//     session: data.session || "",
+//     session: data.session || new Date().getFullYear().toString(),
 //     category:
-//       data.studentType || data.student?.studentType?.toLowerCase() || "",
+//       data.studentType ||
+//       data.student?.studentType?.toLowerCase() ||
+//       "residential",
 //     dateOfBirth: formatDate(data.birthDate || data.student?.birthDate),
-//     nidBirth: data.nidBirth || data.student?.nidFatherMotherGuardian || "",
+//     nidBirth: data.nidBirth || data.student?.birthRegistrationNo || "",
 //     bloodGroup: data.bloodGroup || data.student?.bloodGroup || "",
 //     nationality: data.nationality || "Bangladeshi",
+
+//     // Academic Information - Class name preserved from enrollment data
+//     className: formatClassForForm(data.className),
+//     studentDepartment: data.studentDepartment || "hifz",
+//     rollNumber: data.roll || data.student?.studentClassRoll || "",
+//     section: data.section || data.student?.section?.[0] || "",
+//     group: data.group || data.student?.batch || "",
+//     optionalSubject: data.optionalSubject || "",
+//     shift: data.shift || "",
+//     admissionType: data.admissionType || "",
 
 //     // Parent Information
 //     fatherName: data.fatherName || data.student?.fatherName || "",
 //     fatherMobile: data.fatherMobile || "",
-//     fatherNid: data.fatherNid || data.student?.nidFatherMotherGuardian || "",
+//     fatherNid: data.fatherNid || "",
 //     fatherProfession: data.fatherProfession || "",
 //     fatherIncome: data.fatherIncome || data.student?.fatherIncome || 0,
 //     motherName: data.motherName || data.student?.motherName || "",
 //     motherMobile: data.motherMobile || "",
-//     motherNid: data.motherNid || data.student?.nidFatherMotherGuardian || "",
+//     motherNid: data.motherNid || "",
 //     motherProfession: data.motherProfession || "",
 //     motherIncome: data.motherIncome || data.student?.motherIncome || 0,
-
-//     // Academic Information
-//     className: formatClassForForm(data.className),
-//     studentDepartment: data.studentDepartment || "",
-//     rollNumber: data.roll || data.student?.studentClassRoll || "",
-//     section: data.section || data.student?.section?.[0] || "",
-//     group: data.group || "",
-//     optionalSubject: data.optionalSubject || "",
-//     shift: data.shift || "",
-//     admissionType: data.admissionType || "",
 
 //     // Address Information
 //     village: data.presentAddress?.village || "",
 //     postOffice: data.presentAddress?.postOffice || "",
 //     postCode: data.presentAddress?.postCode || "",
-//     policeStation:
-//       data.presentAddress?.policeStation || data.student?.presentThana || "",
-//     district:
-//       data.presentAddress?.district || data.student?.presentDistrict || "",
+//     policeStation: data.presentAddress?.policeStation || "",
+//     district: data.presentAddress?.district || "",
 //     permVillage: data.permanentAddress?.village || "",
 //     permPostOffice: data.permanentAddress?.postOffice || "",
 //     permPostCode: data.permanentAddress?.postCode || "",
-//     permPoliceStation:
-//       data.permanentAddress?.policeStation ||
-//       data.student?.permanentThana ||
-//       "",
-//     permDistrict:
-//       data.permanentAddress?.district || data.student?.permanentDistrict || "",
+//     permPoliceStation: data.permanentAddress?.policeStation || "",
+//     permDistrict: data.permanentAddress?.district || "",
 
 //     // Guardian Information
-//     guardianName: data.guardianInfo?.name || data.student?.guardianName || "",
+//     guardianName:
+//       data.guardianInfo?.name || data.student?.guardianInfo?.name || "",
 //     guardianRelation:
-//       data.guardianInfo?.relation || data.student?.relation || "",
+//       data.guardianInfo?.relation || data.student?.guardianInfo?.relation || "",
 //     guardianMobile:
-//       data.guardianInfo?.mobile || data.student?.guardianMobile || "",
+//       data.guardianInfo?.mobile || data.student?.guardianInfo?.mobile || "",
 //     guardianVillage:
-//       data.guardianInfo?.address || data.student?.permanentAddress || "",
+//       data.guardianInfo?.address || data.student?.guardianInfo?.address || "",
 
 //     // Previous Education
 //     formerInstitution: data.previousSchool?.institution || "",
 //     formerVillage: data.previousSchool?.address || "",
 
-//     // Documents
-//     birthCertificate: formatBooleanForSelect(
-//       data.documents?.birthCertificate || false
-//     ),
-//     transferCertificate: formatBooleanForSelect(
-//       data.documents?.transferCertificate || false
-//     ),
-//     characterCertificate: formatBooleanForSelect(
-//       data.documents?.characterCertificate || false
-//     ),
-//     markSheet: formatBooleanForSelect(data.documents?.markSheet || false),
-//     photographs: formatBooleanForSelect(data.documents?.photographs || false),
+//     // Documents - Changed to boolean values
+//     birthCertificate: data.documents?.birthCertificate || false,
+//     transferCertificate: data.documents?.transferCertificate || false,
+//     characterCertificate: data.documents?.characterCertificate || false,
+//     markSheet: data.documents?.markSheet || false,
+//     photographs: data.documents?.photographs || false,
 
-//     // Terms & Conditions
-//     termsAccepted: formatBooleanForSelect(data.termsAccepted || false),
+//     // Terms & Conditions - Changed to boolean value
+//     termsAccepted: data.termsAccepted || false,
 
-//     // Fees - FIXED: Pass className to formatFeeForForm
+//     // Fees - UPDATED WITH PERCENTAGE/FLAT SUPPORT
 //     fees: formatFeeForForm(data.fees, data.className),
 //     admissionFee: data.admissionFee || data.student?.admissionFee || 0,
 //     monthlyFee: data.monthlyFee || data.student?.monthlyFee || 0,
@@ -797,11 +1322,1051 @@
 //     studentNameSelect: null,
 //   };
 
-//   console.log("Transformed form data:", transformedData);
 //   return transformedData;
 // };
 
+// // Step 1: Student Information Component (without animations)
+// const StudentInformationStep = () => {
+//   const theme = useTheme();
+//   return (
+//     <Card
+//       elevation={0}
+//       sx={{
+//         mb: 4,
+//         borderRadius: 4,
+//         overflow: "hidden",
+//         border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+//         background: `linear-gradient(135deg, ${alpha(
+//           theme.palette.primary.main,
+//           0.02
+//         )} 0%, ${alpha(theme.palette.secondary.main, 0.02)} 100%)`,
+//       }}
+//     >
+//       <Box
+//         sx={{
+//           background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+//           p: 3,
+//           color: "white",
+//         }}
+//       >
+//         <Box sx={{ display: "flex", alignItems: "center" }}>
+//           <AccountCircle sx={{ fontSize: 32, mr: 2 }} />
+//           <Typography variant="h5" fontWeight="bold">
+//             Student Information
+//           </Typography>
+//         </Box>
+//       </Box>
+//       <CardContent sx={{ p: 3 }}>
+//         <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
+//           Student Information (বাংলায়)
+//         </Typography>
+//         <Grid container spacing={3} mb={3}>
+//           <Grid item xs={12} md={4}>
+//             <CraftInputWithIcon
+//               fullWidth
+//               label={
+//                 <span>
+//                   Student Name <span style={{ color: "red" }}>*</span>
+//                 </span>
+//               }
+//               name="studentNameBangla"
+//               placeholder="Student Name (বাংলায়)"
+//               InputProps={{
+//                 startAdornment: (
+//                   <Person sx={{ color: "text.secondary", mr: 1 }} />
+//                 ),
+//               }}
+//             />
+//           </Grid>
+//           <Grid item xs={12} md={4}>
+//             <CraftInputWithIcon
+//               fullWidth
+//               label={
+//                 <span>
+//                   Father's Name<span style={{ color: "red" }}>*</span>
+//                 </span>
+//               }
+//               name="fatherNameBangla"
+//               placeholder="Father's Name (বাংলায়)"
+//               InputProps={{
+//                 startAdornment: (
+//                   <Person sx={{ color: "text.secondary", mr: 1 }} />
+//                 ),
+//               }}
+//             />
+//           </Grid>
+//           <Grid item xs={12} md={4}>
+//             <CraftInputWithIcon
+//               fullWidth
+//               label={
+//                 <span>
+//                   Mother's Name<span style={{ color: "red" }}>*</span>
+//                 </span>
+//               }
+//               name="motherNameBangla"
+//               placeholder="Mother's Name (বাংলায়)"
+//               InputProps={{
+//                 startAdornment: (
+//                   <Person sx={{ color: "text.secondary", mr: 1 }} />
+//                 ),
+//               }}
+//             />
+//           </Grid>
+//         </Grid>
+
+//         <Alert
+//           severity="info"
+//           sx={{
+//             mb: 3,
+//             borderRadius: 2,
+//             bgcolor: alpha(theme.palette.info.main, 0.1),
+//             color: theme.palette.info.dark,
+//             "& .MuiAlert-icon": {
+//               color: theme.palette.info.main,
+//             },
+//           }}
+//         >
+//           All information below must be filled in English
+//         </Alert>
+
+//         <Typography variant="h6" gutterBottom>
+//           Personal Information
+//         </Typography>
+//         <Grid container spacing={3}>
+//           <Grid item xs={12} md={6}>
+//             <CraftInputWithIcon
+//               fullWidth
+//               label={
+//                 <span>
+//                   Student Name<span style={{ color: "red" }}>*</span>
+//                 </span>
+//               }
+//               name="studentName"
+//               placeholder="Full Name in English"
+//               InputProps={{
+//                 startAdornment: (
+//                   <Person sx={{ color: "text.secondary", mr: 1 }} />
+//                 ),
+//               }}
+//             />
+//           </Grid>
+//           <Grid item xs={12} md={6}>
+//             <CraftInputWithIcon
+//               fullWidth
+//               label="Mobile No."
+//               name="mobileNo"
+//               placeholder="01XXXXXXXXX"
+//               InputProps={{
+//                 startAdornment: (
+//                   <Phone sx={{ color: "text.secondary", mr: 1 }} />
+//                 ),
+//               }}
+//             />
+//           </Grid>
+
+//           <Grid item xs={12} md={4}>
+//             <CraftInputWithIcon
+//               fullWidth
+//               label="Session"
+//               name="session"
+//               placeholder="2024-2025"
+//               InputProps={{
+//                 startAdornment: (
+//                   <CalendarMonth sx={{ color: "text.secondary", mr: 1 }} />
+//                 ),
+//               }}
+//             />
+//           </Grid>
+//           <Grid item xs={12} md={4}>
+//             <CraftSelectWithIcon
+//               fullWidth
+//               label={
+//                 <span>
+//                   Category <span style={{ color: "red" }}>*</span>
+//                 </span>
+//               }
+//               name="category"
+//               items={["day_care", "residential", "non_residential"]}
+//               size="medium"
+//               adornment={<CalendarMonth />}
+//             />
+//           </Grid>
+//           <Grid item xs={12} md={4}>
+//             <CraftSelectWithIcon
+//               name="studentDepartment"
+//               size="medium"
+//               label={
+//                 <span>
+//                   Student Department
+//                   <span style={{ color: "red" }}>*</span>
+//                 </span>
+//               }
+//               placeholder="Student Department"
+//               items={["hifz", "academic"]}
+//               adornment={<Person color="action" />}
+//             />
+//           </Grid>
+//           <Grid item xs={12} md={4}>
+//             <CraftInputWithIcon
+//               fullWidth
+//               label="Date of Birth"
+//               name="dateOfBirth"
+//               type="date"
+//               InputProps={{
+//                 startAdornment: (
+//                   <Cake sx={{ color: "text.secondary", mr: 1 }} />
+//                 ),
+//               }}
+//             />
+//           </Grid>
+//           <Grid item xs={12} md={4}>
+//             <CraftInputWithIcon
+//               fullWidth
+//               label="NID/Birth Reg. No"
+//               name="nidBirth"
+//               placeholder="1234567890"
+//               InputProps={{
+//                 startAdornment: (
+//                   <Description sx={{ color: "text.secondary", mr: 1 }} />
+//                 ),
+//               }}
+//             />
+//           </Grid>
+//           <Grid item xs={12} md={4}>
+//             <CraftSelectWithIcon
+//               name="bloodGroup"
+//               label="Blood Group"
+//               placeholder="Select Blood Group"
+//               items={bloodGroups}
+//               adornment={<Person color="action" />}
+//               size="medium"
+//             />
+//           </Grid>
+//           <Grid item xs={12} md={4}>
+//             <CraftInputWithIcon
+//               fullWidth
+//               label="Nationality"
+//               name="nationality"
+//               placeholder="Bangladeshi"
+//               InputProps={{
+//                 startAdornment: (
+//                   <Flag sx={{ color: "text.secondary", mr: 1 }} />
+//                 ),
+//               }}
+//             />
+//           </Grid>
+//         </Grid>
+//       </CardContent>
+//     </Card>
+//   );
+// };
+
+// // Step 2: Academic Information Component (separate from fee information)
+// const AcademicStep = ({ classOptions }: any) => {
+//   const theme = useTheme();
+//   return (
+//     <Card
+//       elevation={0}
+//       sx={{
+//         mb: 4,
+//         borderRadius: 4,
+//         overflow: "hidden",
+//         border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+//         background: `linear-gradient(135deg, ${alpha(
+//           theme.palette.primary.main,
+//           0.02
+//         )} 0%, ${alpha(theme.palette.secondary.main, 0.02)} 100%)`,
+//       }}
+//     >
+//       <Box
+//         sx={{
+//           background: `linear-gradient(135deg, ${theme.palette.secondary.main} 0%, ${theme.palette.secondary.dark} 100%)`,
+//           p: 3,
+//           color: "white",
+//         }}
+//       >
+//         <Box sx={{ display: "flex", alignItems: "center" }}>
+//           <SchoolIcon sx={{ fontSize: 32, mr: 2 }} />
+//           <Typography variant="h5" fontWeight="bold">
+//             Academic Information
+//           </Typography>
+//         </Box>
+//       </Box>
+//       <CardContent sx={{ p: 3 }}>
+//         <Grid container spacing={3}>
+//           <Grid item xs={12} md={4}>
+//             <CraftIntAutoCompleteWithIcon
+//               name="className"
+//               label={
+//                 <span>
+//                   Class <span style={{ color: "red" }}>*</span>
+//                 </span>
+//               }
+//               placeholder="Select Class"
+//               options={classOptions}
+//               fullWidth
+//               multiple
+//               icon={<Class color="primary" />}
+//             />
+//           </Grid>
+//           <Grid item xs={12} md={4}>
+//             <CraftInputWithIcon
+//               fullWidth
+//               label="Roll Number"
+//               name="rollNumber"
+//               placeholder="Enter Roll No"
+//               InputProps={{
+//                 startAdornment: (
+//                   <Class sx={{ color: "text.secondary", mr: 1 }} />
+//                 ),
+//               }}
+//             />
+//           </Grid>
+//           <Grid item xs={12} md={4}>
+//             <CraftSelectWithIcon
+//               name="section"
+//               label="Section"
+//               items={["A", "B", "C"]}
+//               adornment={<Group />}
+//               size="medium"
+//             />
+//           </Grid>
+//           <Grid item xs={12} md={4}>
+//             <CraftSelectWithIcon
+//               name="group"
+//               label="Group"
+//               items={["Science", "Commerce", "Arts"]}
+//               adornment={<School />}
+//               size="medium"
+//             />
+//           </Grid>
+//           <Grid item xs={12} md={6}>
+//             <CraftInputWithIcon
+//               fullWidth
+//               label="Optional Subject"
+//               name="optionalSubject"
+//               placeholder="e.g. Higher Math / ICT"
+//               InputProps={{
+//                 startAdornment: (
+//                   <Book sx={{ color: "text.secondary", mr: 1 }} />
+//                 ),
+//               }}
+//             />
+//           </Grid>
+//           <Grid item xs={12} md={6}>
+//             <CraftSelectWithIcon
+//               name="shift"
+//               label="Shift"
+//               items={["Morning", "Day", "Evening"]}
+//               adornment={<AccessTime />}
+//               size="medium"
+//             />
+//           </Grid>
+//         </Grid>
+//       </CardContent>
+//     </Card>
+//   );
+// };
+
+// // Step 3: Fee Information Component (separate from academic information)
+// const FeeStep = ({
+//   classOptions,
+//   feeCategoryOptions,
+//   feeCategoryData,
+// }: any) => {
+//   const theme = useTheme();
+//   const { watch } = useFormContext();
+//   const mainClassName = watch("className");
+
+//   return (
+//     <>
+//       <Alert
+//         severity="info"
+//         sx={{
+//           mb: 3,
+//           borderRadius: 2,
+//           bgcolor: alpha(theme.palette.info.main, 0.1),
+//           color: theme.palette.info.dark,
+//           "& .MuiAlert-icon": {
+//             color: theme.palette.info.main,
+//           },
+//         }}
+//       >
+//         Fee types and amounts are automatically populated based on the class
+//         selected in the Academic Information step.
+//       </Alert>
+
+//       <DynamicFeeFields
+//         classOptions={classOptions}
+//         feeCategoryOptions={feeCategoryOptions}
+//         feeCategoryData={feeCategoryData}
+//       />
+//     </>
+//   );
+// };
+
+// // Step 4: Parent and Guardian Information Component (without animations)
+// const ParentGuardianStep = () => {
+//   const theme = useTheme();
+//   return (
+//     <Card
+//       elevation={0}
+//       sx={{
+//         mb: 4,
+//         borderRadius: 4,
+//         overflow: "hidden",
+//         border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+//         background: `linear-gradient(135deg, ${alpha(
+//           theme.palette.primary.main,
+//           0.02
+//         )} 0%, ${alpha(theme.palette.secondary.main, 0.02)} 100%)`,
+//       }}
+//     >
+//       <Box
+//         sx={{
+//           background: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.dark} 100%)`,
+//           p: 3,
+//           color: "white",
+//         }}
+//       >
+//         <Box sx={{ display: "flex", alignItems: "center" }}>
+//           <FamilyRestroom sx={{ fontSize: 32, mr: 2 }} />
+//           <Typography variant="h5" fontWeight="bold">
+//             Parent & Guardian Information
+//           </Typography>
+//         </Box>
+//       </Box>
+//       <CardContent sx={{ p: 3 }}>
+//         <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
+//           Father's Information
+//         </Typography>
+//         <Grid container spacing={3} mb={4}>
+//           <Grid item xs={12} md={6}>
+//             <CraftInputWithIcon
+//               fullWidth
+//               label="Father's Name"
+//               name="fatherName"
+//               placeholder="Full Name"
+//               InputProps={{
+//                 startAdornment: (
+//                   <Person sx={{ color: "text.secondary", mr: 1 }} />
+//                 ),
+//               }}
+//             />
+//           </Grid>
+//           <Grid item xs={12} md={6}>
+//             <CraftInputWithIcon
+//               fullWidth
+//               label="Mobile"
+//               name="fatherMobile"
+//               placeholder="01XXXXXXXXX"
+//               InputProps={{
+//                 startAdornment: (
+//                   <Phone sx={{ color: "text.secondary", mr: 1 }} />
+//                 ),
+//               }}
+//             />
+//           </Grid>
+//           <Grid item xs={12} md={4}>
+//             <CraftInputWithIcon
+//               fullWidth
+//               label="NID/Passport No"
+//               name="fatherNid"
+//               placeholder="1234567890"
+//               InputProps={{
+//                 startAdornment: (
+//                   <Description sx={{ color: "text.secondary", mr: 1 }} />
+//                 ),
+//               }}
+//             />
+//           </Grid>
+//           <Grid item xs={12} md={4}>
+//             <CraftInputWithIcon
+//               fullWidth
+//               label="Profession"
+//               name="fatherProfession"
+//               placeholder="Occupation"
+//               InputProps={{
+//                 startAdornment: (
+//                   <Work sx={{ color: "text.secondary", mr: 1 }} />
+//                 ),
+//               }}
+//             />
+//           </Grid>
+//           <Grid item xs={12} md={4}>
+//             <CraftInputWithIcon
+//               fullWidth
+//               label="Monthly Income"
+//               name="fatherIncome"
+//               placeholder="BDT"
+//               type="number"
+//               InputProps={{
+//                 startAdornment: (
+//                   <Work sx={{ color: "text.secondary", mr: 1 }} />
+//                 ),
+//               }}
+//             />
+//           </Grid>
+//         </Grid>
+
+//         <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
+//           Mother's Information
+//         </Typography>
+//         <Grid container spacing={3} mb={4}>
+//           <Grid item xs={12} md={6}>
+//             <CraftInputWithIcon
+//               fullWidth
+//               label="Mother's Name"
+//               name="motherName"
+//               placeholder="Full Name"
+//               InputProps={{
+//                 startAdornment: (
+//                   <Person sx={{ color: "text.secondary", mr: 1 }} />
+//                 ),
+//               }}
+//             />
+//           </Grid>
+//           <Grid item xs={12} md={6}>
+//             <CraftInputWithIcon
+//               fullWidth
+//               label="Mobile"
+//               name="motherMobile"
+//               placeholder="01XXXXXXXXX"
+//               InputProps={{
+//                 startAdornment: (
+//                   <Phone sx={{ color: "text.secondary", mr: 1 }} />
+//                 ),
+//               }}
+//             />
+//           </Grid>
+//           <Grid item xs={12} md={4}>
+//             <CraftInputWithIcon
+//               fullWidth
+//               label="NID/Passport No"
+//               name="motherNid"
+//               placeholder="1234567890"
+//               InputProps={{
+//                 startAdornment: (
+//                   <Description sx={{ color: "text.secondary", mr: 1 }} />
+//                 ),
+//               }}
+//             />
+//           </Grid>
+//           <Grid item xs={12} md={4}>
+//             <CraftInputWithIcon
+//               fullWidth
+//               label="Profession"
+//               name="motherProfession"
+//               placeholder="Occupation"
+//               InputProps={{
+//                 startAdornment: (
+//                   <Work sx={{ color: "text.secondary", mr: 1 }} />
+//                 ),
+//               }}
+//             />
+//           </Grid>
+//           <Grid item xs={12} md={4}>
+//             <CraftInputWithIcon
+//               fullWidth
+//               label="Monthly Income"
+//               name="motherIncome"
+//               placeholder="BDT"
+//               type="number"
+//               InputProps={{
+//                 startAdornment: (
+//                   <Work sx={{ color: "text.secondary", mr: 1 }} />
+//                 ),
+//               }}
+//             />
+//           </Grid>
+//         </Grid>
+
+//         <Typography variant="h6" gutterBottom>
+//           Guardian Information
+//         </Typography>
+//         <Grid container spacing={3}>
+//           <Grid item xs={12} md={4}>
+//             <CraftInputWithIcon
+//               fullWidth
+//               label="Guardian Name"
+//               name="guardianName"
+//               placeholder="Guardian Name"
+//               InputProps={{
+//                 startAdornment: (
+//                   <Person sx={{ color: "text.secondary", mr: 1 }} />
+//                 ),
+//               }}
+//             />
+//           </Grid>
+//           <Grid item xs={12} md={4}>
+//             <CraftInputWithIcon
+//               fullWidth
+//               label="Relation"
+//               name="guardianRelation"
+//               placeholder="Relation"
+//               InputProps={{
+//                 startAdornment: (
+//                   <Person sx={{ color: "text.secondary", mr: 1 }} />
+//                 ),
+//               }}
+//             />
+//           </Grid>
+//           <Grid item xs={12} md={4}>
+//             <CraftInputWithIcon
+//               fullWidth
+//               label="Mobile"
+//               name="guardianMobile"
+//               placeholder="01XXXXXXXXX"
+//               InputProps={{
+//                 startAdornment: (
+//                   <Phone sx={{ color: "text.secondary", mr: 1 }} />
+//                 ),
+//               }}
+//             />
+//           </Grid>
+//           <Grid item xs={12}>
+//             <CraftInputWithIcon
+//               fullWidth
+//               label="Address"
+//               name="guardianVillage"
+//               placeholder="Address"
+//               InputProps={{
+//                 startAdornment: (
+//                   <Description sx={{ color: "text.secondary", mr: 1 }} />
+//                 ),
+//               }}
+//             />
+//           </Grid>
+//         </Grid>
+//       </CardContent>
+//     </Card>
+//   );
+// };
+
+// // Document Checkbox Component
+// const DocumentCheckbox = ({ name, label }: { name: string; label: string }) => {
+//   const { watch, setValue } = useFormContext();
+//   const isChecked = watch(name) || false;
+
+//   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+//     setValue(name, event.target.checked);
+//   };
+
+//   return (
+//     <FormControlLabel
+//       control={
+//         <Checkbox
+//           checked={isChecked}
+//           onChange={handleChange}
+//           name={name}
+//           color="primary"
+//         />
+//       }
+//       label={label}
+//       sx={{ mb: 1 }}
+//     />
+//   );
+// };
+
+// // Step 5: Address, Documents, and Terms Component (updated with switches/checkboxes)
+// const AddressDocumentsStep = () => {
+//   const theme = useTheme();
+//   const { watch, setValue } = useFormContext();
+//   const termsAccepted = watch("termsAccepted") || false;
+
+//   const handleTermsChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+//     setValue("termsAccepted", event.target.checked);
+//   };
+
+//   return (
+//     <>
+//       {/* Address Information */}
+//       <Card
+//         elevation={0}
+//         sx={{
+//           mb: 4,
+//           borderRadius: 4,
+//           overflow: "hidden",
+//           border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+//           background: `linear-gradient(135deg, ${alpha(
+//             theme.palette.primary.main,
+//             0.02
+//           )} 0%, ${alpha(theme.palette.secondary.main, 0.02)} 100%)`,
+//         }}
+//       >
+//         <Box
+//           sx={{
+//             background: `linear-gradient(135deg, ${theme.palette.info.main} 0%, ${theme.palette.info.dark} 100%)`,
+//             p: 3,
+//             color: "white",
+//           }}
+//         >
+//           <Box sx={{ display: "flex", alignItems: "center" }}>
+//             <Home sx={{ fontSize: 32, mr: 2 }} />
+//             <Typography variant="h5" fontWeight="bold">
+//               Address Information
+//             </Typography>
+//           </Box>
+//         </Box>
+//         <CardContent sx={{ p: 3 }}>
+//           <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
+//             Present Address
+//           </Typography>
+//           <Grid container spacing={3} mb={4}>
+//             <Grid item xs={12} md={4}>
+//               <CraftInputWithIcon
+//                 fullWidth
+//                 label="Village/Area"
+//                 name="village"
+//                 placeholder="Village/Area"
+//                 InputProps={{
+//                   startAdornment: (
+//                     <Description sx={{ color: "text.secondary", mr: 1 }} />
+//                   ),
+//                 }}
+//               />
+//             </Grid>
+//             <Grid item xs={12} md={4}>
+//               <CraftInputWithIcon
+//                 fullWidth
+//                 label="Post Office"
+//                 name="postOffice"
+//                 placeholder="Post Office"
+//                 InputProps={{
+//                   startAdornment: (
+//                     <Description sx={{ color: "text.secondary", mr: 1 }} />
+//                   ),
+//                 }}
+//               />
+//             </Grid>
+//             <Grid item xs={12} md={4}>
+//               <CraftInputWithIcon
+//                 fullWidth
+//                 label="Post Code"
+//                 name="postCode"
+//                 placeholder="Post Code"
+//                 InputProps={{
+//                   startAdornment: (
+//                     <Description sx={{ color: "text.secondary", mr: 1 }} />
+//                   ),
+//                 }}
+//               />
+//             </Grid>
+//             <Grid item xs={12} md={6}>
+//               <CraftInputWithIcon
+//                 fullWidth
+//                 label="Police Station"
+//                 name="policeStation"
+//                 placeholder="Police Station"
+//                 InputProps={{
+//                   startAdornment: (
+//                     <Description sx={{ color: "text.secondary", mr: 1 }} />
+//                   ),
+//                 }}
+//               />
+//             </Grid>
+//             <Grid item xs={12} md={6}>
+//               <CraftInputWithIcon
+//                 fullWidth
+//                 label="District"
+//                 name="district"
+//                 placeholder="District"
+//                 InputProps={{
+//                   startAdornment: (
+//                     <Description sx={{ color: "text.secondary", mr: 1 }} />
+//                   ),
+//                 }}
+//               />
+//             </Grid>
+//           </Grid>
+
+//           <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
+//             Permanent Address
+//           </Typography>
+//           <Grid container spacing={3} mb={4}>
+//             <Grid item xs={12} md={4}>
+//               <CraftInputWithIcon
+//                 fullWidth
+//                 label="Village/Area"
+//                 name="permVillage"
+//                 placeholder="Village/Area"
+//                 InputProps={{
+//                   startAdornment: (
+//                     <Description sx={{ color: "text.secondary", mr: 1 }} />
+//                   ),
+//                 }}
+//               />
+//             </Grid>
+//             <Grid item xs={12} md={4}>
+//               <CraftInputWithIcon
+//                 fullWidth
+//                 label="Post Office"
+//                 name="permPostOffice"
+//                 placeholder="Post Office"
+//                 InputProps={{
+//                   startAdornment: (
+//                     <Description sx={{ color: "text.secondary", mr: 1 }} />
+//                   ),
+//                 }}
+//               />
+//             </Grid>
+//             <Grid item xs={12} md={4}>
+//               <CraftInputWithIcon
+//                 fullWidth
+//                 label="Post Code"
+//                 name="permPostCode"
+//                 placeholder="Post Code"
+//                 InputProps={{
+//                   startAdornment: (
+//                     <Description sx={{ color: "text.secondary", mr: 1 }} />
+//                   ),
+//                 }}
+//               />
+//             </Grid>
+//             <Grid item xs={12} md={6}>
+//               <CraftInputWithIcon
+//                 fullWidth
+//                 label="Police Station"
+//                 name="permPoliceStation"
+//                 placeholder="Police Station"
+//                 InputProps={{
+//                   startAdornment: (
+//                     <Description sx={{ color: "text.secondary", mr: 1 }} />
+//                   ),
+//                 }}
+//               />
+//             </Grid>
+//             <Grid item xs={12} md={6}>
+//               <CraftInputWithIcon
+//                 fullWidth
+//                 label="District"
+//                 name="permDistrict"
+//                 placeholder="District"
+//                 InputProps={{
+//                   startAdornment: (
+//                     <Description sx={{ color: "text.secondary", mr: 1 }} />
+//                   ),
+//                 }}
+//               />
+//             </Grid>
+//           </Grid>
+//         </CardContent>
+//       </Card>
+
+//       {/* Previous Education */}
+//       <Card
+//         elevation={0}
+//         sx={{
+//           mb: 4,
+//           borderRadius: 4,
+//           overflow: "hidden",
+//           border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+//           background: `linear-gradient(135deg, ${alpha(
+//             theme.palette.primary.main,
+//             0.02
+//           )} 0%, ${alpha(theme.palette.secondary.main, 0.02)} 100%)`,
+//         }}
+//       >
+//         <Box
+//           sx={{
+//             background: `linear-gradient(135deg, ${theme.palette.warning.main} 0%, ${theme.palette.warning.dark} 100%)`,
+//             p: 3,
+//             color: "white",
+//           }}
+//         >
+//           <Box sx={{ display: "flex", alignItems: "center" }}>
+//             <School sx={{ fontSize: 32, mr: 2 }} />
+//             <Typography variant="h5" fontWeight="bold">
+//               Previous Education
+//             </Typography>
+//           </Box>
+//         </Box>
+//         <CardContent sx={{ p: 3 }}>
+//           <Grid container spacing={3}>
+//             <Grid item xs={12} md={6}>
+//               <CraftInputWithIcon
+//                 fullWidth
+//                 label="Previous Institution"
+//                 name="formerInstitution"
+//                 placeholder="Previous Institution"
+//                 InputProps={{
+//                   startAdornment: (
+//                     <School sx={{ color: "text.secondary", mr: 1 }} />
+//                   ),
+//                 }}
+//               />
+//             </Grid>
+//             <Grid item xs={12} md={6}>
+//               <CraftInputWithIcon
+//                 fullWidth
+//                 label="Previous Address"
+//                 name="formerVillage"
+//                 placeholder="Previous Address"
+//                 InputProps={{
+//                   startAdornment: (
+//                     <Description sx={{ color: "text.secondary", mr: 1 }} />
+//                   ),
+//                 }}
+//               />
+//             </Grid>
+//           </Grid>
+//         </CardContent>
+//       </Card>
+
+//       {/* Documents - Updated with checkboxes */}
+//       <Card
+//         elevation={0}
+//         sx={{
+//           mb: 4,
+//           borderRadius: 4,
+//           overflow: "hidden",
+//           border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+//           background: `linear-gradient(135deg, ${alpha(
+//             theme.palette.primary.main,
+//             0.02
+//           )} 0%, ${alpha(theme.palette.secondary.main, 0.02)} 100%)`,
+//         }}
+//       >
+//         <Box
+//           sx={{
+//             background: `linear-gradient(135deg, ${theme.palette.error.main} 0%, ${theme.palette.error.dark} 100%)`,
+//             p: 3,
+//             color: "white",
+//           }}
+//         >
+//           <Box sx={{ display: "flex", alignItems: "center" }}>
+//             <DocumentIcon sx={{ fontSize: 32, mr: 2 }} />
+//             <Typography variant="h5" fontWeight="bold">
+//               Documents
+//             </Typography>
+//           </Box>
+//         </Box>
+//         <CardContent sx={{ p: 3 }}>
+//           <Typography variant="h6" gutterBottom sx={{ mb: 3 }}>
+//             Please check all documents that are provided:
+//           </Typography>
+//           <Grid container spacing={3}>
+//             <Grid item xs={12} md={6}>
+//               <Box
+//                 sx={{
+//                   p: 2,
+//                   border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+//                   borderRadius: 2,
+//                   bgcolor: alpha(theme.palette.background.paper, 0.5),
+//                 }}
+//               >
+//                 <DocumentCheckbox
+//                   name="birthCertificate"
+//                   label="Birth Certificate"
+//                 />
+//                 <DocumentCheckbox
+//                   name="transferCertificate"
+//                   label="Transfer Certificate"
+//                 />
+//                 <DocumentCheckbox
+//                   name="characterCertificate"
+//                   label="Character Certificate"
+//                 />
+//               </Box>
+//             </Grid>
+//             <Grid item xs={12} md={6}>
+//               <Box
+//                 sx={{
+//                   p: 2,
+//                   border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+//                   borderRadius: 2,
+//                   bgcolor: alpha(theme.palette.background.paper, 0.5),
+//                 }}
+//               >
+//                 <DocumentCheckbox name="markSheet" label="Mark Sheet" />
+//                 <DocumentCheckbox name="photographs" label="Photographs" />
+//               </Box>
+//             </Grid>
+//           </Grid>
+//         </CardContent>
+//       </Card>
+
+//       {/* Terms & Conditions - Updated with switch */}
+//       <Card
+//         elevation={0}
+//         sx={{
+//           mb: 4,
+//           borderRadius: 4,
+//           overflow: "hidden",
+//           border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+//           background: `linear-gradient(135deg, ${alpha(
+//             theme.palette.primary.main,
+//             0.02
+//           )} 0%, ${alpha(theme.palette.secondary.main, 0.02)} 100%)`,
+//         }}
+//       >
+//         <Box
+//           sx={{
+//             background: `linear-gradient(135deg, ${theme.palette.secondary.main} 0%, ${theme.palette.secondary.dark} 100%)`,
+//             p: 3,
+//             color: "white",
+//           }}
+//         >
+//           <Box sx={{ display: "flex", alignItems: "center" }}>
+//             <Check sx={{ fontSize: 32, mr: 2 }} />
+//             <Typography variant="h5" fontWeight="bold">
+//               Terms & Conditions
+//             </Typography>
+//           </Box>
+//         </Box>
+//         <CardContent sx={{ p: 3 }}>
+//           <Box
+//             sx={{
+//               p: 3,
+//               border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+//               borderRadius: 2,
+//               bgcolor: alpha(theme.palette.background.paper, 0.5),
+//             }}
+//           >
+//             <Typography variant="body1" gutterBottom>
+//               By enrolling at Craft International Institute, you agree to the
+//               following terms and conditions:
+//             </Typography>
+//             <Box component="ul" sx={{ pl: 3, mb: 3 }}>
+//               <Typography component="li" variant="body2" sx={{ mb: 1 }}>
+//                 All provided information is accurate and complete
+//               </Typography>
+//               <Typography component="li" variant="body2" sx={{ mb: 1 }}>
+//                 Student will abide by all school rules and regulations
+//               </Typography>
+//               <Typography component="li" variant="body2" sx={{ mb: 1 }}>
+//                 Fees must be paid on time as per the school's fee schedule
+//               </Typography>
+//               <Typography component="li" variant="body2" sx={{ mb: 1 }}>
+//                 The school reserves the right to take disciplinary action for
+//                 any violation of rules
+//               </Typography>
+//             </Box>
+//             <FormControlLabel
+//               control={
+//                 <Switch
+//                   checked={termsAccepted}
+//                   onChange={handleTermsChange}
+//                   name="termsAccepted"
+//                   color="primary"
+//                 />
+//               }
+//               label={
+//                 <Typography variant="body1" fontWeight="bold">
+//                   I accept the terms and conditions
+//                 </Typography>
+//               }
+//             />
+//           </Box>
+//         </CardContent>
+//       </Card>
+//     </>
+//   );
+// };
+
+// // Main EnrollmentForm Component with Stepper (without animations)
 // const EnrollmentForm = () => {
+//   const theme = useTheme();
 //   const limit = 100;
 //   const [page] = useState(0);
 //   const [searchTerm] = useState("");
@@ -811,6 +2376,7 @@
 
 //   const { classOptions, feeCategoryOptions, feeCategoryData } =
 //     useAcademicOption();
+
 //   const [createEnrollment] = useCreateEnrollmentMutation();
 //   const [updateEnrollment] = useUpdateEnrollmentMutation();
 //   const { data: singleEnrollment, isLoading: enrollmentLoading } =
@@ -828,6 +2394,36 @@
 //   const [submitting, setSubmitting] = useState(false);
 //   const [defaultValues, setDefaultValues] = useState<any>(null);
 //   const [formKey, setFormKey] = useState(0);
+//   const [activeStep, setActiveStep] = useState(0);
+
+//   // Steps for the stepper with icons
+//   const steps = [
+//     {
+//       label: "Student Information",
+//       icon: <AccountCircle />,
+//       description: "Personal details",
+//     },
+//     {
+//       label: "Academic Information",
+//       icon: <SchoolIcon />,
+//       description: "Academic details",
+//     },
+//     {
+//       label: "Fee Information",
+//       icon: <Payment />,
+//       description: "Fee details",
+//     },
+//     {
+//       label: "Parent & Guardian",
+//       icon: <FamilyRestroom />,
+//       description: "Family information",
+//     },
+//     {
+//       label: "Address & Documents",
+//       icon: <Home />,
+//       description: "Address and documents",
+//     },
+//   ];
 
 //   // Transform API data to form format when data loads
 //   useEffect(() => {
@@ -837,7 +2433,6 @@
 //       classOptions.length > 0 &&
 //       feeCategoryOptions.length > 0
 //     ) {
-//       console.log("Transforming enrollment data...");
 //       const transformedData = transformEnrollmentDataToForm(
 //         singleEnrollment,
 //         classOptions,
@@ -847,11 +2442,9 @@
 //       if (transformedData) {
 //         setDefaultValues(transformedData);
 //         setFormKey((prev) => prev + 1);
-//         console.log("Default values set:", transformedData);
 //       }
 //     } else if (!id) {
-//       // Set empty default values for new enrollment
-//       console.log("Setting empty default values for new enrollment");
+//       // Set empty default values for new enrollment - UPDATED WITH PERCENTAGE/FLAT SUPPORT
 //       setDefaultValues({
 //         studentNameBangla: "",
 //         studentPhoto: "",
@@ -899,18 +2492,30 @@
 //         guardianVillage: "",
 //         formerInstitution: "",
 //         formerVillage: "",
-//         birthCertificate: "No",
-//         transferCertificate: "No",
-//         characterCertificate: "No",
-//         markSheet: "No",
-//         photographs: "No",
-//         termsAccepted: "No",
+//         birthCertificate: false,
+//         transferCertificate: false,
+//         characterCertificate: false,
+//         markSheet: false,
+//         photographs: false,
+//         termsAccepted: false,
 //         fees: [
 //           {
 //             feeType: [],
 //             className: [],
 //             feeAmount: "",
 //             paidAmount: "",
+//             monthlyAmount: "",
+//             yearlyAmount: "",
+//             discountType: "flat", // NEW: Discount type
+//             discountValue: "0", // NEW: Discount value
+//             discountReason: "", // NEW: Reason for discount
+//             waiverType: "flat", // NEW: Waiver type
+//             waiverValue: "0", // NEW: Waiver value
+//             waiverReason: "", // NEW: Reason for waiver
+//             calculatedDiscount: "0", // NEW: Calculated discount amount
+//             calculatedWaiver: "0", // NEW: Calculated waiver amount
+//             dueAmount: "",
+//             paymentStatus: "unpaid",
 //           },
 //         ],
 //         admissionFee: 0,
@@ -918,26 +2523,23 @@
 //         studentIdSelect: null,
 //         studentNameSelect: null,
 //       });
+//       setFormKey((prev) => prev + 1);
 //     }
 //   }, [id, singleEnrollment, classOptions, feeCategoryOptions]);
 
-//   // In your handleSubmit function, fix the data transformation:
+//   // Handle Submit Function - UPDATED WITH PERCENTAGE/FLAT SUPPORT
 //   const handleSubmit = async (data: any) => {
 //     try {
 //       setSubmitting(true);
 
 //       const { studentIdSelect, studentNameSelect, ...submitData } = data;
-//       console.log("Form submission data:", submitData);
 
-//       // Fix: Ensure className is properly formatted as an array of ObjectIds
+//       // Class name processing
 //       const classNameArray =
 //         submitData.className && submitData.className.length > 0
 //           ? submitData.className
-//               .map((cls: any) => {
-//                 // Ensure we're getting the ObjectId value, not the label
-//                 return cls.value || cls;
-//               })
-//               .filter(Boolean) // Remove any null/undefined values
+//               .map((cls: any) => cls.value || cls)
+//               .filter(Boolean)
 //           : [];
 
 //       if (!classNameArray.length) {
@@ -946,7 +2548,7 @@
 //         return;
 //       }
 
-//       // Fix: Transform fees array properly
+//       // Fees processing with percentage/flat discount/waiver
 //       const transformedFees = Array.isArray(submitData.fees)
 //         ? submitData.fees
 //             .filter(
@@ -954,24 +2556,84 @@
 //                 fee.feeType &&
 //                 fee.feeType.length > 0 &&
 //                 fee.className &&
-//                 fee.className.length > 0
+//                 fee.className.length > 0 &&
+//                 fee.feeAmount && // Ensure fee amount exists
+//                 Number(fee.feeAmount) > 0 // Ensure fee amount is greater than 0
 //             )
-//             .map((fee: any) => ({
-//               feeType: fee.feeType[0]?.value || fee.feeType[0] || "",
-//               className: fee.className[0]?.value || fee.className[0] || "",
-//               feeAmount: Number(fee.feeAmount) || 0,
-//               paidAmount: Number(fee.paidAmount) || 0,
-//             }))
+//             .map((fee: any) => {
+//               const feeType = fee.feeType[0]?.label || fee.feeType[0] || "";
+//               const className =
+//                 fee.className[0]?.label || fee.className[0] || "";
+//               const feeAmount = Number(fee.feeAmount) || 0;
+//               const paidAmount = Number(fee.paidAmount) || 0;
+
+//               // Calculate discount amount based on type
+//               let discountAmount = 0;
+//               if (fee.discountType === "percentage") {
+//                 discountAmount = Math.min(
+//                   (feeAmount * Number(fee.discountValue || 0)) / 100,
+//                   feeAmount
+//                 );
+//               } else {
+//                 discountAmount = Math.min(
+//                   Number(fee.discountValue || 0),
+//                   feeAmount
+//                 );
+//               }
+
+//               // Calculate waiver amount based on type
+//               let waiverAmount = 0;
+//               if (fee.waiverType === "percentage") {
+//                 waiverAmount = Math.min(
+//                   (feeAmount * Number(fee.waiverValue || 0)) / 100,
+//                   feeAmount
+//                 );
+//               } else {
+//                 waiverAmount = Math.min(
+//                   Number(fee.waiverValue || 0),
+//                   feeAmount
+//                 );
+//               }
+
+//               // Validate that discount + waiver doesn't exceed fee amount
+//               if (discountAmount + waiverAmount > feeAmount) {
+//                 throw new Error(
+//                   `Total adjustments (${discountAmount + waiverAmount}) cannot exceed fee amount (${feeAmount}) for ${feeType}`
+//                 );
+//               }
+
+//               return {
+//                 feeType: feeType,
+//                 className: className,
+//                 feeAmount: feeAmount,
+//                 paidAmount: paidAmount,
+//                 discount: discountAmount, // Final calculated discount amount
+//                 discountType: fee.discountType || "flat", // NEW: Discount type
+//                 discountValue: fee.discountValue || "0", // NEW: Discount value
+//                 discountReason: fee.discountReason || "", // NEW: Reason for discount
+//                 waiver: waiverAmount, // Final calculated waiver amount
+//                 waiverType: fee.waiverType || "flat", // NEW: Waiver type
+//                 waiverValue: fee.waiverValue || "0", // NEW: Waiver value
+//                 waiverReason: fee.waiverReason || "", // NEW: Reason for waiver
+//                 monthlyAmount: fee.monthlyAmount || "",
+//                 isYearlyFee: fee.isYearlyFee || false,
+//               };
+//             })
 //         : [];
 
-//       // Fix: Transform boolean fields properly
+//       // Make sure we have at least one valid fee
+//       if (transformedFees.length === 0) {
+//         toast.error("At least one valid fee entry is required");
+//         setSubmitting(false);
+//         return;
+//       }
+
+//       // Boolean transformation - Updated for checkboxes/switches
 //       const transformBoolean = (value: any) => {
-//         if (value === "Yes") return true;
-//         if (value === "No") return false;
 //         return Boolean(value);
 //       };
 
-//       // Fix: Create the final submission data with proper structure
+//       // Final submission data
 //       const finalSubmitData: any = {
 //         // Student Information
 //         studentName: submitData.studentName || "",
@@ -991,9 +2653,9 @@
 //         className: classNameArray,
 //         section: submitData.section || "",
 //         roll: submitData.rollNumber || "",
-//         session: submitData.session || "",
+//         session: submitData.session || new Date().getFullYear().toString(),
 //         batch: submitData.group || "",
-//         studentType: submitData.category || "",
+//         studentType: submitData.category || "residential",
 //         studentDepartment: submitData.studentDepartment || "hifz",
 
 //         // Parent Information
@@ -1011,7 +2673,7 @@
 //         motherProfession: submitData.motherProfession || "",
 //         motherIncome: Number(submitData.motherIncome) || 0,
 
-//         // Fix: Address objects with proper structure
+//         // Address Information
 //         presentAddress: {
 //           village: submitData.village || "",
 //           postOffice: submitData.postOffice || "",
@@ -1042,7 +2704,7 @@
 //           address: submitData.formerVillage || "",
 //         },
 
-//         // Documents
+//         // Documents - Updated for boolean values
 //         documents: {
 //           birthCertificate: transformBoolean(submitData.birthCertificate),
 //           transferCertificate: transformBoolean(submitData.transferCertificate),
@@ -1053,13 +2715,13 @@
 //           photographs: transformBoolean(submitData.photographs),
 //         },
 
-//         // Fees
+//         // Fees - INCLUDES PERCENTAGE/FLAT DISCOUNT/WAIVER
 //         fees: transformedFees,
 
-//         // Terms & Conditions
+//         // Terms & Conditions - Updated for boolean value
 //         termsAccepted: transformBoolean(submitData.termsAccepted),
 
-//         // Additional fee information
+//         // Additional Information
 //         admissionFee: Number(submitData.admissionFee) || 0,
 //         monthlyFee: Number(submitData.monthlyFee) || 0,
 //       };
@@ -1068,17 +2730,17 @@
 //       Object.keys(finalSubmitData).forEach((key) => {
 //         if (finalSubmitData[key] && typeof finalSubmitData[key] === "object") {
 //           const obj = finalSubmitData[key];
-//           const isEmpty = Object.keys(obj).every((subKey) => !obj[subKey]);
+//           const isEmpty = Object.keys(obj).every(
+//             (subKey) =>
+//               obj[subKey] === undefined ||
+//               obj[subKey] === null ||
+//               obj[subKey] === ""
+//           );
 //           if (isEmpty) {
 //             delete finalSubmitData[key];
 //           }
 //         }
 //       });
-
-//       console.log(
-//         "Final submission data:",
-//         JSON.stringify(finalSubmitData, null, 2)
-//       );
 
 //       let res;
 //       if (id) {
@@ -1087,8 +2749,8 @@
 //         res = await createEnrollment(finalSubmitData).unwrap();
 //       }
 
-//       if (res.success) {
-//         toast.success(res.message || "Student enrolled successfully");
+//       if (res?.success) {
+//         toast?.success(res?.message || "Student enrolled successfully");
 //         setTimeout(() => {
 //           router.push("/dashboard/enrollments/list");
 //         }, 2000);
@@ -1096,863 +2758,314 @@
 //     } catch (err: any) {
 //       console.error("Submission error:", err);
 
+//       let errorMessage = "Failed to enroll student!";
+
+//       if (err?.data?.message) {
+//         errorMessage = err.data.message;
+//       } else if (err?.message) {
+//         errorMessage = err.message;
+//       }
+
 //       if (
-//         err?.data?.message?.includes("jwt") ||
-//         err?.message?.includes("jwt")
+//         errorMessage.includes("jwt") ||
+//         errorMessage.includes("auth") ||
+//         errorMessage.includes("token")
 //       ) {
 //         toast.error("Authentication failed. Please login again.");
 //         router.push("/login");
+//       } else if (errorMessage.includes("duplicate")) {
+//         toast.error("Student already exists with same mobile number or name");
+//       } else if (errorMessage.includes("cannot exceed fee amount")) {
+//         toast.error(errorMessage);
 //       } else {
-//         const errorMessage =
-//           err.data?.message || err.message || "Failed to enroll student!";
 //         toast.error(errorMessage);
 //       }
 //     } finally {
 //       setSubmitting(false);
 //     }
 //   };
-//   // Show loading state while data is being fetched
-//   if (
-//     (id && enrollmentLoading) ||
-//     !defaultValues ||
-//     classOptions.length === 0 ||
-//     feeCategoryOptions.length === 0
-//   ) {
+
+//   // Handle next step
+//   const handleNext = () => {
+//     setActiveStep((prevActiveStep) => prevActiveStep + 1);
+//   };
+
+//   // Handle back step
+//   const handleBack = () => {
+//     setActiveStep((prevActiveStep) => prevActiveStep - 1);
+//   };
+
+//   // Show loading state
+//   if ((id && enrollmentLoading) || !defaultValues) {
 //     return <LoadingState />;
 //   }
 
 //   return (
-//     <Box>
+//     <Box sx={{ bgcolor: alpha(theme.palette.background.default, 0.5) }}>
 //       <CraftForm
 //         key={formKey}
 //         onSubmit={handleSubmit}
 //         defaultValues={defaultValues}
 //       >
-//         <Container maxWidth="xl" sx={{ py: 3 }}>
+//         <Container maxWidth="xl" sx={{ py: 4 }}>
+//           {/* Header Section */}
 //           <Paper
-//             elevation={3}
+//             elevation={0}
 //             sx={{
-//               p: 3,
-//               mb: 3,
-//               borderRadius: 2,
+//               p: 4,
+//               mb: 4,
+//               borderRadius: 4,
+//               background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
+//               color: "white",
+//               position: "relative",
+//               overflow: "hidden",
+//               "&:before": {
+//                 content: '""',
+//                 position: "absolute",
+//                 top: 0,
+//                 left: 0,
+//                 right: 0,
+//                 bottom: 0,
+//                 background: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+//               },
 //             }}
 //           >
 //             <Box
 //               display="flex"
 //               justifyContent="space-between"
 //               alignItems="center"
+//               position="relative"
+//               zIndex={1}
 //             >
 //               <Box display="flex" alignItems="center">
-//                 <Avatar sx={{ bgcolor: "white", mr: 2, width: 56, height: 56 }}>
-//                   <School sx={{ color: "#3f51b5" }} />
+//                 <Avatar
+//                   sx={{
+//                     bgcolor: "white",
+//                     mr: 3,
+//                     width: 80,
+//                     height: 80,
+//                     boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
+//                   }}
+//                 >
+//                   <School
+//                     sx={{ color: theme.palette.primary.main, fontSize: 40 }}
+//                   />
 //                 </Avatar>
 //                 <Box>
-//                   <Typography variant="h4" sx={{ mb: 0.5 }}>
+//                   <Typography variant="h3" sx={{ mb: 1, fontWeight: "bold" }}>
 //                     Craft International Institute
 //                   </Typography>
-//                   <Typography variant="subtitle1">
+//                   <Typography variant="h6" sx={{ opacity: 0.9 }}>
 //                     226, Narayanhat Sadar, Narayanganj
 //                   </Typography>
 //                 </Box>
 //               </Box>
-//               <FileUploadWithIcon name="studentPhoto" label="Student Photo" />
+//               <Box sx={{ textAlign: "right" }}>
+//                 <FileUploadWithIcon name="studentPhoto" label="Student Photo" />
+//               </Box>
 //             </Box>
 //             <Typography
-//               variant="h4"
+//               variant="h3"
 //               align="center"
-//               sx={{ mt: 2, fontWeight: "bold" }}
+//               sx={{ mt: 4, fontWeight: "bold" }}
 //             >
 //               {id ? "UPDATE ENROLLMENT" : "ADMISSION FORM"}
 //             </Typography>
 //           </Paper>
 
-//           {/* Pass classOptions to StudentSelector */}
+//           {/* Student Selector */}
 //           <StudentSelector
 //             studentData={studentData}
 //             classOptions={classOptions}
 //           />
 
-//           {/* Student Information */}
-//           <Card elevation={2} sx={{ mb: 3, borderRadius: 2 }}>
-//             <CardContent sx={{ p: 3 }}>
-//               <Typography variant="h6" gutterBottom>
-//                 Student Information (বাংলায়)
-//               </Typography>
-//               <Grid container spacing={3} mb={3}>
-//                 <Grid item xs={12} md={4}>
-//                   <CraftInputWithIcon
-//                     fullWidth
-//                     label={
-//                       <span>
-//                         Student Name <span style={{ color: "red" }}>*</span>
-//                       </span>
-//                     }
-//                     name="studentNameBangla"
-//                     placeholder="Student Name (বাংলায়)"
-//                     InputProps={{
-//                       startAdornment: (
-//                         <Person sx={{ color: "text.secondary", mr: 1 }} />
-//                       ),
+//           {/* Custom Stepper */}
+//           <Paper
+//             elevation={0}
+//             sx={{
+//               p: 3,
+//               mb: 4,
+//               borderRadius: 4,
+//               background: `linear-gradient(135deg, ${alpha(
+//                 theme.palette.background.paper,
+//                 0.9
+//               )} 0%, ${alpha(theme.palette.background.paper, 0.7)} 100%)`,
+//               boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
+//               border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+//             }}
+//           >
+//             <Box sx={{ width: "100%" }}>
+//               <Box
+//                 sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}
+//               >
+//                 {steps.map((step, index) => (
+//                   <Box
+//                     key={index}
+//                     sx={{
+//                       display: "flex",
+//                       flexDirection: "column",
+//                       alignItems: "center",
+//                       width: "20%",
 //                     }}
-//                   />
-//                 </Grid>
+//                   >
+//                     <Box
+//                       sx={{
+//                         display: "flex",
+//                         alignItems: "center",
+//                         justifyContent: "center",
+//                         width: 56,
+//                         height: 56,
+//                         borderRadius: "50%",
+//                         bgcolor:
+//                           index <= activeStep
+//                             ? theme.palette.primary.main
+//                             : alpha(theme.palette.text.secondary, 0.2),
+//                         color: index <= activeStep ? "white" : "text.secondary",
+//                         mb: 1,
+//                         boxShadow:
+//                           index === activeStep
+//                             ? "0 4px 10px rgba(0,0,0,0.2)"
+//                             : "none",
+//                       }}
+//                     >
+//                       {step.icon}
+//                     </Box>
+//                     <Typography
+//                       variant="body2"
+//                       align="center"
+//                       sx={{
+//                         fontWeight: index === activeStep ? "bold" : "normal",
+//                         color:
+//                           index <= activeStep
+//                             ? theme.palette.primary.main
+//                             : "text.secondary",
+//                       }}
+//                     >
+//                       {step.label}
+//                     </Typography>
+//                     <Typography
+//                       variant="caption"
+//                       align="center"
+//                       color="text.secondary"
+//                       sx={{ mt: 0.5 }}
+//                     >
+//                       {step.description}
+//                     </Typography>
+//                   </Box>
+//                 ))}
+//               </Box>
+//               <LinearProgress
+//                 variant="determinate"
+//                 value={(activeStep / (steps.length - 1)) * 100}
+//                 sx={{
+//                   height: 8,
+//                   borderRadius: 4,
+//                   bgcolor: alpha(theme.palette.primary.main, 0.1),
+//                   "& .MuiLinearProgress-bar": {
+//                     borderRadius: 4,
+//                     background: `linear-gradient(90deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+//                   },
+//                 }}
+//               />
+//             </Box>
+//           </Paper>
 
-//                 <Grid item xs={12} md={4}>
-//                   <CraftInputWithIcon
-//                     fullWidth
-//                     label={
-//                       <span>
-//                         Father's Name<span style={{ color: "red" }}>*</span>
-//                       </span>
-//                     }
-//                     name="fatherNameBangla"
-//                     placeholder="Father's Name (বাংলায়)"
-//                     InputProps={{
-//                       startAdornment: (
-//                         <Person sx={{ color: "text.secondary", mr: 1 }} />
-//                       ),
-//                     }}
-//                   />
-//                 </Grid>
-//                 <Grid item xs={12} md={4}>
-//                   <CraftInputWithIcon
-//                     fullWidth
-//                     label={
-//                       <span>
-//                         Mother's Name<span style={{ color: "red" }}>*</span>
-//                       </span>
-//                     }
-//                     name="motherNameBangla"
-//                     placeholder="Mother's Name (বাংলায়)"
-//                     InputProps={{
-//                       startAdornment: (
-//                         <Person sx={{ color: "text.secondary", mr: 1 }} />
-//                       ),
-//                     }}
-//                   />
-//                 </Grid>
-//               </Grid>
+//           {/* Step Content */}
+//           <Box>
+//             {activeStep === 0 && <StudentInformationStep />}
+//             {activeStep === 1 && <AcademicStep classOptions={classOptions} />}
+//             {activeStep === 2 && (
+//               <FeeStep
+//                 classOptions={classOptions}
+//                 feeCategoryOptions={feeCategoryOptions}
+//                 feeCategoryData={feeCategoryData}
+//               />
+//             )}
+//             {activeStep === 3 && <ParentGuardianStep />}
+//             {activeStep === 4 && <AddressDocumentsStep />}
+//           </Box>
 
-//               <Alert severity="info" sx={{ mb: 3 }}>
-//                 All information below must be filled in English
-//               </Alert>
-
-//               <Typography variant="h6" gutterBottom>
-//                 Personal Information
-//               </Typography>
-//               <Grid container spacing={3}>
-//                 <Grid item xs={12} md={6}>
-//                   <CraftInputWithIcon
-//                     fullWidth
-//                     label={
-//                       <span>
-//                         Student Name<span style={{ color: "red" }}>*</span>
-//                       </span>
-//                     }
-//                     name="studentName"
-//                     placeholder="Full Name in English"
-//                     InputProps={{
-//                       startAdornment: (
-//                         <Person sx={{ color: "text.secondary", mr: 1 }} />
-//                       ),
-//                     }}
-//                   />
-//                 </Grid>
-//                 <Grid item xs={12} md={6}>
-//                   <CraftInputWithIcon
-//                     fullWidth
-//                     label="Mobile No."
-//                     name="mobileNo"
-//                     placeholder="01XXXXXXXXX"
-//                     InputProps={{
-//                       startAdornment: (
-//                         <Phone sx={{ color: "text.secondary", mr: 1 }} />
-//                       ),
-//                     }}
-//                   />
-//                 </Grid>
-
-//                 <Grid item xs={12} md={4}>
-//                   <CraftInputWithIcon
-//                     fullWidth
-//                     label="Session"
-//                     name="session"
-//                     placeholder="2024-2025"
-//                     InputProps={{
-//                       startAdornment: (
-//                         <CalendarMonth
-//                           sx={{ color: "text.secondary", mr: 1 }}
-//                         />
-//                       ),
-//                     }}
-//                   />
-//                 </Grid>
-//                 <Grid item xs={12} md={4}>
-//                   <CraftSelectWithIcon
-//                     fullWidth
-//                     label={
-//                       <span>
-//                         Category <span style={{ color: "red" }}>*</span>
-//                       </span>
-//                     }
-//                     name="category"
-//                     items={["day_care", "residential", "non_residential"]}
-//                     size="medium"
-//                     adornment={<CalendarMonth />}
-//                   />
-//                 </Grid>
-//                 <Grid item xs={12} md={4}>
-//                   <CraftSelectWithIcon
-//                     name="studentDepartment"
-//                     size="medium"
-//                     label={
-//                       <span>
-//                         Student Department
-//                         <span style={{ color: "red" }}>*</span>
-//                       </span>
-//                     }
-//                     placeholder="Student Department"
-//                     items={["hifz", "academic"]}
-//                     adornment={<Person color="action" />}
-//                   />
-//                 </Grid>
-//                 <Grid item xs={12} md={4}>
-//                   <CraftInputWithIcon
-//                     fullWidth
-//                     label="Date of Birth"
-//                     name="dateOfBirth"
-//                     type="date"
-//                     InputProps={{
-//                       startAdornment: (
-//                         <Cake sx={{ color: "text.secondary", mr: 1 }} />
-//                       ),
-//                     }}
-//                   />
-//                 </Grid>
-//                 <Grid item xs={12} md={4}>
-//                   <CraftInputWithIcon
-//                     fullWidth
-//                     label="NID/Birth Reg. No"
-//                     name="nidBirth"
-//                     placeholder="1234567890"
-//                     InputProps={{
-//                       startAdornment: (
-//                         <Description sx={{ color: "text.secondary", mr: 1 }} />
-//                       ),
-//                     }}
-//                   />
-//                 </Grid>
-//                 <Grid item xs={12} md={4}>
-//                   <CraftSelectWithIcon
-//                     name="bloodGroup"
-//                     label="Blood Group"
-//                     placeholder="Select Blood Group"
-//                     items={bloodGroups}
-//                     adornment={<Person color="action" />}
-//                     size="medium"
-//                   />
-//                 </Grid>
-//                 <Grid item xs={12} md={4}>
-//                   <CraftInputWithIcon
-//                     fullWidth
-//                     label="Nationality"
-//                     name="nationality"
-//                     placeholder="Bangladeshi"
-//                     InputProps={{
-//                       startAdornment: (
-//                         <Flag sx={{ color: "text.secondary", mr: 1 }} />
-//                       ),
-//                     }}
-//                   />
-//                 </Grid>
-//               </Grid>
-//             </CardContent>
-//           </Card>
-
-//           {/* Academic Information */}
-//           <Card elevation={2} sx={{ mb: 3, borderRadius: 2 }}>
-//             <CardContent sx={{ p: 3 }}>
-//               <Typography variant="h6" gutterBottom>
-//                 Academic Information
-//               </Typography>
-//               <Grid container spacing={3}>
-//                 <Grid item xs={12} md={4}>
-//                   <CraftIntAutoCompleteWithIcon
-//                     name="className"
-//                     label={
-//                       <span>
-//                         Class <span style={{ color: "red" }}>*</span>
-//                       </span>
-//                     }
-//                     placeholder="Select Class"
-//                     options={classOptions}
-//                     fullWidth
-//                     multiple
-//                     icon={<Class color="primary" />}
-//                   />
-//                 </Grid>
-//                 <Grid item xs={12} md={4}>
-//                   <CraftInputWithIcon
-//                     fullWidth
-//                     label="Roll Number"
-//                     name="rollNumber"
-//                     placeholder="Enter Roll No"
-//                     InputProps={{
-//                       startAdornment: (
-//                         <Class sx={{ color: "text.secondary", mr: 1 }} />
-//                       ),
-//                     }}
-//                   />
-//                 </Grid>
-//                 <Grid item xs={12} md={4}>
-//                   <CraftSelectWithIcon
-//                     name="section"
-//                     label="Section"
-//                     items={["A", "B", "C"]}
-//                     adornment={<Group />}
-//                     size="medium"
-//                   />
-//                 </Grid>
-//                 <Grid item xs={12} md={4}>
-//                   <CraftSelectWithIcon
-//                     name="group"
-//                     label="Group"
-//                     items={["Science", "Commerce", "Arts"]}
-//                     adornment={<School />}
-//                     size="medium"
-//                   />
-//                 </Grid>
-//                 <Grid item xs={12} md={6}>
-//                   <CraftInputWithIcon
-//                     fullWidth
-//                     label="Optional Subject"
-//                     name="optionalSubject"
-//                     placeholder="e.g. Higher Math / ICT"
-//                     InputProps={{
-//                       startAdornment: (
-//                         <Book sx={{ color: "text.secondary", mr: 1 }} />
-//                       ),
-//                     }}
-//                   />
-//                 </Grid>
-//                 <Grid item xs={12} md={6}>
-//                   <CraftSelectWithIcon
-//                     name="shift"
-//                     label="Shift"
-//                     items={["Morning", "Day", "Evening"]}
-//                     adornment={<AccessTime />}
-//                     size="medium"
-//                   />
-//                 </Grid>
-//               </Grid>
-//             </CardContent>
-//           </Card>
-
-//           {/* Dynamic Fee Fields */}
-//           <DynamicFeeFields
-//             feeCategoryData={feeCategoryData}
-//             classOptions={classOptions}
-//             feeCategoryOptions={feeCategoryOptions}
-//           />
-
-//           {/* Parent Information */}
-//           <Card elevation={2} sx={{ mb: 3, borderRadius: 2 }}>
-//             <CardContent sx={{ p: 3 }}>
-//               <Typography variant="h6" gutterBottom>
-//                 Parent Information
-//               </Typography>
-//               <Typography variant="subtitle1" mb={2}>
-//                 Father's Information
-//               </Typography>
-//               <Grid container spacing={3} mb={3}>
-//                 <Grid item xs={12} md={6}>
-//                   <CraftInputWithIcon
-//                     fullWidth
-//                     label="Father's Name"
-//                     name="fatherName"
-//                     placeholder="Full Name"
-//                     InputProps={{
-//                       startAdornment: (
-//                         <Person sx={{ color: "text.secondary", mr: 1 }} />
-//                       ),
-//                     }}
-//                   />
-//                 </Grid>
-//                 <Grid item xs={12} md={6}>
-//                   <CraftInputWithIcon
-//                     fullWidth
-//                     label="Mobile"
-//                     name="fatherMobile"
-//                     placeholder="01XXXXXXXXX"
-//                     InputProps={{
-//                       startAdornment: (
-//                         <Phone sx={{ color: "text.secondary", mr: 1 }} />
-//                       ),
-//                     }}
-//                   />
-//                 </Grid>
-//                 <Grid item xs={12} md={4}>
-//                   <CraftInputWithIcon
-//                     fullWidth
-//                     label="NID/Passport No"
-//                     name="fatherNid"
-//                     placeholder="1234567890"
-//                     InputProps={{
-//                       startAdornment: (
-//                         <Description sx={{ color: "text.secondary", mr: 1 }} />
-//                       ),
-//                     }}
-//                   />
-//                 </Grid>
-//                 <Grid item xs={12} md={4}>
-//                   <CraftInputWithIcon
-//                     fullWidth
-//                     label="Profession"
-//                     name="fatherProfession"
-//                     placeholder="Occupation"
-//                     InputProps={{
-//                       startAdornment: (
-//                         <Work sx={{ color: "text.secondary", mr: 1 }} />
-//                       ),
-//                     }}
-//                   />
-//                 </Grid>
-//                 <Grid item xs={12} md={4}>
-//                   <CraftInputWithIcon
-//                     fullWidth
-//                     label="Monthly Income"
-//                     name="fatherIncome"
-//                     placeholder="BDT"
-//                     InputProps={{
-//                       startAdornment: (
-//                         <Work sx={{ color: "text.secondary", mr: 1 }} />
-//                       ),
-//                     }}
-//                   />
-//                 </Grid>
-//               </Grid>
-
-//               <Typography variant="subtitle1" mb={2}>
-//                 Mother's Information
-//               </Typography>
-//               <Grid container spacing={3}>
-//                 <Grid item xs={12} md={6}>
-//                   <CraftInputWithIcon
-//                     fullWidth
-//                     label="Mother's Name"
-//                     name="motherName"
-//                     placeholder="Full Name"
-//                     InputProps={{
-//                       startAdornment: (
-//                         <Person sx={{ color: "text.secondary", mr: 1 }} />
-//                       ),
-//                     }}
-//                   />
-//                 </Grid>
-//                 <Grid item xs={12} md={6}>
-//                   <CraftInputWithIcon
-//                     fullWidth
-//                     label="Mobile"
-//                     name="motherMobile"
-//                     placeholder="01XXXXXXXXX"
-//                     InputProps={{
-//                       startAdornment: (
-//                         <Phone sx={{ color: "text.secondary", mr: 1 }} />
-//                       ),
-//                     }}
-//                   />
-//                 </Grid>
-//                 <Grid item xs={12} md={4}>
-//                   <CraftInputWithIcon
-//                     fullWidth
-//                     label="NID/Passport No"
-//                     name="motherNid"
-//                     placeholder="1234567890"
-//                     InputProps={{
-//                       startAdornment: (
-//                         <Description sx={{ color: "text.secondary", mr: 1 }} />
-//                       ),
-//                     }}
-//                   />
-//                 </Grid>
-//                 <Grid item xs={12} md={4}>
-//                   <CraftInputWithIcon
-//                     fullWidth
-//                     label="Profession"
-//                     name="motherProfession"
-//                     placeholder="Occupation"
-//                     InputProps={{
-//                       startAdornment: (
-//                         <Work sx={{ color: "text.secondary", mr: 1 }} />
-//                       ),
-//                     }}
-//                   />
-//                 </Grid>
-//                 <Grid item xs={12} md={4}>
-//                   <CraftInputWithIcon
-//                     fullWidth
-//                     label="Monthly Income"
-//                     name="motherIncome"
-//                     placeholder="BDT"
-//                     InputProps={{
-//                       startAdornment: (
-//                         <Work sx={{ color: "text.secondary", mr: 1 }} />
-//                       ),
-//                     }}
-//                   />
-//                 </Grid>
-//               </Grid>
-//             </CardContent>
-//           </Card>
-
-//           {/* Address Information */}
-//           <Card elevation={2} sx={{ mb: 3, borderRadius: 2 }}>
-//             <CardContent sx={{ p: 3 }}>
-//               <Typography variant="h6" gutterBottom>
-//                 Address Information
-//               </Typography>
-//               <Typography variant="subtitle1" mb={2}>
-//                 Present Address
-//               </Typography>
-//               <Grid container spacing={3} mb={3}>
-//                 <Grid item xs={12} md={4}>
-//                   <CraftInputWithIcon
-//                     fullWidth
-//                     label="Village/Area"
-//                     name="village"
-//                     placeholder="Village/Area"
-//                     InputProps={{
-//                       startAdornment: (
-//                         <Description sx={{ color: "text.secondary", mr: 1 }} />
-//                       ),
-//                     }}
-//                   />
-//                 </Grid>
-//                 <Grid item xs={12} md={4}>
-//                   <CraftInputWithIcon
-//                     fullWidth
-//                     label="Post Office"
-//                     name="postOffice"
-//                     placeholder="Post Office"
-//                     InputProps={{
-//                       startAdornment: (
-//                         <Description sx={{ color: "text.secondary", mr: 1 }} />
-//                       ),
-//                     }}
-//                   />
-//                 </Grid>
-//                 <Grid item xs={12} md={4}>
-//                   <CraftInputWithIcon
-//                     fullWidth
-//                     label="Post Code"
-//                     name="postCode"
-//                     placeholder="Post Code"
-//                     InputProps={{
-//                       startAdornment: (
-//                         <Description sx={{ color: "text.secondary", mr: 1 }} />
-//                       ),
-//                     }}
-//                   />
-//                 </Grid>
-//                 <Grid item xs={12} md={6}>
-//                   <CraftInputWithIcon
-//                     fullWidth
-//                     label="Police Station"
-//                     name="policeStation"
-//                     placeholder="Police Station"
-//                     InputProps={{
-//                       startAdornment: (
-//                         <Description sx={{ color: "text.secondary", mr: 1 }} />
-//                       ),
-//                     }}
-//                   />
-//                 </Grid>
-//                 <Grid item xs={12} md={6}>
-//                   <CraftInputWithIcon
-//                     fullWidth
-//                     label="District"
-//                     name="district"
-//                     placeholder="District"
-//                     InputProps={{
-//                       startAdornment: (
-//                         <Description sx={{ color: "text.secondary", mr: 1 }} />
-//                       ),
-//                     }}
-//                   />
-//                 </Grid>
-//               </Grid>
-
-//               <Typography variant="subtitle1" mb={2}>
-//                 Permanent Address
-//               </Typography>
-//               <Grid container spacing={3}>
-//                 <Grid item xs={12} md={4}>
-//                   <CraftInputWithIcon
-//                     fullWidth
-//                     label="Village/Area"
-//                     name="permVillage"
-//                     placeholder="Village/Area"
-//                     InputProps={{
-//                       startAdornment: (
-//                         <Description sx={{ color: "text.secondary", mr: 1 }} />
-//                       ),
-//                     }}
-//                   />
-//                 </Grid>
-//                 <Grid item xs={12} md={4}>
-//                   <CraftInputWithIcon
-//                     fullWidth
-//                     label="Post Office"
-//                     name="permPostOffice"
-//                     placeholder="Post Office"
-//                     InputProps={{
-//                       startAdornment: (
-//                         <Description sx={{ color: "text.secondary", mr: 1 }} />
-//                       ),
-//                     }}
-//                   />
-//                 </Grid>
-//                 <Grid item xs={12} md={4}>
-//                   <CraftInputWithIcon
-//                     fullWidth
-//                     label="Post Code"
-//                     name="permPostCode"
-//                     placeholder="Post Code"
-//                     InputProps={{
-//                       startAdornment: (
-//                         <Description sx={{ color: "text.secondary", mr: 1 }} />
-//                       ),
-//                     }}
-//                   />
-//                 </Grid>
-//                 <Grid item xs={12} md={6}>
-//                   <CraftInputWithIcon
-//                     fullWidth
-//                     label="Police Station"
-//                     name="permPoliceStation"
-//                     placeholder="Police Station"
-//                     InputProps={{
-//                       startAdornment: (
-//                         <Description sx={{ color: "text.secondary", mr: 1 }} />
-//                       ),
-//                     }}
-//                   />
-//                 </Grid>
-//                 <Grid item xs={12} md={6}>
-//                   <CraftInputWithIcon
-//                     fullWidth
-//                     label="District"
-//                     name="permDistrict"
-//                     placeholder="District"
-//                     InputProps={{
-//                       startAdornment: (
-//                         <Description sx={{ color: "text.secondary", mr: 1 }} />
-//                       ),
-//                     }}
-//                   />
-//                 </Grid>
-//               </Grid>
-//             </CardContent>
-//           </Card>
-
-//           {/* Guardian Information */}
-//           <Card elevation={2} sx={{ mb: 3, borderRadius: 2 }}>
-//             <CardContent sx={{ p: 3 }}>
-//               <Typography variant="h6" gutterBottom>
-//                 Guardian Information
-//               </Typography>
-//               <Grid container spacing={3}>
-//                 <Grid item xs={12} md={4}>
-//                   <CraftInputWithIcon
-//                     fullWidth
-//                     label="Guardian Name"
-//                     name="guardianName"
-//                     placeholder="Guardian Name"
-//                     InputProps={{
-//                       startAdornment: (
-//                         <Person sx={{ color: "text.secondary", mr: 1 }} />
-//                       ),
-//                     }}
-//                   />
-//                 </Grid>
-//                 <Grid item xs={12} md={4}>
-//                   <CraftInputWithIcon
-//                     fullWidth
-//                     label="Relation"
-//                     name="guardianRelation"
-//                     placeholder="Relation"
-//                     InputProps={{
-//                       startAdornment: (
-//                         <Person sx={{ color: "text.secondary", mr: 1 }} />
-//                       ),
-//                     }}
-//                   />
-//                 </Grid>
-//                 <Grid item xs={12} md={4}>
-//                   <CraftInputWithIcon
-//                     fullWidth
-//                     label="Mobile"
-//                     name="guardianMobile"
-//                     placeholder="01XXXXXXXXX"
-//                     InputProps={{
-//                       startAdornment: (
-//                         <Phone sx={{ color: "text.secondary", mr: 1 }} />
-//                       ),
-//                     }}
-//                   />
-//                 </Grid>
-//                 <Grid item xs={12}>
-//                   <CraftInputWithIcon
-//                     fullWidth
-//                     label="Address"
-//                     name="guardianVillage"
-//                     placeholder="Address"
-//                     InputProps={{
-//                       startAdornment: (
-//                         <Description sx={{ color: "text.secondary", mr: 1 }} />
-//                       ),
-//                     }}
-//                   />
-//                 </Grid>
-//               </Grid>
-//             </CardContent>
-//           </Card>
-
-//           {/* Previous Education */}
-//           <Card elevation={2} sx={{ mb: 3, borderRadius: 2 }}>
-//             <CardContent sx={{ p: 3 }}>
-//               <Typography variant="h6" gutterBottom>
-//                 Previous Education
-//               </Typography>
-//               <Grid container spacing={3}>
-//                 <Grid item xs={12} md={6}>
-//                   <CraftInputWithIcon
-//                     fullWidth
-//                     label="Previous Institution"
-//                     name="formerInstitution"
-//                     placeholder="Previous Institution"
-//                     InputProps={{
-//                       startAdornment: (
-//                         <School sx={{ color: "text.secondary", mr: 1 }} />
-//                       ),
-//                     }}
-//                   />
-//                 </Grid>
-//                 <Grid item xs={12} md={6}>
-//                   <CraftInputWithIcon
-//                     fullWidth
-//                     label="Previous Address"
-//                     name="formerVillage"
-//                     placeholder="Previous Address"
-//                     InputProps={{
-//                       startAdornment: (
-//                         <Description sx={{ color: "text.secondary", mr: 1 }} />
-//                       ),
-//                     }}
-//                   />
-//                 </Grid>
-//               </Grid>
-//             </CardContent>
-//           </Card>
-
-//           {/* Documents */}
-//           <Card elevation={2} sx={{ mb: 3, borderRadius: 2 }}>
-//             <CardContent sx={{ p: 3 }}>
-//               <Typography variant="h6" gutterBottom>
-//                 Documents
-//               </Typography>
-//               <Grid container spacing={3}>
-//                 <Grid item xs={12} md={4}>
-//                   <CraftSelectWithIcon
-//                     name="birthCertificate"
-//                     label="Birth Certificate"
-//                     items={["Yes", "No"]}
-//                     adornment={<Description />}
-//                     size="medium"
-//                   />
-//                 </Grid>
-//                 <Grid item xs={12} md={4}>
-//                   <CraftSelectWithIcon
-//                     name="transferCertificate"
-//                     label="Transfer Certificate"
-//                     items={["Yes", "No"]}
-//                     adornment={<Description />}
-//                     size="medium"
-//                   />
-//                 </Grid>
-//                 <Grid item xs={12} md={4}>
-//                   <CraftSelectWithIcon
-//                     name="characterCertificate"
-//                     label="Character Certificate"
-//                     items={["Yes", "No"]}
-//                     adornment={<Description />}
-//                     size="medium"
-//                   />
-//                 </Grid>
-//                 <Grid item xs={12} md={4}>
-//                   <CraftSelectWithIcon
-//                     name="markSheet"
-//                     label="Mark Sheet"
-//                     items={["Yes", "No"]}
-//                     adornment={<Description />}
-//                     size="medium"
-//                   />
-//                 </Grid>
-//                 <Grid item xs={12} md={4}>
-//                   <CraftSelectWithIcon
-//                     name="photographs"
-//                     label="Photographs"
-//                     items={["Yes", "No"]}
-//                     adornment={<Description />}
-//                     size="medium"
-//                   />
-//                 </Grid>
-//               </Grid>
-//             </CardContent>
-//           </Card>
-
-//           {/* Terms & Conditions */}
-//           <Card elevation={2} sx={{ mb: 3, borderRadius: 2 }}>
-//             <CardContent sx={{ p: 3 }}>
-//               <Typography variant="h6" gutterBottom>
-//                 Terms & Conditions
-//               </Typography>
-//               <Grid container spacing={3}>
-//                 <Grid item xs={12}>
-//                   <CraftSelectWithIcon
-//                     name="termsAccepted"
-//                     label="I accept the terms and conditions"
-//                     items={["Yes", "No"]}
-//                     adornment={<Check />}
-//                     size="medium"
-//                   />
-//                 </Grid>
-//               </Grid>
-//             </CardContent>
-//           </Card>
-
-//           <Box sx={{ display: "flex", justifyContent: "center", mt: 3, mb: 3 }}>
+//           {/* Navigation Buttons */}
+//           <Box
+//             sx={{
+//               display: "flex",
+//               justifyContent: "space-between",
+//               mt: 4,
+//               mb: 4,
+//             }}
+//           >
 //             <Button
-//               type="submit"
-//               variant="contained"
-//               color="primary"
-//               size="large"
-//               disabled={submitting}
-//               endIcon={submitting ? <CircularProgress size={20} /> : <Check />}
+//               disabled={activeStep === 0}
+//               onClick={handleBack}
+//               startIcon={<ArrowBack />}
+//               variant="outlined"
+//               type="button" // Add type="button" to prevent form submission
 //               sx={{
 //                 borderRadius: 30,
-//                 padding: "12px 40px",
+//                 px: 4,
+//                 py: 1.5,
 //                 fontWeight: "bold",
-//                 fontSize: "1.1rem",
-//                 minWidth: "250px",
+//                 boxShadow: "0 4px 10px rgba(0,0,0,0.1)",
+//                 "&:hover": {
+//                   boxShadow: "0 6px 15px rgba(0,0,0,0.15)",
+//                 },
 //               }}
 //             >
-//               {submitting
-//                 ? "Submitting..."
-//                 : id
-//                   ? "Update Enrollment"
-//                   : "Submit Application"}
+//               Back
 //             </Button>
+//             <Box>
+//               {activeStep === steps.length - 1 ? (
+//                 <Button
+//                   type="submit"
+//                   variant="contained"
+//                   size="large"
+//                   disabled={submitting}
+//                   endIcon={
+//                     submitting ? <CircularProgress size={20} /> : <Save />
+//                   }
+//                   sx={{
+//                     borderRadius: 30,
+//                     px: 5,
+//                     py: 1.5,
+//                     fontWeight: "bold",
+//                     fontSize: "1.1rem",
+//                     background: `linear-gradient(90deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+//                     boxShadow: "0 4px 15px rgba(0,0,0,0.2)",
+//                     "&:hover": {
+//                       boxShadow: "0 6px 20px rgba(0,0,0,0.25)",
+//                       background: `linear-gradient(90deg, ${theme.palette.primary.dark} 0%, ${theme.palette.secondary.dark} 100%)`,
+//                     },
+//                   }}
+//                 >
+//                   {submitting
+//                     ? "Submitting..."
+//                     : id
+//                       ? "Update Enrollment"
+//                       : "Submit Application"}
+//                 </Button>
+//               ) : (
+//                 <Button
+//                   variant="contained"
+//                   onClick={handleNext}
+//                   endIcon={<ArrowForward />}
+//                   type="button" // Add type="button" to prevent form submission
+//                   sx={{
+//                     borderRadius: 30,
+//                     px: 4,
+//                     py: 1.5,
+//                     fontWeight: "bold",
+//                     background: `linear-gradient(90deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`,
+//                     boxShadow: "0 4px 15px rgba(0,0,0,0.2)",
+//                     "&:hover": {
+//                       boxShadow: "0 6px 20px rgba(0,0,0,0.25)",
+//                       background: `linear-gradient(90deg, ${theme.palette.primary.dark} 0%, ${theme.palette.secondary.dark} 100%)`,
+//                     },
+//                   }}
+//                 >
+//                   Next
+//                 </Button>
+//               )}
+//             </Box>
 //           </Box>
 //         </Container>
 //       </CraftForm>

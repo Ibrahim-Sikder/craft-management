@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import CraftTable, { Column, RowAction } from "@/components/Table";
 import { useGetDueFeesQuery } from "@/redux/api/feesApi";
-import { Payment, Search, Visibility } from "@mui/icons-material";
+import { Payment, Visibility } from "@mui/icons-material";
 import {
   Box,
   Button,
@@ -15,11 +15,7 @@ import {
   DialogActions,
   DialogContent,
   DialogTitle,
-  FormControl,
   Grid,
-  InputLabel,
-  MenuItem,
-  Select,
   Table,
   TableBody,
   TableCell,
@@ -27,8 +23,8 @@ import {
   TableHead,
   TableRow,
   Typography,
-  useTheme,
   useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import { toast } from "react-hot-toast";
@@ -109,10 +105,10 @@ const AllDueFees = () => {
   const isSmallMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   const [dueFeesData, setDueFeesData] = useState<StudentWithFees[]>([]);
-  const [summary, setSummary] = useState<Summary | null>(null);
+  const [, setSummary] = useState<Summary | null>(null);
   const [loading, setLoading] = useState(true);
-  const [year, setYear] = useState(new Date().getFullYear());
-  const [classFilter, setClassFilter] = useState("");
+  const [year] = useState(new Date().getFullYear());
+  const [classFilter] = useState("");
   const [viewDetailsModalOpen, setViewDetailsModalOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] =
     useState<StudentWithFees | null>(null);
@@ -126,24 +122,6 @@ const AllDueFees = () => {
     year: year.toString(),
     class: classFilter,
   });
-
-  // ক্লাসের তালিকা
-  const classOptions = [
-    { value: "", label: "All Classes" },
-    { value: "One", label: "Class One" },
-    { value: "Two", label: "Class Two" },
-    { value: "Three", label: "Class Three" },
-    { value: "Four", label: "Class Four" },
-    { value: "Five", label: "Class Five" },
-  ];
-
-  // বছরের তালিকা
-  const currentYear = new Date().getFullYear();
-  const yearOptions = [
-    { value: currentYear, label: currentYear.toString() },
-    { value: currentYear - 1, label: (currentYear - 1).toString() },
-    { value: currentYear - 2, label: (currentYear - 2).toString() },
-  ];
 
   // Process data when it loads
   useEffect(() => {
@@ -260,13 +238,13 @@ const AllDueFees = () => {
             size="small"
             variant="outlined"
             color={
-              value.toLowerCase().includes("admission")
+              value?.toLowerCase().includes("admission")
                 ? "primary"
-                : value.toLowerCase().includes("monthly")
+                : value?.toLowerCase().includes("monthly")
                   ? "secondary"
-                  : value.toLowerCase().includes("exam")
+                  : value?.toLowerCase().includes("exam")
                     ? "warning"
-                    : value.toLowerCase().includes("form")
+                    : value?.toLowerCase().includes("form")
                       ? "info"
                       : "default"
             }
@@ -412,23 +390,11 @@ const AllDueFees = () => {
           toast.error("Please select at least one fee");
           return;
         }
-        console.log("Selected fees for payment:", selectedRows);
         toast.success(`Selected ${selectedRows.length} fees for payment`);
       },
       color: "success" as const,
     },
   ];
-
-  // Calculate totals from data
-  const totalDueAmount = dueFeesData.reduce(
-    (sum, student) => sum + student.totalDue,
-    0
-  );
-  const totalStudents = dueFeesData.length;
-  const totalFees = dueFeesData.reduce(
-    (sum, student) => sum + student.fees.length,
-    0
-  );
 
   if (isLoading) {
     return (
@@ -451,121 +417,6 @@ const AllDueFees = () => {
       <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
         Manage and collect pending fees from students
       </Typography>
-
-      {/* ফিল্টার সেকশন */}
-      <Card sx={{ mb: 3 }}>
-        <CardContent>
-          <Typography variant="h6" gutterBottom>
-            Filters
-          </Typography>
-          <Grid container spacing={2}>
-            <Grid item xs={12} md={4}>
-              <FormControl fullWidth>
-                <InputLabel>Academic Year</InputLabel>
-                <Select
-                  value={year}
-                  onChange={(e) => setYear(Number(e.target.value))}
-                  label="Academic Year"
-                >
-                  {yearOptions.map((option) => (
-                    <MenuItem key={option.value} value={option.value}>
-                      {option.label}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <FormControl fullWidth>
-                <InputLabel>Class</InputLabel>
-                <Select
-                  value={classFilter}
-                  onChange={(e) => setClassFilter(e.target.value)}
-                  label="Class"
-                >
-                  {classOptions.map((option) => (
-                    <MenuItem key={option.value} value={option.value}>
-                      {option.label}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} md={4}>
-              <Button
-                variant="contained"
-                startIcon={<Search />}
-                onClick={() => refetch()}
-                fullWidth
-                sx={{ height: "56px" }}
-              >
-                Search
-              </Button>
-            </Grid>
-          </Grid>
-        </CardContent>
-      </Card>
-
-      {/* সারাংশ কার্ড */}
-      <Card sx={{ mb: 3 }}>
-        <CardContent>
-          <Typography variant="h6" gutterBottom>
-            Collection Summary
-          </Typography>
-          <Grid container spacing={3}>
-            <Grid item xs={6} md={2}>
-              <Box textAlign="center">
-                <Typography variant="h4" color="primary.main" fontWeight="bold">
-                  {summary?.totalStudents || totalStudents}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Total Students
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={6} md={2}>
-              <Box textAlign="center">
-                <Typography variant="h4" color="info.main" fontWeight="bold">
-                  {summary?.totalFees || totalFees}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Due Fees
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={6} md={3}>
-              <Box textAlign="center">
-                <Typography variant="h4" color="success.main" fontWeight="bold">
-                  ৳{(summary?.totalPaidAmount || 0).toFixed(2)}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Total Paid
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={6} md={3}>
-              <Box textAlign="center">
-                <Typography variant="h4" color="error.main" fontWeight="bold">
-                  ৳{(summary?.totalDueAmount || totalDueAmount).toFixed(2)}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Total Due
-                </Typography>
-              </Box>
-            </Grid>
-            <Grid item xs={12} md={2}>
-              <Box textAlign="center">
-                <Typography variant="h4" color="warning.main" fontWeight="bold">
-                  ৳{(summary?.totalAmount || 0).toFixed(2)}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  Total Amount
-                </Typography>
-              </Box>
-            </Grid>
-          </Grid>
-        </CardContent>
-      </Card>
 
       {/* বকেয়া ফির তালিকা */}
       {flattenedData.length > 0 ? (
@@ -767,7 +618,6 @@ const AllDueFees = () => {
         </DialogActions>
       </Dialog>
 
-      {/* PaymentModal component */}
       <PaymentModal
         open={paymentModalOpen}
         onClose={handleClosePaymentModal}

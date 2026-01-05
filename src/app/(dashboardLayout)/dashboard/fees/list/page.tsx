@@ -1,7 +1,9 @@
+// app/dashboard/fees/list/page.tsx (Updated)
 /* eslint-disable react/no-unescaped-entities */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
+import FeeAdjustmentModal from "@/components/FeeAdjustmentModal";
 import StatsGrid from "@/components/StatsCard/StatsGrid";
 import CraftTable, { Column, RowAction } from "@/components/Table";
 import { useDeleteFeeMutation, useGetAllFeesQuery } from "@/redux/api/feesApi";
@@ -9,30 +11,58 @@ import {
   AccountBalance as AccountBalanceIcon,
   Add as AddIcon,
   Delete,
+  Discount,
   Edit,
-  FileDownload,
   TrendingDown as TrendingDownIcon,
   TrendingUp as TrendingUpIcon,
   Visibility,
 } from "@mui/icons-material";
-import { Box, Button, Container, Typography } from "@mui/material";
+import { Box, Button, Chip, Container, Typography } from "@mui/material";
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import FeeDetailsModal from "../__components/FeeDetailsModal";
 
 export default function FeesListPage() {
   const { data: feesData, isLoading, error } = useGetAllFeesQuery({});
-  console.log("fee data check ", feesData);
   const [deleteFee] = useDeleteFeeMutation();
   const [selectedFee, setSelectedFee] = useState<any>(null);
-  const [modalOpen, setModalOpen] = useState(false);
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
+  const [adjustmentModalOpen, setAdjustmentModalOpen] = useState(false);
 
   const handleViewFee = (row: any) => {
     setSelectedFee(row);
-    setModalOpen(true);
+    setDetailsModalOpen(true);
   };
-  const handleEditFee = (fee: any) => {
-    console.log(fee);
+
+  const handleApplyAdjustment = async (adjustmentData: any) => {
+    try {
+      const response = await fetch(
+        "http://localhost:5000/api/v1/fee-adjustments",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(adjustmentData),
+        }
+      );
+
+      if (response.ok) {
+        alert("Adjustment applied successfully!");
+        setAdjustmentModalOpen(false);
+        window.location.reload();
+      } else {
+        throw new Error("Failed to apply adjustment");
+      }
+    } catch (error) {
+      console.error("Error applying adjustment:", error);
+      alert("Failed to apply adjustment");
+    }
+  };
+
+  const handleOpenAdjustment = (row: any) => {
+    setSelectedFee(row);
+    setAdjustmentModalOpen(true);
   };
 
   const statsData = useMemo(() => {
@@ -41,9 +71,22 @@ export default function FeesListPage() {
       (sum: number, fee: any) => sum + (fee.amount || 0),
       0
     );
-    const totalRecords = fees.length;
-    const averageFee = totalRecords > 0 ? totalFees / totalRecords : 0;
-    const feeTypes = new Set(fees.map((fee: any) => fee.feeType)).size;
+    const totalPaid = fees.reduce(
+      (sum: number, fee: any) => sum + (fee.paidAmount || 0),
+      0
+    );
+    const totalDue = fees.reduce(
+      (sum: number, fee: any) => sum + (fee.dueAmount || 0),
+      0
+    );
+    const totalDiscount = fees.reduce(
+      (sum: number, fee: any) => sum + (fee.discount || 0),
+      0
+    );
+    const totalWaiver = fees.reduce(
+      (sum: number, fee: any) => sum + (fee.waiver || 0),
+      0
+    );
 
     return [
       {
@@ -53,22 +96,23 @@ export default function FeesListPage() {
         gradient: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
       },
       {
-        title: "Total Records",
-        value: totalRecords,
+        title: "Total Paid",
+        value: `৳${totalPaid.toLocaleString()}`,
         icon: <TrendingUpIcon sx={{ fontSize: 40 }} />,
         gradient: "linear-gradient(135deg, #f093fb 0%, #f5576c 100%)",
       },
       {
-        title: "Average Fee",
-        value: `৳${averageFee.toFixed(2)}`,
+        title: "Total Due",
+        value: `৳${totalDue.toLocaleString()}`,
         icon: <TrendingDownIcon sx={{ fontSize: 40 }} />,
         gradient: "linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)",
       },
       {
-        title: "Fee Types",
-        value: feeTypes,
-        icon: <AccountBalanceIcon sx={{ fontSize: 40 }} />,
+        title: "Total Adjustments",
+        value: `৳${(totalDiscount + totalWaiver).toLocaleString()}`,
+        icon: <Discount sx={{ fontSize: 40 }} />,
         gradient: "linear-gradient(135deg, #fa709a 0%, #fee140 100%)",
+        subValue: `Discount: ৳${totalDiscount.toLocaleString()} | Waiver: ৳${totalWaiver.toLocaleString()}`,
       },
     ];
   }, [feesData]);
@@ -83,28 +127,11 @@ export default function FeesListPage() {
       render: (row: any) => row.student?.name || "N/A",
     },
     {
-      id: "enrollment.className",
+      id: "class",
       label: "Class",
       minWidth: 100,
       sortable: true,
       filterable: true,
-      render: (row: any) => row.enrollment?.className || "N/A",
-    },
-    {
-      id: "enrollment.section",
-      label: "Section",
-      minWidth: 80,
-      sortable: true,
-      filterable: true,
-      render: (row: any) => row.enrollment?.section || "N/A",
-    },
-    {
-      id: "enrollment.rollNumber",
-      label: "Roll No",
-      minWidth: 80,
-      sortable: true,
-      filterable: true,
-      render: (row: any) => row.enrollment?.rollNumber || "N/A",
     },
     {
       id: "month",
@@ -112,7 +139,6 @@ export default function FeesListPage() {
       minWidth: 100,
       sortable: true,
       filterable: true,
-      render: (row: any) => row.month || "N/A",
     },
     {
       id: "feeType",
@@ -120,7 +146,6 @@ export default function FeesListPage() {
       minWidth: 120,
       sortable: true,
       filterable: true,
-      type: "status",
     },
     {
       id: "amount",
@@ -129,6 +154,34 @@ export default function FeesListPage() {
       align: "right" as const,
       sortable: true,
       format: (value: number) => `৳${value?.toLocaleString() || "0"}`,
+    },
+    {
+      id: "discount",
+      label: "Discount",
+      minWidth: 90,
+      align: "right" as const,
+      sortable: true,
+      format: (value: number) =>
+        value > 0 ? `-৳${value?.toLocaleString()}` : "৳0",
+      render: (row: any) => (
+        <Typography color="error" variant="body2">
+          {row.discount > 0 ? `-৳${row.discount.toLocaleString()}` : "৳0"}
+        </Typography>
+      ),
+    },
+    {
+      id: "waiver",
+      label: "Waiver",
+      minWidth: 90,
+      align: "right" as const,
+      sortable: true,
+      format: (value: number) =>
+        value > 0 ? `-৳${value?.toLocaleString()}` : "৳0",
+      render: (row: any) => (
+        <Typography color="error" variant="body2">
+          {row.waiver > 0 ? `-৳${row.waiver.toLocaleString()}` : "৳0"}
+        </Typography>
+      ),
     },
     {
       id: "paidAmount",
@@ -145,47 +198,56 @@ export default function FeesListPage() {
       align: "right" as const,
       sortable: true,
       format: (value: number) => `৳${value?.toLocaleString() || "0"}`,
+      render: (row: any) => (
+        <Typography
+          color={row.dueAmount > 0 ? "error" : "success"}
+          variant="body2"
+          fontWeight="bold"
+        >
+          ৳{row.dueAmount?.toLocaleString() || "0"}
+        </Typography>
+      ),
     },
     {
       id: "status",
       label: "Status",
       minWidth: 100,
       sortable: true,
-      type: "status",
-    },
-    {
-      id: "paymentMethod",
-      label: "Payment Method",
-      minWidth: 120,
-      sortable: true,
-    },
-    {
-      id: "paymentDate",
-      label: "Payment Date",
-      minWidth: 120,
-      sortable: true,
-      type: "date",
-      render: (row: any) => {
-        if (!row.paymentDate) return "N/A";
-        return new Date(row.paymentDate).toLocaleDateString();
-      },
+      render: (row: any) => (
+        <Chip
+          label={row.status}
+          color={
+            row.status === "paid"
+              ? "success"
+              : row.status === "partial"
+                ? "warning"
+                : "error"
+          }
+          size="small"
+        />
+      ),
     },
   ];
 
   const rowActions: RowAction[] = [
     {
-      label: "View",
+      label: "View Details",
       icon: <Visibility fontSize="small" />,
       onClick: (row: any) => handleViewFee(row),
       color: "info" as const,
-      tooltip: "View fee details",
+    },
+    {
+      label: "Apply Discount",
+      icon: <Discount fontSize="small" />,
+      onClick: (row: any) => handleOpenAdjustment(row),
+      color: "success" as const,
+      tooltip: "Apply discount/waiver",
     },
     {
       label: "Edit",
       icon: <Edit fontSize="small" />,
       onClick: (row: any) => console.log("Edit fee:", row),
       color: "primary" as const,
-      tooltip: "Edit fee",
     },
     {
       label: "Delete",
@@ -196,11 +258,18 @@ export default function FeesListPage() {
         }
       },
       color: "error" as const,
-      tooltip: "Delete fee",
     },
   ];
 
   const bulkActions = [
+    {
+      label: "Apply Bulk Discount",
+      icon: <Discount fontSize="small" />,
+      onClick: (selectedRows: any[]) => {
+        // Implement bulk discount functionality
+        console.log("Bulk discount for:", selectedRows);
+      },
+    },
     {
       label: "Delete Selected",
       icon: <Delete fontSize="small" />,
@@ -214,14 +283,6 @@ export default function FeesListPage() {
         }
       },
       color: "error" as const,
-    },
-    {
-      label: "Export Selected",
-      icon: <FileDownload fontSize="small" />,
-      onClick: (selectedRows: any[]) => {
-        console.log("Exporting:", selectedRows);
-        // Implement export functionality
-      },
     },
   ];
 
@@ -237,33 +298,26 @@ export default function FeesListPage() {
     window.print();
   };
 
-  const handleAdd = () => {};
   const tableData = feesData?.data?.data || [];
 
   return (
     <Box>
       <Container maxWidth="xl">
         <Box sx={{ mb: 4 }}>
-          <Typography
-            variant="h3"
-            sx={{
-              fontWeight: "bold",
-            }}
-          >
+          <Typography variant="h3" sx={{ fontWeight: "bold" }}>
             Fee Management
           </Typography>
-          <Typography variant="body1" sx={{ color: "rgba(255,255,255,0.9)" }}>
-            Track and manage all student fee payments
+          <Typography variant="body1" sx={{ color: "text.secondary" }}>
+            Track and manage all student fee payments with discount/waiver
+            support
           </Typography>
         </Box>
 
-        {/* Stats Cards using reusable component */}
         <StatsGrid stats={statsData} />
 
-        {/* Enhanced Table */}
         <CraftTable
           title="Fee Records"
-          subtitle="Manage and track all fee payments"
+          subtitle="Manage fees with discount and waiver support"
           columns={columns}
           data={tableData}
           loading={isLoading}
@@ -285,42 +339,57 @@ export default function FeesListPage() {
           hover={true}
           showToolbar={true}
           customToolbar={
-            <Link href="/dashboard/fees/add" style={{ textDecoration: "none" }}>
-              <Button
-                variant="contained"
-                startIcon={<AddIcon />}
-                sx={{
-                  background:
-                    "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
-                  borderRadius: "12px",
-                  textTransform: "none",
-                  fontSize: "1rem",
-                  px: 3,
-                  "&:hover": {
-                    transform: "translateY(-1px)",
-                    boxShadow: "0 6px 20px rgba(102, 126, 234, 0.4)",
-                  },
-                  transition: "all 0.2s ease-in-out",
-                }}
-                onClick={handleAdd}
+            <Box sx={{ display: "flex", gap: 2 }}>
+              <Link
+                href="/dashboard/fees/adjustments"
+                style={{ textDecoration: "none" }}
               >
-                Add New Fee
-              </Button>
-            </Link>
+                <Button
+                  variant="outlined"
+                  startIcon={<Discount />}
+                  sx={{
+                    borderRadius: "12px",
+                    textTransform: "none",
+                  }}
+                >
+                  Manage Adjustments
+                </Button>
+              </Link>
+              <Link
+                href="/dashboard/fees/add"
+                style={{ textDecoration: "none" }}
+              >
+                <Button
+                  variant="contained"
+                  startIcon={<AddIcon />}
+                  sx={{
+                    background:
+                      "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                    borderRadius: "12px",
+                    textTransform: "none",
+                  }}
+                >
+                  Add New Fee
+                </Button>
+              </Link>
+            </Box>
           }
-          elevation={2}
-          borderRadius={3}
-          showRowNumbers={true}
-          loadingOverlay={true}
-          fadeIn={true}
         />
 
-        {/* Fee Details Modal - Now as separate component */}
+        {/* Fee Details Modal */}
         <FeeDetailsModal
-          open={modalOpen}
-          setOpen={setModalOpen}
+          open={detailsModalOpen}
+          setOpen={setDetailsModalOpen}
           selectedFee={selectedFee}
-          onEdit={handleEditFee}
+          onEdit={() => console.log("Edit fee")}
+        />
+
+        {/* Fee Adjustment Modal */}
+        <FeeAdjustmentModal
+          open={adjustmentModalOpen}
+          onClose={() => setAdjustmentModalOpen(false)}
+          fee={selectedFee}
+          onApplyAdjustment={handleApplyAdjustment}
         />
       </Container>
     </Box>

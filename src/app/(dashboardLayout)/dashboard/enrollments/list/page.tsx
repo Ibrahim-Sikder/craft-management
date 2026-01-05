@@ -2,7 +2,7 @@
 // app/enrollments/page.tsx
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -29,23 +29,46 @@ import Table, { BulkAction, Column, RowAction } from "@/components/Table";
 import EnrollmentDetailsModal from "../__components/EnrollmentDetailsModal";
 import FeeCollectionModal from "../__components/FeeCollectionModal";
 
-// Helper function to calculate total fees from fee array
-const calculateTotalFees = (fees: any[], paymentStatus: string) => {
-  if (!fees || !Array.isArray(fees)) return { total: 0, paid: 0, due: 0 };
-
-  // Using placeholder values - in a real app, fetch actual fee data
-  const total = fees.length * 1000; // Placeholder: $1000 per fee
-  let paid = 0;
-
-  if (paymentStatus === "paid") {
-    paid = total;
-  } else if (paymentStatus === "partial") {
-    paid = total * 0.5; // Placeholder: 50% paid
+// Calculate total fees from actual fee structure
+const calculateTotalFees = (fees: any[]) => {
+  if (!fees || !Array.isArray(fees) || fees.length === 0) {
+    return { total: 0, paid: 0, due: 0, discount: 0, waiver: 0 };
   }
 
-  const due = total - paid;
+  let total = 0;
+  let paid = 0;
+  let due = 0;
+  let discount = 0;
+  let waiver = 0;
 
-  return { total, paid, due };
+  fees.forEach((fee: any) => {
+    const amount = Number(fee.amount) || 0;
+    const paidAmount = Number(fee.paidAmount) || 0;
+    const discountAmount = Number(fee.discount) || 0;
+    const waiverAmount = Number(fee.waiver) || 0;
+    const dueAmount = Number(fee.dueAmount) || 0;
+
+    total += amount;
+    paid += paidAmount;
+    due += dueAmount;
+    discount += discountAmount;
+    waiver += waiverAmount;
+  });
+
+  return { total, paid, due, discount, waiver };
+};
+
+// Determine payment status based on fees
+const getPaymentStatus = (fees: any[]) => {
+  if (!fees || !Array.isArray(fees) || fees.length === 0) {
+    return "unpaid";
+  }
+
+  const { total, paid } = calculateTotalFees(fees);
+
+  if (paid >= total) return "paid";
+  if (paid > 0) return "partial";
+  return "unpaid";
 };
 
 export default function EnrollmentsPage() {
@@ -55,15 +78,49 @@ export default function EnrollmentsPage() {
   const [feeCollectionOpen, setFeeCollectionOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
 
+  // State for server-side operations
+  const [sortColumn, setSortColumn] = useState("studentName");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [totalCount, setTotalCount] = useState(0);
+
   const [deleteEnrollment] = useDeleteEnrollmentMutation();
 
-  // Fetch enrollments from API
+  // Build query parameters for server-side operations
+  const queryParams: any = {
+    page: page + 1, // Backend expects 1-based, frontend uses 0-based
+    limit: rowsPerPage,
+  };
+
+  // Add sort parameter if sortColumn is set
+  if (sortColumn) {
+    queryParams.sort = sortDirection === "desc" ? `-${sortColumn}` : sortColumn;
+  }
+
+  // Add search term if provided
+  if (searchTerm) {
+    queryParams.searchTerm = searchTerm;
+  }
+
+  // Fetch data with server-side parameters
   const {
     data: enrollmentData,
     isLoading,
     error,
     refetch,
-  } = useGetAllEnrollmentsQuery({});
+  } = useGetAllEnrollmentsQuery(queryParams);
+
+  // Update total count when data loads
+  useEffect(() => {
+    if (enrollmentData?.data?.meta?.total) {
+      setTotalCount(enrollmentData.data.meta.total);
+    }
+  }, [enrollmentData]);
+
+  console.log("Enrollment query params:", queryParams);
+  console.log("Enrollment data:", enrollmentData);
 
   // Transform the enrollment data for display
   const transformedEnrollments = React.useMemo(() => {
@@ -76,38 +133,86 @@ export default function EnrollmentsPage() {
     }
 
     return enrollmentData.data.data.map((enrollment: any) => {
-      const { total, paid, due } = calculateTotalFees(
-        enrollment.fees || [],
-        enrollment.paymentStatus
+      // Get the class name(s) - handle both string and object formats
+      const className = enrollment.className
+        ? Array.isArray(enrollment.className)
+          ? enrollment.className
+              .map((cls: any) =>
+                typeof cls === "object" ? cls.className : cls
+              )
+              .join(", ")
+          : enrollment.className
+        : "N/A";
+
+      // Get student name from enrollment or student object
+      const studentName =
+        enrollment.studentName ||
+        enrollment.name ||
+        enrollment.student?.name ||
+        "Unknown";
+
+      // Get student ID
+      const studentId =
+        enrollment.studentId ||
+        enrollment.student?.studentId ||
+        enrollment._id.slice(-6);
+
+      // Get father name
+      const fatherName =
+        enrollment.fatherName ||
+        enrollment.fatherNameBangla ||
+        enrollment.student?.fatherName ||
+        "N/A";
+
+      // Calculate fees
+      const { total, paid, due, discount, waiver } = calculateTotalFees(
+        enrollment.fees || []
       );
 
+      // Determine payment status
+      const paymentStatus = getPaymentStatus(enrollment.fees || []);
+
+      // Determine overall status
+      const status = enrollment.status || "active";
+
       return {
-        id: enrollment._id || enrollment.id,
-        studentName: enrollment.name || "Unknown",
-        studentNameBangla: enrollment.nameBangla || "",
-        fatherName: enrollment.fatherName || "N/A",
+        id: enrollment._id,
+        enrollmentId: enrollment._id,
+        studentId: studentId,
+        studentName: studentName,
+        studentNameBangla:
+          enrollment.nameBangla || enrollment.student?.nameBangla || "",
+        fatherName: fatherName,
         fatherNameBangla: enrollment.fatherNameBangla || "",
-        motherName: enrollment.motherName || "N/A",
+        motherName:
+          enrollment.motherName || enrollment.motherNameBangla || "N/A",
         motherNameBangla: enrollment.motherNameBangla || "",
-        fatherIncome: enrollment.fatherIncome || 0,
-        motherIncome: enrollment.motherIncome || 0,
+        fatherIncome:
+          enrollment.fatherIncome || enrollment.student?.fatherIncome || 0,
+        motherIncome:
+          enrollment.motherIncome || enrollment.student?.motherIncome || 0,
         fatherNid: enrollment.fatherNid || "N/A",
         motherNid: enrollment.motherNid || "N/A",
-        mobileNo: enrollment.mobileNo || "N/A",
-        guardianInfo: enrollment.guardianInfo || {
-          name: "N/A",
-          relation: "N/A",
-          mobile: "N/A",
-        },
+        mobileNo: enrollment.mobileNo || enrollment.student?.mobile || "N/A",
+        guardianInfo: enrollment.guardianInfo ||
+          enrollment.student?.guardianInfo || {
+            name: "N/A",
+            relation: "N/A",
+            mobile: "N/A",
+          },
         birthDate: enrollment.birthDate
           ? new Date(enrollment.birthDate).toLocaleDateString()
           : "N/A",
-        nationality: enrollment.nationality || "N/A",
-        className: enrollment.className || "N/A",
-        studentDepartment: enrollment.studentDepartment || "N/A",
-        studentType: enrollment.studentType || "N/A",
-        status: enrollment.status || "active",
-        paymentStatus: enrollment.paymentStatus || "pending",
+        nationality: enrollment.nationality || "Bangladeshi",
+        className: className,
+        studentDepartment:
+          enrollment.studentDepartment ||
+          enrollment.student?.studentDepartment ||
+          "N/A",
+        studentType:
+          enrollment.studentType || enrollment.student?.studentType || "N/A",
+        status: status,
+        paymentStatus: paymentStatus,
         admissionType: enrollment.admissionType || "N/A",
         presentAddress: enrollment.presentAddress || {
           policeStation: "N/A",
@@ -122,6 +227,9 @@ export default function EnrollmentsPage() {
         totalFees: total,
         paidAmount: paid,
         dueAmount: due,
+        discountAmount: discount,
+        waiverAmount: waiver,
+        fees: enrollment.fees || [],
         rawData: enrollment,
       };
     });
@@ -145,7 +253,7 @@ export default function EnrollmentsPage() {
               {row.studentName}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              ID: {row.id.slice(-6)} • {row.fatherName}
+              ID: {row.studentId} • {row.fatherName}
             </Typography>
           </Box>
         </Box>
@@ -153,16 +261,14 @@ export default function EnrollmentsPage() {
     },
     {
       id: "className",
-      label: "Class Info",
-      minWidth: 180,
+      label: "Class",
+      minWidth: 150,
       sortable: true,
       filterable: true,
       filterOptions: [
-        { label: "Class 1", value: "Class 1" },
-        { label: "Class 2", value: "Class 2" },
-        { label: "Class 3", value: "Class 3" },
-        { label: "Class 4", value: "Class 4" },
-        { label: "Class 5", value: "Class 5" },
+        { label: "One", value: "One" },
+        { label: "Five", value: "Five" },
+        { label: "Nazera", value: "Nazera" },
       ],
       render: (row: any) => (
         <Box>
@@ -170,13 +276,17 @@ export default function EnrollmentsPage() {
             {row.className}
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            Dept: {row.studentDepartment} • Type: {row.studentType}
-          </Typography>
-          <Typography variant="caption" color="text.secondary">
-            {row.admissionType}
+            {row.studentDepartment} • {row.studentType}
           </Typography>
         </Box>
       ),
+    },
+    {
+      id: "mobileNo",
+      label: "Contact",
+      minWidth: 120,
+      sortable: true,
+      filterable: true,
     },
     {
       id: "paymentStatus",
@@ -190,44 +300,46 @@ export default function EnrollmentsPage() {
         { label: "Partial", value: "partial" },
         { label: "Unpaid", value: "unpaid" },
       ],
-      render: (row: any) => (
-        <Box sx={{ minWidth: 120 }}>
-          <LinearProgress
-            variant="determinate"
-            value={
-              row.totalFees > 0 ? (row.paidAmount / row.totalFees) * 100 : 0
-            }
-            sx={{
-              height: 6,
-              borderRadius: 3,
-              backgroundColor: "grey.200",
-              "& .MuiLinearProgress-bar": {
-                backgroundColor:
-                  row.totalFees > 0 && row.paidAmount >= row.totalFees
-                    ? "success.main"
-                    : row.paidAmount > 0
-                      ? "warning.main"
-                      : "error.main",
-              },
-            }}
-          />
-          <Typography variant="body2" sx={{ mt: 0.5 }}>
-            ${row.paidAmount} / ${row.totalFees}
-          </Typography>
-          <Chip
-            label={row.paymentStatus}
-            color={
-              row.paymentStatus === "paid"
-                ? "success"
-                : row.paymentStatus === "partial"
-                  ? "warning"
-                  : "error"
-            }
-            size="small"
-            variant="filled"
-          />
-        </Box>
-      ),
+      render: (row: any) => {
+        const percentage =
+          row.totalFees > 0 ? (row.paidAmount / row.totalFees) * 100 : 0;
+        return (
+          <Box sx={{ minWidth: 120 }}>
+            <LinearProgress
+              variant="determinate"
+              value={percentage}
+              sx={{
+                height: 6,
+                borderRadius: 3,
+                backgroundColor: "grey.200",
+                "& .MuiLinearProgress-bar": {
+                  backgroundColor:
+                    percentage >= 100
+                      ? "success.main"
+                      : percentage > 0
+                        ? "warning.main"
+                        : "error.main",
+                },
+              }}
+            />
+            <Typography variant="body2" sx={{ mt: 0.5 }}>
+              ৳{row.paidAmount} / ৳{row.totalFees}
+            </Typography>
+            <Chip
+              label={row.paymentStatus}
+              color={
+                row.paymentStatus === "paid"
+                  ? "success"
+                  : row.paymentStatus === "partial"
+                    ? "warning"
+                    : "error"
+              }
+              size="small"
+              variant="filled"
+            />
+          </Box>
+        );
+      },
     },
     {
       id: "dueAmount",
@@ -242,7 +354,7 @@ export default function EnrollmentsPage() {
           fontWeight="bold"
           color={value > 0 ? "error.main" : "success.main"}
         >
-          ${value}
+          ৳{value}
         </Typography>
       ),
     },
@@ -256,15 +368,7 @@ export default function EnrollmentsPage() {
       filterOptions: [
         { label: "Active", value: "active" },
         { label: "Inactive", value: "inactive" },
-        { label: "Pending", value: "pending" },
       ],
-    },
-    {
-      id: "mobileNo",
-      label: "Contact",
-      minWidth: 120,
-      sortable: true,
-      filterable: true,
     },
   ];
 
@@ -323,6 +427,7 @@ export default function EnrollmentsPage() {
                   timer: 2000,
                   showConfirmButton: false,
                 });
+                refetch();
               })
               .catch((error) => {
                 Swal.fire({
@@ -412,7 +517,9 @@ export default function EnrollmentsPage() {
           cancelButtonText: "Cancel",
         }).then((result) => {
           if (result.isConfirmed) {
-            console.log("Delete selected rows:", selectedRows);
+            selectedRows.forEach((row) => {
+              deleteEnrollment(row.id).unwrap();
+            });
             Swal.fire({
               title: "Deleted!",
               text: `The ${selectedRows.length} enrollment(s) have been deleted successfully.`,
@@ -420,6 +527,7 @@ export default function EnrollmentsPage() {
               timer: 2000,
               showConfirmButton: false,
             });
+            refetch();
           }
         });
       },
@@ -466,6 +574,27 @@ export default function EnrollmentsPage() {
     window.print();
   };
 
+  // New handlers for server-side operations
+  const handleSortChange = (column: string, direction: "asc" | "desc") => {
+    setSortColumn(column);
+    setSortDirection(direction);
+    setPage(0); // Reset to first page when sorting changes
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleRowsPerPageChange = (newRowsPerPage: number) => {
+    setRowsPerPage(newRowsPerPage);
+    setPage(0); // Reset to first page
+  };
+
+  const handleSearchChange = (term: string) => {
+    setSearchTerm(term);
+    setPage(0); // Reset to first page on search
+  };
+
   return (
     <Box sx={{ p: 3, backgroundColor: "grey.50", minHeight: "100vh" }}>
       <Table
@@ -490,14 +619,23 @@ export default function EnrollmentsPage() {
         sortable={true}
         pagination={true}
         emptyStateMessage="No enrollments found"
-        defaultSortColumn="studentName"
-        defaultSortDirection="asc"
+        defaultSortColumn={sortColumn}
+        defaultSortDirection={sortDirection}
         striped={true}
         showRowNumbers={true}
         fadeIn={true}
         elevation={3}
         borderRadius={2}
         headerBackgroundColor="#f5f5f5"
+        // Server-side sorting and pagination
+        serverSideSorting={true}
+        onSortChange={handleSortChange}
+        onPageChange={handlePageChange}
+        onRowsPerPageChange={handleRowsPerPageChange}
+        onSearchChange={handleSearchChange}
+        rowCount={totalCount}
+        page={page}
+        rowsPerPage={rowsPerPage}
         customToolbar={
           <Button
             variant="contained"
