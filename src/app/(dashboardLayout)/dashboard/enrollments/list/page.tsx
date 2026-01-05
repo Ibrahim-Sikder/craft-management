@@ -18,6 +18,7 @@ import {
   Edit,
   FileDownload,
   History,
+  Money,
   Person,
   Refresh,
   Visibility,
@@ -29,6 +30,7 @@ import {
   Chip,
   CircularProgress,
   LinearProgress,
+  SvgIcon,
   Typography,
 } from "@mui/material";
 import { useRouter } from "next/navigation";
@@ -39,6 +41,7 @@ import FeeCollectionModal from "../__components/FeeCollectionModal";
 import PromotionHistoryModal from "../__components/PromotionHistoryModal";
 import PromotionSummaryModal from "../__components/PromotionSummaryModal";
 import PromotionModal from "../__components/PromotionModal";
+import TakaIcon from "@/utils/takaIcon";
 
 // Calculate total fees from actual fee structure
 const calculateTotalFees = (fees: any[]) => {
@@ -491,17 +494,14 @@ export default function EnrollmentsPage() {
     },
   ];
 
-  // Define row actions
   const rowActions: RowAction[] = [
     {
       label: "Fee Collect",
-      icon: <AttachMoney fontSize="small" />,
+      icon: <TakaIcon fontSize="small" />,
       onClick: (row) => {
         setSelectedEnrollment(row);
         setFeeCollectionOpen(true);
       },
-      color: "success",
-      tooltip: "Collect Fee Payment",
       disabled: (row) => row.dueAmount <= 0,
     },
     {
