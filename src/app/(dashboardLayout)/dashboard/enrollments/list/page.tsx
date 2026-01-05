@@ -1,33 +1,47 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // app/enrollments/page.tsx
 "use client";
 
-import React, { useState, useEffect } from "react";
-import {
-  Box,
-  Typography,
-  Avatar,
-  Chip,
-  Button,
-  LinearProgress,
-} from "@mui/material";
-import {
-  Visibility,
-  Edit,
-  Delete,
-  Person,
-  FileDownload,
-  AttachMoney,
-} from "@mui/icons-material";
-import { useRouter } from "next/navigation";
-import Swal from "sweetalert2";
+import Table, { BulkAction, Column, RowAction } from "@/components/Table";
+import { useAcademicOption } from "@/hooks/useAcademicOption";
 import {
   useDeleteEnrollmentMutation,
   useGetAllEnrollmentsQuery,
 } from "@/redux/api/enrollmentApi";
-import Table, { BulkAction, Column, RowAction } from "@/components/Table";
+import {
+  Add,
+  ArrowForward,
+  Assessment,
+  AttachMoney,
+  Delete,
+  Edit,
+  FileDownload,
+  History,
+  Money,
+  Person,
+  Refresh,
+  Visibility,
+} from "@mui/icons-material";
+import {
+  Avatar,
+  Box,
+  Button,
+  Chip,
+  CircularProgress,
+  LinearProgress,
+  SvgIcon,
+  Typography,
+} from "@mui/material";
+import { useRouter } from "next/navigation";
+import React, { useEffect, useState } from "react";
+import Swal from "sweetalert2";
 import EnrollmentDetailsModal from "../__components/EnrollmentDetailsModal";
 import FeeCollectionModal from "../__components/FeeCollectionModal";
+import PromotionHistoryModal from "../__components/PromotionHistoryModal";
+import PromotionSummaryModal from "../__components/PromotionSummaryModal";
+import PromotionModal from "../__components/PromotionModal";
+import TakaIcon from "@/utils/takaIcon";
 
 // Calculate total fees from actual fee structure
 const calculateTotalFees = (fees: any[]) => {
@@ -71,11 +85,52 @@ const getPaymentStatus = (fees: any[]) => {
   return "unpaid";
 };
 
+// Get status color
+const getStatusColor = (status: string) => {
+  switch (status?.toLowerCase()) {
+    case "active":
+      return "success";
+    case "inactive":
+      return "error";
+    case "passed":
+      return "info";
+    case "failed":
+      return "warning";
+    case "left":
+      return "default";
+    default:
+      return "default";
+  }
+};
+
+// Get admission type color
+const getAdmissionTypeColor = (type: string) => {
+  switch (type?.toLowerCase()) {
+    case "admission":
+      return "primary";
+    case "promotion":
+      return "success";
+    default:
+      return "default";
+  }
+};
+
 export default function EnrollmentsPage() {
   const router = useRouter();
   const [selectedEnrollment, setSelectedEnrollment] = useState<any>(null);
+  const [selectedStudentForHistory, setSelectedStudentForHistory] =
+    useState<any>(null);
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [feeCollectionOpen, setFeeCollectionOpen] = useState(false);
+  const [promotionModalOpen, setPromotionModalOpen] = useState(false);
+  const [promotionHistoryModalOpen, setPromotionHistoryModalOpen] =
+    useState(false);
+  const [promotionSummaryModalOpen, setPromotionSummaryModalOpen] =
+    useState(false);
+  const [promotionMenuAnchorEl, setPromotionMenuAnchorEl] =
+    useState<null | HTMLElement>(null);
+  const [exportMenuAnchorEl, setExportMenuAnchorEl] =
+    useState<null | HTMLElement>(null);
   const [activeTab, setActiveTab] = useState(0);
 
   // State for server-side operations
@@ -85,8 +140,11 @@ export default function EnrollmentsPage() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
+  const [filters, setFilters] = useState<Record<string, any>>({});
+  const [selectedRows, setSelectedRows] = useState<any[]>([]);
 
   const [deleteEnrollment] = useDeleteEnrollmentMutation();
+  const { classOptions } = useAcademicOption();
 
   // Build query parameters for server-side operations
   const queryParams: any = {
@@ -104,6 +162,15 @@ export default function EnrollmentsPage() {
     queryParams.searchTerm = searchTerm;
   }
 
+  // Add filters if provided
+  if (Object.keys(filters).length > 0) {
+    Object.keys(filters).forEach((key) => {
+      if (filters[key]) {
+        queryParams[key] = filters[key];
+      }
+    });
+  }
+
   // Fetch data with server-side parameters
   const {
     data: enrollmentData,
@@ -118,9 +185,6 @@ export default function EnrollmentsPage() {
       setTotalCount(enrollmentData.data.meta.total);
     }
   }, [enrollmentData]);
-
-  console.log("Enrollment query params:", queryParams);
-  console.log("Enrollment data:", enrollmentData);
 
   // Transform the enrollment data for display
   const transformedEnrollments = React.useMemo(() => {
@@ -213,7 +277,7 @@ export default function EnrollmentsPage() {
           enrollment.studentType || enrollment.student?.studentType || "N/A",
         status: status,
         paymentStatus: paymentStatus,
-        admissionType: enrollment.admissionType || "N/A",
+        admissionType: enrollment.admissionType || "admission",
         presentAddress: enrollment.presentAddress || {
           policeStation: "N/A",
           district: "N/A",
@@ -240,12 +304,12 @@ export default function EnrollmentsPage() {
     {
       id: "studentName",
       label: "Student",
-      minWidth: 200,
+      minWidth: 220,
       sortable: true,
       filterable: true,
       render: (row: any) => (
         <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          <Avatar sx={{ width: 40, height: 40 }}>
+          <Avatar sx={{ width: 40, height: 40, bgcolor: "primary.main" }}>
             <Person />
           </Avatar>
           <Box>
@@ -253,23 +317,39 @@ export default function EnrollmentsPage() {
               {row.studentName}
             </Typography>
             <Typography variant="body2" color="text.secondary">
-              ID: {row.studentId} • {row.fatherName}
+              ID: {row.studentId}
             </Typography>
+            <Box display="flex" gap={1} mt={0.5}>
+              <Chip
+                label={row.admissionType}
+                size="small"
+                color={getAdmissionTypeColor(row.admissionType)}
+                variant="outlined"
+              />
+              {row.rawData?.promotedFrom && (
+                <Chip
+                  label="Promoted"
+                  size="small"
+                  color="success"
+                  icon={<ArrowForward fontSize="small" />}
+                />
+              )}
+            </Box>
           </Box>
         </Box>
       ),
     },
     {
       id: "className",
-      label: "Class",
-      minWidth: 150,
+      label: "Class & Department",
+      minWidth: 180,
       sortable: true,
       filterable: true,
-      filterOptions: [
-        { label: "One", value: "One" },
-        { label: "Five", value: "Five" },
-        { label: "Nazera", value: "Nazera" },
-      ],
+      filterOptions:
+        classOptions?.map((opt: any) => ({
+          label: opt.label,
+          value: opt.label,
+        })) || [],
       render: (row: any) => (
         <Box>
           <Typography variant="body2" fontWeight="medium">
@@ -278,6 +358,12 @@ export default function EnrollmentsPage() {
           <Typography variant="body2" color="text.secondary">
             {row.studentDepartment} • {row.studentType}
           </Typography>
+          <Chip
+            label={row.status}
+            size="small"
+            color={getStatusColor(row.status)}
+            sx={{ mt: 0.5 }}
+          />
         </Box>
       ),
     },
@@ -287,11 +373,19 @@ export default function EnrollmentsPage() {
       minWidth: 120,
       sortable: true,
       filterable: true,
+      render: (row: any) => (
+        <Box>
+          <Typography variant="body2">{row.mobileNo}</Typography>
+          <Typography variant="caption" color="text.secondary">
+            Father: {row.fatherName}
+          </Typography>
+        </Box>
+      ),
     },
     {
       id: "paymentStatus",
-      label: "Payment",
-      minWidth: 150,
+      label: "Payment Status",
+      minWidth: 180,
       sortable: true,
       filterable: true,
       type: "progress",
@@ -304,13 +398,21 @@ export default function EnrollmentsPage() {
         const percentage =
           row.totalFees > 0 ? (row.paidAmount / row.totalFees) * 100 : 0;
         return (
-          <Box sx={{ minWidth: 120 }}>
+          <Box sx={{ minWidth: 150 }}>
+            <Box display="flex" justifyContent="space-between" mb={0.5}>
+              <Typography variant="caption">
+                Paid: ৳{row.paidAmount.toLocaleString()}
+              </Typography>
+              <Typography variant="caption">
+                Due: ৳{row.dueAmount.toLocaleString()}
+              </Typography>
+            </Box>
             <LinearProgress
               variant="determinate"
               value={percentage}
               sx={{
-                height: 6,
-                borderRadius: 3,
+                height: 8,
+                borderRadius: 4,
                 backgroundColor: "grey.200",
                 "& .MuiLinearProgress-bar": {
                   backgroundColor:
@@ -319,24 +421,32 @@ export default function EnrollmentsPage() {
                       : percentage > 0
                         ? "warning.main"
                         : "error.main",
+                  borderRadius: 4,
                 },
               }}
             />
-            <Typography variant="body2" sx={{ mt: 0.5 }}>
-              ৳{row.paidAmount} / ৳{row.totalFees}
-            </Typography>
-            <Chip
-              label={row.paymentStatus}
-              color={
-                row.paymentStatus === "paid"
-                  ? "success"
-                  : row.paymentStatus === "partial"
-                    ? "warning"
-                    : "error"
-              }
-              size="small"
-              variant="filled"
-            />
+            <Box
+              display="flex"
+              justifyContent="space-between"
+              alignItems="center"
+              mt={1}
+            >
+              <Chip
+                label={row.paymentStatus}
+                color={
+                  row.paymentStatus === "paid"
+                    ? "success"
+                    : row.paymentStatus === "partial"
+                      ? "warning"
+                      : "error"
+                }
+                size="small"
+                variant="filled"
+              />
+              <Typography variant="caption" fontWeight="bold">
+                {percentage.toFixed(1)}%
+              </Typography>
+            </Box>
           </Box>
         );
       },
@@ -354,35 +464,44 @@ export default function EnrollmentsPage() {
           fontWeight="bold"
           color={value > 0 ? "error.main" : "success.main"}
         >
-          ৳{value}
+          ৳{value.toLocaleString()}
         </Typography>
       ),
     },
     {
-      id: "status",
-      label: "Status",
+      id: "admissionType",
+      label: "Type",
       minWidth: 100,
       sortable: true,
       filterable: true,
-      type: "status",
       filterOptions: [
-        { label: "Active", value: "active" },
-        { label: "Inactive", value: "inactive" },
+        { label: "Admission", value: "admission" },
+        { label: "Promotion", value: "promotion" },
       ],
+      render: (row: any) => (
+        <Chip
+          label={row.admissionType}
+          size="small"
+          color={getAdmissionTypeColor(row.admissionType)}
+          variant={row.admissionType === "promotion" ? "filled" : "outlined"}
+          icon={
+            row.admissionType === "promotion" ? (
+              <ArrowForward fontSize="small" />
+            ) : undefined
+          }
+        />
+      ),
     },
   ];
 
-  // Define row actions
   const rowActions: RowAction[] = [
     {
       label: "Fee Collect",
-      icon: <AttachMoney fontSize="small" />,
+      icon: <TakaIcon fontSize="small" />,
       onClick: (row) => {
         setSelectedEnrollment(row);
         setFeeCollectionOpen(true);
       },
-      color: "success",
-      tooltip: "Collect Fee Payment",
       disabled: (row) => row.dueAmount <= 0,
     },
     {
@@ -393,6 +512,19 @@ export default function EnrollmentsPage() {
         setDetailDialogOpen(true);
       },
       tooltip: "View Details",
+    },
+    {
+      label: "Promotion History",
+      icon: <History fontSize="small" />,
+      onClick: (row) => {
+        setSelectedStudentForHistory({
+          id: row.rawData?.student?._id || row.id,
+          name: row.studentName,
+        });
+        setPromotionHistoryModalOpen(true);
+      },
+      tooltip: "View Promotion History",
+      color: "info",
     },
     {
       label: "Edit",
@@ -444,6 +576,7 @@ export default function EnrollmentsPage() {
       },
       color: "error",
       tooltip: "Delete Enrollment",
+      disabled: (row) => row.admissionType === "promotion", // Cannot delete promotion records
     },
   ];
 
@@ -535,6 +668,24 @@ export default function EnrollmentsPage() {
     },
   ];
 
+  const handlePromotionMenuClose = () => {
+    setPromotionMenuAnchorEl(null);
+  };
+
+  const handleOpenPromotionModal = () => {
+    setPromotionModalOpen(true);
+    handlePromotionMenuClose();
+  };
+
+  const handleOpenPromotionSummary = () => {
+    setPromotionSummaryModalOpen(true);
+    handlePromotionMenuClose();
+  };
+
+  const handleExportMenuClose = () => {
+    setExportMenuAnchorEl(null);
+  };
+
   // Handler functions
   const handleCloseDetails = () => {
     setDetailDialogOpen(false);
@@ -558,15 +709,16 @@ export default function EnrollmentsPage() {
     setFeeCollectionOpen(true);
   };
 
-  const handleExport = () => {
-    console.log("Export all enrollments");
+  const handleExport = (type: string) => {
+    console.log(`Exporting as ${type}`);
     Swal.fire({
-      title: "Export",
-      text: "Exporting all enrollments...",
+      title: "Exporting...",
+      text: `Exporting enrollments as ${type.toUpperCase()}`,
       icon: "info",
       timer: 2000,
       showConfirmButton: false,
     });
+    handleExportMenuClose();
   };
 
   const handlePrint = () => {
@@ -595,11 +747,233 @@ export default function EnrollmentsPage() {
     setPage(0); // Reset to first page on search
   };
 
+  const handleFilterChange = (filters: Record<string, any>) => {
+    setFilters(filters);
+    setPage(0);
+  };
+
+  const handleSelectionChange = (selected: any[]) => {
+    setSelectedRows(selected);
+  };
+
+  const handlePromotionSuccess = () => {
+    refetch();
+    Swal.fire({
+      title: "Success!",
+      text: "Students promoted successfully!",
+      icon: "success",
+      timer: 2000,
+      showConfirmButton: false,
+    });
+  };
+
+  // Calculate statistics
+  const stats = React.useMemo(() => {
+    if (!transformedEnrollments.length) {
+      return {
+        total: 0,
+        active: 0,
+        paid: 0,
+        unpaid: 0,
+        totalFees: 0,
+        totalPaid: 0,
+        totalDue: 0,
+      };
+    }
+
+    const total = transformedEnrollments.length;
+    const active = transformedEnrollments.filter(
+      (e: any) => e.status === "active"
+    ).length;
+    const paid = transformedEnrollments.filter(
+      (e: any) => e.paymentStatus === "paid"
+    ).length;
+    const unpaid = transformedEnrollments.filter(
+      (e: any) => e.paymentStatus === "unpaid"
+    ).length;
+    const totalFees = transformedEnrollments.reduce(
+      (sum: any, e: any) => sum + e.totalFees,
+      0
+    );
+    const totalPaid = transformedEnrollments.reduce(
+      (sum: any, e: any) => sum + e.paidAmount,
+      0
+    );
+    const totalDue = transformedEnrollments.reduce(
+      (sum: any, e: any) => sum + e.dueAmount,
+      0
+    );
+
+    return {
+      total,
+      active,
+      paid,
+      unpaid,
+      totalFees,
+      totalPaid,
+      totalDue,
+    };
+  }, [transformedEnrollments]);
+
+  // Custom toolbar with promotion options
+  const customToolbar = (
+    <Box display="flex" gap={2} alignItems="center" flexWrap="wrap">
+      <Button
+        variant="contained"
+        startIcon={<Add />}
+        onClick={() => router.push("/dashboard/enrollments")}
+      >
+        New Enrollment
+      </Button>
+
+      <Button
+        variant="outlined"
+        startIcon={<ArrowForward />}
+        onClick={handleOpenPromotionModal}
+        color="success"
+      >
+        Promote Students
+      </Button>
+
+      <Button
+        variant="outlined"
+        startIcon={<Assessment />}
+        onClick={handleOpenPromotionSummary}
+        color="info"
+      >
+        Promotion Summary
+      </Button>
+
+      <Box flexGrow={1} />
+
+      <Button
+        variant="outlined"
+        startIcon={<Refresh />}
+        onClick={() => refetch()}
+      >
+        Refresh
+      </Button>
+    </Box>
+  );
+
+  // Show loading state
+  if (isLoading && page === 0) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
+        <CircularProgress />
+      </Box>
+    );
+  }
+
   return (
     <Box sx={{ p: 3, backgroundColor: "grey.50", minHeight: "100vh" }}>
+      {/* Header with statistics */}
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h4" fontWeight="bold" gutterBottom>
+          Student Enrollments
+        </Typography>
+        <Typography variant="body1" color="text.secondary" gutterBottom>
+          Manage and track all student admissions and promotions
+        </Typography>
+
+        {/* Statistics Cards */}
+        <Box display="flex" gap={2} flexWrap="wrap" mt={3}>
+          <Box
+            sx={{
+              p: 2,
+              bgcolor: "white",
+              borderRadius: 2,
+              boxShadow: 1,
+              minWidth: 180,
+            }}
+          >
+            <Typography variant="caption" color="text.secondary">
+              Total Enrollments
+            </Typography>
+            <Typography variant="h4" fontWeight="bold">
+              {stats.total}
+            </Typography>
+            <Box display="flex" gap={1} mt={1}>
+              <Chip
+                label={`Active: ${stats.active}`}
+                size="small"
+                color="success"
+              />
+              <Chip
+                label={`Paid: ${stats.paid}`}
+                size="small"
+                color="success"
+                variant="outlined"
+              />
+            </Box>
+          </Box>
+
+          <Box
+            sx={{
+              p: 2,
+              bgcolor: "white",
+              borderRadius: 2,
+              boxShadow: 1,
+              minWidth: 180,
+            }}
+          >
+            <Typography variant="caption" color="text.secondary">
+              Financial Summary
+            </Typography>
+            <Typography variant="h6" fontWeight="bold">
+              ৳{stats.totalFees.toLocaleString()}
+            </Typography>
+            <Box display="flex" gap={1} mt={1}>
+              <Chip
+                label={`Paid: ৳${stats.totalPaid.toLocaleString()}`}
+                size="small"
+                color="success"
+              />
+              <Chip
+                label={`Due: ৳${stats.totalDue.toLocaleString()}`}
+                size="small"
+                color={stats.totalDue > 0 ? "error" : "default"}
+              />
+            </Box>
+          </Box>
+
+          <Box
+            sx={{
+              p: 2,
+              bgcolor: "white",
+              borderRadius: 2,
+              boxShadow: 1,
+              minWidth: 180,
+            }}
+          >
+            <Typography variant="caption" color="text.secondary">
+              Payment Status
+            </Typography>
+            <Box display="flex" flexDirection="column" gap={1} mt={1}>
+              <Box display="flex" justifyContent="space-between">
+                <Typography variant="body2">Paid:</Typography>
+                <Chip label={stats.paid} size="small" color="success" />
+              </Box>
+              <Box display="flex" justifyContent="space-between">
+                <Typography variant="body2">Unpaid:</Typography>
+                <Chip label={stats.unpaid} size="small" color="error" />
+              </Box>
+            </Box>
+          </Box>
+        </Box>
+      </Box>
+
+      {/* Main Table */}
       <Table
-        title="Student Enrollments"
-        subtitle="Manage and track all student admissions"
+        title=""
+        subtitle=""
         columns={columns}
         data={transformedEnrollments}
         loading={isLoading}
@@ -609,7 +983,7 @@ export default function EnrollmentsPage() {
             : undefined
         }
         onRefresh={refetch}
-        onExport={handleExport}
+        onExport={() => handleExport("excel")}
         onPrint={handlePrint}
         rowActions={rowActions}
         bulkActions={bulkActions}
@@ -633,21 +1007,16 @@ export default function EnrollmentsPage() {
         onPageChange={handlePageChange}
         onRowsPerPageChange={handleRowsPerPageChange}
         onSearchChange={handleSearchChange}
+        // onFilterChange={handleFilterChange}
+        // onSelectionChange={handleSelectionChange}
         rowCount={totalCount}
         page={page}
         rowsPerPage={rowsPerPage}
-        customToolbar={
-          <Button
-            variant="contained"
-            startIcon={<Person />}
-            onClick={() => router.push("/dashboard/enrollments")}
-          >
-            New Enrollment
-          </Button>
-        }
+        customToolbar={customToolbar}
+        // initialFilters={filters}
       />
 
-      {/* Enrollment Details Modal */}
+      {/* Modals */}
       <EnrollmentDetailsModal
         open={detailDialogOpen}
         setOpen={handleCloseDetails}
@@ -658,12 +1027,30 @@ export default function EnrollmentsPage() {
         onCollectFee={handleCollectFee}
       />
 
-      {/* Fee Collection Modal */}
       <FeeCollectionModal
         setOpen={handleCloseFeeCollection}
         open={feeCollectionOpen}
         onClose={handleCloseFeeCollection}
         enrollment={selectedEnrollment}
+      />
+
+      <PromotionModal
+        open={promotionModalOpen}
+        onClose={() => setPromotionModalOpen(false)}
+        onSuccess={handlePromotionSuccess}
+        classOptions={classOptions}
+      />
+
+      <PromotionHistoryModal
+        open={promotionHistoryModalOpen}
+        onClose={() => setPromotionHistoryModalOpen(false)}
+        studentId={selectedStudentForHistory?.id}
+        studentName={selectedStudentForHistory?.name}
+      />
+
+      <PromotionSummaryModal
+        open={promotionSummaryModalOpen}
+        onClose={() => setPromotionSummaryModalOpen(false)}
       />
     </Box>
   );

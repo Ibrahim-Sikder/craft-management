@@ -5,79 +5,74 @@
 
 import type React from "react";
 
-import { useState, useEffect, useMemo } from "react";
-import {
-  Box,
-  Container,
-  Typography,
-  Button,
-  Paper,
-  Grid,
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableRow,
-  Menu,
-  MenuItem,
-  Divider,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
-  Skeleton,
-  Fade,
-  ThemeProvider,
-  Checkbox,
-  Alert,
-  Snackbar,
-  FormControl,
-  InputLabel,
-  Select,
-  TextField,
-  Switch,
-  FormControlLabel,
-  Tooltip,
-  CircularProgress,
-} from "@mui/material";
-import {
-  Search as SearchIcon,
-  Edit as EditIcon,
-  Delete as DeleteIcon,
-  Visibility as VisibilityIcon,
-  Add,
-  Save,
-} from "@mui/icons-material";
-import CraftForm from "@/components/Forms/Form";
+import CraftIntAutoComplete from "@/components/Forms/CruftAutocomplete";
 import CraftDatePicker from "@/components/Forms/DatePicker";
+import CraftForm from "@/components/Forms/Form";
 import CraftSelect from "@/components/Forms/Select";
+import { customTheme } from "@/data";
+import { useAcademicOption } from "@/hooks/useAcademicOption";
 import {
   classHour,
   handWritting,
   lessonEvaluation,
   subjectName,
 } from "@/options";
-import CraftIntAutoComplete from "@/components/Forms/CruftAutocomplete";
-import { customTheme } from "@/data";
-import { getFromLocalStorage } from "@/utils/local.storage";
-import type { FieldValues } from "react-hook-form";
-import { useGetAllStudentsQuery } from "@/redux/api/studentApi";
-import toast from "react-hot-toast";
-import { useRouter } from "next/navigation";
 import {
   useCreateClassReportMutation,
   useGetSingleClassReportQuery,
   useUpdateClassReportMutation,
 } from "@/redux/api/classReportApi";
-import { useGetAllClassesQuery } from "@/redux/api/classApi";
-import { useGetAllSubjectsQuery } from "@/redux/api/subjectApi";
+import { useGetAllStudentsQuery } from "@/redux/api/studentApi";
+import { boxStyleReport } from "@/style/customeStyle";
+import { getFromLocalStorage } from "@/utils/local.storage";
+import {
+  Add,
+  Delete as DeleteIcon,
+  Edit as EditIcon,
+  Save,
+  Search as SearchIcon,
+  Visibility as VisibilityIcon,
+} from "@mui/icons-material";
+import {
+  Box,
+  Button,
+  Checkbox,
+  CircularProgress,
+  Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Divider,
+  Fade,
+  FormControl,
+  FormControlLabel,
+  Grid,
+  InputLabel,
+  Menu,
+  MenuItem,
+  Paper,
+  Select,
+  Skeleton,
+  Switch,
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableRow,
+  TextField,
+  ThemeProvider,
+  Tooltip,
+  Typography,
+} from "@mui/material";
+import { format } from "date-fns";
+import { useRouter } from "next/navigation";
+import { useEffect, useMemo, useState } from "react";
+import type { FieldValues } from "react-hook-form";
+import toast from "react-hot-toast";
 import TodayLesson from "./TodayLesson";
 import TodayTask from "./TodayTask";
-import { format } from "date-fns";
-import { useGetAllTeachersQuery } from "@/redux/api/teacherApi";
-import { boxStyleReport } from "@/style/customeStyle";
-import { useAcademicOption } from "@/hooks/useAcademicOption";
 
 // Define a type for student evaluation
 type StudentEvaluation = {
@@ -106,8 +101,6 @@ export default function ClassReportForm({ id }: any) {
     endDate: "",
   });
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [selectedBrand, setSelectedBrand] = useState("");
-  const [filteredSubjects, setFilteredVehicles] = useState<any[]>([]);
   const [selectedStudent, setSelectedStudent] = useState<any | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [studentEvaluations, setStudentEvaluations] = useState<
@@ -128,9 +121,6 @@ export default function ClassReportForm({ id }: any) {
 
   const [todayLessonDialogOpen, setTodayLessonDialogOpen] = useState(false);
   const [todayTaskDialogOpen, setTodayTaskDialogOpen] = useState(false);
-
-  const storedUser = JSON.parse(getFromLocalStorage("user-info") || "{}");
-
   const {
     data: studentData,
     isLoading,
@@ -773,20 +763,6 @@ export default function ClassReportForm({ id }: any) {
     setStudentEvaluations(updatedEvaluations);
   };
 
-  const sortedVehicleName = subjectName.sort((a, b) => {
-    if (a.value < b.value) return -1;
-    if (a.value > b.value) return 1;
-    return 0;
-  });
-
-  // const handleClassName = (event: any, newValue: any) => {
-  //   setSelectedBrand(newValue)
-  //   const filtered = sortedVehicleName
-  //     ?.filter((vehicle: any) => vehicle.label?.toLowerCase().includes(newValue?.toLowerCase()))
-  //     .sort((a: any, b: any) => a.label.localeCompare(b.label))
-  //   setFilteredVehicles(filtered)
-  // }
-
   const handleClassChange = (event: any, newValue: any) => {
     if (id && isEditMode) {
       toast("Cannot change class in edit mode");
@@ -897,7 +873,6 @@ export default function ClassReportForm({ id }: any) {
   };
 
   useEffect(() => {
-    // Mobile-specific optimizations
     const isMobile =
       /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera|Realme Mini/i.test(
         navigator.userAgent
@@ -1339,9 +1314,16 @@ export default function ClassReportForm({ id }: any) {
                                             variant="caption"
                                             color="text.secondary"
                                           >
-                                            {student.studentId} •{" "}
-                                            {student.className},{" "}
-                                            {student.section}
+                                            {student.studentId} •
+                                            {student.className &&
+                                            student.className.length > 0
+                                              ? student.className[0].className
+                                              : "No Class"}
+                                            ,
+                                            {student.section &&
+                                            student.section.length > 0
+                                              ? student.section[0]
+                                              : "No Section"}
                                           </Typography>
                                         </TableCell>
                                         <TableCell align="center">
