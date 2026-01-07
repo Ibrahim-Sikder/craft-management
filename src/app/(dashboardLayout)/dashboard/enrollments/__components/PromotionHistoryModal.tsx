@@ -23,13 +23,7 @@ import {
   TimelineOppositeContent,
   TimelineSeparator,
 } from "@mui/lab";
-
-interface PromotionHistoryModalProps {
-  open: boolean;
-  onClose: () => void;
-  studentId: string;
-  studentName: string;
-}
+import { HistoryItem, PromotionHistoryModalProps } from "@/types/history";
 
 const PromotionHistoryModal: React.FC<PromotionHistoryModalProps> = ({
   open,
@@ -44,7 +38,7 @@ const PromotionHistoryModal: React.FC<PromotionHistoryModalProps> = ({
     }
   );
 
-  const history = historyData?.data || [];
+  const history: HistoryItem[] = historyData?.data?.history || [];
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
@@ -76,14 +70,17 @@ const PromotionHistoryModal: React.FC<PromotionHistoryModalProps> = ({
           </Box>
         ) : (
           <Timeline position="alternate">
-            {history.map((item: any, index: number) => (
-              <TimelineItem key={item.id}>
+            {history.map((item: HistoryItem, index: number) => (
+              <TimelineItem key={item.enrollmentId}>
                 <TimelineOppositeContent sx={{ m: "auto 0" }}>
                   <Typography variant="caption" color="text.secondary">
                     {new Date(item.createdAt).toLocaleDateString()}
                   </Typography>
-                  <Typography variant="body2">
-                    Session: {item.session}
+                  <Typography variant="caption" display="block">
+                    {new Date(item.createdAt).toLocaleTimeString([], {
+                      hour: "2-digit",
+                      minute: "2-digit",
+                    })}
                   </Typography>
                 </TimelineOppositeContent>
 
@@ -94,9 +91,9 @@ const PromotionHistoryModal: React.FC<PromotionHistoryModalProps> = ({
                     }
                   >
                     {item.admissionType === "promotion" ? (
-                      <ArrowForward />
+                      <ArrowForward fontSize="small" />
                     ) : (
-                      <Person />
+                      <Person fontSize="small" />
                     )}
                   </TimelineDot>
                   {index < history.length - 1 && <TimelineConnector />}
@@ -109,9 +106,7 @@ const PromotionHistoryModal: React.FC<PromotionHistoryModalProps> = ({
                         <School fontSize="small" />
                       </Avatar>
                       <Typography variant="subtitle1" fontWeight="bold">
-                        {typeof item.class === "object"
-                          ? item.class.className
-                          : item.class}
+                        {item.className}
                       </Typography>
                     </Box>
 
@@ -132,22 +127,23 @@ const PromotionHistoryModal: React.FC<PromotionHistoryModalProps> = ({
                             ? "success"
                             : item.status === "passed"
                               ? "info"
-                              : "default"
+                              : item.status === "failed"
+                                ? "error"
+                                : "default"
                         }
+                        size="small"
+                        variant="outlined"
+                      />
+                      <Chip
+                        label={`Roll: ${item.roll}`}
                         size="small"
                         variant="outlined"
                       />
                     </Box>
 
                     <Typography variant="body2" color="text.secondary">
-                      Roll: {item.rollNumber || "N/A"}
+                      Enrollment ID: {item.enrollmentId}
                     </Typography>
-
-                    {item.promotedFrom && (
-                      <Typography variant="caption" color="text.secondary">
-                        Promoted from previous enrollment
-                      </Typography>
-                    )}
                   </Paper>
                 </TimelineContent>
               </TimelineItem>

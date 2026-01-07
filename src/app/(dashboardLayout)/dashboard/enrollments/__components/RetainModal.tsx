@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import {
-  useBulkPromoteEnrollmentsMutation,
+  useBulkRetainEnrollmentsMutation,
   useGetPromotionEligibleStudentsQuery,
 } from "@/redux/api/promotionApi";
-import { Close, School, Search } from "@mui/icons-material";
+import { Close, School, Search, RestartAlt } from "@mui/icons-material";
 import {
   Alert,
   Box,
@@ -32,17 +32,22 @@ import {
   TextField,
   Typography,
 } from "@mui/material";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import Swal from "sweetalert2";
 
-interface PromotionModalProps {
+interface ClassOption {
+  value: string;
+  label: string;
+}
+
+interface RetainModalProps {
   open: boolean;
   onClose: () => void;
   onSuccess?: () => void;
-  classOptions: any;
+  classOptions: ClassOption[];
 }
 
-const PromotionModal: React.FC<PromotionModalProps> = ({
+const RetainModal: React.FC<RetainModalProps> = ({
   open,
   onClose,
   onSuccess,
@@ -50,14 +55,13 @@ const PromotionModal: React.FC<PromotionModalProps> = ({
 }) => {
   const [selectedStudents, setSelectedStudents] = useState<string[]>([]);
   const [sourceClassId, setSourceClassId] = useState<string>("");
-  const [targetClassId, setTargetClassId] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [rollNumbers, setRollNumbers] = useState<Record<string, string>>({});
   const [sections, setSections] = useState<Record<string, string>>({});
   const [searchTerm, setSearchTerm] = useState("");
 
-  const [bulkPromote, { isLoading: promoting }] =
-    useBulkPromoteEnrollmentsMutation();
+  const [bulkRetain, { isLoading: retaining }] =
+    useBulkRetainEnrollmentsMutation();
 
   const {
     data: eligibleData,
@@ -66,54 +70,6 @@ const PromotionModal: React.FC<PromotionModalProps> = ({
   } = useGetPromotionEligibleStudentsQuery(sourceClassId, {
     skip: !sourceClassId,
   });
-
-  const getNextClass = (currentClassLabel: string): string => {
-    const classOrder = [
-      "Hifz",
-      "Play",
-      "Nursery",
-      "KG",
-      "Class I",
-      "Class II",
-      "Class III",
-      "Class IV",
-      "Class V",
-      "Class VI",
-      "Class VII",
-      "Class VIII",
-      "Class IX",
-      "Class X",
-      "Alim First Year",
-      "Alim Second Year",
-      "Fazil First Year",
-      "Fazil Second Year",
-      "Fazil Third Year",
-      "Kamil First Year",
-      "Kamil Second Year",
-      "Kamil Third Year",
-    ];
-
-    const currentIndex = classOrder.indexOf(currentClassLabel);
-    if (currentIndex === -1 || currentIndex === classOrder.length - 1) {
-      return "";
-    }
-    return classOrder[currentIndex + 1];
-  };
-
-  useEffect(() => {
-    if (sourceClassId) {
-      const selectedClass = classOptions.find(
-        (c: any) => c.value === sourceClassId
-      );
-      if (selectedClass) {
-        const autoNextClass = getNextClass(selectedClass.label);
-        const nextClassOption = classOptions.find(
-          (c: any) => c.label === autoNextClass
-        );
-        setTargetClassId(nextClassOption?.value || "");
-      }
-    }
-  }, [sourceClassId, classOptions]);
 
   const handleSelectAll = (event: React.ChangeEvent<HTMLInputElement>) => {
     const eligibleStudents = eligibleData?.data?.students || [];
@@ -142,86 +98,65 @@ const PromotionModal: React.FC<PromotionModalProps> = ({
     setSections((prev) => ({ ...prev, [studentId]: value }));
   };
 
-  const handlePromote = async (event: React.MouseEvent) => {
-    event.preventDefault();
+  const handleRetain = async () => {
     onClose();
     if (selectedStudents.length === 0) {
-      Swal.fire(
-        "No Selection",
-        "Please select students to promote.",
-        "warning"
-      );
+      Swal.fire("No Selection", "Please select students to retain.", "warning");
       return;
     }
 
-    if (!targetClassId) {
-      Swal.fire(
-        "Target Class Required",
-        "Please select class to promote students to.",
-        "warning"
-      );
-      return;
-    }
-
-    try {
-      // Show confirmation dialog
-      const result = await Swal.fire({
-        title: "Confirm Promotion",
-        html: `Promote <strong>${selectedStudents.length}</strong> student(s) to target class?`,
-        icon: "question",
-        showCancelButton: true,
-        confirmButtonColor: "#1976d2",
-        confirmButtonText: "Yes, Promote",
-        focusCancel: true, // Focus on cancel button by default
-        allowOutsideClick: false, // Prevent closing by clicking outside
-        allowEscapeKey: false, // Prevent closing by escape key
-      });
-
+    Swal.fire({
+      title: "Confirm Retention",
+      html: `Retain <strong>${selectedStudents.length}</strong> student(s) in current class for new session?`,
+      icon: "question",
+      showCancelButton: true,
+      confirmButtonColor: "#1976d2",
+      confirmButtonText: "Yes, Retain",
+    }).then(async (result) => {
       if (result.isConfirmed) {
-        setLoading(true);
+        try {
+          setLoading(true);
 
-        const promotions = selectedStudents.map((studentId) => {
-          const studentData = eligibleData?.data?.students.find(
-            (s: any) => s.studentId === studentId
-          );
+          const promotions = selectedStudents.map((studentId) => {
+            const studentData = eligibleData?.data?.students.find(
+              (s: any) => s.studentId === studentId
+            );
 
-          return {
-            studentId: studentData.studentId,
-            newClassId: targetClassId,
-            rollNumber: rollNumbers[studentId] || studentData.currentRoll || "",
-            section: sections[studentId] || studentData.section || "A",
-          };
-        });
+            return {
+              studentId: studentData.studentId,
+              rollNumber:
+                rollNumbers[studentId] || studentData.currentRoll || "",
+              section: sections[studentId] || studentData.section || "A",
+            };
+          });
+          await bulkRetain({ promotions }).unwrap();
 
-        await bulkPromote(promotions).unwrap();
-
-        await Swal.fire({
-          title: "Success!",
-          text: "Students promoted successfully.",
-          icon: "success",
-          timer: 2000,
-          showConfirmButton: false,
-        });
-
-        setSelectedStudents([]);
-        setRollNumbers({});
-        setSections({});
-        setSourceClassId("");
-        setTargetClassId("");
-        setSearchTerm("");
-        onClose();
-        if (onSuccess) onSuccess();
+          await Swal.fire({
+            title: "Success!",
+            text: "Students retained successfully.",
+            icon: "success",
+            timer: 1500,
+            showConfirmButton: false,
+          });
+          setSelectedStudents([]);
+          setRollNumbers({});
+          setSections({});
+          setSourceClassId("");
+          setSearchTerm("");
+          onClose();
+          if (onSuccess) onSuccess();
+        } catch (error: any) {
+          console.error("Retention error:", error);
+          Swal.fire({
+            title: "Error",
+            text: error.data?.message || "Failed to retain students",
+            icon: "error",
+          });
+        } finally {
+          setLoading(false);
+        }
       }
-    } catch (error: any) {
-      console.error("Promotion error:", error);
-      Swal.fire({
-        title: "Error",
-        text: error.data?.message || "Failed to promote students",
-        icon: "error",
-      });
-    } finally {
-      setLoading(false);
-    }
+    });
   };
 
   const filteredStudents = React.useMemo(() => {
@@ -240,7 +175,6 @@ const PromotionModal: React.FC<PromotionModalProps> = ({
     setRollNumbers({});
     setSections({});
     setSourceClassId("");
-    setTargetClassId("");
     setSearchTerm("");
     onClose();
   };
@@ -249,10 +183,10 @@ const PromotionModal: React.FC<PromotionModalProps> = ({
     <Dialog open={open} onClose={handleClose} maxWidth="lg" fullWidth>
       <DialogTitle>
         <Box display="flex" alignItems="center" justifyContent="space-between">
-          <Typography variant="h6">
-            Student Promotion (Class Hierarchy)
+          <Typography variant="h6" display="flex" alignItems="center" gap={1}>
+            <RestartAlt /> Retain Students (Same Class)
           </Typography>
-          <IconButton onClick={handleClose} disabled={promoting || loading}>
+          <IconButton onClick={handleClose} disabled={retaining || loading}>
             <Close />
           </IconButton>
         </Box>
@@ -260,17 +194,16 @@ const PromotionModal: React.FC<PromotionModalProps> = ({
 
       <DialogContent dividers>
         <Grid container spacing={2}>
-          {/* 1. Source & Target Class Selection */}
-          <Grid item xs={12} md={6}>
+          <Grid item xs={12}>
             <FormControl fullWidth>
-              <InputLabel>From Class (Source)</InputLabel>
+              <InputLabel>Select Class</InputLabel>
               <Select
                 value={sourceClassId}
-                label="From Class (Source)"
+                label="Select Class"
                 onChange={(e) => setSourceClassId(e.target.value)}
-                disabled={promoting || loading}
+                disabled={retaining || loading}
               >
-                {classOptions.map((option: any) => (
+                {classOptions.map((option) => (
                   <MenuItem key={option.value} value={option.value}>
                     {option.label}
                   </MenuItem>
@@ -288,50 +221,27 @@ const PromotionModal: React.FC<PromotionModalProps> = ({
             )}
           </Grid>
 
-          <Grid item xs={12} md={6}>
-            <FormControl fullWidth>
-              <InputLabel>To Class (Target)</InputLabel>
-              <Select
-                value={targetClassId}
-                label="To Class (Target)"
-                onChange={(e) => setTargetClassId(e.target.value)}
-                disabled={promoting || loading}
-              >
-                <MenuItem value="">
-                  <em>Select Target Class</em>
-                </MenuItem>
-                {classOptions.map((option: any) => (
-                  <MenuItem key={option.value} value={option.value}>
-                    {option.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-
-          {/* 2. Alert Box */}
           <Grid item xs={12}>
-            <Alert severity="info" sx={{ mb: 2 }}>
-              Select a Source Class to load active students. Then select Target
-              Class to promote them to. Session is auto-managed by system.
+            <Alert severity="warning" sx={{ mb: 2 }}>
+              Retained students will stay in the <strong>same class</strong> for
+              the next session. Their previous enrollment will be marked as
+              Failed.
             </Alert>
           </Grid>
 
-          {/* 3. Search Bar */}
           <Grid item xs={12}>
             <TextField
               fullWidth
               label="Search Students"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              disabled={!sourceClassId || promoting || loading}
+              disabled={!sourceClassId || retaining || loading}
               InputProps={{
                 startAdornment: <Search sx={{ mr: 1 }} />,
               }}
             />
           </Grid>
 
-          {/* 4. Student Table */}
           <Grid item xs={12}>
             <Paper variant="outlined" sx={{ maxHeight: 400, overflow: "auto" }}>
               {loadingEligible && sourceClassId ? (
@@ -345,7 +255,7 @@ const PromotionModal: React.FC<PromotionModalProps> = ({
                     sx={{ fontSize: 40, color: "text.disabled", mb: 2 }}
                   />
                   <Typography>
-                    Please select a Source Class to begin.
+                    Please select a Class to view students.
                   </Typography>
                 </Box>
               ) : filteredStudents.length === 0 ? (
@@ -369,7 +279,7 @@ const PromotionModal: React.FC<PromotionModalProps> = ({
                                 filteredStudents.length
                             }
                             onChange={handleSelectAll}
-                            disabled={promoting || loading}
+                            disabled={retaining || loading}
                           />
                         </TableCell>
                         <TableCell>Student</TableCell>
@@ -387,24 +297,24 @@ const PromotionModal: React.FC<PromotionModalProps> = ({
                           <TableRow
                             key={student.studentId}
                             selected={isSelected}
-                            hover={!promoting && !loading}
+                            hover={!retaining && !loading}
                             onClick={() =>
-                              !promoting &&
+                              !retaining &&
                               !loading &&
                               handleSelectStudent(student.studentId)
                             }
                             sx={{
                               cursor:
-                                promoting || loading
+                                retaining || loading
                                   ? "not-allowed"
                                   : "pointer",
-                              opacity: promoting || loading ? 0.6 : 1,
+                              opacity: retaining || loading ? 0.6 : 1,
                             }}
                           >
                             <TableCell padding="checkbox">
                               <Checkbox
                                 checked={isSelected}
-                                disabled={promoting || loading}
+                                disabled={retaining || loading}
                               />
                             </TableCell>
                             <TableCell>
@@ -438,7 +348,7 @@ const PromotionModal: React.FC<PromotionModalProps> = ({
                                   )
                                 }
                                 placeholder="New Roll"
-                                disabled={!isSelected || promoting || loading}
+                                disabled={!isSelected || retaining || loading}
                                 sx={{ width: 80 }}
                               />
                             </TableCell>
@@ -455,7 +365,7 @@ const PromotionModal: React.FC<PromotionModalProps> = ({
                                     e.target.value
                                   )
                                 }
-                                disabled={!isSelected || promoting || loading}
+                                disabled={!isSelected || retaining || loading}
                                 size="small"
                                 sx={{ width: 80 }}
                               >
@@ -480,30 +390,25 @@ const PromotionModal: React.FC<PromotionModalProps> = ({
         <Button
           onClick={handleClose}
           variant="outlined"
-          disabled={promoting || loading}
+          disabled={retaining || loading}
         >
           Cancel
         </Button>
         <Button
-          onClick={(e: any) => handlePromote(e)}
+          onClick={handleRetain}
           variant="contained"
-          disabled={
-            promoting ||
-            loading ||
-            selectedStudents.length === 0 ||
-            !targetClassId
-          }
-          color="success"
+          disabled={retaining || loading || selectedStudents.length === 0}
+          color="warning"
         >
-          {promoting || loading
-            ? "Promoting..."
-            : `Promote ${selectedStudents.length} Students`}
+          {retaining || loading
+            ? "Processing..."
+            : `Retain ${selectedStudents.length} Students`}
         </Button>
       </DialogActions>
 
-      {(loading || promoting || isFetching) && <LinearProgress />}
+      {(loading || retaining || isFetching) && <LinearProgress />}
     </Dialog>
   );
 };
 
-export default PromotionModal;
+export default RetainModal;
