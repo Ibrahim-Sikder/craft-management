@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { usePayFeeMutation } from "@/redux/api/feesApi";
 import {
   AccountBalance,
   AttachMoney,
@@ -29,6 +30,7 @@ import {
   useTheme,
 } from "@mui/material";
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 interface PaymentModalProps {
   open: boolean;
@@ -44,71 +46,87 @@ const PaymentModal = ({
   onPaymentSuccess,
 }: PaymentModalProps) => {
   const theme = useTheme();
+  const [payFee, { isLoading }] = usePayFeeMutation();
+
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [amount, setAmount] = useState(fee?.dueAmount || 0);
   const [paymentDate, setPaymentDate] = useState(
     new Date().toISOString().split("T")[0]
   );
   const [transactionId, setTransactionId] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
+  const [receiptNo, setReceiptNo] = useState(`RCP-${Date.now()}`);
 
   useEffect(() => {
     if (fee) {
       setAmount(fee.dueAmount || 0);
       setTransactionId("");
+      setReceiptNo(`RCP-${Date.now()}`);
     }
   }, [fee]);
 
   const handlePaymentSubmit = async () => {
-    if (amount <= 0 || amount > fee?.dueAmount) {
+    if (!fee?._id) {
+      toast.error("Fee information not found");
       return;
     }
 
-    setIsLoading(true);
+    if (amount <= 0) {
+      toast.error("Payment amount must be greater than 0");
+      return;
+    }
+
+    if (amount > fee.dueAmount) {
+      toast.error("Payment amount cannot exceed due amount");
+      return;
+    }
 
     try {
-      const paymentMethodMap: { [key: string]: string } = {
-        cash: "cash",
-        card: "card",
-        bank: "bank",
-        mobile: "bkash",
-      };
-
-      const backendPaymentMethod = paymentMethodMap[paymentMethod] || "cash";
-
       const paymentData = {
         feeId: fee._id,
         amountPaid: amount,
-        paymentMethod: backendPaymentMethod,
-        paymentDate: new Date(paymentDate),
+        paymentMethod: paymentMethod === "mobile" ? "bkash" : paymentMethod,
         transactionId: transactionId || `TXN-${Date.now()}`,
-        receiptNo: `RCP-${Date.now()}`,
+        receiptNo: receiptNo || `RCP-${Date.now()}`,
+        note: `Payment for ${fee.feeType} - ${fee.month}`,
       };
-      const response = await fetch("http://localhost:5000/api/v1/fees/pay", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(paymentData),
-      });
 
-      if (!response.ok) {
-        throw new Error("Payment failed");
-      }
-
-      const result = await response.json();
+      const result = await payFee(paymentData).unwrap();
 
       if (result.success) {
-        onPaymentSuccess(result.data);
+        toast.success("Payment processed successfully!", {
+          duration: 4000,
+          position: "top-right",
+        });
+
+        // Call the success callback with the full payment data
+        onPaymentSuccess({
+          ...result.data,
+          feeId: fee._id,
+          originalFee: fee,
+        });
+
         onClose();
+
+        // Reset form
+        setAmount(fee.dueAmount || 0);
+        setTransactionId("");
       } else {
-        throw new Error(result.message || "Payment failed");
+        toast.error(result.message || "Payment failed", {
+          duration: 5000,
+          position: "top-right",
+        });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Payment error:", error);
-      // You could show an error message here
-    } finally {
-      setIsLoading(false);
+      toast.error(
+        error?.data?.message ||
+          error?.message ||
+          "Failed to process payment. Please try again.",
+        {
+          duration: 5000,
+          position: "top-right",
+        }
+      );
     }
   };
 
@@ -174,8 +192,8 @@ const PaymentModal = ({
         {/* Content */}
         <Box sx={{ p: 3 }}>
           <Grid container spacing={3}>
-            {/* Left Column - Payment Details */}
-            <Grid item xs={12} md={12}>
+            {/* Payment Details */}
+            <Grid item xs={12}>
               <Typography
                 variant="h6"
                 fontWeight="bold"
@@ -185,22 +203,23 @@ const PaymentModal = ({
                 Payment Details
               </Typography>
 
-              {/* Transaction ID and Date */}
+              {/* Receipt and Date */}
               <Grid container spacing={2} sx={{ mb: 3 }}>
                 <Grid item xs={6}>
                   <TextField
                     fullWidth
                     size="small"
-                    label="Transaction ID"
-                    value={`TXN-${Date.now()}`}
-                    disabled
+                    label="Receipt No"
+                    value={receiptNo}
+                    onChange={(e) => setReceiptNo(e.target.value)}
+                    placeholder="Enter receipt number"
                   />
                 </Grid>
                 <Grid item xs={6}>
                   <TextField
                     fullWidth
                     size="small"
-                    label="Date"
+                    label="Payment Date"
                     type="date"
                     value={paymentDate}
                     onChange={(e) => setPaymentDate(e.target.value)}
@@ -222,7 +241,7 @@ const PaymentModal = ({
                         <strong>Description</strong>
                       </TableCell>
                       <TableCell align="right">
-                        <strong>Amount ($)</strong>
+                        <strong>Amount (৳)</strong>
                       </TableCell>
                     </TableRow>
                   </TableHead>
@@ -242,13 +261,33 @@ const PaymentModal = ({
                     <TableRow>
                       <TableCell>Total Fee Amount</TableCell>
                       <TableCell align="right">
-                        {fee?.amount?.toLocaleString()}
+                        ৳{fee?.amount?.toLocaleString()}
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>Adjustments</TableCell>
+                      <TableCell align="right" sx={{ color: "error.main" }}>
+                        -৳
+                        {(
+                          (fee?.discount || 0) + (fee?.waiver || 0)
+                        ).toLocaleString()}
+                      </TableCell>
+                    </TableRow>
+                    <TableRow>
+                      <TableCell>Net Amount</TableCell>
+                      <TableCell align="right">
+                        ৳
+                        {(
+                          (fee?.amount || 0) -
+                          (fee?.discount || 0) -
+                          (fee?.waiver || 0)
+                        ).toLocaleString()}
                       </TableCell>
                     </TableRow>
                     <TableRow>
                       <TableCell>Previously Paid</TableCell>
                       <TableCell align="right" sx={{ color: "success.main" }}>
-                        {fee?.paidAmount?.toLocaleString()}
+                        ৳{fee?.paidAmount?.toLocaleString()}
                       </TableCell>
                     </TableRow>
                     <TableRow>
@@ -259,7 +298,7 @@ const PaymentModal = ({
                         align="right"
                         sx={{ color: "error.main", fontWeight: "bold" }}
                       >
-                        {fee?.dueAmount?.toLocaleString()}
+                        ৳{fee?.dueAmount?.toLocaleString()}
                       </TableCell>
                     </TableRow>
                     <TableRow sx={{ backgroundColor: theme.palette.grey[50] }}>
@@ -275,11 +314,22 @@ const PaymentModal = ({
                           InputProps={{
                             startAdornment: (
                               <InputAdornment position="start">
-                                ${" "}
+                                ৳
                               </InputAdornment>
                             ),
                           }}
-                          sx={{ maxWidth: 120 }}
+                          sx={{ maxWidth: 150 }}
+                          error={amount > fee?.dueAmount}
+                          helperText={
+                            amount > fee?.dueAmount
+                              ? "Cannot exceed due amount"
+                              : ""
+                          }
+                          inputProps={{
+                            max: fee?.dueAmount,
+                            min: 0,
+                            step: 1,
+                          }}
                         />
                       </TableCell>
                     </TableRow>
@@ -287,7 +337,7 @@ const PaymentModal = ({
                 </Table>
               </TableContainer>
 
-              {/* Payment Method Selection - Changed to Select Dropdown */}
+              {/* Payment Method Selection */}
               <FormControl fullWidth sx={{ mb: 3 }}>
                 <InputLabel id="payment-method-label">
                   Select Payment Method
@@ -301,24 +351,43 @@ const PaymentModal = ({
                 >
                   {paymentMethods.map((method) => (
                     <MenuItem key={method.value} value={method.value}>
-                      <Typography variant="body2" fontWeight="500">
-                        {method.label}
-                      </Typography>
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
+                        {method.icon}
+                        <Typography variant="body2" fontWeight="500">
+                          {method.label}
+                        </Typography>
+                      </Box>
                     </MenuItem>
                   ))}
                 </Select>
               </FormControl>
 
-              {/* Transaction ID for mobile banking */}
-              {paymentMethod === "mobile" && (
+              {/* Transaction ID for non-cash payments */}
+              {paymentMethod !== "cash" && (
                 <TextField
                   fullWidth
                   size="small"
-                  label="Transaction ID (Mobile Banking)"
+                  label={
+                    paymentMethod === "mobile"
+                      ? "Mobile Banking Transaction ID"
+                      : "Transaction ID"
+                  }
                   value={transactionId}
                   onChange={(e) => setTransactionId(e.target.value)}
                   sx={{ mb: 3 }}
-                  placeholder="Enter transaction ID from mobile banking"
+                  placeholder={
+                    paymentMethod === "mobile"
+                      ? "Enter bKash/Nagad transaction ID"
+                      : "Enter transaction ID"
+                  }
+                  required={paymentMethod !== "cash"}
+                  helperText={
+                    paymentMethod === "mobile"
+                      ? "Required for mobile banking payments"
+                      : "Required for card/bank payments"
+                  }
                 />
               )}
             </Grid>
@@ -354,6 +423,20 @@ const PaymentModal = ({
               {isLoading ? "Processing..." : "Confirm Payment"}
             </Button>
           </Box>
+
+          {/* Additional Information */}
+          {fee?.dueAmount > 0 && amount > 0 && (
+            <Box sx={{ mt: 2, p: 2, bgcolor: "grey.50", borderRadius: 1 }}>
+              <Typography variant="body2" color="text.secondary">
+                <strong>Payment Summary:</strong>
+                <br />• After this payment, due amount will be: ৳
+                {(fee?.dueAmount - amount).toLocaleString()}
+                <br />• New status:{" "}
+                {fee?.dueAmount - amount === 0 ? "Paid" : "Partial"}
+                <br />• Payment method: {paymentMethod}
+              </Typography>
+            </Box>
+          )}
         </Box>
       </Paper>
     </Modal>

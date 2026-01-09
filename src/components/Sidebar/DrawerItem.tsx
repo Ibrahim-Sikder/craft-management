@@ -1,72 +1,71 @@
+import { NavigationItem } from "@/types/common";
 import {
-  Dashboard,
-  Assignment,
-  EventNote,
-  Grading,
-  Settings,
-  Class,
-  Subject,
-  CloudUpload,
-  Category,
-  ReceiptLong,
-  Score,
-  TableChart,
-  TableRows,
-  ListAlt,
-  AddCircle,
-  ClassOutlined,
-  Storage,
-  NotificationAdd,
-  DeveloperBoard,
-  TrendingUp,
-  TrendingDown,
-  AccountTree,
   AccountBalanceWallet,
-  Savings,
-  CreditCard,
-  Calculate,
-  AttachMoney,
-  Campaign,
-  Feedback,
-  Quiz,
-  EmojiEvents,
-  School as SchoolIcon,
-  PersonAdd,
-  FormatListBulleted,
-  Web,
-  PlaylistAddCheck,
-  TrackChanges,
-  ImportContacts,
-  LibraryBooks,
-  CalendarMonth,
-  DateRange,
-  ViewList,
-  PostAdd,
-  LibraryAdd,
-  Group,
-  Restaurant,
-  Payment,
-  RequestQuote,
-  Receipt,
+  AccountTree,
+  AddCircle,
   AdminPanelSettings,
-  AutoDelete,
-  CloudSync,
-  Description,
   Analytics,
   Assessment,
-  FactCheck,
-  SchoolOutlined,
-  PeopleAlt,
-  Badge,
+  Assignment,
+  AttachMoney,
+  AutoDelete,
   AutoStories,
+  Badge,
+  Calculate,
+  CalendarMonth,
+  Campaign,
+  Category,
+  Class,
+  ClassOutlined,
+  CloudSync,
+  CloudUpload,
   CollectionsBookmark,
-  PictureAsPdf,
-  Sms,
-  VpnKey,
+  CreditCard,
+  Dashboard,
+  DateRange,
+  Description,
+  DeveloperBoard,
   DoneAllSharp,
+  EmojiEvents,
+  EventNote,
+  FactCheck,
+  Feedback,
+  FormatListBulleted,
+  Grading,
+  Group,
+  ImportContacts,
+  LibraryAdd,
+  LibraryBooks,
+  ListAlt,
+  NotificationAdd,
+  Payment,
+  PeopleAlt,
+  PersonAdd,
+  PictureAsPdf,
+  PlaylistAddCheck,
+  PostAdd,
+  Quiz,
+  Receipt,
+  ReceiptLong,
+  Restaurant,
+  Savings,
+  School as SchoolIcon,
+  SchoolOutlined,
+  Score,
+  Settings,
+  Sms,
+  Storage,
+  Subject,
+  TableChart,
+  TableRows,
+  TrackChanges,
+  TrendingDown,
+  TrendingUp,
+  ViewList,
+  VpnKey,
+  Web,
 } from "@mui/icons-material";
 import { ColorfulIcon } from "./ColorfulIcon";
-import { NavigationItem } from "@/types/common";
 
 export const navigationItems: NavigationItem[] = [
   {
@@ -86,7 +85,6 @@ export const navigationItems: NavigationItem[] = [
       "accountant",
     ],
   },
-  // Website
   {
     title: "Website",
     icon: (
@@ -158,7 +156,17 @@ export const navigationItems: NavigationItem[] = [
       },
     ],
   },
-  // Academic
+  {
+    title: "Admissions",
+    icon: (
+      <ColorfulIcon color="#5D4037">
+        <TableChart />
+      </ColorfulIcon>
+    ),
+    path: "/dashboard/enrollments/list",
+    roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+  },
+
   {
     title: "Academic",
     icon: (
@@ -780,6 +788,7 @@ export const navigationItems: NavigationItem[] = [
             ),
             roles: ["admin", "super_admin"],
           },
+
           {
             path: "/dashboard/accounting/income/category",
             title: "Income Categories",
@@ -862,12 +871,13 @@ export const navigationItems: NavigationItem[] = [
         ),
         roles: ["admin", "super_admin"],
       },
+
       {
-        path: "/dashboard/accounting/student-dues",
-        title: "Student Dues",
+        path: "/dashboard/accounting/fees",
+        title: "Student Fees ",
         icon: (
-          <ColorfulIcon color="#C2185B">
-            <RequestQuote />
+          <ColorfulIcon color="#2E7D32">
+            <Category />
           </ColorfulIcon>
         ),
         roles: ["admin", "super_admin"],
@@ -1029,18 +1039,7 @@ export const navigationItems: NavigationItem[] = [
       },
     ],
   },
-  // admission
-  {
-    title: "Admissions",
-    icon: (
-      <ColorfulIcon color="#5D4037">
-        <TableChart />
-      </ColorfulIcon>
-    ),
-    path: "/dashboard/enrollments/list",
-    roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
-  },
-  // user management
+
   {
     title: "User Management",
     icon: (
@@ -1051,7 +1050,7 @@ export const navigationItems: NavigationItem[] = [
     path: "/dashboard/user-management",
     roles: ["admin", "super_admin"],
   },
-  // system
+
   {
     title: "System",
     icon: (
@@ -1104,4 +1103,3 @@ export const navigationItems: NavigationItem[] = [
     ],
   },
 ];
-

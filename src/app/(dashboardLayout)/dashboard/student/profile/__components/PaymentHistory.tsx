@@ -21,7 +21,6 @@ import {
 import { useEffect, useState } from "react";
 
 const PaymentHistory = ({ payments }: any) => {
-  console.log("payment data ", payments);
   const theme = useTheme();
 
   const [isLoading, setIsLoading] = useState(false);
