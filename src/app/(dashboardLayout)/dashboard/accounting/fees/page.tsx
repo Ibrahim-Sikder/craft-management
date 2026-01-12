@@ -1,5 +1,5 @@
 import React from "react";
-import AllStudentFee from "../__components/AllStudentFee";
+import AllStudentFee from "../../fees/__components/AllStudentFee";
 
 const page = () => {
   return <AllStudentFee />;

@@ -50,6 +50,7 @@ import StudentSubject from "./StudentSubject";
 import StudentTimetable from "./StudentTimetable";
 import { getStatusColor } from "./Utils";
 import PaymentHistory from "./PaymentHistory";
+import ReceiptHistory from "./ReceiptHistory";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -83,7 +84,6 @@ const StudentProfile = ({ params }: PageProps) => {
   const theme = useTheme();
   const [tabValue, setTabValue] = useState(0);
   const { data: singleStudent } = useGetSingleStudentQuery({ id });
-  console.log("sutdent ", singleStudent);
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
@@ -241,7 +241,7 @@ const StudentProfile = ({ params }: PageProps) => {
             <Tab icon={<Grade />} label="Results" />
             <Tab icon={<Assignment />} label="Homework" />
             <Tab icon={<Timeline />} label="Attendance" />
-            <Tab icon={<Book />} label="Subjects" />
+            <Tab icon={<Book />} label="Receipt History" />
             <Tab icon={<Event />} label="Timetable" />
             <Tab icon={<Payment />} label="Fees" />
             <Tab icon={<Payment />} label="Payment History" />
@@ -263,14 +263,20 @@ const StudentProfile = ({ params }: PageProps) => {
         </TabPanel>
         <TabPanel value={tabValue} index={3}></TabPanel>
         <TabPanel value={tabValue} index={4}>
-          <StudentSubject />
+          <ReceiptHistory
+            studentId={singleStudent?.data?._id}
+            studentName={singleStudent?.data?.name}
+          />
         </TabPanel>
 
         <TabPanel value={tabValue} index={5}>
           <StudentTimetable />
         </TabPanel>
         <TabPanel value={tabValue} index={6}>
-          <StudentFee studentFees={singleStudent?.data?.fees} />
+          <StudentFee
+            studentFees={singleStudent?.data?.fees}
+            student={singleStudent?.data}
+          />
         </TabPanel>
         <TabPanel value={tabValue} index={7}>
           <PaymentHistory payments={singleStudent?.data?.payments} />

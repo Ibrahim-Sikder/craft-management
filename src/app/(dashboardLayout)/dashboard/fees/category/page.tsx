@@ -166,7 +166,7 @@ const FeeCategoriesPage = () => {
         <Box
           sx={{ fontWeight: "bold", color: "primary.main", fontSize: "1rem" }}
         >
-          ${value.toLocaleString()}
+          ৳ {value.toLocaleString()}
         </Box>
       ),
     },

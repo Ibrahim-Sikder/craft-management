@@ -3,8 +3,16 @@ import { baseApi } from "./baseApi";
 export const feesApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     createFee: build.mutation({
+      query: ({ studentId, ...data }) => ({
+        url: `/fees/students/${studentId}/fees`,
+        method: "POST",
+        data,
+      }),
+      invalidatesTags: ["fees", "students"],
+    }),
+    payFee: build.mutation({
       query: (data) => ({
-        url: "/fees",
+        url: "/fees/pay",
         method: "POST",
         data,
       }),
@@ -61,5 +69,6 @@ export const {
   useGetSingleFeeQuery,
   useUpdateFeeMutation,
   useDeleteFeeMutation,
-  useGetDueFeesQuery
+  useGetDueFeesQuery,
+  usePayFeeMutation,
 } = feesApi;

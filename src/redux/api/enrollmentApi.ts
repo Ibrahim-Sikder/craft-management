@@ -4,7 +4,7 @@ export const enrollmentApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     createEnrollment: build.mutation({
       query: (data) => ({
-        url: "/enrollment",
+        url: "/enrollments",
         method: "POST",
         data,
       }),
@@ -13,7 +13,7 @@ export const enrollmentApi = baseApi.injectEndpoints({
 
     getAllEnrollments: build.query({
       query: ({ limit, page, searchTerm }) => ({
-        url: "/enrollment",
+        url: "/enrollments",
         method: "GET",
         params: { page, limit, searchTerm },
       }),
@@ -22,7 +22,7 @@ export const enrollmentApi = baseApi.injectEndpoints({
 
     getSingleEnrollment: build.query({
       query: ({ id }) => ({
-        url: `/enrollment/${id}`,
+        url: `/enrollments/${id}`,
         method: "GET",
       }),
       providesTags: ["enrollment"],
@@ -30,7 +30,7 @@ export const enrollmentApi = baseApi.injectEndpoints({
 
     updateEnrollment: build.mutation({
       query: ({ id, data }) => ({
-        url: `/enrollment/${id}`,
+        url: `/enrollments/${id}`,
         method: "PATCH",
         data,
       }),
@@ -39,15 +39,13 @@ export const enrollmentApi = baseApi.injectEndpoints({
 
     deleteEnrollment: build.mutation({
       query: (id) => ({
-        url: `/enrollment/${id}`,
+        url: `/enrollments/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: ["enrollment"],
     }),
   }),
 });
-
-
 
 export const {
   useCreateEnrollmentMutation,

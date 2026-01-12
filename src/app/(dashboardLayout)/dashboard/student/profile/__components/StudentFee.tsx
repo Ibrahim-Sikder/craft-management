@@ -1,11 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import FeeAdjustmentModal from "@/components/FeeAdjustmentModal"; // Import the adjustment modal
 import CraftTable, { Column, RowAction } from "@/components/Table";
-import { Delete, Discount, Download, Payment, Visibility } from "@mui/icons-material";
+import {
+  AttachMoney,
+  Delete,
+  Discount,
+  Download,
+  Payment,
+  Visibility,
+} from "@mui/icons-material";
 import { Box, Button, Chip, Paper, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import AddFeeModal from "./AddFeeModal";
 import PaymentModal from "./PaymentModal";
+import BulkPaymentModal from "./BulkPaymentModal";
 
 interface StudentFeeProps {
   studentFees: any[];
@@ -27,6 +35,7 @@ const StudentFee = ({
   onDownload,
   onPay,
   onAddFee,
+  student,
 }: StudentFeeProps) => {
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [addFeeModalOpen, setAddFeeModalOpen] = useState(false);
@@ -34,17 +43,13 @@ const StudentFee = ({
   const [selectedFee, setSelectedFee] = useState<any>(null);
   const [filteredFees, setFilteredFees] = useState<any[]>([]);
   const [feeTypeFilter] = useState<string>("all");
-
-  // Debug log to check all fees
-  console.log("All student fees:", studentFees);
-
-  // Filter fees based on selected fee type
+  const [bulkPaymentModalOpen, setBulkPaymentModalOpen] = useState(false);
   useEffect(() => {
     if (feeTypeFilter === "all") {
       setFilteredFees(studentFees);
     } else {
       setFilteredFees(
-        studentFees.filter((fee) => fee.feeType === feeTypeFilter)
+        studentFees?.filter((fee) => fee?.feeType === feeTypeFilter)
       );
     }
   }, [studentFees, feeTypeFilter]);
@@ -68,25 +73,28 @@ const StudentFee = ({
 
   const handleAdjustmentSuccess = async (adjustmentData: any) => {
     try {
-      const response = await fetch('http://localhost:5000/api/v1/fee-adjustments', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(adjustmentData),
-      });
+      const response = await fetch(
+        "http://localhost:5000/api/v1/fee-adjustments",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(adjustmentData),
+        }
+      );
 
       if (response.ok) {
-        alert('Adjustment applied successfully!');
+        alert("Adjustment applied successfully!");
         setAdjustmentModalOpen(false);
         // Refresh the page to show updated data
         window.location.reload();
       } else {
-        throw new Error('Failed to apply adjustment');
+        throw new Error("Failed to apply adjustment");
       }
     } catch (error) {
-      console.error('Error applying adjustment:', error);
-      alert('Failed to apply adjustment');
+      console.error("Error applying adjustment:", error);
+      alert("Failed to apply adjustment");
     }
   };
 
@@ -117,11 +125,26 @@ const StudentFee = ({
 
   // Calculate summary statistics
   const calculateSummary = () => {
-    const totalFees = studentFees.reduce((sum, fee) => sum + (fee.amount || 0), 0);
-    const totalPaid = studentFees.reduce((sum, fee) => sum + (fee.paidAmount || 0), 0);
-    const totalDue = studentFees.reduce((sum, fee) => sum + (fee.dueAmount || 0), 0);
-    const totalDiscount = studentFees.reduce((sum, fee) => sum + (fee.discount || 0), 0);
-    const totalWaiver = studentFees.reduce((sum, fee) => sum + (fee.waiver || 0), 0);
+    const totalFees = studentFees.reduce(
+      (sum, fee) => sum + (fee.amount || 0),
+      0
+    );
+    const totalPaid = studentFees.reduce(
+      (sum, fee) => sum + (fee.paidAmount || 0),
+      0
+    );
+    const totalDue = studentFees.reduce(
+      (sum, fee) => sum + (fee.dueAmount || 0),
+      0
+    );
+    const totalDiscount = studentFees.reduce(
+      (sum, fee) => sum + (fee.discount || 0),
+      0
+    );
+    const totalWaiver = studentFees.reduce(
+      (sum, fee) => sum + (fee.waiver || 0),
+      0
+    );
     const totalAdjustments = totalDiscount + totalWaiver;
 
     return {
@@ -130,7 +153,7 @@ const StudentFee = ({
       totalDue,
       totalDiscount,
       totalWaiver,
-      totalAdjustments
+      totalAdjustments,
     };
   };
 
@@ -177,7 +200,8 @@ const StudentFee = ({
       align: "right",
       sortable: true,
       type: "number",
-      format: (value: number) => value > 0 ? `-৳${value?.toLocaleString()}` : "৳0",
+      format: (value: number) =>
+        value > 0 ? `-৳${value?.toLocaleString()}` : "৳0",
       render: (row: any) => (
         <Typography
           color={row.discount > 0 ? "error" : "text.secondary"}
@@ -195,7 +219,8 @@ const StudentFee = ({
       align: "right",
       sortable: true,
       type: "number",
-      format: (value: number) => value > 0 ? `-৳${value?.toLocaleString()}` : "৳0",
+      format: (value: number) =>
+        value > 0 ? `-৳${value?.toLocaleString()}` : "৳0",
       render: (row: any) => (
         <Typography
           color={row.waiver > 0 ? "error" : "text.secondary"}
@@ -215,7 +240,8 @@ const StudentFee = ({
       type: "number",
       format: (value: number) => `৳${value?.toLocaleString()}`,
       render: (row: any) => {
-        const netAmount = (row.amount || 0) - (row.discount || 0) - (row.waiver || 0);
+        const netAmount =
+          (row.amount || 0) - (row.discount || 0) - (row.waiver || 0);
         return (
           <Typography variant="body2" fontWeight="bold">
             ৳{netAmount.toLocaleString()}
@@ -310,19 +336,17 @@ const StudentFee = ({
         };
 
         // Show adjustment indicator if there are adjustments
-        const hasAdjustments = (row.discount > 0) || (row.waiver > 0);
+        const hasAdjustments = row.discount > 0 || row.waiver > 0;
 
         return (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             <Chip
               label={config.label}
               color={config.color}
               size="small"
               variant="outlined"
             />
-            {hasAdjustments && (
-              <Discount fontSize="small" color="success" />
-            )}
+            {hasAdjustments && <Discount fontSize="small" color="success" />}
           </Box>
         );
       },
@@ -393,24 +417,41 @@ const StudentFee = ({
       </Typography>
 
       {/* Summary Cards */}
-      <Box sx={{ display: 'flex', gap: 2, mb: 3, flexWrap: 'wrap' }}>
-        <Paper sx={{ p: 2, minWidth: 150, bgcolor: 'primary.light', color: 'white' }}>
+      <Box sx={{ display: "flex", gap: 2, mb: 3, flexWrap: "wrap" }}>
+        <Paper
+          sx={{ p: 2, minWidth: 150, bgcolor: "primary.light", color: "white" }}
+        >
           <Typography variant="subtitle2">Total Fees</Typography>
-          <Typography variant="h6">৳{summary.totalFees.toLocaleString()}</Typography>
+          <Typography variant="h6">
+            ৳{summary.totalFees.toLocaleString()}
+          </Typography>
         </Paper>
-        <Paper sx={{ p: 2, minWidth: 150, bgcolor: 'success.light', color: 'white' }}>
+        <Paper
+          sx={{ p: 2, minWidth: 150, bgcolor: "success.light", color: "white" }}
+        >
           <Typography variant="subtitle2">Total Paid</Typography>
-          <Typography variant="h6">৳{summary.totalPaid.toLocaleString()}</Typography>
+          <Typography variant="h6">
+            ৳{summary.totalPaid.toLocaleString()}
+          </Typography>
         </Paper>
-        <Paper sx={{ p: 2, minWidth: 150, bgcolor: 'error.light', color: 'white' }}>
+        <Paper
+          sx={{ p: 2, minWidth: 150, bgcolor: "error.light", color: "white" }}
+        >
           <Typography variant="subtitle2">Total Due</Typography>
-          <Typography variant="h6">৳{summary.totalDue.toLocaleString()}</Typography>
+          <Typography variant="h6">
+            ৳{summary.totalDue.toLocaleString()}
+          </Typography>
         </Paper>
-        <Paper sx={{ p: 2, minWidth: 150, bgcolor: 'warning.light', color: 'white' }}>
+        <Paper
+          sx={{ p: 2, minWidth: 150, bgcolor: "warning.light", color: "white" }}
+        >
           <Typography variant="subtitle2">Total Adjustments</Typography>
-          <Typography variant="h6">৳{summary.totalAdjustments.toLocaleString()}</Typography>
+          <Typography variant="h6">
+            ৳{summary.totalAdjustments.toLocaleString()}
+          </Typography>
           <Typography variant="caption">
-            Discount: ৳{summary.totalDiscount.toLocaleString()} | Waiver: ৳{summary.totalWaiver.toLocaleString()}
+            Discount: ৳{summary.totalDiscount.toLocaleString()} | Waiver: ৳
+            {summary.totalWaiver.toLocaleString()}
           </Typography>
         </Paper>
       </Box>
@@ -447,13 +488,27 @@ const StudentFee = ({
         customToolbar={
           <Box sx={{ display: "flex", gap: 1 }}>
             <Button
+              variant="contained"
+              startIcon={<AttachMoney />}
+              onClick={() => setBulkPaymentModalOpen(true)}
+              disabled={
+                studentFees.filter((fee) => fee.dueAmount > 0).length === 0
+              }
+              sx={{
+                background: "linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)",
+                "&:hover": {
+                  background:
+                    "linear-gradient(135deg, #4338ca 0%, #6d28d9 100%)",
+                },
+              }}
+            >
+              Bulk Payment
+            </Button>
+            <Button
               variant="outlined"
               startIcon={<Discount />}
-              onClick={() => {
-                // You can implement bulk adjustment here
-                alert("Bulk adjustment feature coming soon!");
-              }}
-              sx={{ textTransform: 'none' }}
+              onClick={() => alert("Bulk adjustment feature coming soon!")}
+              sx={{ textTransform: "none" }}
             >
               Bulk Adjustment
             </Button>
@@ -465,7 +520,9 @@ const StudentFee = ({
             icon: <Discount fontSize="small" />,
             onClick: (selectedRows) => {
               console.log("Applying bulk discount to:", selectedRows);
-              alert(`Applying discount to ${selectedRows.length} selected fees`);
+              alert(
+                `Applying discount to ${selectedRows.length} selected fees`
+              );
             },
           },
           {
@@ -506,6 +563,7 @@ const StudentFee = ({
         open={addFeeModalOpen}
         setOpen={handleCloseAddFeeModal}
         onAddFee={handleAddFee}
+        student={student}
       />
 
       {/* Fee Adjustment Modal */}
@@ -514,6 +572,13 @@ const StudentFee = ({
         onClose={handleCloseAdjustmentModal}
         fee={selectedFee}
         onApplyAdjustment={handleAdjustmentSuccess}
+      />
+      <BulkPaymentModal
+        open={bulkPaymentModalOpen}
+        onClose={() => setBulkPaymentModalOpen(false)}
+        student={student}
+        fees={studentFees.filter((fee) => fee.dueAmount > 0)}
+        refetch={() => window.location.reload()}
       />
     </Box>
   );

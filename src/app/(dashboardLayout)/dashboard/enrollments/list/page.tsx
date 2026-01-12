@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// app/enrollments/page.tsx
 "use client";
 
 import Table, { BulkAction, Column, RowAction } from "@/components/Table";
@@ -9,18 +8,18 @@ import {
   useDeleteEnrollmentMutation,
   useGetAllEnrollmentsQuery,
 } from "@/redux/api/enrollmentApi";
+import TakaIcon from "@/utils/takaIcon";
 import {
   Add,
   ArrowForward,
-  Assessment,
   AttachMoney,
   Delete,
   Edit,
   FileDownload,
   History,
-  Money,
   Person,
   Refresh,
+  RestartAlt,
   Visibility,
 } from "@mui/icons-material";
 import {
@@ -30,7 +29,6 @@ import {
   Chip,
   CircularProgress,
   LinearProgress,
-  SvgIcon,
   Typography,
 } from "@mui/material";
 import { useRouter } from "next/navigation";
@@ -39,11 +37,9 @@ import Swal from "sweetalert2";
 import EnrollmentDetailsModal from "../__components/EnrollmentDetailsModal";
 import FeeCollectionModal from "../__components/FeeCollectionModal";
 import PromotionHistoryModal from "../__components/PromotionHistoryModal";
-import PromotionSummaryModal from "../__components/PromotionSummaryModal";
 import PromotionModal from "../__components/PromotionModal";
-import TakaIcon from "@/utils/takaIcon";
+import RetainModal from "../__components/RetainModal";
 
-// Calculate total fees from actual fee structure
 const calculateTotalFees = (fees: any[]) => {
   if (!fees || !Array.isArray(fees) || fees.length === 0) {
     return { total: 0, paid: 0, due: 0, discount: 0, waiver: 0 };
@@ -72,7 +68,6 @@ const calculateTotalFees = (fees: any[]) => {
   return { total, paid, due, discount, waiver };
 };
 
-// Determine payment status based on fees
 const getPaymentStatus = (fees: any[]) => {
   if (!fees || !Array.isArray(fees) || fees.length === 0) {
     return "unpaid";
@@ -85,7 +80,6 @@ const getPaymentStatus = (fees: any[]) => {
   return "unpaid";
 };
 
-// Get status color
 const getStatusColor = (status: string) => {
   switch (status?.toLowerCase()) {
     case "active":
@@ -103,7 +97,6 @@ const getStatusColor = (status: string) => {
   }
 };
 
-// Get admission type color
 const getAdmissionTypeColor = (type: string) => {
   switch (type?.toLowerCase()) {
     case "admission":
@@ -120,20 +113,17 @@ export default function EnrollmentsPage() {
   const [selectedEnrollment, setSelectedEnrollment] = useState<any>(null);
   const [selectedStudentForHistory, setSelectedStudentForHistory] =
     useState<any>(null);
+  const [retainModalOpen, setRetainModalOpen] = useState(false);
+
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [feeCollectionOpen, setFeeCollectionOpen] = useState(false);
   const [promotionModalOpen, setPromotionModalOpen] = useState(false);
   const [promotionHistoryModalOpen, setPromotionHistoryModalOpen] =
     useState(false);
-  const [promotionSummaryModalOpen, setPromotionSummaryModalOpen] =
-    useState(false);
-  const [promotionMenuAnchorEl, setPromotionMenuAnchorEl] =
-    useState<null | HTMLElement>(null);
-  const [exportMenuAnchorEl, setExportMenuAnchorEl] =
-    useState<null | HTMLElement>(null);
+  const [, setPromotionMenuAnchorEl] = useState<null | HTMLElement>(null);
+  const [, setExportMenuAnchorEl] = useState<null | HTMLElement>(null);
   const [activeTab, setActiveTab] = useState(0);
 
-  // State for server-side operations
   const [sortColumn, setSortColumn] = useState("studentName");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [searchTerm, setSearchTerm] = useState("");
@@ -141,28 +131,24 @@ export default function EnrollmentsPage() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [totalCount, setTotalCount] = useState(0);
   const [filters, setFilters] = useState<Record<string, any>>({});
-  const [selectedRows, setSelectedRows] = useState<any[]>([]);
+  const [, setSelectedRows] = useState<any[]>([]);
 
   const [deleteEnrollment] = useDeleteEnrollmentMutation();
   const { classOptions } = useAcademicOption();
 
-  // Build query parameters for server-side operations
   const queryParams: any = {
-    page: page + 1, // Backend expects 1-based, frontend uses 0-based
+    page: page + 1,
     limit: rowsPerPage,
   };
 
-  // Add sort parameter if sortColumn is set
   if (sortColumn) {
     queryParams.sort = sortDirection === "desc" ? `-${sortColumn}` : sortColumn;
   }
 
-  // Add search term if provided
   if (searchTerm) {
     queryParams.searchTerm = searchTerm;
   }
 
-  // Add filters if provided
   if (Object.keys(filters).length > 0) {
     Object.keys(filters).forEach((key) => {
       if (filters[key]) {
@@ -171,7 +157,6 @@ export default function EnrollmentsPage() {
     });
   }
 
-  // Fetch data with server-side parameters
   const {
     data: enrollmentData,
     isLoading,
@@ -179,14 +164,12 @@ export default function EnrollmentsPage() {
     refetch,
   } = useGetAllEnrollmentsQuery(queryParams);
 
-  // Update total count when data loads
   useEffect(() => {
     if (enrollmentData?.data?.meta?.total) {
       setTotalCount(enrollmentData.data.meta.total);
     }
   }, [enrollmentData]);
 
-  // Transform the enrollment data for display
   const transformedEnrollments = React.useMemo(() => {
     if (
       !enrollmentData ||
@@ -197,7 +180,6 @@ export default function EnrollmentsPage() {
     }
 
     return enrollmentData.data.data.map((enrollment: any) => {
-      // Get the class name(s) - handle both string and object formats
       const className = enrollment.className
         ? Array.isArray(enrollment.className)
           ? enrollment.className
@@ -208,35 +190,28 @@ export default function EnrollmentsPage() {
           : enrollment.className
         : "N/A";
 
-      // Get student name from enrollment or student object
       const studentName =
         enrollment.studentName ||
         enrollment.name ||
         enrollment.student?.name ||
         "Unknown";
 
-      // Get student ID
       const studentId =
         enrollment.studentId ||
         enrollment.student?.studentId ||
         enrollment._id.slice(-6);
 
-      // Get father name
       const fatherName =
         enrollment.fatherName ||
         enrollment.fatherNameBangla ||
         enrollment.student?.fatherName ||
         "N/A";
 
-      // Calculate fees
       const { total, paid, due, discount, waiver } = calculateTotalFees(
         enrollment.fees || []
       );
 
-      // Determine payment status
       const paymentStatus = getPaymentStatus(enrollment.fees || []);
-
-      // Determine overall status
       const status = enrollment.status || "active";
 
       return {
@@ -299,7 +274,6 @@ export default function EnrollmentsPage() {
     });
   }, [enrollmentData]);
 
-  // Define table columns with filter options
   const columns: Column[] = [
     {
       id: "studentName",
@@ -576,11 +550,10 @@ export default function EnrollmentsPage() {
       },
       color: "error",
       tooltip: "Delete Enrollment",
-      disabled: (row) => row.admissionType === "promotion", // Cannot delete promotion records
+      disabled: (row) => row.admissionType === "promotion",
     },
   ];
 
-  // Define bulk actions
   const bulkActions: BulkAction[] = [
     {
       label: "Export Selected",
@@ -678,15 +651,28 @@ export default function EnrollmentsPage() {
   };
 
   const handleOpenPromotionSummary = () => {
-    setPromotionSummaryModalOpen(true);
     handlePromotionMenuClose();
+  };
+
+  const handleOpenRetainModal = () => {
+    setRetainModalOpen(true);
+  };
+
+  const handleRetainSuccess = () => {
+    refetch();
+    Swal.fire({
+      title: "Success!",
+      text: "Students retained successfully!",
+      icon: "success",
+      timer: 2000,
+      showConfirmButton: false,
+    });
   };
 
   const handleExportMenuClose = () => {
     setExportMenuAnchorEl(null);
   };
 
-  // Handler functions
   const handleCloseDetails = () => {
     setDetailDialogOpen(false);
     setSelectedEnrollment(null);
@@ -726,11 +712,10 @@ export default function EnrollmentsPage() {
     window.print();
   };
 
-  // New handlers for server-side operations
   const handleSortChange = (column: string, direction: "asc" | "desc") => {
     setSortColumn(column);
     setSortDirection(direction);
-    setPage(0); // Reset to first page when sorting changes
+    setPage(0);
   };
 
   const handlePageChange = (newPage: number) => {
@@ -739,12 +724,12 @@ export default function EnrollmentsPage() {
 
   const handleRowsPerPageChange = (newRowsPerPage: number) => {
     setRowsPerPage(newRowsPerPage);
-    setPage(0); // Reset to first page
+    setPage(0);
   };
 
   const handleSearchChange = (term: string) => {
     setSearchTerm(term);
-    setPage(0); // Reset to first page on search
+    setPage(0);
   };
 
   const handleFilterChange = (filters: Record<string, any>) => {
@@ -767,7 +752,6 @@ export default function EnrollmentsPage() {
     });
   };
 
-  // Calculate statistics
   const stats = React.useMemo(() => {
     if (!transformedEnrollments.length) {
       return {
@@ -815,7 +799,6 @@ export default function EnrollmentsPage() {
     };
   }, [transformedEnrollments]);
 
-  // Custom toolbar with promotion options
   const customToolbar = (
     <Box display="flex" gap={2} alignItems="center" flexWrap="wrap">
       <Button
@@ -837,11 +820,11 @@ export default function EnrollmentsPage() {
 
       <Button
         variant="outlined"
-        startIcon={<Assessment />}
-        onClick={handleOpenPromotionSummary}
-        color="info"
+        startIcon={<RestartAlt />}
+        onClick={handleOpenRetainModal}
+        color="warning"
       >
-        Promotion Summary
+        Retain Students
       </Button>
 
       <Box flexGrow={1} />
@@ -856,7 +839,6 @@ export default function EnrollmentsPage() {
     </Box>
   );
 
-  // Show loading state
   if (isLoading && page === 0) {
     return (
       <Box
@@ -874,7 +856,6 @@ export default function EnrollmentsPage() {
 
   return (
     <Box sx={{ p: 3, backgroundColor: "grey.50", minHeight: "100vh" }}>
-      {/* Header with statistics */}
       <Box sx={{ mb: 4 }}>
         <Typography variant="h4" fontWeight="bold" gutterBottom>
           Student Enrollments
@@ -882,8 +863,6 @@ export default function EnrollmentsPage() {
         <Typography variant="body1" color="text.secondary" gutterBottom>
           Manage and track all student admissions and promotions
         </Typography>
-
-        {/* Statistics Cards */}
         <Box display="flex" gap={2} flexWrap="wrap" mt={3}>
           <Box
             sx={{
@@ -970,7 +949,6 @@ export default function EnrollmentsPage() {
         </Box>
       </Box>
 
-      {/* Main Table */}
       <Table
         title=""
         subtitle=""
@@ -1001,22 +979,16 @@ export default function EnrollmentsPage() {
         elevation={3}
         borderRadius={2}
         headerBackgroundColor="#f5f5f5"
-        // Server-side sorting and pagination
         serverSideSorting={true}
         onSortChange={handleSortChange}
         onPageChange={handlePageChange}
         onRowsPerPageChange={handleRowsPerPageChange}
         onSearchChange={handleSearchChange}
-        // onFilterChange={handleFilterChange}
-        // onSelectionChange={handleSelectionChange}
         rowCount={totalCount}
         page={page}
         rowsPerPage={rowsPerPage}
         customToolbar={customToolbar}
-        // initialFilters={filters}
       />
-
-      {/* Modals */}
       <EnrollmentDetailsModal
         open={detailDialogOpen}
         setOpen={handleCloseDetails}
@@ -1041,16 +1013,18 @@ export default function EnrollmentsPage() {
         classOptions={classOptions}
       />
 
+      <RetainModal
+        open={retainModalOpen}
+        onClose={() => setRetainModalOpen(false)}
+        onSuccess={handleRetainSuccess}
+        classOptions={classOptions}
+      />
+
       <PromotionHistoryModal
         open={promotionHistoryModalOpen}
         onClose={() => setPromotionHistoryModalOpen(false)}
         studentId={selectedStudentForHistory?.id}
         studentName={selectedStudentForHistory?.name}
-      />
-
-      <PromotionSummaryModal
-        open={promotionSummaryModalOpen}
-        onClose={() => setPromotionSummaryModalOpen(false)}
       />
     </Box>
   );
