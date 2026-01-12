@@ -1224,11 +1224,11 @@ const transformEnrollmentDataToForm = (
         feeType: matchedFeeType
           ? [matchedFeeType]
           : [
-              {
-                value: fee.feeType,
-                label: fee.feeType,
-              },
-            ],
+            {
+              value: fee.feeType,
+              label: fee.feeType,
+            },
+          ],
         className: formatClassForForm(classData),
         feeAmount: feeAmount.toString(),
         paidAmount: paidAmount.toString(),
@@ -1465,6 +1465,7 @@ const StudentInformationStep = () => {
             />
           </Grid>
           <Grid item xs={12} md={4}>
+
             <CraftSelectWithIcon
               fullWidth
               label={
@@ -1473,7 +1474,7 @@ const StudentInformationStep = () => {
                 </span>
               }
               name="category"
-              items={["day_care", "residential", "non_residential"]}
+              items={["Day Care", "Residential", "Non Residential", 'Residential No Meal', 'Non Residential One Meal']}
               size="medium"
               adornment={<CalendarMonth />}
             />
@@ -2565,8 +2566,8 @@ const EnrollmentForm = () => {
       const classNameArray =
         submitData.className && submitData.className.length > 0
           ? submitData.className
-              .map((cls: any) => cls.value || cls)
-              .filter(Boolean)
+            .map((cls: any) => cls.value || cls)
+            .filter(Boolean)
           : [];
 
       if (!classNameArray.length) {
@@ -2578,78 +2579,78 @@ const EnrollmentForm = () => {
       // Fees processing with percentage/flat discount/waiver
       const transformedFees = Array.isArray(submitData.fees)
         ? submitData.fees
-            .filter(
-              (fee: any) =>
-                fee.feeType &&
-                fee.feeType.length > 0 &&
-                fee.className &&
-                fee.className.length > 0 &&
-                fee.feeAmount && // Ensure fee amount exists
-                Number(fee.feeAmount) > 0 // Ensure fee amount is greater than 0
-            )
-            .map((fee: any) => {
-              // Extract only the feeType part from the label (before " - ")
-              const feeTypeLabel =
-                fee.feeType[0]?.label || fee.feeType[0] || "";
-              const feeType = feeTypeLabel.split(" - ")[0];
+          .filter(
+            (fee: any) =>
+              fee.feeType &&
+              fee.feeType.length > 0 &&
+              fee.className &&
+              fee.className.length > 0 &&
+              fee.feeAmount && // Ensure fee amount exists
+              Number(fee.feeAmount) > 0 // Ensure fee amount is greater than 0
+          )
+          .map((fee: any) => {
+            // Extract only the feeType part from the label (before " - ")
+            const feeTypeLabel =
+              fee.feeType[0]?.label || fee.feeType[0] || "";
+            const feeType = feeTypeLabel.split(" - ")[0];
 
-              const className =
-                fee.className[0]?.label || fee.className[0] || "";
-              const feeAmount = Number(fee.feeAmount) || 0;
-              const paidAmount = Number(fee.paidAmount) || 0;
+            const className =
+              fee.className[0]?.label || fee.className[0] || "";
+            const feeAmount = Number(fee.feeAmount) || 0;
+            const paidAmount = Number(fee.paidAmount) || 0;
 
-              // Calculate discount amount based on type
-              let discountAmount = 0;
-              if (fee.discountType === "percentage") {
-                discountAmount = Math.min(
-                  (feeAmount * Number(fee.discountValue || 0)) / 100,
-                  feeAmount
-                );
-              } else {
-                discountAmount = Math.min(
-                  Number(fee.discountValue || 0),
-                  feeAmount
-                );
-              }
+            // Calculate discount amount based on type
+            let discountAmount = 0;
+            if (fee.discountType === "percentage") {
+              discountAmount = Math.min(
+                (feeAmount * Number(fee.discountValue || 0)) / 100,
+                feeAmount
+              );
+            } else {
+              discountAmount = Math.min(
+                Number(fee.discountValue || 0),
+                feeAmount
+              );
+            }
 
-              // Calculate waiver amount based on type
-              let waiverAmount = 0;
-              if (fee.waiverType === "percentage") {
-                waiverAmount = Math.min(
-                  (feeAmount * Number(fee.waiverValue || 0)) / 100,
-                  feeAmount
-                );
-              } else {
-                waiverAmount = Math.min(
-                  Number(fee.waiverValue || 0),
-                  feeAmount
-                );
-              }
+            // Calculate waiver amount based on type
+            let waiverAmount = 0;
+            if (fee.waiverType === "percentage") {
+              waiverAmount = Math.min(
+                (feeAmount * Number(fee.waiverValue || 0)) / 100,
+                feeAmount
+              );
+            } else {
+              waiverAmount = Math.min(
+                Number(fee.waiverValue || 0),
+                feeAmount
+              );
+            }
 
-              // Validate that discount + waiver doesn't exceed fee amount
-              if (discountAmount + waiverAmount > feeAmount) {
-                throw new Error(
-                  `Total adjustments (${discountAmount + waiverAmount}) cannot exceed fee amount (${feeAmount}) for ${feeType}`
-                );
-              }
+            // Validate that discount + waiver doesn't exceed fee amount
+            if (discountAmount + waiverAmount > feeAmount) {
+              throw new Error(
+                `Total adjustments (${discountAmount + waiverAmount}) cannot exceed fee amount (${feeAmount}) for ${feeType}`
+              );
+            }
 
-              return {
-                feeType: feeType, // Now only the feeType part, not including the amount
-                className: className,
-                feeAmount: feeAmount,
-                paidAmount: paidAmount,
-                discount: discountAmount, // Final calculated discount amount
-                discountType: fee.discountType || "flat", // NEW: Discount type
-                discountValue: fee.discountValue || "0", // NEW: Discount value
-                discountReason: fee.discountReason || "", // NEW: Reason for discount
-                waiver: waiverAmount, // Final calculated waiver amount
-                waiverType: fee.waiverType || "flat", // NEW: Waiver type
-                waiverValue: fee.waiverValue || "0", // NEW: Waiver value
-                waiverReason: fee.waiverReason || "", // NEW: Reason for waiver
-                monthlyAmount: fee.monthlyAmount || "",
-                isYearlyFee: fee.isYearlyFee || false,
-              };
-            })
+            return {
+              feeType: feeType, // Now only the feeType part, not including the amount
+              className: className,
+              feeAmount: feeAmount,
+              paidAmount: paidAmount,
+              discount: discountAmount, // Final calculated discount amount
+              discountType: fee.discountType || "flat", // NEW: Discount type
+              discountValue: fee.discountValue || "0", // NEW: Discount value
+              discountReason: fee.discountReason || "", // NEW: Reason for discount
+              waiver: waiverAmount, // Final calculated waiver amount
+              waiverType: fee.waiverType || "flat", // NEW: Waiver type
+              waiverValue: fee.waiverValue || "0", // NEW: Waiver value
+              waiverReason: fee.waiverReason || "", // NEW: Reason for waiver
+              monthlyAmount: fee.monthlyAmount || "",
+              isYearlyFee: fee.isYearlyFee || false,
+            };
+          })
         : [];
 
       // Make sure we have at least one valid fee

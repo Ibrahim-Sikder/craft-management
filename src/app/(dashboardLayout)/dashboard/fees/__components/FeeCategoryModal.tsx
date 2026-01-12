@@ -17,6 +17,7 @@ import {
 } from "@/redux/api/feeCategoryApi";
 import { buttonStyle, inputStyle } from "@/style/customeStyle";
 import toast from "react-hot-toast";
+import CraftAutoComplete from "@/components/Forms/AutoComplete";
 
 export default function FeeCategoryModal({ open, setOpen, id }: any) {
   const [createFeeCategory] = useCreateFeeCategoryMutation();
@@ -27,12 +28,20 @@ export default function FeeCategoryModal({ open, setOpen, id }: any) {
   const { classOptions } = useAcademicOption();
 
   const handleSubmit = async (data: FieldValues) => {
-    console.log(data);
     const submitData = {
       ...data,
-      class: data.class[0]?.label || data.class,
+      class: Array.isArray(data.class)
+        ? data.class[0]?.label
+        : data.class,
+
+      feeType: Array.isArray(data.feeType)
+        ? data.feeType[0] ?? ""
+        : data.feeType,
+
       feeAmount: Number(data.feeAmount),
     };
+
+    console.log(submitData);
 
     try {
       let res;
@@ -56,6 +65,7 @@ export default function FeeCategoryModal({ open, setOpen, id }: any) {
       );
     }
   };
+
 
   const getDefaultValues = () => {
     if (id && singleFee?.data) {
@@ -105,14 +115,25 @@ export default function FeeCategoryModal({ open, setOpen, id }: any) {
             </Grid>
 
             <Grid item xs={12}>
-              <CraftInput
+              <CraftAutoComplete
                 fullWidth
                 label="Fee Type"
                 name="feeType"
                 margin="none"
+
+                options={[
+                  { title: "Tution Fee" },
+                  { title: "Monthly Fee" },
+                  { title: "Admission Fee" },
+                  { title: "Meal Fee" },
+                  { title: "House Rent" },
+                  { title: "Day Care Fee" },
+                  { title: "Exam Fee" },
+                  { title: "Form Fee" },
+                ]}
                 sx={inputStyle}
-                required
               />
+
             </Grid>
 
             <Grid item xs={12}>
