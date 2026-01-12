@@ -439,5 +439,61 @@ export const reportStyle = {
     "@media print": { bgcolor: "transparent" },
   },
 };
+export const reportInput = {
+  "& .MuiOutlinedInput-root": {
+    border: 0,
+    fontSize: "0.75rem",
+    height: 32,
+    "@media print": { bgcolor: "transparent" },
+  },
+};
 
-export const boxStyleReport = { p: { xs: 1, sm: 1, md: 2, lg: 3 }, borderBottom: "1px solid rgba(0, 0, 0, 0.06)" }
+export const boxStyleReport = {
+  p: { xs: 1, sm: 1, md: 2, lg: 3 },
+  borderBottom: "1px solid rgba(0, 0, 0, 0.06)",
+};
+export const reportCellStyle = {
+  fontWeight: 600,
+  textAlign: "center",
+  minWidth: 80,
+};
+export const reportRowStyle = {
+  bgcolor: "grey.50",
+  "@media print": { bgcolor: "transparent" },
+};
+
+export const tableStyle = {
+  border: 1,
+  borderColor: "grey.300",
+  "@media print": { borderColor: "black" },
+  "& .MuiTableCell-root": {
+    border: 1,
+    borderColor: "grey.300",
+    "@media print": { borderColor: "black" },
+    fontSize: "0.75rem",
+    p: 0.5,
+    minWidth: 60,
+  },
+};
+
+export const tableRowCellStyle = { fontWeight: 600, fontSize: "0.75rem", p: 1 }
+
+export const buttonStyle = {
+  background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+  color: "white",
+  textTransform: "none",
+  borderRadius: "8px",
+  fontSize: "0.9rem",
+
+}
+
+export const inputStyle = {
+  "& .MuiOutlinedInput-root": {
+
+    borderRadius: "12px",
+    backgroundColor: "white",
+    "&:hover fieldset": {
+      borderColor: "#3b82f6",
+    },
+  }
+}

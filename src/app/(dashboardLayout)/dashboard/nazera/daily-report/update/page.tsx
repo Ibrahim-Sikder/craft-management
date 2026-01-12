@@ -1,15 +1,15 @@
 'use client'
 
 import React from 'react';
-import NazeraDailyReportForm from '../../__components/NazeraDailyReportForm';
 import { useSearchParams } from 'next/navigation';
+import NazeraReportForm from '../../__components/NazeraReportForm';
 
 const UpdateReport = () => {
     const searchParams = useSearchParams();
     const id = searchParams.get("id")
 
 
-    return <NazeraDailyReportForm id={id} />
+    return <NazeraReportForm id={id} />
 };
 
 export default UpdateReport;

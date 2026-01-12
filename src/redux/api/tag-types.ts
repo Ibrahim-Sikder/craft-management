@@ -22,12 +22,25 @@ export const tagTypesList = [
   "salary",
   "admission",
   "hifz-subject",
-  'hifz-class',
-  'loan',
-  'investment',
-  'nazera-daily-report',
-  'qaida-daily-report'
-  
+  "hifz-class",
+  "loan",
+  "investment",
+  "nazera-daily-report",
+  "qaida-daily-report",
+  "sunani-daily-report",
+  "soboki-daily-report",
+  "ampara-daily-report",
+  "weeklyReport",
+  "enrollment",
+  "fees",
+  "feeCategory",
+  "Enrollment",
+  "Student",
+  "Promotion",
+  "students",
+  "Payment",
+  "Receipts",
+  "Receipt",
 ] as const;
 
 export type TagType = (typeof tagTypesList)[number];

@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-"use client"
+"use client";
 
-import React from "react"
-import { Controller, useFormContext } from "react-hook-form"
+import React from "react";
+import { Controller, useFormContext } from "react-hook-form";
 import {
   TextField,
   Autocomplete,
@@ -10,43 +10,45 @@ import {
   InputAdornment,
   alpha,
   AutocompleteRenderOptionState,
-} from "@mui/material"
-import { SxProps } from "@mui/material/styles"
+} from "@mui/material";
+import { SxProps } from "@mui/material/styles";
 
 type Option = {
-  id?: string
-  value?: string
-  name?: string
-  label?: string
-  capacity?: number
-}
+  id?: string;
+  value?: string;
+  name?: string;
+  label?: string;
+  capacity?: number;
+};
 
 type TStateProps = {
-  name: string
+  name: string;
   label?: React.ReactNode;
-  fullWidth?: boolean
-  sx?: SxProps
-  required?: boolean
-  options: Option[]
-  size?: "small" | "medium"
-  multiple?: boolean
-  freeSolo?: boolean
-  margin?: "none" | "normal" | "dense"
-  defaultValue?: any
-  placeholder?: string
-  onInputChange?: (event: React.SyntheticEvent, value: string) => void
-  onChange?: (event: React.SyntheticEvent, value: any) => void
-  icon?: React.ReactNode
+  fullWidth?: boolean;
+  sx?: SxProps;
+  helperText?: React.ReactNode;
+  required?: boolean;
+  disabled?: boolean;
+  options: Option[];
+  size?: "small" | "medium";
+  multiple?: boolean;
+  freeSolo?: boolean;
+  margin?: "none" | "normal" | "dense";
+  defaultValue?: any;
+  placeholder?: string;
+  onInputChange?: (event: React.SyntheticEvent, value: string) => void;
+  onChange?: (event: React.SyntheticEvent, value: any) => void;
+  icon?: React.ReactNode;
   renderOption?: (
     props: React.HTMLAttributes<HTMLLIElement>,
     option: Option,
     state: AutocompleteRenderOptionState
-  ) => React.ReactNode
+  ) => React.ReactNode;
   renderTags?: (
     value: readonly Option[],
     getTagProps: (params: { index: number }) => Record<string, any>
-  ) => React.ReactNode
-}
+  ) => React.ReactNode;
+};
 
 const CraftIntAutoCompleteWithIcon = ({
   name,
@@ -59,19 +61,21 @@ const CraftIntAutoCompleteWithIcon = ({
   multiple = true,
   freeSolo = true,
   defaultValue = [],
+  disabled = false,
   placeholder = "Select options",
   onInputChange,
   onChange,
   icon,
   renderOption,
   renderTags,
+  size = "small",
 }: TStateProps) => {
-  const { control } = useFormContext()
+  const { control } = useFormContext();
 
   const getOptionLabel = (option: any): string => {
-    if (typeof option === "string") return option
-    return option.name || option.label || "" // Default display label
-  }
+    if (typeof option === "string") return option;
+    return option.name || option.label || "";
+  };
 
   return (
     <Controller
@@ -87,12 +91,13 @@ const CraftIntAutoCompleteWithIcon = ({
           getOptionLabel={getOptionLabel}
           value={field.value || defaultValue}
           renderOption={renderOption}
+          disabled={disabled}
           renderTags={
             renderTags ||
             ((value: readonly any[], getTagProps) =>
               value.map((option: any, index: number) => {
-                const tagProps = getTagProps({ index })
-                const { key, ...restTagProps } = tagProps
+                const tagProps = getTagProps({ index });
+                const { key, ...restTagProps } = tagProps;
                 return (
                   <Chip
                     key={key || index}
@@ -105,18 +110,18 @@ const CraftIntAutoCompleteWithIcon = ({
                       fontWeight: 500,
                     }}
                   />
-                )
+                );
               }))
           }
           onChange={(event, newValue) => {
             const processedValue = Array.isArray(newValue)
               ? newValue
-              : [newValue]
+              : [newValue];
 
-            field.onChange(processedValue)
+            field.onChange(processedValue);
 
             if (onChange) {
-              onChange(event, newValue)
+              onChange(event, newValue);
             }
           }}
           onInputChange={onInputChange}
@@ -128,6 +133,7 @@ const CraftIntAutoCompleteWithIcon = ({
               fullWidth={fullWidth}
               required={required}
               margin={margin}
+              size={size}
               error={!!error}
               helperText={error?.message}
               variant="outlined"
@@ -137,9 +143,7 @@ const CraftIntAutoCompleteWithIcon = ({
                 startAdornment: (
                   <>
                     {icon && (
-                      <InputAdornment position="start">
-                        {icon}
-                      </InputAdornment>
+                      <InputAdornment position="start">{icon}</InputAdornment>
                     )}
                     {params.InputProps.startAdornment}
                   </>
@@ -150,7 +154,7 @@ const CraftIntAutoCompleteWithIcon = ({
         />
       )}
     />
-  )
-}
+  );
+};
 
-export default CraftIntAutoCompleteWithIcon
+export default CraftIntAutoCompleteWithIcon;

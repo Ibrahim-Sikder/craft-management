@@ -1,5 +1,5 @@
-import { SxProps, TextField } from "@mui/material";
-import { ChangeEvent } from "react";
+import { SxProps, TextField, InputProps as MUIInputProps } from "@mui/material";
+import { ChangeEvent, InputHTMLAttributes } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 
 type TInputProps = {
@@ -16,12 +16,14 @@ type TInputProps = {
   multiline?: boolean;
   rows?: number;
   disabled?: boolean;
-  value?: string;
-  defaultValue?: string;
+  value?: string | number;
+  defaultValue?: string | number;
   autoFocus?: boolean;
   onChange?: (event: ChangeEvent<HTMLInputElement>) => void;
   startAdornment?: React.ReactNode;
-  InputProps?: object;
+  InputProps?: MUIInputProps;
+  helperText?: React.ReactNode;
+  inputProps?: InputHTMLAttributes<HTMLInputElement>;
 };
 
 const CraftInputWithIcon = ({
@@ -43,6 +45,8 @@ const CraftInputWithIcon = ({
   value,
   defaultValue,
   InputProps,
+  helperText,
+  inputProps,
 }: TInputProps) => {
   const { control } = useFormContext();
 
@@ -67,13 +71,14 @@ const CraftInputWithIcon = ({
           required={required}
           margin={margin}
           error={!!error?.message}
-          helperText={error?.message}
+          helperText={error?.message || helperText} // prioritize error message
           multiline={multiline}
           rows={rows}
           value={value !== undefined ? value : fieldValue}
           autoFocus={autoFocus}
           disabled={disabled}
           InputProps={InputProps}
+          inputProps={inputProps}
         />
       )}
     />

@@ -38,7 +38,7 @@ const CraftTimePicker: React.FC<ControlledTimePickerProps> = ({
             slotProps={{
               textField: {
                 required,
-                fullWidth, // ✅ properly passed here
+                fullWidth, 
                 error: !!error,
                 helperText: error ? error.message : null,
                 InputProps: {

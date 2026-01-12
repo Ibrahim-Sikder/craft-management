@@ -25,6 +25,8 @@ type TStateProps = {
   placeholder?: string;
 };
 
+
+
 const CraftAutoComplete = ({
   name,
   label = "Autocomplete",
@@ -70,6 +72,8 @@ const CraftAutoComplete = ({
               );
             })
           }
+
+
 
           onChange={(_, newValue) => {
             // Handle newValue as an array of strings or objects
