@@ -97,7 +97,7 @@ const FeeAmountHandler = ({
   const discountValue = watch(`fees.${feeIndex}.discountValue`) || "0";
   const waiverType = watch(`fees.${feeIndex}.waiverType`) || "flat";
   const waiverValue = watch(`fees.${feeIndex}.waiverValue`) || "0";
-
+  console.log("fee category", feeCategoryData);
   const calculateDiscountAmount = () => {
     const fee = parseFloat(feeAmount) || 0;
     const value = parseFloat(discountValue) || 0;
@@ -224,6 +224,7 @@ const DynamicFeeFields = ({
   feeCategoryData,
 }: any) => {
   const theme = useTheme();
+  console.log("fee category data this ", feeCategoryOptions);
   const { control, watch, setValue } = useFormContext();
   const { fields, append, remove } = useFieldArray({
     control,
@@ -1473,7 +1474,14 @@ const StudentInformationStep = () => {
                 </span>
               }
               name="category"
-              items={["day_care", "residential", "non_residential"]}
+              items={[
+                "Day Care",
+                "Residential",
+                "Non Residential",
+                "Residential No Meal",
+                "Non Residential One Meal",
+                "",
+              ]}
               size="medium"
               adornment={<CalendarMonth />}
             />
@@ -2399,6 +2407,7 @@ const EnrollmentForm = () => {
 
   const { classOptions, feeCategoryOptions, feeCategoryData } =
     useAcademicOption();
+  console.log("fee cae", feeCategoryData);
 
   const [createEnrollment] = useCreateEnrollmentMutation();
   const [updateEnrollment] = useUpdateEnrollmentMutation();

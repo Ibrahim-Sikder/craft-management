@@ -17,6 +17,7 @@ import {
 } from "@/redux/api/feeCategoryApi";
 import { buttonStyle, inputStyle } from "@/style/customeStyle";
 import toast from "react-hot-toast";
+import CraftSelect from "@/components/Forms/Select";
 
 export default function FeeCategoryModal({ open, setOpen, id }: any) {
   const [createFeeCategory] = useCreateFeeCategoryMutation();
@@ -105,8 +106,16 @@ export default function FeeCategoryModal({ open, setOpen, id }: any) {
             </Grid>
 
             <Grid item xs={12}>
-              <CraftInput
+              <CraftSelect
                 fullWidth
+                items={[
+                  "Admission Fee",
+                  "Monthly Fee",
+                  "Tution Fee",
+                  "Day Care Fee",
+                  "Meal Fee",
+                  "Housing Fee",
+                ]}
                 label="Fee Type"
                 name="feeType"
                 margin="none"
