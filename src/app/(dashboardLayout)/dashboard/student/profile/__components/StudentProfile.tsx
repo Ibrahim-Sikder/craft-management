@@ -279,7 +279,7 @@ const StudentProfile = ({ params }: PageProps) => {
           />
         </TabPanel>
         <TabPanel value={tabValue} index={7}>
-          <PaymentHistory payments={singleStudent?.data?.payments} />
+          <PaymentHistory singleStudent={singleStudent} />
         </TabPanel>
         <TabPanel value={tabValue} index={8}>
           <StudentAnnouncement />

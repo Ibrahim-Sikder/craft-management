@@ -3,7 +3,6 @@ import CraftTable, { Column, RowAction } from "@/components/Table";
 import {
   Delete,
   Download,
-  Edit,
   Money,
   Print,
   Receipt,
@@ -19,14 +18,19 @@ import {
   useTheme,
 } from "@mui/material";
 import { useEffect, useState } from "react";
+import ReceiptViewer, { ReceiptData } from "./ReceiptViewer";
 
-const PaymentHistory = ({ payments }: any) => {
+const PaymentHistory = ({ singleStudent }: any) => {
   const theme = useTheme();
+  const payments = singleStudent?.data?.payments;
 
   const [isLoading, setIsLoading] = useState(false);
   const [processedPayments, setProcessedPayments] = useState<any[]>([]);
+  const [receiptViewerOpen, setReceiptViewerOpen] = useState(false);
+  const [selectedReceiptData, setSelectedReceiptData] =
+    useState<ReceiptData | null>(null);
+  const [selectedPaymentId, setSelectedPaymentId] = useState<string>("");
 
-  // Process payment data when component mounts or payments change
   useEffect(() => {
     if (!payments || !Array.isArray(payments)) {
       setProcessedPayments([]);
@@ -54,6 +58,7 @@ const PaymentHistory = ({ payments }: any) => {
         transactionId: payment.transactionId || "",
         createdAt: payment.createdAt,
         updatedAt: payment.updatedAt,
+        originalPayment: payment,
       }));
 
       setProcessedPayments(processed);
@@ -65,7 +70,63 @@ const PaymentHistory = ({ payments }: any) => {
     }
   }, [payments]);
 
-  // Calculate summary statistics
+  const handlePrintReceipt = (payment: any) => {
+    if (!payment) return;
+
+    // Set the payment ID
+    setSelectedPaymentId(payment._id);
+
+    // payment data থেকে ReceiptData format এ convert করুন
+    const receiptData: ReceiptData = {
+      name: payment.student || "Student Name",
+      jamatGroup: payment.enrollment || "Course Name",
+      stdId: payment.studentId || "N/A",
+      roll: payment.originalPayment?.roll || "N/A",
+      section: payment.originalPayment?.section || "N/A",
+      payDate: new Date(payment.paymentDate).toLocaleDateString("en-US", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      }),
+      invNo: payment.receiptNo,
+      receivedBy: payment.collectedBy || "System",
+      items: [
+        {
+          description: payment.feeType || "Fee Payment",
+          amount: payment.amountPaid || 0,
+        },
+      ],
+      total: payment.amountPaid || 0,
+      generatedDate: new Date().toLocaleDateString("en-US", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+      }),
+      studentId: payment.studentId,
+      paymentMethod: payment.paymentMethod,
+      transactionId: payment.transactionId,
+    };
+
+    setSelectedReceiptData(receiptData);
+    setReceiptViewerOpen(true);
+  };
+
+  const handleDownloadReceipt = (payment: any) => {
+    console.log("Download receipt for payment:", payment);
+    // Implement download functionality
+  };
+
+  const handleViewDetails = (payment: any) => {
+    console.log("View details for payment:", payment);
+    // Implement view details functionality
+  };
+
+  const handleCloseReceiptViewer = () => {
+    setReceiptViewerOpen(false);
+    setSelectedReceiptData(null);
+    setSelectedPaymentId("");
+  };
+
   const summary = {
     totalPayments: processedPayments.length,
     totalAmount: processedPayments.reduce(
@@ -86,12 +147,28 @@ const PaymentHistory = ({ payments }: any) => {
     ).length,
   };
 
-  // Define columns for the payment table
   const columns: Column[] = [
+    {
+      id: "_id",
+      label: "Payment ID",
+      minWidth: 200,
+      sortable: true,
+      filterable: true,
+      type: "text",
+      format: (value: string) => value?.slice(-8) || "N/A",
+    },
     {
       id: "receiptNo",
       label: "Receipt No",
       minWidth: 140,
+      sortable: true,
+      filterable: true,
+      type: "text",
+    },
+    {
+      id: "student",
+      label: "Student",
+      minWidth: 180,
       sortable: true,
       filterable: true,
       type: "text",
@@ -136,6 +213,14 @@ const PaymentHistory = ({ payments }: any) => {
       minWidth: 150,
       sortable: true,
       type: "date",
+      format: (value: string) => {
+        const date = new Date(value);
+        return date.toLocaleDateString("en-US", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        });
+      },
     },
     {
       id: "collectedBy",
@@ -152,106 +237,76 @@ const PaymentHistory = ({ payments }: any) => {
       sortable: true,
       filterable: true,
       type: "status",
-    },
-    {
-      id: "note",
-      label: "Notes",
-      minWidth: 180,
-      sortable: false,
-      filterable: true,
-      type: "text",
+      format: (value: string) => {
+        const statusColors: any = {
+          completed: "success",
+          paid: "success",
+          partial: "warning",
+          pending: "warning",
+          unpaid: "error",
+        };
+        return statusColors[value] || "default";
+      },
     },
   ];
 
-  // Define row actions
   const rowActions: RowAction[] = [
     {
       label: "View Details",
       icon: <Visibility fontSize="small" />,
-      onClick: (row) => {
-        console.log("View payment details:", row);
-      },
+      onClick: (row: any) => handleViewDetails(row),
       color: "info",
       tooltip: "View payment details",
     },
     {
       label: "Download Receipt",
       icon: <Download fontSize="small" />,
-      onClick: (row) => {
-        console.log("Download receipt for:", row.receiptNo);
-      },
+      onClick: (row: any) => handleDownloadReceipt(row),
       color: "primary",
       tooltip: "Download payment receipt",
     },
     {
       label: "Print Receipt",
       icon: <Print fontSize="small" />,
-      onClick: (row) => {
-        console.log("Print receipt for:", row.receiptNo);
-      },
+      onClick: (row: any) => handlePrintReceipt(row),
       color: "secondary",
       tooltip: "Print payment receipt",
     },
-    {
-      label: "Edit Payment",
-      icon: <Edit fontSize="small" />,
-      onClick: (row) => {
-        console.log("Edit payment:", row.receiptNo);
-      },
-      color: "warning",
-      tooltip: "Edit payment record",
-      inMenu: true,
-    },
-    {
-      label: "Delete Payment",
-      icon: <Delete fontSize="small" />,
-      onClick: (row) => {
-        console.log("Delete payment:", row.receiptNo);
-        if (
-          window.confirm(
-            `Are you sure you want to delete payment ${row.receiptNo}?`
-          )
-        ) {
-          // Delete logic here
-        }
-      },
-      color: "error",
-      tooltip: "Delete payment record",
-      inMenu: true,
-    },
   ];
 
-  // Handler functions
   const handleExport = () => {
-    console.log("Exporting payment data...");
+    console.log("Export all payments");
   };
 
   const handlePrint = () => {
-    console.log("Printing payment list...");
+    console.log("Print all payments");
   };
 
   const handleRefresh = () => {
-    console.log("Refreshing payment data...");
     setIsLoading(true);
-    // Refresh logic here
     setTimeout(() => {
       setIsLoading(false);
     }, 1000);
   };
 
   const handleAddPayment = () => {
-    console.log("Adding new payment...");
+    console.log("Add new payment");
   };
 
-  const handleBulkExport = (selectedRows: any[]) => {
-    console.log("Exporting selected payments:", selectedRows);
+  const handleBulkExport = () => {
+    console.log("Bulk export payments");
   };
 
   const handleBulkPrint = (selectedRows: any[]) => {
-    console.log("Printing receipts for:", selectedRows);
+    if (selectedRows.length > 0) {
+      handlePrintReceipt(selectedRows[0]);
+    }
   };
 
   const handleBulkDelete = (selectedRows: any[]) => {
+    const ids = selectedRows.map((r) => r._id);
+    console.log("Deleting selected payments with IDs:", ids);
+
     if (
       window.confirm(
         `Are you sure you want to delete ${selectedRows.length} payments?`
@@ -261,7 +316,6 @@ const PaymentHistory = ({ payments }: any) => {
     }
   };
 
-  // If no data is available
   if (!payments || !Array.isArray(payments) || payments.length === 0) {
     return (
       <Box sx={{ textAlign: "center", py: 8 }}>
@@ -320,7 +374,6 @@ const PaymentHistory = ({ payments }: any) => {
               Payment Summary
             </Typography>
 
-            {/* Summary Stats */}
             <Box
               sx={{ display: "flex", flexWrap: "wrap", gap: 4, mt: 2, mb: 2 }}
             >
@@ -343,7 +396,6 @@ const PaymentHistory = ({ payments }: any) => {
               </Box>
             </Box>
 
-            {/* Status Summary */}
             <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, mt: 2 }}>
               <Chip
                 label={`${summary.completedPayments} Paid`}
@@ -436,6 +488,16 @@ const PaymentHistory = ({ payments }: any) => {
           </Button>
         }
       />
+
+      {selectedReceiptData && (
+        <ReceiptViewer
+          open={receiptViewerOpen}
+          onClose={handleCloseReceiptViewer}
+          receiptData={selectedReceiptData}
+          id={selectedPaymentId}
+          student={singleStudent}
+        />
+      )}
     </Box>
   );
 };
