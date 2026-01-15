@@ -925,15 +925,6 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
           </Box>
         </Paper>
       </Modal>
-
-      {/* Receipt Viewer */}
-      {receiptData && (
-        <ReceiptViewer
-          open={showReceipt}
-          onClose={() => setShowReceipt(false)}
-          receiptData={receiptData}
-        />
-      )}
     </>
   );
 };
