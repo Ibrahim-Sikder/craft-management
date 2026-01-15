@@ -42,7 +42,7 @@ const FeeCategoriesPage = () => {
 
   const getClassColor = (className: string) => {
     const colors: Record<string, string> = {
-      "One A": "#2196f3",
+      One: "#2196f3",
       "Two A": "#4caf50",
       "Three A": "#ff9800",
       "Four A": "#f44336",

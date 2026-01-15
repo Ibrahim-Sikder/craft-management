@@ -20,32 +20,29 @@ import {
 import { useGetAllStudentsQuery } from "@/redux/api/studentApi";
 import {
   AccessTime,
+  AccountCircle,
   Add,
+  ArrowBack,
+  ArrowForward,
   Book,
   Cake,
   CalendarMonth,
   Check,
   Class,
+  Close,
   Description,
+  FamilyRestroom,
   Flag,
   Group,
+  Home,
   Money,
+  Payment,
   Person,
   Phone,
-  Remove,
-  School,
-  Work,
-  ArrowBack,
-  ArrowForward,
-  AccountCircle,
-  Home,
-  School as SchoolIcon,
-  FamilyRestroom,
-  Description as DocumentIcon,
-  Payment,
   Save,
-  Close,
-  AccountBalance,
+  School,
+  School as SchoolIcon,
+  Work,
 } from "@mui/icons-material";
 import {
   Alert,
@@ -54,28 +51,24 @@ import {
   Button,
   Card,
   CardContent,
+  Checkbox,
   CircularProgress,
   Container,
+  FormControlLabel,
   Grid,
   IconButton,
-  Typography,
-  LinearProgress,
-  Divider,
-  Chip,
+  InputAdornment,
+  Paper,
+  Switch,
   Tooltip,
+  Typography,
   alpha,
   useTheme,
-  Switch,
-  Checkbox,
-  Paper,
-  FormControlLabel,
-  InputAdornment,
 } from "@mui/material";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useFieldArray, useFormContext } from "react-hook-form";
 import toast from "react-hot-toast";
-import FeeCategoryModal from "../../fees/__components/FeeCategoryModal";
 
 // Smooth Organic Animation for Steps
 const fadeInSlideUp = {
@@ -86,7 +79,13 @@ const fadeInSlideUp = {
   },
 };
 
-const FeeAmountHandler = ({ feeIndex, feeCategoryData }: { feeIndex: number; feeCategoryData: any }) => {
+const FeeAmountHandler = ({
+  feeIndex,
+  feeCategoryData,
+}: {
+  feeIndex: number;
+  feeCategoryData: any;
+}) => {
   const { watch, setValue } = useFormContext();
   const selectedFees = watch(`fees.${feeIndex}.feeType`);
   const selectedClass = watch(`fees.${feeIndex}.className`);
@@ -116,7 +115,8 @@ const FeeAmountHandler = ({ feeIndex, feeCategoryData }: { feeIndex: number; fee
         );
 
         const feeType = selectedFeeType.toLowerCase();
-        const isYearly = feeType.includes("yearly") || feeType.includes("annual");
+        const isYearly =
+          feeType.includes("yearly") || feeType.includes("annual");
         setValue(`fees.${feeIndex}.isYearlyFee`, isYearly);
       }
     }
@@ -195,7 +195,7 @@ const DynamicFeeFields = ({
       if (currentFees.length > 0) {
         const updatedFees = currentFees.map((fee: any) => ({
           ...fee,
-          className: JSON.parse(JSON.stringify(mainClassName)) // Deep copy
+          className: JSON.parse(JSON.stringify(mainClassName)), // Deep copy
         }));
 
         // Update all fee fields with the main class
@@ -204,18 +204,6 @@ const DynamicFeeFields = ({
     }
   }, [mainClassName, setValue, watch]);
 
-  // Calculate total allocated advance
-  const calculateAllocatedAdvance = () => {
-    const fees = watch("fees") || [];
-    return fees.reduce((total: number, fee: any) => {
-      if (fee.advanceAmount) {
-        return total + (parseFloat(fee.advanceAmount) || 0);
-      }
-      return total;
-    }, 0);
-  };
-
-  // Calculate available advance for a specific fee
   const calculateAvailableAdvance = (currentIndex: number) => {
     const fees = watch("fees") || [];
     let allocated = 0;
@@ -289,9 +277,10 @@ const DynamicFeeFields = ({
 
   const addFeeField = () => {
     // Always use the main class for new fee entries
-    const classNameValue = mainClassName && mainClassName.length > 0
-      ? JSON.parse(JSON.stringify(mainClassName))
-      : [];
+    const classNameValue =
+      mainClassName && mainClassName.length > 0
+        ? JSON.parse(JSON.stringify(mainClassName))
+        : [];
 
     append({
       feeType: [],
@@ -314,9 +303,6 @@ const DynamicFeeFields = ({
 
   return (
     <>
-
-
-
       <Card
         elevation={0}
         sx={{
@@ -339,7 +325,11 @@ const DynamicFeeFields = ({
           }}
         >
           <Box>
-            <Typography variant="h6" fontWeight="600" sx={{ color: theme.palette.text.primary }}>
+            <Typography
+              variant="h6"
+              fontWeight="600"
+              sx={{ color: theme.palette.text.primary }}
+            >
               Fee Details
             </Typography>
             <Typography variant="caption" color="text.secondary">
@@ -353,14 +343,16 @@ const DynamicFeeFields = ({
             sx={{
               textTransform: "none",
               fontWeight: "bold",
-              bgcolor: !mainClassName || mainClassName.length === 0
-                ? theme.palette.action.disabled
-                : theme.palette.primary.main,
+              bgcolor:
+                !mainClassName || mainClassName.length === 0
+                  ? theme.palette.action.disabled
+                  : theme.palette.primary.main,
               color: "#fff",
               "&:hover": {
-                bgcolor: !mainClassName || mainClassName.length === 0
-                  ? theme.palette.action.disabled
-                  : theme.palette.primary.dark
+                bgcolor:
+                  !mainClassName || mainClassName.length === 0
+                    ? theme.palette.action.disabled
+                    : theme.palette.primary.dark,
               },
             }}
           >
@@ -373,7 +365,9 @@ const DynamicFeeFields = ({
             const feeClassName = watch(`fees.${index}.className`);
             const filteredFeeOptions = getFilteredFeeOptions(feeClassName);
             const feeAmount = parseFloat(watch(`fees.${index}.feeAmount`) || 0);
-            const advanceAmount = parseFloat(watch(`fees.${index}.advanceAmount`) || 0);
+            const advanceAmount = parseFloat(
+              watch(`fees.${index}.advanceAmount`) || 0
+            );
             const availableAdvance = calculateAvailableAdvance(index);
             const maxAdvance = Math.min(availableAdvance, feeAmount);
             const dueAmount = Math.max(0, feeAmount - advanceAmount);
@@ -432,12 +426,14 @@ const DynamicFeeFields = ({
                     variant="subtitle2"
                     fontWeight="bold"
                     color="text.secondary"
-                    sx={{ textTransform: "uppercase", fontSize: "0.75rem", letterSpacing: 1 }}
+                    sx={{
+                      textTransform: "uppercase",
+                      fontSize: "0.75rem",
+                      letterSpacing: 1,
+                    }}
                   >
                     Fee Entry #{index + 1}
                   </Typography>
-
-
                 </Box>
 
                 <FeeAmountHandler
@@ -463,7 +459,6 @@ const DynamicFeeFields = ({
                           ? "Auto-filled from Academic Information"
                           : "Select class in Academic Information step first"
                       }
-
                     />
                   </Grid>
 
@@ -474,7 +469,11 @@ const DynamicFeeFields = ({
                       label="Fee Type"
                       margin="none"
                       size="small"
-                      placeholder={isClassSelected ? "Select Fee Type" : "Select class first"}
+                      placeholder={
+                        isClassSelected
+                          ? "Select Fee Type"
+                          : "Select class first"
+                      }
                       options={filteredFeeOptions}
                       fullWidth
                       multiple
@@ -525,7 +524,10 @@ const DynamicFeeFields = ({
                         ),
                         endAdornment: (
                           <InputAdornment position="end">
-                            <Typography variant="caption" color="text.secondary">
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
                               Max: ৳{maxAdvance.toLocaleString()}
                             </Typography>
                           </InputAdornment>
@@ -533,11 +535,7 @@ const DynamicFeeFields = ({
                       }}
                     />
                   </Grid>
-
-
                 </Grid>
-
-
               </Box>
             );
           })}
@@ -571,7 +569,7 @@ const StudentSelector = ({ studentData, classOptions }: any) => {
   const theme = useTheme();
   const { setValue, watch } = useFormContext();
   const [selectedStudent, setSelectedStudent] = useState<any>(null);
-
+  console.log("selecte student this ", selectedStudent);
   const studentIdOptions =
     studentData?.data?.map((student: any) => ({
       value: student._id,
@@ -758,7 +756,6 @@ const StudentSelector = ({ studentData, classOptions }: any) => {
         <Grid container spacing={3}>
           <Grid item xs={12} md={6}>
             <CraftIntAutoCompleteWithIcon
-
               name="studentIdSelect"
               label="Select by Student ID"
               placeholder="Choose Student ID"
@@ -773,7 +770,6 @@ const StudentSelector = ({ studentData, classOptions }: any) => {
           </Grid>
           <Grid item xs={12} md={6}>
             <CraftIntAutoCompleteWithIcon
-
               name="studentNameSelect"
               label="Select by Student Name"
               placeholder="Choose Student Name"
@@ -810,7 +806,8 @@ const StudentSelector = ({ studentData, classOptions }: any) => {
                 {selectedStudent.name}
               </Typography>
               <Typography variant="caption" color="text.secondary">
-                ID: {selectedStudent.studentId} • Class: {selectedStudent.className?.[0]?.className || "N/A"}
+                ID: {selectedStudent.studentId} • Class:{" "}
+                {selectedStudent.className?.[0]?.className || "N/A"}
               </Typography>
             </Box>
           </Box>
@@ -906,11 +903,11 @@ const transformEnrollmentDataToForm = (
         feeType: matchedFeeType
           ? [matchedFeeType]
           : [
-            {
-              value: fee.feeType,
-              label: fee.feeType,
-            },
-          ],
+              {
+                value: fee.feeType,
+                label: fee.feeType,
+              },
+            ],
         className: formatClassForForm(classData),
         feeAmount: feeAmount.toString(),
         monthlyAmount: ((feeAmount || 0) / 12).toFixed(2),
@@ -1005,7 +1002,13 @@ const StudentInformationStep = () => {
     <Box sx={{ ...fadeInSlideUp }}>
       <Grid container spacing={3}>
         <Grid item xs={12}>
-          <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, color: "text.primary" }}>Personal Details</Typography>
+          <Typography
+            variant="h6"
+            fontWeight="bold"
+            sx={{ mb: 2, color: "text.primary" }}
+          >
+            Personal Details
+          </Typography>
         </Grid>
         <Grid item xs={12} md={4}>
           <FileUploadWithIcon name="studentPhoto" label="Student Photo" />
@@ -1070,9 +1073,7 @@ const StudentInformationStep = () => {
             name="mobileNo"
             placeholder="01XXXXXXXXX"
             InputProps={{
-              startAdornment: (
-                <Phone sx={{ color: "text.secondary", mr: 1 }} />
-              ),
+              startAdornment: <Phone sx={{ color: "text.secondary", mr: 1 }} />,
             }}
           />
         </Grid>
@@ -1103,8 +1104,13 @@ const StudentInformationStep = () => {
               </span>
             }
             name="category"
-            items={["Day Care", "Residential", "Non Residential", 'Residential No Meal', 'Non Residential One Meal']}
-
+            items={[
+              "Day Care",
+              "Residential",
+              "Non Residential",
+              "Residential No Meal",
+              "Non Residential One Meal",
+            ]}
             adornment={<CalendarMonth />}
           />
         </Grid>
@@ -1113,7 +1119,6 @@ const StudentInformationStep = () => {
             margin="none"
             size="medium"
             name="studentDepartment"
-
             label={
               <span>
                 Student Department
@@ -1134,9 +1139,7 @@ const StudentInformationStep = () => {
             name="dateOfBirth"
             type="date"
             InputProps={{
-              startAdornment: (
-                <Cake sx={{ color: "text.secondary", mr: 1 }} />
-              ),
+              startAdornment: <Cake sx={{ color: "text.secondary", mr: 1 }} />,
             }}
           />
         </Grid>
@@ -1164,22 +1167,18 @@ const StudentInformationStep = () => {
             placeholder="Select Blood Group"
             items={bloodGroups}
             adornment={<Person color="action" />}
-
           />
         </Grid>
         <Grid item xs={12} md={4}>
           <CraftInputWithIcon
             margin="none"
             size="medium"
-
             fullWidth
             label="Nationality"
             name="nationality"
             placeholder="Bangladeshi"
             InputProps={{
-              startAdornment: (
-                <Flag sx={{ color: "text.secondary", mr: 1 }} />
-              ),
+              startAdornment: <Flag sx={{ color: "text.secondary", mr: 1 }} />,
             }}
           />
         </Grid>
@@ -1195,7 +1194,11 @@ const AcademicStep = ({ classOptions }: any) => {
     <Box sx={{ ...fadeInSlideUp }}>
       <Grid container spacing={3}>
         <Grid item xs={12}>
-          <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, color: "text.primary" }}>
+          <Typography
+            variant="h6"
+            fontWeight="bold"
+            sx={{ mb: 2, color: "text.primary" }}
+          >
             Academic Details
           </Typography>
           {selectedClass && selectedClass.length > 0 && (
@@ -1205,7 +1208,9 @@ const AcademicStep = ({ classOptions }: any) => {
               sx={{ mb: 2, borderRadius: 2 }}
             >
               <Typography variant="body2">
-                Selected class "{selectedClass.map((cls: any) => cls.label || cls).join(", ")}" will be automatically used in the Fee section.
+                Selected class "
+                {selectedClass.map((cls: any) => cls.label || cls).join(", ")}"
+                will be automatically used in the Fee section.
               </Typography>
             </Alert>
           )}
@@ -1236,9 +1241,7 @@ const AcademicStep = ({ classOptions }: any) => {
             name="rollNumber"
             placeholder="Enter Roll No"
             InputProps={{
-              startAdornment: (
-                <Class sx={{ color: "text.secondary", mr: 1 }} />
-              ),
+              startAdornment: <Class sx={{ color: "text.secondary", mr: 1 }} />,
             }}
           />
         </Grid>
@@ -1271,9 +1274,7 @@ const AcademicStep = ({ classOptions }: any) => {
             name="optionalSubject"
             placeholder="e.g. Higher Math / ICT"
             InputProps={{
-              startAdornment: (
-                <Book sx={{ color: "text.secondary", mr: 1 }} />
-              ),
+              startAdornment: <Book sx={{ color: "text.secondary", mr: 1 }} />,
             }}
           />
         </Grid>
@@ -1297,7 +1298,13 @@ const ParentGuardianStep = () => {
     <Box sx={{ ...fadeInSlideUp }}>
       <Grid container spacing={3}>
         <Grid item xs={12}>
-          <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, color: "text.primary" }}>Parent & Guardian</Typography>
+          <Typography
+            variant="h6"
+            fontWeight="bold"
+            sx={{ mb: 2, color: "text.primary" }}
+          >
+            Parent & Guardian
+          </Typography>
         </Grid>
 
         {/* Father */}
@@ -1345,9 +1352,7 @@ const ParentGuardianStep = () => {
             name="fatherMobile"
             placeholder="01XXXXXXXXX"
             InputProps={{
-              startAdornment: (
-                <Phone sx={{ color: "text.secondary", mr: 1 }} />
-              ),
+              startAdornment: <Phone sx={{ color: "text.secondary", mr: 1 }} />,
             }}
           />
         </Grid>
@@ -1375,9 +1380,7 @@ const ParentGuardianStep = () => {
             name="fatherProfession"
             placeholder="Occupation"
             InputProps={{
-              startAdornment: (
-                <Work sx={{ color: "text.secondary", mr: 1 }} />
-              ),
+              startAdornment: <Work sx={{ color: "text.secondary", mr: 1 }} />,
             }}
           />
         </Grid>
@@ -1391,9 +1394,7 @@ const ParentGuardianStep = () => {
             placeholder="BDT"
             type="number"
             InputProps={{
-              startAdornment: (
-                <Work sx={{ color: "text.secondary", mr: 1 }} />
-              ),
+              startAdornment: <Work sx={{ color: "text.secondary", mr: 1 }} />,
             }}
           />
         </Grid>
@@ -1442,9 +1443,7 @@ const ParentGuardianStep = () => {
             name="motherMobile"
             placeholder="01XXXXXXXXX"
             InputProps={{
-              startAdornment: (
-                <Phone sx={{ color: "text.secondary", mr: 1 }} />
-              ),
+              startAdornment: <Phone sx={{ color: "text.secondary", mr: 1 }} />,
             }}
           />
         </Grid>
@@ -1472,9 +1471,7 @@ const ParentGuardianStep = () => {
             name="motherProfession"
             placeholder="Occupation"
             InputProps={{
-              startAdornment: (
-                <Work sx={{ color: "text.secondary", mr: 1 }} />
-              ),
+              startAdornment: <Work sx={{ color: "text.secondary", mr: 1 }} />,
             }}
           />
         </Grid>
@@ -1488,9 +1485,7 @@ const ParentGuardianStep = () => {
             placeholder="BDT"
             type="number"
             InputProps={{
-              startAdornment: (
-                <Work sx={{ color: "text.secondary", mr: 1 }} />
-              ),
+              startAdornment: <Work sx={{ color: "text.secondary", mr: 1 }} />,
             }}
           />
         </Grid>
@@ -1535,9 +1530,7 @@ const ParentGuardianStep = () => {
             name="guardianMobile"
             placeholder="01XXXXXXXXX"
             InputProps={{
-              startAdornment: (
-                <Phone sx={{ color: "text.secondary", mr: 1 }} />
-              ),
+              startAdornment: <Phone sx={{ color: "text.secondary", mr: 1 }} />,
             }}
           />
         </Grid>
@@ -1598,7 +1591,13 @@ const AddressDocumentsStep = () => {
     <Box sx={{ ...fadeInSlideUp }}>
       <Grid container spacing={3}>
         <Grid item xs={12}>
-          <Typography variant="h6" fontWeight="bold" sx={{ mb: 2, color: "text.primary" }}>Address & Documents</Typography>
+          <Typography
+            variant="h6"
+            fontWeight="bold"
+            sx={{ mb: 2, color: "text.primary" }}
+          >
+            Address & Documents
+          </Typography>
         </Grid>
 
         {/* Present Address */}
@@ -1789,29 +1788,67 @@ const AddressDocumentsStep = () => {
 
         {/* Documents */}
         <Grid item xs={12}>
-          <Box sx={{ p: 2, border: `1px solid ${alpha(theme.palette.divider, 0.2)}`, borderRadius: 2 }}>
-            <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: "bold" }}>Documents Provided</Typography>
+          <Box
+            sx={{
+              p: 2,
+              border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+              borderRadius: 2,
+            }}
+          >
+            <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: "bold" }}>
+              Documents Provided
+            </Typography>
             <Grid container spacing={2}>
               <Grid item xs={12} md={12}>
-                <DocumentCheckbox name="birthCertificate" label="Birth Certificate" />
-                <DocumentCheckbox name="transferCertificate" label="Transfer Certificate" />
-                <DocumentCheckbox name="characterCertificate" label="Character Certificate" />
+                <DocumentCheckbox
+                  name="birthCertificate"
+                  label="Birth Certificate"
+                />
+                <DocumentCheckbox
+                  name="transferCertificate"
+                  label="Transfer Certificate"
+                />
+                <DocumentCheckbox
+                  name="characterCertificate"
+                  label="Character Certificate"
+                />
                 <DocumentCheckbox name="markSheet" label="Mark Sheet" />
                 <DocumentCheckbox name="photographs" label="Photographs" />
               </Grid>
-
             </Grid>
           </Box>
         </Grid>
 
         {/* Terms */}
         <Grid item xs={12}>
-          <Box sx={{ p: 2, border: `1px solid ${alpha(theme.palette.divider, 0.2)}`, borderRadius: 2, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <Box
+            sx={{
+              p: 2,
+              border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+              borderRadius: 2,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+            }}
+          >
             <Box>
-              <Typography variant="subtitle2" sx={{ fontWeight: "bold" }}>Terms & Conditions</Typography>
-              <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>I agree to the enrollment terms</Typography>
+              <Typography variant="subtitle2" sx={{ fontWeight: "bold" }}>
+                Terms & Conditions
+              </Typography>
+              <Typography
+                variant="caption"
+                color="text.secondary"
+                sx={{ ml: 1 }}
+              >
+                I agree to the enrollment terms
+              </Typography>
             </Box>
-            <Switch checked={termsAccepted} onChange={handleTermsChange} name="termsAccepted" color="primary" />
+            <Switch
+              checked={termsAccepted}
+              onChange={handleTermsChange}
+              name="termsAccepted"
+              color="primary"
+            />
           </Box>
         </Grid>
       </Grid>
@@ -1838,7 +1875,7 @@ const FeeStep = ({
 
 const EnrollmentForm = () => {
   const theme = useTheme();
-  const limit = 100;
+  const limit = 200;
   const [page] = useState(0);
   const [searchTerm] = useState("");
   const router = useRouter();
@@ -1856,12 +1893,12 @@ const EnrollmentForm = () => {
       skip: !id,
     });
 
-  const { data: studentData, isLoading: studentLoading } =
-    useGetAllStudentsQuery({
-      limit,
-      page: page + 1,
-      searchTerm,
-    });
+  const { data: studentData } = useGetAllStudentsQuery({
+    limit,
+    page: page + 1,
+    searchTerm,
+  });
+  console.log("student ", studentData);
 
   const [submitting, setSubmitting] = useState(false);
   const [defaultValues, setDefaultValues] = useState<any>(null);
@@ -1996,8 +2033,8 @@ const EnrollmentForm = () => {
       const classNameArray =
         submitData.className && submitData.className.length > 0
           ? submitData.className
-            .map((cls: any) => cls.value || cls)
-            .filter(Boolean)
+              .map((cls: any) => cls.value || cls)
+              .filter(Boolean)
           : [];
 
       if (!classNameArray.length) {
@@ -2009,29 +2046,31 @@ const EnrollmentForm = () => {
       // Process fees with advance amounts
       const transformedFees = Array.isArray(submitData.fees)
         ? submitData.fees
-          .filter(
-            (fee: any) =>
-              fee.feeType &&
-              fee.feeType.length > 0 &&
-              fee.className &&
-              fee.className.length > 0 &&
-              fee.feeAmount &&
-              Number(fee.feeAmount) > 0
-          )
-          .map((fee: any) => {
-            const feeTypeLabel = fee.feeType[0]?.label || fee.feeType[0] || "";
-            const feeType = feeTypeLabel.split(" - ")[0];
-            const className = fee.className[0]?.label || fee.className[0] || "";
-            const feeAmount = Number(fee.feeAmount) || 0;
-            const advanceAmount = Number(fee.advanceAmount) || 0;
+            .filter(
+              (fee: any) =>
+                fee.feeType &&
+                fee.feeType.length > 0 &&
+                fee.className &&
+                fee.className.length > 0 &&
+                fee.feeAmount &&
+                Number(fee.feeAmount) > 0
+            )
+            .map((fee: any) => {
+              const feeTypeLabel =
+                fee.feeType[0]?.label || fee.feeType[0] || "";
+              const feeType = feeTypeLabel.split(" - ")[0];
+              const className =
+                fee.className[0]?.label || fee.className[0] || "";
+              const feeAmount = Number(fee.feeAmount) || 0;
+              const advanceAmount = Number(fee.advanceAmount) || 0;
 
-            return {
-              feeType: feeType,
-              className: className,
-              feeAmount: feeAmount,
-              advanceAmount: advanceAmount, // Make sure this is included
-            };
-          })
+              return {
+                feeType: feeType,
+                className: className,
+                feeAmount: feeAmount,
+                advanceAmount: advanceAmount, // Make sure this is included
+              };
+            })
         : [];
 
       if (transformedFees.length === 0) {
@@ -2040,10 +2079,8 @@ const EnrollmentForm = () => {
         return;
       }
 
-
       // Get student advance balance
       const studentAdvanceBalance = submitData.advanceBalance || 0;
-
 
       // Prepare final data for submission
       const finalSubmitData: any = {
@@ -2145,7 +2182,9 @@ const EnrollmentForm = () => {
       }
 
       if (errorMessage.includes("advance")) {
-        toast.error("Advance balance insufficient. Please adjust advance amount.");
+        toast.error(
+          "Advance balance insufficient. Please adjust advance amount."
+        );
       } else {
         toast.error(errorMessage);
       }
@@ -2178,7 +2217,12 @@ const EnrollmentForm = () => {
   }
 
   return (
-    <Box sx={{ bgcolor: alpha(theme.palette.background.default, 0.5), minHeight: "100vh" }}>
+    <Box
+      sx={{
+        bgcolor: alpha(theme.palette.background.default, 0.5),
+        minHeight: "100vh",
+      }}
+    >
       <CraftForm
         key={formKey}
         onSubmit={handleSubmit}
@@ -2211,7 +2255,10 @@ const EnrollmentForm = () => {
                 <School sx={{ color: "#fff", fontSize: 32 }} />
               </Avatar>
               <Box ml={2}>
-                <Typography variant="h5" sx={{ fontWeight: "bold", color: "text.primary" }}>
+                <Typography
+                  variant="h5"
+                  sx={{ fontWeight: "bold", color: "text.primary" }}
+                >
                   Craft International Institute
                 </Typography>
                 <Typography variant="caption" color="text.secondary">
@@ -2244,7 +2291,11 @@ const EnrollmentForm = () => {
                 alignItems: "center",
               }}
             >
-              <Typography variant="caption" color="text.disabled" sx={{ fontWeight: 600, letterSpacing: 0.5 }}>
+              <Typography
+                variant="caption"
+                color="text.disabled"
+                sx={{ fontWeight: 600, letterSpacing: 0.5 }}
+              >
                 {activeStep + 1} OF {steps.length}
               </Typography>
             </Box>
@@ -2258,7 +2309,9 @@ const EnrollmentForm = () => {
               {/* Form Sections with Smooth Animation */}
               <Box minHeight={400}>
                 {activeStep === 0 && <StudentInformationStep />}
-                {activeStep === 1 && <AcademicStep classOptions={classOptions} />}
+                {activeStep === 1 && (
+                  <AcademicStep classOptions={classOptions} />
+                )}
                 {activeStep === 2 && <ParentGuardianStep />}
                 {activeStep === 3 && <AddressDocumentsStep />}
                 {activeStep === 4 && (
@@ -2291,7 +2344,10 @@ const EnrollmentForm = () => {
               sx={{
                 fontWeight: "bold",
                 color: "text.secondary",
-                "&:hover": { color: "text.primary", bgcolor: alpha(theme.palette.action.hover, 0.04) },
+                "&:hover": {
+                  color: "text.primary",
+                  bgcolor: alpha(theme.palette.action.hover, 0.04),
+                },
                 px: 2,
                 py: 1.5,
               }}
@@ -2305,7 +2361,13 @@ const EnrollmentForm = () => {
                 variant="contained"
                 size="large"
                 disabled={submitting}
-                endIcon={submitting ? <CircularProgress size={20} color="inherit" /> : <Save />}
+                endIcon={
+                  submitting ? (
+                    <CircularProgress size={20} color="inherit" />
+                  ) : (
+                    <Save />
+                  )
+                }
                 sx={{
                   borderRadius: 2, // Squircle for modern feel
                   px: 5,

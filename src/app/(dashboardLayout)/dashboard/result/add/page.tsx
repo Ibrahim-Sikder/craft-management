@@ -50,8 +50,8 @@
 // // Sample data for demonstration
 // const classes = [
 //   { id: 1, name: "Hifz" },
-//   { id: 2, name: "One B" },
-//   { id: 3, name: "One A" },
+//   { id: 2, name: "One" },
+//   { id: 3, name: "One" },
 //   { id: 4, name: "Nazera" },
 //   { id: 5, name: "Six" },
 //   { id: 6, name: "Five" },
@@ -61,11 +61,11 @@
 // ]
 
 // const students = [
-//   { id: 1, name: "Ahmed Ali", rollNumber: "001", class: "One A", image: "/placeholder.svg?height=40&width=40" },
-//   { id: 2, name: "Sara Khan", rollNumber: "002", class: "One A", image: "/placeholder.svg?height=40&width=40" },
-//   { id: 3, name: "Zain Ahmed", rollNumber: "003", class: "One A", image: "/placeholder.svg?height=40&width=40" },
-//   { id: 4, name: "Fatima Zahra", rollNumber: "004", class: "One A", image: "/placeholder.svg?height=40&width=40" },
-//   { id: 5, name: "Ibrahim Hassan", rollNumber: "005", class: "One A", image: "/placeholder.svg?height=40&width=40" },
+//   { id: 1, name: "Ahmed Ali", rollNumber: "001", class: "One", image: "/placeholder.svg?height=40&width=40" },
+//   { id: 2, name: "Sara Khan", rollNumber: "002", class: "One", image: "/placeholder.svg?height=40&width=40" },
+//   { id: 3, name: "Zain Ahmed", rollNumber: "003", class: "One", image: "/placeholder.svg?height=40&width=40" },
+//   { id: 4, name: "Fatima Zahra", rollNumber: "004", class: "One", image: "/placeholder.svg?height=40&width=40" },
+//   { id: 5, name: "Ibrahim Hassan", rollNumber: "005", class: "One", image: "/placeholder.svg?height=40&width=40" },
 // ]
 
 // const subjects = [
@@ -883,7 +883,7 @@
 // }
 
 // export default AddResultPage
-import React from 'react';
+import React from "react";
 
 const page = () => {
   return (

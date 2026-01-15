@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
+import { useState } from "react";
 import {
   Box,
   Typography,
@@ -34,7 +34,7 @@ import {
   Chip,
   Tabs,
   Tab,
-} from "@mui/material"
+} from "@mui/material";
 import {
   ArrowBack as ArrowBackIcon,
   Print as PrintIcon,
@@ -42,9 +42,9 @@ import {
   CheckCircle as CheckCircleIcon,
   Cancel as CancelIcon,
   Search as SearchIcon,
-} from "@mui/icons-material"
-import { useTheme } from "@mui/material/styles"
-import { useRouter } from "next/navigation"
+} from "@mui/icons-material";
+import { useTheme } from "@mui/material/styles";
+import { useRouter } from "next/navigation";
 
 // Mock data for exams
 const mockExams = [
@@ -88,7 +88,7 @@ const mockExams = [
     endDate: "2023-12-15",
     status: "Upcoming",
   },
-]
+];
 
 // Mock data for subjects
 const mockSubjects = [
@@ -102,25 +102,25 @@ const mockSubjects = [
   { id: 8, name: "Social Studies", code: "SS101" },
   { id: 9, name: "Computer", code: "COMP101" },
   { id: 10, name: "Art", code: "ART101" },
-]
+];
 
 // Types for attendance and students
 type AttendanceRecord = {
-  status: string
-  remarks: string
-}
+  status: string;
+  remarks: string;
+};
 
 type Attendance = {
-  [date: string]: AttendanceRecord
-}
+  [date: string]: AttendanceRecord;
+};
 
 type Student = {
-  id: number
-  rollNo: string
-  name: string
-  class: string
-  attendance: Attendance
-}
+  id: number;
+  rollNo: string;
+  name: string;
+  class: string;
+  attendance: Attendance;
+};
 
 // Mock data for students
 const mockStudents: Student[] = [
@@ -128,7 +128,7 @@ const mockStudents: Student[] = [
     id: 1,
     rollNo: "001",
     name: "Ahmed Ali",
-    class: "One A",
+    class: "One",
     attendance: {
       "2023-12-01": { status: "present", remarks: "" },
       "2023-12-02": { status: "present", remarks: "" },
@@ -141,7 +141,7 @@ const mockStudents: Student[] = [
     id: 2,
     rollNo: "002",
     name: "Fatima Khan",
-    class: "One A",
+    class: "One",
     attendance: {
       "2023-12-01": { status: "present", remarks: "" },
       "2023-12-02": { status: "present", remarks: "" },
@@ -154,7 +154,7 @@ const mockStudents: Student[] = [
     id: 3,
     rollNo: "003",
     name: "Muhammad Usman",
-    class: "One A",
+    class: "One",
     attendance: {
       "2023-12-01": { status: "present", remarks: "" },
       "2023-12-02": { status: "absent", remarks: "Medical appointment" },
@@ -167,7 +167,7 @@ const mockStudents: Student[] = [
     id: 4,
     rollNo: "004",
     name: "Aisha Malik",
-    class: "One A",
+    class: "One",
     attendance: {
       "2023-12-01": { status: "present", remarks: "" },
       "2023-12-02": { status: "present", remarks: "" },
@@ -180,7 +180,7 @@ const mockStudents: Student[] = [
     id: 5,
     rollNo: "005",
     name: "Bilal Ahmed",
-    class: "One A",
+    class: "One",
     attendance: {
       "2023-12-01": { status: "absent", remarks: "Sick leave" },
       "2023-12-02": { status: "absent", remarks: "Sick leave" },
@@ -189,52 +189,71 @@ const mockStudents: Student[] = [
       "2023-12-05": { status: "present", remarks: "" },
     },
   },
-]
+];
 
 // Available classes
-const availableClasses = ["Hifz", "One A", "One B", "Nazera", "Two", "Three", "Four", "Five", "Six"]
+const availableClasses = [
+  "Hifz",
+  "One",
+  "One",
+  "Nazera",
+  "Two",
+  "Three",
+  "Four",
+  "Five",
+  "Six",
+];
 
 // Mock exam dates
-const mockExamDates = ["2023-12-01", "2023-12-02", "2023-12-03", "2023-12-04", "2023-12-05"]
+const mockExamDates = [
+  "2023-12-01",
+  "2023-12-02",
+  "2023-12-03",
+  "2023-12-04",
+  "2023-12-05",
+];
 
 const ExamAttendancePage = () => {
-  const theme = useTheme()
-  const router = useRouter()
-  const [exams, setExams] = useState(mockExams)
-  const [students, setStudents] = useState(mockStudents)
-  const [subjects, setSubjects] = useState(mockSubjects)
-  const [selectedExam, setSelectedExam] = useState<any>(mockExams[4]) // Default to the upcoming exam
-  const [selectedClass, setSelectedClass] = useState<string>("One A")
-  const [selectedDate, setSelectedDate] = useState<string>(mockExamDates[0])
-  const [selectedSubject, setSelectedSubject] = useState<string>("")
-  const [openRemarkDialog, setOpenRemarkDialog] = useState(false)
-  const [selectedStudent, setSelectedStudent] = useState<any>(null)
-  const [remarkText, setRemarkText] = useState("")
-  const [loading, setLoading] = useState(false)
+  const theme = useTheme();
+  const router = useRouter();
+  const [exams, setExams] = useState(mockExams);
+  const [students, setStudents] = useState(mockStudents);
+  const [subjects, setSubjects] = useState(mockSubjects);
+  const [selectedExam, setSelectedExam] = useState<any>(mockExams[4]); // Default to the upcoming exam
+  const [selectedClass, setSelectedClass] = useState<string>("One");
+  const [selectedDate, setSelectedDate] = useState<string>(mockExamDates[0]);
+  const [selectedSubject, setSelectedSubject] = useState<string>("");
+  const [openRemarkDialog, setOpenRemarkDialog] = useState(false);
+  const [selectedStudent, setSelectedStudent] = useState<any>(null);
+  const [remarkText, setRemarkText] = useState("");
+  const [loading, setLoading] = useState(false);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
     severity: "success" as "success" | "error",
-  })
+  });
 
   const handleExamChange = (event: React.SyntheticEvent, newValue: number) => {
-    const exam = exams.find((e) => e.id === newValue)
-    setSelectedExam(exam)
-  }
+    const exam = exams.find((e) => e.id === newValue);
+    setSelectedExam(exam);
+  };
 
   const handleClassChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSelectedClass(event.target.value)
-  }
+    setSelectedClass(event.target.value);
+  };
 
   const handleDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSelectedDate(event.target.value)
-  }
+    setSelectedDate(event.target.value);
+  };
 
   const handleSubjectChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSelectedSubject(event.target.value)
-  }
+    setSelectedSubject(event.target.value);
+  };
 
-  const handleAttendanceChange = (studentId: number, status: "present" | "absent") => {
+  const handleAttendanceChange = (
+    studentId: number,
+    status: "present" | "absent"
+  ) => {
     const updatedStudents = students.map((student) => {
       if (student.id === studentId) {
         return {
@@ -246,25 +265,25 @@ const ExamAttendancePage = () => {
               status,
             },
           },
-        }
+        };
       }
-      return student
-    })
-    setStudents(updatedStudents)
-  }
+      return student;
+    });
+    setStudents(updatedStudents);
+  };
 
   const handleOpenRemarkDialog = (student: any) => {
-    setSelectedStudent(student)
-    setRemarkText(student.attendance[selectedDate]?.remarks || "")
-    setOpenRemarkDialog(true)
-  }
+    setSelectedStudent(student);
+    setRemarkText(student.attendance[selectedDate]?.remarks || "");
+    setOpenRemarkDialog(true);
+  };
 
   const handleCloseRemarkDialog = () => {
-    setOpenRemarkDialog(false)
-  }
+    setOpenRemarkDialog(false);
+  };
 
   const handleSaveRemark = () => {
-    if (!selectedStudent) return
+    if (!selectedStudent) return;
 
     const updatedStudents = students.map((student) => {
       if (student.id === selectedStudent.id) {
@@ -277,52 +296,68 @@ const ExamAttendancePage = () => {
               remarks: remarkText,
             },
           },
-        }
+        };
       }
-      return student
-    })
-    setStudents(updatedStudents)
+      return student;
+    });
+    setStudents(updatedStudents);
     setSnackbar({
       open: true,
       message: "Remark saved successfully!",
       severity: "success",
-    })
-    handleCloseRemarkDialog()
-  }
+    });
+    handleCloseRemarkDialog();
+  };
 
   const handleSaveAll = () => {
-    setLoading(true)
+    setLoading(true);
     setTimeout(() => {
       setSnackbar({
         open: true,
         message: "Attendance saved successfully!",
         severity: "success",
-      })
-      setLoading(false)
-    }, 1000)
-  }
+      });
+      setLoading(false);
+    }, 1000);
+  };
 
   const handleCloseSnackbar = () => {
     setSnackbar({
       ...snackbar,
       open: false,
-    })
-  }
+    });
+  };
 
-  const filteredStudents = students.filter((student) => student.class === selectedClass)
+  const filteredStudents = students.filter(
+    (student) => student.class === selectedClass
+  );
 
   // Calculate attendance statistics
   const attendanceStats = {
     total: filteredStudents.length,
-    present: filteredStudents.filter((student) => student.attendance[selectedDate]?.status === "present").length,
-    absent: filteredStudents.filter((student) => student.attendance[selectedDate]?.status === "absent").length,
-  }
+    present: filteredStudents.filter(
+      (student) => student.attendance[selectedDate]?.status === "present"
+    ).length,
+    absent: filteredStudents.filter(
+      (student) => student.attendance[selectedDate]?.status === "absent"
+    ).length,
+  };
 
   return (
     <Box sx={{ p: 3 }}>
-      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 4, alignItems: "center" }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          mb: 4,
+          alignItems: "center",
+        }}
+      >
         <Box sx={{ display: "flex", alignItems: "center" }}>
-          <IconButton onClick={() => router.push("/dashboard/admin/exams")} sx={{ mr: 2, bgcolor: "rgba(0,0,0,0.04)" }}>
+          <IconButton
+            onClick={() => router.push("/dashboard/admin/exams")}
+            sx={{ mr: 2, bgcolor: "rgba(0,0,0,0.04)" }}
+          >
             <ArrowBackIcon />
           </IconButton>
           <Typography variant="h4" component="h1" sx={{ fontWeight: 600 }}>
@@ -330,7 +365,12 @@ const ExamAttendancePage = () => {
           </Typography>
         </Box>
         <Box sx={{ display: "flex", gap: 2 }}>
-          <Button variant="outlined" startIcon={<PrintIcon />} sx={{ borderRadius: 2 }} onClick={() => window.print()}>
+          <Button
+            variant="outlined"
+            startIcon={<PrintIcon />}
+            sx={{ borderRadius: 2 }}
+            onClick={() => window.print()}
+          >
             Print
           </Button>
           <Button
@@ -370,18 +410,28 @@ const ExamAttendancePage = () => {
               <Tab
                 key={exam.id}
                 label={
-                  <Box sx={{ display: "flex", alignItems: "center", flexDirection: "column" }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      flexDirection: "column",
+                    }}
+                  >
                     <Typography variant="body1" sx={{ fontWeight: 500 }}>
                       {exam.name}
                     </Typography>
-                    <Box sx={{ display: "flex", alignItems: "center", mt: 0.5 }}>
+                    <Box
+                      sx={{ display: "flex", alignItems: "center", mt: 0.5 }}
+                    >
                       <Typography variant="caption" color="text.secondary">
                         {exam.startDate} - {exam.endDate}
                       </Typography>
                       <Chip
                         label={exam.status}
                         size="small"
-                        color={exam.status === "Completed" ? "success" : "primary"}
+                        color={
+                          exam.status === "Completed" ? "success" : "primary"
+                        }
                         sx={{ ml: 1, height: 20 }}
                       />
                     </Box>
@@ -398,7 +448,11 @@ const ExamAttendancePage = () => {
           <Grid item xs={12} md={3}>
             <FormControl fullWidth size="small">
               <InputLabel id="class-select-label">Class</InputLabel>
-              <Select labelId="class-select-label" value={selectedClass} label="Class" >
+              <Select
+                labelId="class-select-label"
+                value={selectedClass}
+                label="Class"
+              >
                 {availableClasses.map((cls) => (
                   <MenuItem key={cls} value={cls}>
                     {cls}
@@ -410,7 +464,11 @@ const ExamAttendancePage = () => {
           <Grid item xs={12} md={3}>
             <FormControl fullWidth size="small">
               <InputLabel id="date-select-label">Date</InputLabel>
-              <Select labelId="date-select-label" value={selectedDate} label="Date" >
+              <Select
+                labelId="date-select-label"
+                value={selectedDate}
+                label="Date"
+              >
                 {mockExamDates.map((date) => (
                   <MenuItem key={date} value={date}>
                     {date}
@@ -426,7 +484,6 @@ const ExamAttendancePage = () => {
                 labelId="subject-select-label"
                 value={selectedSubject}
                 label="Subject"
-         
               >
                 <MenuItem value="">All Subjects</MenuItem>
                 {subjects.map((subject) => (
@@ -463,7 +520,10 @@ const ExamAttendancePage = () => {
                 <Typography variant="body2" color="success.main">
                   Present
                 </Typography>
-                <Typography variant="h6" sx={{ fontWeight: 600, color: "success.main" }}>
+                <Typography
+                  variant="h6"
+                  sx={{ fontWeight: 600, color: "success.main" }}
+                >
                   {attendanceStats.present}
                 </Typography>
               </Box>
@@ -472,7 +532,10 @@ const ExamAttendancePage = () => {
                 <Typography variant="body2" color="error.main">
                   Absent
                 </Typography>
-                <Typography variant="h6" sx={{ fontWeight: 600, color: "error.main" }}>
+                <Typography
+                  variant="h6"
+                  sx={{ fontWeight: 600, color: "error.main" }}
+                >
                   {attendanceStats.absent}
                 </Typography>
               </Box>
@@ -491,7 +554,11 @@ const ExamAttendancePage = () => {
             </Typography>
           </Box>
         ) : (
-          <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 2 }}>
+          <TableContainer
+            component={Paper}
+            elevation={0}
+            sx={{ borderRadius: 2 }}
+          >
             <Table>
               <TableHead>
                 <TableRow>
@@ -509,8 +576,12 @@ const ExamAttendancePage = () => {
                     <TableCell>{student.name}</TableCell>
                     <TableCell>
                       <Checkbox
-                        checked={student.attendance[selectedDate]?.status === "present"}
-                        onChange={() => handleAttendanceChange(student.id, "present")}
+                        checked={
+                          student.attendance[selectedDate]?.status === "present"
+                        }
+                        onChange={() =>
+                          handleAttendanceChange(student.id, "present")
+                        }
                         icon={<CheckCircleIcon />}
                         checkedIcon={<CheckCircleIcon />}
                         sx={{
@@ -523,8 +594,12 @@ const ExamAttendancePage = () => {
                     </TableCell>
                     <TableCell>
                       <Checkbox
-                        checked={student.attendance[selectedDate]?.status === "absent"}
-                        onChange={() => handleAttendanceChange(student.id, "absent")}
+                        checked={
+                          student.attendance[selectedDate]?.status === "absent"
+                        }
+                        onChange={() =>
+                          handleAttendanceChange(student.id, "absent")
+                        }
                         icon={<CancelIcon />}
                         checkedIcon={<CancelIcon />}
                         sx={{
@@ -545,8 +620,15 @@ const ExamAttendancePage = () => {
                             sx={{ mr: 1 }}
                           />
                         ) : null}
-                        <Button size="small" variant="outlined" onClick={() => handleOpenRemarkDialog(student)}>
-                          {student.attendance[selectedDate]?.remarks ? "Edit" : "Add"} Remark
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          onClick={() => handleOpenRemarkDialog(student)}
+                        >
+                          {student.attendance[selectedDate]?.remarks
+                            ? "Edit"
+                            : "Add"}{" "}
+                          Remark
                         </Button>
                       </Box>
                     </TableCell>
@@ -559,7 +641,12 @@ const ExamAttendancePage = () => {
       </Paper>
 
       {/* Remark Dialog */}
-      <Dialog open={openRemarkDialog} onClose={handleCloseRemarkDialog} maxWidth="sm" fullWidth>
+      <Dialog
+        open={openRemarkDialog}
+        onClose={handleCloseRemarkDialog}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogTitle sx={{ pb: 1 }}>
           <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
             Add Remark for {selectedStudent?.name}
@@ -578,10 +665,18 @@ const ExamAttendancePage = () => {
           />
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3 }}>
-          <Button onClick={handleCloseRemarkDialog} variant="outlined" color="inherit">
+          <Button
+            onClick={handleCloseRemarkDialog}
+            variant="outlined"
+            color="inherit"
+          >
             Cancel
           </Button>
-          <Button onClick={handleSaveRemark} variant="contained" color="primary">
+          <Button
+            onClick={handleSaveRemark}
+            variant="contained"
+            color="primary"
+          >
             Save Remark
           </Button>
         </DialogActions>
@@ -594,12 +689,16 @@ const ExamAttendancePage = () => {
         onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       >
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: "100%" }}>
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
           {snackbar.message}
         </Alert>
       </Snackbar>
     </Box>
-  )
-}
+  );
+};
 
-export default ExamAttendancePage
+export default ExamAttendancePage;

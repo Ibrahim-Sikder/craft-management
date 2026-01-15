@@ -46,7 +46,7 @@ import {
   Download as DownloadIcon,
   Print as PrintIcon,
   Mail as MailIcon,
-  Phone as PhoneIcon,
+  PhOnes PhoneIcon,
   School as SchoolIcon,
   Work as WorkIcon,
   Group as GroupIcon,

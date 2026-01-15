@@ -1,8 +1,8 @@
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useEffect } from "react"
+import { useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -33,8 +33,8 @@ import {
   useMediaQuery,
   Backdrop,
   Avatar,
-} from "@mui/material"
-import { styled, useTheme } from "@mui/material/styles"
+} from "@mui/material";
+import { styled, useTheme } from "@mui/material/styles";
 import {
   Add as AddIcon,
   Edit as EditIcon,
@@ -47,9 +47,9 @@ import {
   Refresh as RefreshIcon,
   ViewList as ViewListIcon,
   ViewModule as ViewModuleIcon,
-} from "@mui/icons-material"
-import { DataGrid, type GridColDef } from "@mui/x-data-grid"
-import { motion } from "framer-motion"
+} from "@mui/icons-material";
+import { DataGrid, type GridColDef } from "@mui/x-data-grid";
+import { motion } from "framer-motion";
 
 // Styled components
 const StyledCard = styled(Card)(({ theme }) => ({
@@ -62,7 +62,7 @@ const StyledCard = styled(Card)(({ theme }) => ({
     transform: "translateY(-8px)",
     boxShadow: "0 15px 35px rgba(0,0,0,0.15)",
   },
-}))
+}));
 
 const GlassCard = styled(Card)(({ theme }) => ({
   background: "rgba(255, 255, 255, 0.7)",
@@ -70,7 +70,7 @@ const GlassCard = styled(Card)(({ theme }) => ({
   borderRadius: 16,
   border: "1px solid rgba(255, 255, 255, 0.18)",
   boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
-}))
+}));
 
 const GradientButton = styled(Button)(({ theme }) => ({
   background: `linear-gradient(90deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
@@ -82,14 +82,14 @@ const GradientButton = styled(Button)(({ theme }) => ({
     boxShadow: "0 8px 25px rgba(0, 0, 0, 0.3)",
     transform: "translateY(-2px)",
   },
-}))
+}));
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   borderRadius: 16,
   overflow: "hidden",
   boxShadow: "0 10px 40px rgba(0, 0, 0, 0.1)",
   border: "1px solid rgba(255, 255, 255, 0.2)",
-}))
+}));
 
 // Mock data for exams
 const mockExams = [
@@ -100,7 +100,7 @@ const mockExams = [
     startDate: "2023-04-10",
     endDate: "2023-04-20",
     status: "Completed",
-    classes: ["One A", "One B", "Two", "Three", "Four", "Five", "Six"],
+    classes: ["One", "One", "Two", "Three", "Four", "Five", "Six"],
   },
   {
     id: 2,
@@ -118,7 +118,7 @@ const mockExams = [
     startDate: "2023-07-20",
     endDate: "2023-07-30",
     status: "Completed",
-    classes: ["One A", "One B", "Two", "Three", "Four", "Five", "Six"],
+    classes: ["One", "One", "Two", "Three", "Four", "Five", "Six"],
   },
   {
     id: 4,
@@ -136,32 +136,54 @@ const mockExams = [
     startDate: "2023-12-01",
     endDate: "2023-12-15",
     status: "Upcoming",
-    classes: ["One A", "One B", "Two", "Three", "Four", "Five", "Six", "Hifz", "Nazera"],
+    classes: [
+      "One",
+      "One",
+      "Two",
+      "Three",
+      "Four",
+      "Five",
+      "Six",
+      "Hifz",
+      "Nazera",
+    ],
   },
-]
+];
 
 // Available classes
-const availableClasses = ["Hifz", "One A", "One B", "Nazera", "Two", "Three", "Four", "Five", "Six"]
+const availableClasses = [
+  "Hifz",
+  "One",
+  "One",
+  "Nazera",
+  "Two",
+  "Three",
+  "Four",
+  "Five",
+  "Six",
+];
 
 // Exam types
-const examTypes = ["Term", "Assessment", "Quiz", "Monthly Test", "Special"]
+const examTypes = ["Term", "Assessment", "Quiz", "Monthly Test", "Special"];
 
 const ExamsPage = () => {
-  const theme = useTheme()
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"))
-  const [exams, setExams] = useState(mockExams)
-  const [openDialog, setOpenDialog] = useState(false)
-  const [selectedExam, setSelectedExam] = useState<any>(null)
-  const [loading, setLoading] = useState(false)
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const [exams, setExams] = useState(mockExams);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [selectedExam, setSelectedExam] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
     severity: "success" as "success" | "error",
-  })
-  const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
-  const [refreshing, setRefreshing] = useState(false)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [filterAnchorEl, setFilterAnchorEl] = useState<null | HTMLElement>(null)
+  });
+  const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
+  const [refreshing, setRefreshing] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterAnchorEl, setFilterAnchorEl] = useState<null | HTMLElement>(
+    null
+  );
 
   // Form state
   const [formData, setFormData] = useState({
@@ -170,7 +192,7 @@ const ExamsPage = () => {
     startDate: "",
     endDate: "",
     classes: [] as string[],
-  })
+  });
 
   // Animation variants
   const containerVariants = {
@@ -181,7 +203,7 @@ const ExamsPage = () => {
         staggerChildren: 0.1,
       },
     },
-  }
+  };
 
   const itemVariants = {
     hidden: { y: 20, opacity: 0 },
@@ -193,53 +215,53 @@ const ExamsPage = () => {
         stiffness: 100,
       },
     },
-  }
+  };
 
   const handleOpenDialog = (exam?: any) => {
     if (exam) {
-      setSelectedExam(exam)
+      setSelectedExam(exam);
       setFormData({
         name: exam.name,
         examType: exam.examType,
         startDate: exam.startDate,
         endDate: exam.endDate,
         classes: exam.classes,
-      })
+      });
     } else {
-      setSelectedExam(null)
+      setSelectedExam(null);
       setFormData({
         name: "",
         examType: "",
         startDate: "",
         endDate: "",
         classes: [],
-      })
+      });
     }
-    setOpenDialog(true)
-  }
+    setOpenDialog(true);
+  };
 
   const handleCloseDialog = () => {
-    setOpenDialog(false)
-  }
+    setOpenDialog(false);
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
+    const { name, value } = e.target;
     setFormData({
       ...formData,
       [name]: value,
-    })
-  }
+    });
+  };
 
   const handleSelectChange = (e: any) => {
-    const { name, value } = e.target
+    const { name, value } = e.target;
     setFormData({
       ...formData,
       [name]: value,
-    })
-  }
+    });
+  };
 
   const handleSubmit = () => {
-    setLoading(true)
+    setLoading(true);
     setTimeout(() => {
       if (selectedExam) {
         // Update existing exam
@@ -248,67 +270,71 @@ const ExamsPage = () => {
             ? {
                 ...exam,
                 ...formData,
-                status: new Date(formData.endDate) < new Date() ? "Completed" : "Upcoming",
+                status:
+                  new Date(formData.endDate) < new Date()
+                    ? "Completed"
+                    : "Upcoming",
               }
-            : exam,
-        )
-        setExams(updatedExams)
+            : exam
+        );
+        setExams(updatedExams);
         setSnackbar({
           open: true,
           message: "Exam updated successfully!",
           severity: "success",
-        })
+        });
       } else {
         // Add new exam
         const newExam = {
           id: exams.length + 1,
           ...formData,
-          status: new Date(formData.endDate) < new Date() ? "Completed" : "Upcoming",
-        }
-        setExams([...exams, newExam])
+          status:
+            new Date(formData.endDate) < new Date() ? "Completed" : "Upcoming",
+        };
+        setExams([...exams, newExam]);
         setSnackbar({
           open: true,
           message: "Exam created successfully!",
           severity: "success",
-        })
+        });
       }
-      setLoading(false)
-      handleCloseDialog()
-    }, 1000)
-  }
+      setLoading(false);
+      handleCloseDialog();
+    }, 1000);
+  };
 
   const handleDelete = (id: number) => {
-    setExams(exams.filter((exam) => exam.id !== id))
+    setExams(exams.filter((exam) => exam.id !== id));
     setSnackbar({
       open: true,
       message: "Exam deleted successfully!",
       severity: "success",
-    })
-  }
+    });
+  };
 
   const handleCloseSnackbar = () => {
     setSnackbar({
       ...snackbar,
       open: false,
-    })
-  }
+    });
+  };
 
   const handleRefresh = () => {
-    setRefreshing(true)
+    setRefreshing(true);
     setTimeout(() => {
-      setRefreshing(false)
-    }, 1500)
-  }
+      setRefreshing(false);
+    }, 1500);
+  };
 
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value)
-  }
+    setSearchTerm(e.target.value);
+  };
 
   const filteredExams = exams.filter(
     (exam) =>
       exam.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      exam.examType.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
+      exam.examType.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const columns: GridColDef[] = [
     { field: "id", headerName: "ID", width: 70 },
@@ -336,11 +362,21 @@ const ExamsPage = () => {
       renderCell: (params) => (
         <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
           {params.value.slice(0, 3).map((cls: string) => (
-            <Chip key={cls} label={cls} size="small" variant="outlined" sx={{ borderRadius: 6 }} />
+            <Chip
+              key={cls}
+              label={cls}
+              size="small"
+              variant="outlined"
+              sx={{ borderRadius: 6 }}
+            />
           ))}
           {params.value.length > 3 && (
             <Tooltip title={params.value.slice(3).join(", ")}>
-              <Chip label={`+${params.value.length - 3}`} size="small" sx={{ borderRadius: 6 }} />
+              <Chip
+                label={`+${params.value.length - 3}`}
+                size="small"
+                sx={{ borderRadius: 6 }}
+              />
             </Tooltip>
           )}
         </Box>
@@ -362,23 +398,27 @@ const ExamsPage = () => {
             </IconButton>
           </Tooltip>
           <Tooltip title="Delete">
-            <IconButton onClick={() => handleDelete(params.row.id)} size="small" color="error">
+            <IconButton
+              onClick={() => handleDelete(params.row.id)}
+              size="small"
+              color="error"
+            >
               <DeleteIcon fontSize="small" />
             </IconButton>
           </Tooltip>
         </Box>
       ),
     },
-  ]
+  ];
 
   // Simulated loading effect
   useEffect(() => {
-    setLoading(true)
+    setLoading(true);
     const timer = setTimeout(() => {
-      setLoading(false)
-    }, 1000)
-    return () => clearTimeout(timer)
-  }, [])
+      setLoading(false);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, []);
 
   return (
     <Box
@@ -388,7 +428,11 @@ const ExamsPage = () => {
         minHeight: "100vh",
       }}
     >
-      <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.5 }}
+      >
         <Box
           sx={{
             display: "flex",
@@ -419,7 +463,12 @@ const ExamsPage = () => {
               value={searchTerm}
               onChange={handleSearchChange}
               InputProps={{
-                startAdornment: <SearchIcon fontSize="small" sx={{ mr: 1, color: "text.secondary" }} />,
+                startAdornment: (
+                  <SearchIcon
+                    fontSize="small"
+                    sx={{ mr: 1, color: "text.secondary" }}
+                  />
+                ),
                 sx: {
                   borderRadius: 3,
                   bgcolor: "background.paper",
@@ -434,15 +483,27 @@ const ExamsPage = () => {
             <Tooltip title="Refresh">
               <IconButton
                 onClick={handleRefresh}
-                sx={{ bgcolor: "background.paper", boxShadow: "0 2px 10px rgba(0,0,0,0.05)" }}
+                sx={{
+                  bgcolor: "background.paper",
+                  boxShadow: "0 2px 10px rgba(0,0,0,0.05)",
+                }}
               >
-                <RefreshIcon sx={{ animation: refreshing ? "spin 1s linear infinite" : "none" }} />
+                <RefreshIcon
+                  sx={{
+                    animation: refreshing ? "spin 1s linear infinite" : "none",
+                  }}
+                />
               </IconButton>
             </Tooltip>
             <Tooltip title={viewMode === "grid" ? "List View" : "Grid View"}>
               <IconButton
-                onClick={() => setViewMode(viewMode === "grid" ? "list" : "grid")}
-                sx={{ bgcolor: "background.paper", boxShadow: "0 2px 10px rgba(0,0,0,0.05)" }}
+                onClick={() =>
+                  setViewMode(viewMode === "grid" ? "list" : "grid")
+                }
+                sx={{
+                  bgcolor: "background.paper",
+                  boxShadow: "0 2px 10px rgba(0,0,0,0.05)",
+                }}
               >
                 {viewMode === "grid" ? <ViewListIcon /> : <ViewModuleIcon />}
               </IconButton>
@@ -463,13 +524,18 @@ const ExamsPage = () => {
         </Box>
       </motion.div>
 
-      <motion.div variants={containerVariants} initial="hidden" animate="visible">
+      <motion.div
+        variants={containerVariants}
+        initial="hidden"
+        animate="visible"
+      >
         <Grid container spacing={3} sx={{ mb: 4 }}>
           <Grid item xs={12} md={3}>
             <motion.div variants={itemVariants}>
               <StyledCard
                 sx={{
-                  background: "linear-gradient(135deg, #4F0187 0%, #7B1FA2 100%)",
+                  background:
+                    "linear-gradient(135deg, #4F0187 0%, #7B1FA2 100%)",
                   color: "white",
                 }}
               >
@@ -487,7 +553,11 @@ const ExamsPage = () => {
                       <CalendarIcon sx={{ fontSize: 30 }} />
                     </Avatar>
                     <Box>
-                      <Typography variant="h5" component="div" sx={{ fontWeight: 700, mb: 0.5 }}>
+                      <Typography
+                        variant="h5"
+                        component="div"
+                        sx={{ fontWeight: 700, mb: 0.5 }}
+                      >
                         Exam Schedule
                       </Typography>
                       <Typography variant="body2" sx={{ opacity: 0.8 }}>
@@ -496,8 +566,12 @@ const ExamsPage = () => {
                     </Box>
                   </Box>
                   <Divider sx={{ bgcolor: "rgba(255,255,255,0.2)", my: 2 }} />
-                  <Typography variant="body1" sx={{ mb: 2, fontWeight: 300, lineHeight: 1.6 }}>
-                    Create and manage detailed exam schedules for different classes with subjects, times, and venues.
+                  <Typography
+                    variant="body1"
+                    sx={{ mb: 2, fontWeight: 300, lineHeight: 1.6 }}
+                  >
+                    Create and manage detailed exam schedules for different
+                    classes with subjects, times, and venues.
                   </Typography>
                 </CardContent>
                 <CardActions sx={{ p: 2, pt: 0, justifyContent: "flex-end" }}>
@@ -524,7 +598,8 @@ const ExamsPage = () => {
             <motion.div variants={itemVariants}>
               <StyledCard
                 sx={{
-                  background: "linear-gradient(135deg, #00b09b 0%, #96c93d 100%)",
+                  background:
+                    "linear-gradient(135deg, #00b09b 0%, #96c93d 100%)",
                   color: "white",
                 }}
               >
@@ -542,7 +617,11 @@ const ExamsPage = () => {
                       <AssessmentIcon sx={{ fontSize: 30 }} />
                     </Avatar>
                     <Box>
-                      <Typography variant="h5" component="div" sx={{ fontWeight: 700, mb: 0.5 }}>
+                      <Typography
+                        variant="h5"
+                        component="div"
+                        sx={{ fontWeight: 700, mb: 0.5 }}
+                      >
                         Results
                       </Typography>
                       <Typography variant="body2" sx={{ opacity: 0.8 }}>
@@ -551,8 +630,12 @@ const ExamsPage = () => {
                     </Box>
                   </Box>
                   <Divider sx={{ bgcolor: "rgba(255,255,255,0.2)", my: 2 }} />
-                  <Typography variant="body1" sx={{ mb: 2, fontWeight: 300, lineHeight: 1.6 }}>
-                    Record and analyze student performance with detailed reports and customizable result cards.
+                  <Typography
+                    variant="body1"
+                    sx={{ mb: 2, fontWeight: 300, lineHeight: 1.6 }}
+                  >
+                    Record and analyze student performance with detailed reports
+                    and customizable result cards.
                   </Typography>
                 </CardContent>
                 <CardActions sx={{ p: 2, pt: 0, justifyContent: "flex-end" }}>
@@ -579,7 +662,8 @@ const ExamsPage = () => {
             <motion.div variants={itemVariants}>
               <StyledCard
                 sx={{
-                  background: "linear-gradient(135deg, #FF9966 0%, #FF5E62 100%)",
+                  background:
+                    "linear-gradient(135deg, #FF9966 0%, #FF5E62 100%)",
                   color: "white",
                 }}
               >
@@ -597,7 +681,11 @@ const ExamsPage = () => {
                       <SchoolIcon sx={{ fontSize: 30 }} />
                     </Avatar>
                     <Box>
-                      <Typography variant="h5" component="div" sx={{ fontWeight: 700, mb: 0.5 }}>
+                      <Typography
+                        variant="h5"
+                        component="div"
+                        sx={{ fontWeight: 700, mb: 0.5 }}
+                      >
                         Grading
                       </Typography>
                       <Typography variant="body2" sx={{ opacity: 0.8 }}>
@@ -606,8 +694,12 @@ const ExamsPage = () => {
                     </Box>
                   </Box>
                   <Divider sx={{ bgcolor: "rgba(255,255,255,0.2)", my: 2 }} />
-                  <Typography variant="body1" sx={{ mb: 2, fontWeight: 300, lineHeight: 1.6 }}>
-                    Create custom grading systems for different classes with flexible grade ranges and remarks.
+                  <Typography
+                    variant="body1"
+                    sx={{ mb: 2, fontWeight: 300, lineHeight: 1.6 }}
+                  >
+                    Create custom grading systems for different classes with
+                    flexible grade ranges and remarks.
                   </Typography>
                 </CardContent>
                 <CardActions sx={{ p: 2, pt: 0, justifyContent: "flex-end" }}>
@@ -634,7 +726,8 @@ const ExamsPage = () => {
             <motion.div variants={itemVariants}>
               <StyledCard
                 sx={{
-                  background: "linear-gradient(135deg, #6441A5 0%, #2a0845 100%)",
+                  background:
+                    "linear-gradient(135deg, #6441A5 0%, #2a0845 100%)",
                   color: "white",
                 }}
               >
@@ -652,7 +745,11 @@ const ExamsPage = () => {
                       <CheckCircleIcon sx={{ fontSize: 30 }} />
                     </Avatar>
                     <Box>
-                      <Typography variant="h5" component="div" sx={{ fontWeight: 700, mb: 0.5 }}>
+                      <Typography
+                        variant="h5"
+                        component="div"
+                        sx={{ fontWeight: 700, mb: 0.5 }}
+                      >
                         Attendance
                       </Typography>
                       <Typography variant="body2" sx={{ opacity: 0.8 }}>
@@ -661,8 +758,12 @@ const ExamsPage = () => {
                     </Box>
                   </Box>
                   <Divider sx={{ bgcolor: "rgba(255,255,255,0.2)", my: 2 }} />
-                  <Typography variant="body1" sx={{ mb: 2, fontWeight: 300, lineHeight: 1.6 }}>
-                    Monitor student attendance during exams with easy marking and detailed absence reports.
+                  <Typography
+                    variant="body1"
+                    sx={{ mb: 2, fontWeight: 300, lineHeight: 1.6 }}
+                  >
+                    Monitor student attendance during exams with easy marking
+                    and detailed absence reports.
                   </Typography>
                 </CardContent>
                 <CardActions sx={{ p: 2, pt: 0, justifyContent: "flex-end" }}>
@@ -741,7 +842,10 @@ const ExamsPage = () => {
               <Grid container spacing={3}>
                 {filteredExams.map((exam) => (
                   <Grid item xs={12} sm={6} md={4} key={exam.id}>
-                    <Zoom in={true} style={{ transitionDelay: `${exam.id * 100}ms` }}>
+                    <Zoom
+                      in={true}
+                      style={{ transitionDelay: `${exam.id * 100}ms` }}
+                    >
                       <Card
                         sx={{
                           borderRadius: 4,
@@ -760,7 +864,10 @@ const ExamsPage = () => {
                             position: "absolute",
                             top: -15,
                             right: 20,
-                            bgcolor: exam.status === "Completed" ? "success.main" : "primary.main",
+                            bgcolor:
+                              exam.status === "Completed"
+                                ? "success.main"
+                                : "primary.main",
                             color: "white",
                             borderRadius: 5,
                             px: 2,
@@ -773,23 +880,53 @@ const ExamsPage = () => {
                           {exam.status}
                         </Box>
                         <CardContent sx={{ p: 3 }}>
-                          <Typography variant="h6" sx={{ fontWeight: 600, mb: 1 }}>
+                          <Typography
+                            variant="h6"
+                            sx={{ fontWeight: 600, mb: 1 }}
+                          >
                             {exam.name}
                           </Typography>
-                          <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            sx={{ mb: 2 }}
+                          >
                             {exam.examType} • {exam.startDate} to {exam.endDate}
                           </Typography>
-                          <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mb: 2 }}>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              flexWrap: "wrap",
+                              gap: 0.5,
+                              mb: 2,
+                            }}
+                          >
                             {exam.classes.slice(0, 4).map((cls: string) => (
-                              <Chip key={cls} label={cls} size="small" variant="outlined" sx={{ borderRadius: 3 }} />
+                              <Chip
+                                key={cls}
+                                label={cls}
+                                size="small"
+                                variant="outlined"
+                                sx={{ borderRadius: 3 }}
+                              />
                             ))}
                             {exam.classes.length > 4 && (
                               <Tooltip title={exam.classes.slice(4).join(", ")}>
-                                <Chip label={`+${exam.classes.length - 4}`} size="small" sx={{ borderRadius: 3 }} />
+                                <Chip
+                                  label={`+${exam.classes.length - 4}`}
+                                  size="small"
+                                  sx={{ borderRadius: 3 }}
+                                />
                               </Tooltip>
                             )}
                           </Box>
-                          <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1 }}>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              justifyContent: "flex-end",
+                              gap: 1,
+                            }}
+                          >
                             <IconButton
                               size="small"
                               onClick={() => handleOpenDialog(exam)}
@@ -797,7 +934,11 @@ const ExamsPage = () => {
                             >
                               <EditIcon fontSize="small" />
                             </IconButton>
-                            <IconButton size="small" onClick={() => handleDelete(exam.id)} color="error">
+                            <IconButton
+                              size="small"
+                              onClick={() => handleDelete(exam.id)}
+                              color="error"
+                            >
                               <DeleteIcon fontSize="small" />
                             </IconButton>
                           </Box>
@@ -887,7 +1028,12 @@ const ExamsPage = () => {
                   renderValue={(selected) => (
                     <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5 }}>
                       {(selected as string[]).map((value) => (
-                        <Chip key={value} label={value} size="small" sx={{ borderRadius: 3 }} />
+                        <Chip
+                          key={value}
+                          label={value}
+                          size="small"
+                          sx={{ borderRadius: 3 }}
+                        />
                       ))}
                     </Box>
                   )}
@@ -953,10 +1099,16 @@ const ExamsPage = () => {
             onClick={handleSubmit}
             variant="contained"
             disabled={loading}
-            startIcon={loading && <CircularProgress size={20} color="inherit" />}
+            startIcon={
+              loading && <CircularProgress size={20} color="inherit" />
+            }
             sx={{ px: 3 }}
           >
-            {loading ? "Saving..." : selectedExam ? "Update Exam" : "Create Exam"}
+            {loading
+              ? "Saving..."
+              : selectedExam
+                ? "Update Exam"
+                : "Create Exam"}
           </GradientButton>
         </DialogActions>
       </Dialog>
@@ -983,11 +1135,14 @@ const ExamsPage = () => {
       </Snackbar>
 
       {/* Loading backdrop */}
-      <Backdrop sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }} open={loading && !openDialog}>
+      <Backdrop
+        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={loading && !openDialog}
+      >
         <CircularProgress color="inherit" />
       </Backdrop>
     </Box>
-  )
-}
+  );
+};
 
-export default ExamsPage
+export default ExamsPage;

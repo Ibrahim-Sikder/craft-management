@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useEffect } from "react"
+import { useState, useEffect } from "react";
 import {
   Box,
   Container,
@@ -35,7 +35,7 @@ import {
   Fade,
   Divider,
   LinearProgress,
-} from "@mui/material"
+} from "@mui/material";
 import {
   Search as SearchIcon,
   Add as AddIcon,
@@ -55,28 +55,28 @@ import {
   AccessTime as AccessTimeIcon,
   Cancel as CancelIcon,
   School as SchoolIcon,
-} from "@mui/icons-material"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
+} from "@mui/icons-material";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 // Define types
-type Order = "asc" | "desc"
-type BatchStatus = "active" | "pending" | "inactive" | "completed"
+type Order = "asc" | "desc";
+type BatchStatus = "active" | "pending" | "inactive" | "completed";
 
 interface Batch {
-  id: string
-  name: string
-  code: string
+  id: string;
+  name: string;
+  code: string;
   teacher: {
-    name: string
-    avatar: string
-  }
-  students: number
-  capacity: number
-  status: BatchStatus
-  created: string
-  class: string
-  section: string
+    name: string;
+    avatar: string;
+  };
+  students: number;
+  capacity: number;
+  status: BatchStatus;
+  created: string;
+  class: string;
+  section: string;
 }
 
 // Mock data for the batch list
@@ -225,7 +225,7 @@ const MOCK_BATCHES: Batch[] = [
     class: "Class 10",
     section: "Section D",
   },
-]
+];
 
 function getStatusInfo(status: BatchStatus) {
   switch (status) {
@@ -235,106 +235,111 @@ function getStatusInfo(status: BatchStatus) {
         color: "#4caf50",
         bgColor: "#e8f5e9",
         label: "Active",
-      }
+      };
     case "pending":
       return {
         icon: <AccessTimeIcon fontSize="small" />,
         color: "#ff9800",
         bgColor: "#fff3e0",
         label: "Pending",
-      }
+      };
     case "inactive":
       return {
         icon: <CancelIcon fontSize="small" />,
         color: "#f44336",
         bgColor: "#ffebee",
         label: "Inactive",
-      }
+      };
     case "completed":
       return {
         icon: <CheckCircleIcon fontSize="small" />,
         color: "#2196f3",
         bgColor: "#e3f2fd",
         label: "Completed",
-      }
+      };
     default:
       return {
         icon: <AccessTimeIcon fontSize="small" />,
         color: "#9e9e9e",
         bgColor: "#f5f5f5",
         label: status,
-      }
+      };
   }
 }
 
 export default function BatchListPage() {
-  const router = useRouter()
-  const [order, setOrder] = useState<Order>("asc")
-  const [orderBy, setOrderBy] = useState<keyof Batch>("name")
-  const [page, setPage] = useState(0)
-  const [rowsPerPage, setRowsPerPage] = useState(10)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
-  const [selectedBatch, setSelectedBatch] = useState<string | null>(null)
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [batchToDelete, setBatchToDelete] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [fadeIn, setFadeIn] = useState(false)
+  const router = useRouter();
+  const [order, setOrder] = useState<Order>("asc");
+  const [orderBy, setOrderBy] = useState<keyof Batch>("name");
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [selectedBatch, setSelectedBatch] = useState<string | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [batchToDelete, setBatchToDelete] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [fadeIn, setFadeIn] = useState(false);
 
   // Simulate loading
   useEffect(() => {
     const timer = setTimeout(() => {
-      setLoading(false)
-      setFadeIn(true)
-    }, 1000)
-    return () => clearTimeout(timer)
-  }, [])
+      setLoading(false);
+      setFadeIn(true);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleRequestSort = (property: keyof Batch) => {
-    const isAsc = orderBy === property && order === "asc"
-    setOrder(isAsc ? "desc" : "asc")
-    setOrderBy(property)
-  }
+    const isAsc = orderBy === property && order === "asc";
+    setOrder(isAsc ? "desc" : "asc");
+    setOrderBy(property);
+  };
 
   const handleChangePage = (event: unknown, newPage: number) => {
-    setPage(newPage)
-  }
+    setPage(newPage);
+  };
 
-  const handleChangeRowsPerPage = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setRowsPerPage(Number.parseInt(event.target.value, 10))
-    setPage(0)
-  }
+  const handleChangeRowsPerPage = (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    setRowsPerPage(Number.parseInt(event.target.value, 10));
+    setPage(0);
+  };
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value)
-    setPage(0)
-  }
+    setSearchTerm(event.target.value);
+    setPage(0);
+  };
 
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, batchId: string) => {
-    setAnchorEl(event.currentTarget)
-    setSelectedBatch(batchId)
-  }
+  const handleMenuOpen = (
+    event: React.MouseEvent<HTMLElement>,
+    batchId: string
+  ) => {
+    setAnchorEl(event.currentTarget);
+    setSelectedBatch(batchId);
+  };
 
   const handleMenuClose = () => {
-    setAnchorEl(null)
-    setSelectedBatch(null)
-  }
+    setAnchorEl(null);
+    setSelectedBatch(null);
+  };
 
   const handleDeleteClick = (batchId: string) => {
-    setBatchToDelete(batchId)
-    setDeleteDialogOpen(true)
-    handleMenuClose()
-  }
+    setBatchToDelete(batchId);
+    setDeleteDialogOpen(true);
+    handleMenuClose();
+  };
 
   const handleDeleteConfirm = () => {
-    setDeleteDialogOpen(false)
-    setBatchToDelete(null)
-  }
+    setDeleteDialogOpen(false);
+    setBatchToDelete(null);
+  };
 
   const handleDeleteCancel = () => {
-    setDeleteDialogOpen(false)
-    setBatchToDelete(null)
-  }
+    setDeleteDialogOpen(false);
+    setBatchToDelete(null);
+  };
 
   // Filter and sort batches
   const filteredBatches = MOCK_BATCHES.filter(
@@ -342,26 +347,33 @@ export default function BatchListPage() {
       batch.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       batch.code.toLowerCase().includes(searchTerm.toLowerCase()) ||
       batch.teacher.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      batch.class.toLowerCase().includes(searchTerm.toLowerCase()),
-  )
+      batch.class.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const sortedBatches = filteredBatches.sort((a, b) => {
-    const aValue = a[orderBy]
-    const bValue = b[orderBy]
+    const aValue = a[orderBy];
+    const bValue = b[orderBy];
 
     if (orderBy === "students" || orderBy === "capacity") {
-      return order === "asc" ? Number(aValue) - Number(bValue) : Number(bValue) - Number(aValue)
+      return order === "asc"
+        ? Number(aValue) - Number(bValue)
+        : Number(bValue) - Number(aValue);
     }
 
     if (typeof aValue === "string" && typeof bValue === "string") {
-      return order === "asc" ? aValue.localeCompare(bValue) : bValue.localeCompare(aValue)
+      return order === "asc"
+        ? aValue.localeCompare(bValue)
+        : bValue.localeCompare(aValue);
     }
 
-    return 0
-  })
+    return 0;
+  });
 
   // Get current page of batches
-  const currentBatches = sortedBatches.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+  const currentBatches = sortedBatches.slice(
+    page * rowsPerPage,
+    page * rowsPerPage + rowsPerPage
+  );
 
   return (
     <Box
@@ -383,7 +395,7 @@ export default function BatchListPage() {
           boxShadow: "0 4px 20px rgba(106, 27, 154, 0.4)",
         }}
       >
-        <Container maxWidth="xl" sx={{p:{xs:"4px"}}}>
+        <Container maxWidth="xl" sx={{ p: { xs: "4px" } }}>
           <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
             <SchoolIcon sx={{ fontSize: 40, mr: 2 }} />
             <Typography variant="h4" component="h1" sx={{ fontWeight: 700 }}>
@@ -391,12 +403,13 @@ export default function BatchListPage() {
             </Typography>
           </Box>
           <Typography variant="body1" sx={{ opacity: 0.9, maxWidth: 700 }}>
-            Manage all your academic batches in one place. Create, edit, and track batch progress efficiently.
+            Manage all your academic batches in one place. Create, edit, and
+            track batch progress efficiently.
           </Typography>
         </Container>
       </Box>
 
-      <Container maxWidth="xl" sx={{p:{xs:"4px"}}}>
+      <Container maxWidth="xl" sx={{ p: { xs: "4px" } }}>
         {/* Search and Actions */}
         <Box
           sx={{
@@ -430,7 +443,13 @@ export default function BatchListPage() {
             />
           </Paper>
 
-          <Box sx={{ display: "flex", gap: 1, justifyContent: { xs: "space-between", md: "flex-end" } }}>
+          <Box
+            sx={{
+              display: "flex",
+              gap: 1,
+              justifyContent: { xs: "space-between", md: "flex-end" },
+            }}
+          >
             <Button
               variant="outlined"
               startIcon={<FilterListIcon />}
@@ -473,7 +492,8 @@ export default function BatchListPage() {
                 startIcon={<AddIcon />}
                 sx={{
                   borderRadius: 100,
-                  background: "linear-gradient(135deg, #6a1b9a 0%, #4a148c 100%)",
+                  background:
+                    "linear-gradient(135deg, #6a1b9a 0%, #4a148c 100%)",
                   boxShadow: "0 4px 10px rgba(106, 27, 154, 0.3)",
                   px: 3,
                 }}
@@ -510,11 +530,13 @@ export default function BatchListPage() {
           )}
 
           <Fade in={fadeIn} timeout={800}>
-            <TableContainer sx={{
-            overflowX: "auto",  
-            WebkitOverflowScrolling: "touch",  
-            maxWidth: "100vw"  
-          }}>
+            <TableContainer
+              sx={{
+                overflowX: "auto",
+                WebkitOverflowScrolling: "touch",
+                maxWidth: "100vw",
+              }}
+            >
               <Table>
                 <TableHead sx={{ bgcolor: "#f5f5f5" }}>
                   <TableRow>
@@ -555,9 +577,15 @@ export default function BatchListPage() {
                 </TableHead>
                 <TableBody>
                   {currentBatches.map((batch) => {
-                    const statusInfo = getStatusInfo(batch.status)
-                    const fillPercentage = (batch.students / batch.capacity) * 100
-                    const fillColor = fillPercentage > 90 ? "#f44336" : fillPercentage > 75 ? "#ff9800" : "#4caf50"
+                    const statusInfo = getStatusInfo(batch.status);
+                    const fillPercentage =
+                      (batch.students / batch.capacity) * 100;
+                    const fillColor =
+                      fillPercentage > 90
+                        ? "#f44336"
+                        : fillPercentage > 75
+                          ? "#ff9800"
+                          : "#4caf50";
 
                     return (
                       <TableRow
@@ -571,11 +599,19 @@ export default function BatchListPage() {
                         }}
                       >
                         <TableCell>
-                          <Box sx={{ display: "flex", flexDirection: "column" }}>
-                            <Typography variant="body1" sx={{ fontWeight: 500 }}>
+                          <Box
+                            sx={{ display: "flex", flexDirection: "column" }}
+                          >
+                            <Typography
+                              variant="body1"
+                              sx={{ fontWeight: 500 }}
+                            >
                               {batch.name}
                             </Typography>
-                            <Typography variant="caption" color="text.secondary">
+                            <Typography
+                              variant="caption"
+                              color="text.secondary"
+                            >
                               {batch.class}, {batch.section}
                             </Typography>
                           </Box>
@@ -593,7 +629,13 @@ export default function BatchListPage() {
                           />
                         </TableCell>
                         <TableCell>
-                          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 1,
+                            }}
+                          >
                             <Avatar
                               sx={{
                                 width: 32,
@@ -604,11 +646,19 @@ export default function BatchListPage() {
                             >
                               {batch.teacher.avatar}
                             </Avatar>
-                            <Typography variant="body2">{batch.teacher.name}</Typography>
+                            <Typography variant="body2">
+                              {batch.teacher.name}
+                            </Typography>
                           </Box>
                         </TableCell>
                         <TableCell>
-                          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 1,
+                            }}
+                          >
                             <Typography variant="body2">
                               {batch.students}/{batch.capacity}
                             </Typography>
@@ -655,13 +705,18 @@ export default function BatchListPage() {
                           })}
                         </TableCell>
                         <TableCell align="right">
-                          <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+                          <Box
+                            sx={{ display: "flex", justifyContent: "flex-end" }}
+                          >
                             <Tooltip title="View Details" arrow>
                               <IconButton
                                 size="small"
                                 sx={{
                                   color: "text.secondary",
-                                  "&:hover": { color: "primary.main", bgcolor: "rgba(106, 27, 154, 0.08)" },
+                                  "&:hover": {
+                                    color: "primary.main",
+                                    bgcolor: "rgba(106, 27, 154, 0.08)",
+                                  },
                                 }}
                               >
                                 <VisibilityIcon fontSize="small" />
@@ -672,7 +727,9 @@ export default function BatchListPage() {
                                 size="small"
                                 sx={{
                                   color: "primary.main",
-                                  "&:hover": { bgcolor: "rgba(106, 27, 154, 0.08)" },
+                                  "&:hover": {
+                                    bgcolor: "rgba(106, 27, 154, 0.08)",
+                                  },
                                 }}
                               >
                                 <EditIcon fontSize="small" />
@@ -682,7 +739,10 @@ export default function BatchListPage() {
                               size="small"
                               sx={{
                                 color: "text.secondary",
-                                "&:hover": { color: "primary.main", bgcolor: "rgba(106, 27, 154, 0.08)" },
+                                "&:hover": {
+                                  color: "primary.main",
+                                  bgcolor: "rgba(106, 27, 154, 0.08)",
+                                },
                               }}
                               onClick={(e) => handleMenuOpen(e, batch.id)}
                             >
@@ -691,12 +751,19 @@ export default function BatchListPage() {
                           </Box>
                         </TableCell>
                       </TableRow>
-                    )
+                    );
                   })}
                   {currentBatches.length === 0 && (
                     <TableRow>
                       <TableCell colSpan={7} align="center" sx={{ py: 8 }}>
-                        <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                            gap: 2,
+                          }}
+                        >
                           <Box
                             sx={{
                               width: 80,
@@ -708,13 +775,20 @@ export default function BatchListPage() {
                               justifyContent: "center",
                             }}
                           >
-                            <SearchIcon sx={{ fontSize: 40, color: "#6a1b9a" }} />
+                            <SearchIcon
+                              sx={{ fontSize: 40, color: "#6a1b9a" }}
+                            />
                           </Box>
                           <Typography variant="h6" color="text.secondary">
                             No batches found
                           </Typography>
-                          <Typography variant="body2" color="text.disabled" sx={{ maxWidth: 300, textAlign: "center" }}>
-                            Try adjusting your search or create a new batch to get started
+                          <Typography
+                            variant="body2"
+                            color="text.disabled"
+                            sx={{ maxWidth: 300, textAlign: "center" }}
+                          >
+                            Try adjusting your search or create a new batch to
+                            get started
                           </Typography>
                           <Button
                             variant="outlined"
@@ -750,7 +824,11 @@ export default function BatchListPage() {
         <Box
           sx={{
             display: "grid",
-            gridTemplateColumns: { xs: "1fr", sm: "1fr 1fr", md: "1fr 1fr 1fr 1fr" },
+            gridTemplateColumns: {
+              xs: "1fr",
+              sm: "1fr 1fr",
+              md: "1fr 1fr 1fr 1fr",
+            },
             gap: 3,
             mt: 4,
           }}
@@ -766,7 +844,10 @@ export default function BatchListPage() {
               gap: 1,
             }}
           >
-            <Typography variant="overline" sx={{ color: "#1565c0", fontWeight: 600 }}>
+            <Typography
+              variant="overline"
+              sx={{ color: "#1565c0", fontWeight: 600 }}
+            >
               Total Batches
             </Typography>
             <Typography variant="h4" sx={{ fontWeight: 700, color: "#0d47a1" }}>
@@ -788,7 +869,10 @@ export default function BatchListPage() {
               gap: 1,
             }}
           >
-            <Typography variant="overline" sx={{ color: "#2e7d32", fontWeight: 600 }}>
+            <Typography
+              variant="overline"
+              sx={{ color: "#2e7d32", fontWeight: 600 }}
+            >
               Active Batches
             </Typography>
             <Typography variant="h4" sx={{ fontWeight: 700, color: "#1b5e20" }}>
@@ -810,7 +894,10 @@ export default function BatchListPage() {
               gap: 1,
             }}
           >
-            <Typography variant="overline" sx={{ color: "#e65100", fontWeight: 600 }}>
+            <Typography
+              variant="overline"
+              sx={{ color: "#e65100", fontWeight: 600 }}
+            >
               Total Students
             </Typography>
             <Typography variant="h4" sx={{ fontWeight: 700, color: "#bf360c" }}>
@@ -832,11 +919,19 @@ export default function BatchListPage() {
               gap: 1,
             }}
           >
-            <Typography variant="overline" sx={{ color: "#6a1b9a", fontWeight: 600 }}>
+            <Typography
+              variant="overline"
+              sx={{ color: "#6a1b9a", fontWeight: 600 }}
+            >
               Completion Rate
             </Typography>
             <Typography variant="h4" sx={{ fontWeight: 700, color: "#4a148c" }}>
-              {Math.round((MOCK_BATCHES.filter((b) => b.status === "completed").length / MOCK_BATCHES.length) * 100)}%
+              {Math.round(
+                (MOCK_BATCHES.filter((b) => b.status === "completed").length /
+                  MOCK_BATCHES.length) *
+                  100
+              )}
+              %
             </Typography>
             <Typography variant="body2" sx={{ color: "#8e24aa" }}>
               Batches completed successfully
@@ -892,7 +987,9 @@ export default function BatchListPage() {
           <ListItemText>Export Data</ListItemText>
         </MenuItem>
         <Divider />
-        <MenuItem onClick={() => selectedBatch && handleDeleteClick(selectedBatch)}>
+        <MenuItem
+          onClick={() => selectedBatch && handleDeleteClick(selectedBatch)}
+        >
           <ListItemIcon>
             <DeleteIcon fontSize="small" sx={{ color: "error.main" }} />
           </ListItemIcon>
@@ -912,8 +1009,8 @@ export default function BatchListPage() {
         <DialogTitle sx={{ fontWeight: 600 }}>Confirm Deletion</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete this batch? This action cannot be undone and will remove all associated
-            data.
+            Are you sure you want to delete this batch? This action cannot be
+            undOnend will remove all associated data.
           </DialogContentText>
         </DialogContent>
         <DialogActions sx={{ p: 2 }}>
@@ -942,5 +1039,5 @@ export default function BatchListPage() {
         </DialogActions>
       </Dialog>
     </Box>
-  )
+  );
 }

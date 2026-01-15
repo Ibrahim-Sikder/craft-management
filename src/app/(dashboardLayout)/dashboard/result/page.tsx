@@ -45,8 +45,8 @@
 // // Sample data for demonstration
 // const classes = [
 //   { id: 1, name: "Hifz" },
-//   { id: 2, name: "One B" },
-//   { id: 3, name: "One A" },
+//   { id: 2, name: "One" },
+//   { id: 3, name: "One" },
 //   { id: 4, name: "Nazera" },
 //   { id: 5, name: "Six" },
 //   { id: 6, name: "Five" },
@@ -66,7 +66,7 @@
 //     id: 1,
 //     studentName: "Ahmed Ali",
 //     rollNumber: "001",
-//     class: "One A",
+//     class: "One",
 //     exam: "Final Term",
 //     totalMarks: 450,
 //     obtainedMarks: 385,
@@ -79,7 +79,7 @@
 //     id: 2,
 //     studentName: "Sara Khan",
 //     rollNumber: "002",
-//     class: "One A",
+//     class: "One",
 //     exam: "Final Term",
 //     totalMarks: 450,
 //     obtainedMarks: 372,
@@ -92,7 +92,7 @@
 //     id: 3,
 //     studentName: "Zain Ahmed",
 //     rollNumber: "003",
-//     class: "One A",
+//     class: "One",
 //     exam: "Final Term",
 //     totalMarks: 450,
 //     obtainedMarks: 340,
@@ -105,7 +105,7 @@
 //     id: 4,
 //     studentName: "Fatima Zahra",
 //     rollNumber: "004",
-//     class: "One A",
+//     class: "One",
 //     exam: "Final Term",
 //     totalMarks: 450,
 //     obtainedMarks: 325,
@@ -118,7 +118,7 @@
 //     id: 5,
 //     studentName: "Ibrahim Hassan",
 //     rollNumber: "005",
-//     class: "One A",
+//     class: "One",
 //     exam: "Final Term",
 //     totalMarks: 450,
 //     obtainedMarks: 180,
@@ -406,15 +406,10 @@
 
 // export default ViewResultsPage
 
-
-import React from 'react';
+import React from "react";
 
 const page = () => {
-  return (
-    <div>
-      view result
-    </div>
-  );
+  return <div>view result</div>;
 };
 
 export default page;

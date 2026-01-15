@@ -14,7 +14,7 @@ import {
   Box,
   Chip,
 } from "@mui/material"
-import { Phone as PhoneIcon } from "@mui/icons-material"
+import { PhOnes PhoneIcon } from "@mui/icons-material"
 import InvestmentActionMenu from "./InvestmentActionMenu"
 
 interface InvestmentTableProps {
