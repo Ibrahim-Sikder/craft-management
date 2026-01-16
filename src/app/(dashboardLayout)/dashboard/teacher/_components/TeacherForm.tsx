@@ -1,73 +1,15 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react/no-unescaped-entities */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useEffect, useRef } from "react"
-import {
-  Box,
-  Button,
-  Card,
-  Container,
-  FormControlLabel,
-  Grid,
-  Paper,
-  Switch,
-  Typography,
-  Stepper,
-  Step,
-  StepLabel,
-  StepContent,
-  Alert,
-  Snackbar,
-  Backdrop,
-  CircularProgress,
-  IconButton,
-  styled,
-  alpha,
-  Divider,
-} from "@mui/material"
-import {
-  Person,
-  Home,
-  School,
-  AttachMoney,
-  Save,
-  Badge,
-  Phone,
-  Bloodtype,
-  DriveFileRenameOutline,
-  ContactPhone,
-  LocationOn,
-  CalendarMonth,
-  CheckCircle,
-  ArrowBack,
-  Clear,
-  Help,
-  Email,
-  Language,
-  Wc,
-  CardMembership,
-  BusinessCenter,
-  Apartment,
-  Work,
-  VerifiedUser,
-  Group,
-  Add,
-  InsertDriveFile,
-  Image as ImageIcon,
-  Description,
-  Delete as DeleteIcon,
-  FilePresent,
-  Badge as BadgeIcon,
-} from "@mui/icons-material"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import CraftForm from "@/components/Forms/Form"
-import CraftInputWithIcon from "@/components/Forms/inputWithIcon"
-import CraftSelectWithIcon from "@/components/Forms/selectWithIcon"
+import CraftDatePicker from "@/components/Forms/DatePicker";
+import CraftForm from "@/components/Forms/Form";
+import CraftInputWithIcon from "@/components/Forms/inputWithIcon";
+import MultiFileUploadController from "@/components/Forms/multiFileUploadController";
+import CraftSelectWithIcon from "@/components/Forms/selectWithIcon";
 import {
   bloodGroup,
   departments,
@@ -77,106 +19,115 @@ import {
   maritalStatuses,
   staffTypes,
   statusOptions,
-} from "@/options"
-import { useCreateTeacherMutation, useGetSingleTeacherQuery, useUpdateTeacherMutation } from "@/redux/api/teacherApi"
-import FileUploadWithIcon from "@/components/Forms/Upload"
-import CraftDatePicker from "@/components/Forms/DatePicker"
-import toast from "react-hot-toast"
-import MultiFileUploadController from "@/components/Forms/multiFileUploadController"
-
-// Styled components for file upload
-const VisuallyHiddenInput = styled("input")({
-  clip: "rect(0 0 0 0)",
-  clipPath: "inset(50%)",
-  height: 1,
-  overflow: "hidden",
-  position: "absolute",
-  bottom: 0,
-  left: 0,
-  whiteSpace: "nowrap",
-  width: 1,
-})
-
-const UploadBox = styled(Box)(({ theme }) => ({
-  border: `2px dashed ${alpha(theme.palette.primary.main, 0.3)}`,
-  borderRadius: 16,
-  padding: theme.spacing(3),
-  textAlign: "center",
-  transition: "all 0.3s ease",
-  backgroundColor: alpha(theme.palette.primary.main, 0.02),
-  cursor: "pointer",
-  "&:hover": {
-    backgroundColor: alpha(theme.palette.primary.main, 0.05),
-    borderColor: theme.palette.primary.main,
-  },
-}))
-
-const FilePreviewBox = styled(Box)(({ theme }) => ({
-  display: "flex",
-  alignItems: "center",
-  padding: theme.spacing(1.5),
-  borderRadius: 8,
-  backgroundColor: alpha(theme.palette.primary.main, 0.05),
-  marginTop: theme.spacing(1),
-  transition: "all 0.3s ease",
-  "&:hover": {
-    backgroundColor: alpha(theme.palette.primary.main, 0.1),
-  },
-}))
+} from "@/options";
+import {
+  useCreateTeacherMutation,
+  useGetSingleTeacherQuery,
+  useUpdateTeacherMutation,
+} from "@/redux/api/teacherApi";
+import {
+  Add,
+  Apartment,
+  ArrowBack,
+  AttachMoney,
+  Badge,
+  Bloodtype,
+  BusinessCenter,
+  CalendarMonth,
+  CardMembership,
+  CheckCircle,
+  Clear,
+  ContactPhone,
+  DriveFileRenameOutline,
+  Email,
+  Group,
+  Help,
+  Home,
+  Language,
+  LocationOn,
+  Person,
+  Phone,
+  Save,
+  School,
+  VerifiedUser,
+  Wc,
+  Work,
+} from "@mui/icons-material";
+import {
+  Alert,
+  alpha,
+  Backdrop,
+  Box,
+  Button,
+  Card,
+  CircularProgress,
+  Container,
+  Divider,
+  FormControlLabel,
+  Grid,
+  IconButton,
+  Paper,
+  Snackbar,
+  Step,
+  StepContent,
+  StepLabel,
+  Stepper,
+  styled,
+  Switch,
+  Typography,
+} from "@mui/material";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 
 interface TeacherFormProps {
-  id?: string
+  id?: string;
 }
 
-// File type interface
 interface FileWithPreview extends File {
-  preview?: string
+  preview?: string;
 }
 
 export default function TeacherForm({ id }: TeacherFormProps = {}) {
-  const router = useRouter()
-  const [activeStep, setActiveStep] = useState(0)
+  const router = useRouter();
+  const [activeStep, setActiveStep] = useState(0);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
     severity: "success" as "success" | "error",
-  })
+  });
 
-  const [success, setSuccess] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [selectedSubjects, setSelectedSubjects] = useState<string[]>([])
-  const [previewImage, setPreviewImage] = useState<string | null>(null)
-  const [defaultValues, setDefaultValues] = useState<any>({})
+  const [success, setSuccess] = useState(false);
+  const [, setIsSubmitting] = useState(false);
+  const [, setSelectedSubjects] = useState<string[]>([]);
+  const [, setPreviewImage] = useState<string | null>(null);
+  const [defaultValues, setDefaultValues] = useState<any>({});
 
-  // File Upload States
-  const [profileImages, setProfileImages] = useState<FileWithPreview[]>([])
-  const [cvFiles, setCvFiles] = useState<File[]>([])
-  const [certificateFiles, setCertificateFiles] = useState<File[]>([])
-  const [nidFiles, setNidFiles] = useState<File[]>([])
+  const [profileImages] = useState<FileWithPreview[]>([]);
+  const [cvFiles] = useState<File[]>([]);
+  const [certificateFiles] = useState<File[]>([]);
+  const [nidFiles] = useState<File[]>([]);
 
   // Add API hooks
-  const [createTeacher] = useCreateTeacherMutation()
-  const [updateTeacher] = useUpdateTeacherMutation({})
+  const [createTeacher] = useCreateTeacherMutation();
+  const [updateTeacher] = useUpdateTeacherMutation({});
   const { data: singlesTeacher, isLoading } = useGetSingleTeacherQuery(
     { id },
     {
       skip: !id,
       refetchOnMountOrArgChange: true,
-    },
-  )
+    }
+  );
 
   useEffect(() => {
     if (singlesTeacher && singlesTeacher.data) {
-      const teacher = singlesTeacher.data
-
-      // Set selected subjects if available
+      const teacher = singlesTeacher.data;
       if (teacher.professionalInfo?.subjectsTaught) {
-        setSelectedSubjects(teacher.professionalInfo.subjectsTaught)
+        setSelectedSubjects(teacher.professionalInfo.subjectsTaught);
       }
 
-      // Create comprehensive default values object
       const formDefaultValues = {
-        // Basic Information
         teacherId: teacher.teacherId || "",
         teacherSerial: teacher.teacherSerial || "",
         smartIdCard: teacher.smartIdCard || "",
@@ -190,8 +141,6 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
         nationality: teacher.nationality || "",
         religion: teacher.religion || "",
         maritalStatus: teacher.maritalStatus || "",
-
-        // Address Information - Permanent
         address: teacher.permanentAddress?.address || "",
         village: teacher.permanentAddress?.village || "",
         postOffice: teacher.permanentAddress?.postOffice || "",
@@ -200,149 +149,125 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
         state: teacher.permanentAddress?.state || "",
         country: teacher.permanentAddress?.country || "",
         zipCode: teacher.permanentAddress?.zipCode || "",
-
         sameAsPermanent: teacher.currentAddress?.sameAsPermanent || false,
-
-        // Professional Information
         designation: teacher?.designation || "",
         department: teacher.department || "",
         joiningDate: teacher?.joiningDate || "",
         monthlySalary: teacher?.monthlySalary || "",
         staffType: teacher?.staffType || "",
         residenceType: teacher?.residenceType || "",
-
         accountName: teacher.bankDetails?.accountName || "",
         accountNumber: teacher.bankDetails?.accountNumber || "",
         bankName: teacher.bankDetails?.bankName || "",
         branchName: teacher.bankDetails?.branchName || "",
         ifscCode: teacher.bankDetails?.ifscCode || "",
-
-        // Additional Information
         status: teacher?.status || "Active",
         language: teacher?.language || "",
         activeSession: teacher?.activeSession || "",
         teacherDepartment: teacher?.teacherDepartment || "",
-
-        // educational info
         teacherPhoto: teacher.teacherPhoto,
         resumeDoc: teacher.resumeDoc,
         certificateDoc: teacher.certificateDoc,
         nationalIdDoc: teacher.nationalIdDoc,
-
-        // Educational Info
         degree: teacher.educationalQualifications?.[0]?.degree || "",
         institution: teacher.educationalQualifications?.[0]?.institution || "",
-        specialization: teacher.educationalQualifications?.[0]?.specialization || "",
+        specialization:
+          teacher.educationalQualifications?.[0]?.specialization || "",
         year: teacher.educationalQualifications?.[0]?.year || "",
 
-        // Certificate Info
         certificateName: teacher.certifications?.[0]?.name || "",
         issuedBy: teacher.certifications?.[0]?.issuedBy || "",
         certificateYear: teacher.certifications?.[0]?.year || "",
         certificateDescription: teacher.certifications?.[0]?.description || "",
 
-        // Work Experience Info
         organization: teacher.workExperience?.[0]?.organization || "",
         position: teacher.workExperience?.[0]?.position || "",
         from: teacher.workExperience?.[0]?.from || "",
         to: teacher.workExperience?.[0]?.to || "",
         description: teacher.workExperience?.[0]?.description || "",
-
-        // Emergency Contact
         "emergencyContact.name": teacher.emergencyContact?.name || "",
         "emergencyContact.relation": teacher.emergencyContact?.relation || "",
         "emergencyContact.phone": teacher.emergencyContact?.phone || "",
-
-        // Social Media
         "socialMedia.facebook": teacher.socialMedia?.facebook || "",
         "socialMedia.twitter": teacher.socialMedia?.twitter || "",
         "socialMedia.youtube": teacher.socialMedia?.youtube || "",
         "socialMedia.linkedin": teacher.socialMedia?.linkedin || "",
         "socialMedia.instagram": teacher.socialMedia?.instagram || "",
-      }
-      setDefaultValues(formDefaultValues)
+      };
+      setDefaultValues(formDefaultValues);
     }
-  }, [singlesTeacher])
+  }, [singlesTeacher]);
 
+  const handleSwitchChange = (e: React.ChangeEvent<HTMLInputElement>) => {};
 
+  const addEducation = () => {};
 
-  const handleSwitchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Your existing switch change handler
-  }
+  const addCertification = () => {};
 
-  const addEducation = () => {
-    // Your existing add education handler
-  }
-
-  const addCertification = () => {
-    // Your existing add certification handler
-  }
-
-  const addExperience = () => {
-    // Your existing add experience handler
-  }
+  const addExperience = () => {};
 
   const handleNext = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep + 1)
-  }
+    setActiveStep((prevActiveStep) => prevActiveStep + 1);
+  };
 
   const handleBack = () => {
-    setActiveStep((prevActiveStep) => prevActiveStep - 1)
-  }
+    setActiveStep((prevActiveStep) => prevActiveStep - 1);
+  };
 
   const handleReset = () => {
-    setActiveStep(0)
-  }
+    setActiveStep(0);
+  };
 
   const handleSubmit = async (data: any) => {
-    console.log(data)
-    setIsSubmitting(true)
+    setIsSubmitting(true);
 
-    // Validation
     if (!data.name) {
-      toast.error("Teacher name is required!")
-      setIsSubmitting(false)
-      return
+      toast.error("Teacher name is required!");
+      setIsSubmitting(false);
+      return;
     } else if (!data.phone) {
-      toast.error("Phone number is required!")
-      setIsSubmitting(false)
-      return
+      toast.error("Phone number is required!");
+      setIsSubmitting(false);
+      return;
     } else if (!data.email) {
-      toast.error("Email is required!")
-      setIsSubmitting(false)
-      return
+      toast.error("Email is required!");
+      setIsSubmitting(false);
+      return;
     }
 
     try {
-      const monthlySalaryNum = data.monthlySalary ? Number(data.monthlySalary) : undefined
-      const teacherSerialNum = data.teacherSerial ? Number(data.teacherSerial) : undefined
-
-      // Create FormData for file uploads
-      const formData = new FormData()
-
-      // Add form fields to FormData
+      const monthlySalaryNum = data.monthlySalary
+        ? Number(data.monthlySalary)
+        : undefined;
+      const teacherSerialNum = data.teacherSerial
+        ? Number(data.teacherSerial)
+        : undefined;
+      const formData = new FormData();
       Object.keys(data).forEach((key) => {
-        if (key !== "teacherPhoto" && key !== "cvFile" && key !== "certificateFile" && key !== "nidFile") {
-          formData.append(key, data[key])
+        if (
+          key !== "teacherPhoto" &&
+          key !== "cvFile" &&
+          key !== "certificateFile" &&
+          key !== "nidFile"
+        ) {
+          formData.append(key, data[key]);
         }
-      })
-
-      // Add files to FormData if they exist
+      });
       profileImages.forEach((file, index) => {
-        formData.append(`profileImages[${index}]`, file)
-      })
+        formData.append(`profileImages[${index}]`, file);
+      });
 
       cvFiles.forEach((file, index) => {
-        formData.append(`cvFiles[${index}]`, file)
-      })
+        formData.append(`cvFiles[${index}]`, file);
+      });
 
       certificateFiles.forEach((file, index) => {
-        formData.append(`certificateFiles[${index}]`, file)
-      })
+        formData.append(`certificateFiles[${index}]`, file);
+      });
 
       nidFiles.forEach((file, index) => {
-        formData.append(`nidFiles[${index}]`, file)
-      })
+        formData.append(`nidFiles[${index}]`, file);
+      });
 
       const submissionData = {
         ...data,
@@ -393,97 +318,102 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
         educationalQualifications: [
           data.degree
             ? {
-              degree: data.degree,
-              institution: data.institution,
-              year: data.year,
-              specialization: data.specialization,
-            }
+                degree: data.degree,
+                institution: data.institution,
+                year: data.year,
+                specialization: data.specialization,
+              }
             : null,
         ].filter(Boolean),
 
         certifications: [
           data.certificateName
             ? {
-              certificateName: data.certificateName,
-              issuedBy: data.issuedBy,
-              year: data.year,
-              description: data.description,
-            }
+                certificateName: data.certificateName,
+                issuedBy: data.issuedBy,
+                year: data.year,
+                description: data.description,
+              }
             : null,
         ].filter(Boolean),
 
         workExperience: [
           data.organization
             ? {
-              organization: data.organization,
-              position: data.position,
-              from: data.from,
-              to: data.to,
-              description: data.description,
-            }
+                organization: data.organization,
+                position: data.position,
+                from: data.from,
+                to: data.to,
+                description: data.description,
+              }
             : null,
         ].filter(Boolean),
 
         status: data.status || "Active",
         language: data.language,
         activeSession: data.activeSession,
-      }
+      };
       if (id) {
-        // Use formData or submissionData based on your API requirements
-        const res = await updateTeacher({ id, data: submissionData }).unwrap()
-        console.log('responsive',res)
+        const res = await updateTeacher({ id, data: submissionData }).unwrap();
+        console.log("responsive", res);
         if (res.success) {
-          setSuccess(true)
+          setSuccess(true);
           setSnackbar({
             open: true,
             message: "Teacher updated successfully!",
             severity: "success",
-          })
+          });
           setTimeout(() => {
-            router.push("/dashboard/teacher/list")
-          }, 2000)
+            router.push("/dashboard/teacher/list");
+          }, 2000);
         }
       } else {
-        // Use formData or submissionData based on your API requirements
-        const res = await createTeacher(submissionData).unwrap()
-        console.log(res)
+        const res = await createTeacher(submissionData).unwrap();
+        console.log(res);
         if (res.success) {
-          setSuccess(true)
+          setSuccess(true);
           setSnackbar({
             open: true,
             message: "Teacher registered successfully!",
             severity: "success",
-          })
+          });
           setTimeout(() => {
-            router.push("/dashboard/teacher/list")
-          }, 2000)
+            router.push("/dashboard/teacher/list");
+          }, 2000);
         }
       }
     } catch (error: any) {
-      console.error("❌ Submission error:", error)
-      toast.error("Failed to process teacher information")
+      console.error("❌ Submission error:", error);
+      toast.error("Failed to process teacher information");
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   // Add handleCloseSnackbar function
   const handleCloseSnackbar = () => {
     setSnackbar({
       ...snackbar,
       open: false,
-    })
-  }
+    });
+  };
 
   if (isLoading) {
     return (
-      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
+          height: "100vh",
+        }}
+      >
         <CircularProgress />
         <Typography variant="h6" sx={{ ml: 2 }}>
           Loading...
         </Typography>
       </Box>
-    )
+    );
   }
 
   const steps = [
@@ -504,17 +434,21 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
               name="name"
               size="medium"
               InputProps={{
-                startAdornment: <DriveFileRenameOutline sx={{ color: "text.secondary", mr: 1 }} />,
+                startAdornment: (
+                  <DriveFileRenameOutline
+                    sx={{ color: "text.secondary", mr: 1 }}
+                  />
+                ),
               }}
             />
           </Grid>
-<Grid item xs={12} md={6}>
+          <Grid item xs={12} md={6}>
             <CraftSelectWithIcon
               name="teacherDepartment"
               size="medium"
               label="Teacher Department"
               placeholder="Teacher Department"
-              items={["Hifz Teacher", "School Teacher",]}
+              items={["Hifz Teacher", "School Teacher"]}
               adornment={<Apartment color="action" />}
             />
           </Grid>
@@ -526,7 +460,9 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
               type="number"
               size="medium"
               InputProps={{
-                startAdornment: <Badge sx={{ color: "text.secondary", mr: 1 }} />,
+                startAdornment: (
+                  <Badge sx={{ color: "text.secondary", mr: 1 }} />
+                ),
               }}
             />
           </Grid>
@@ -537,7 +473,9 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
               name="smartIdCard"
               size="medium"
               InputProps={{
-                startAdornment: <CardMembership sx={{ color: "text.secondary", mr: 1 }} />,
+                startAdornment: (
+                  <CardMembership sx={{ color: "text.secondary", mr: 1 }} />
+                ),
               }}
             />
           </Grid>
@@ -553,7 +491,9 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
               name="phone"
               size="medium"
               InputProps={{
-                startAdornment: <Phone sx={{ color: "text.secondary", mr: 1 }} />,
+                startAdornment: (
+                  <Phone sx={{ color: "text.secondary", mr: 1 }} />
+                ),
               }}
             />
           </Grid>
@@ -569,12 +509,18 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
               type="email"
               size="medium"
               InputProps={{
-                startAdornment: <Email sx={{ color: "text.secondary", mr: 1 }} />,
+                startAdornment: (
+                  <Email sx={{ color: "text.secondary", mr: 1 }} />
+                ),
               }}
             />
           </Grid>
           <Grid item xs={12} md={4}>
-            <CraftDatePicker fullWidth label=" Date of Birth" name="dateOfBirth" />
+            <CraftDatePicker
+              fullWidth
+              label=" Date of Birth"
+              name="dateOfBirth"
+            />
           </Grid>
           <Grid item xs={12} md={4}>
             <CraftSelectWithIcon
@@ -603,7 +549,9 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
               name="nationality"
               size="medium"
               InputProps={{
-                startAdornment: <Language sx={{ color: "text.secondary", mr: 1 }} />,
+                startAdornment: (
+                  <Language sx={{ color: "text.secondary", mr: 1 }} />
+                ),
               }}
             />
           </Grid>
@@ -614,7 +562,9 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
               name="religion"
               size="medium"
               InputProps={{
-                startAdornment: <VerifiedUser sx={{ color: "text.secondary", mr: 1 }} />,
+                startAdornment: (
+                  <VerifiedUser sx={{ color: "text.secondary", mr: 1 }} />
+                ),
               }}
             />
           </Grid>
@@ -632,32 +582,45 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
           {/* Document Upload Section */}
           <Grid item xs={12}>
             <Divider sx={{ my: 2 }} />
-            <Typography variant="h6" color="primary" gutterBottom sx={{ mb: 3, fontWeight: 600 }}>
+            <Typography
+              variant="h6"
+              color="primary"
+              gutterBottom
+              sx={{ mb: 3, fontWeight: 600 }}
+            >
               Documents & Files
             </Typography>
             <Grid container spacing={3}>
               {/* Profile Image Upload */}
               <Grid item xs={12} md={6}>
-                <MultiFileUploadController name="teacherPhoto" label="Profile Images" />
-
+                <MultiFileUploadController
+                  name="teacherPhoto"
+                  label="Profile Images"
+                />
               </Grid>
 
               {/* CV Upload */}
               <Grid item xs={12} md={6}>
-                <MultiFileUploadController name="resumeDoc" label="CV / Resume" />
-
+                <MultiFileUploadController
+                  name="resumeDoc"
+                  label="CV / Resume"
+                />
               </Grid>
 
               {/* Certificate Upload */}
 
               <Grid item xs={12} md={6}>
-                <MultiFileUploadController name="certificateDoc" label="Certificates" />
-
+                <MultiFileUploadController
+                  name="certificateDoc"
+                  label="Certificates"
+                />
               </Grid>
               {/* NID Upload */}
               <Grid item xs={12} md={6}>
-                <MultiFileUploadController name="nationalIdDoc" label="National ID" />
-
+                <MultiFileUploadController
+                  name="nationalIdDoc"
+                  label="National ID"
+                />
               </Grid>
             </Grid>
           </Grid>
@@ -676,7 +639,11 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
       content: (
         <Grid container spacing={3}>
           <Grid item xs={12} md={6}>
-            <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 500 }}>
+            <Typography
+              variant="subtitle1"
+              gutterBottom
+              sx={{ fontWeight: 500 }}
+            >
               Permanent Address
             </Typography>
             <Card variant="outlined" sx={{ p: 2, borderRadius: 2 }}>
@@ -691,7 +658,14 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
                     rows={2}
                     InputProps={{
                       startAdornment: (
-                        <LocationOn sx={{ color: "text.secondary", mr: 1, alignSelf: "flex-start", mt: 1.5 }} />
+                        <LocationOn
+                          sx={{
+                            color: "text.secondary",
+                            mr: 1,
+                            alignSelf: "flex-start",
+                            mt: 1.5,
+                          }}
+                        />
                       ),
                     }}
                   />
@@ -703,7 +677,9 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
                     name="village"
                     size="medium"
                     InputProps={{
-                      startAdornment: <LocationOn sx={{ color: "text.secondary", mr: 1 }} />,
+                      startAdornment: (
+                        <LocationOn sx={{ color: "text.secondary", mr: 1 }} />
+                      ),
                     }}
                   />
                 </Grid>
@@ -714,7 +690,9 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
                     name="postOffice"
                     size="medium"
                     InputProps={{
-                      startAdornment: <LocationOn sx={{ color: "text.secondary", mr: 1 }} />,
+                      startAdornment: (
+                        <LocationOn sx={{ color: "text.secondary", mr: 1 }} />
+                      ),
                     }}
                   />
                 </Grid>
@@ -725,7 +703,9 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
                     name="thana"
                     size="medium"
                     InputProps={{
-                      startAdornment: <LocationOn sx={{ color: "text.secondary", mr: 1 }} />,
+                      startAdornment: (
+                        <LocationOn sx={{ color: "text.secondary", mr: 1 }} />
+                      ),
                     }}
                   />
                 </Grid>
@@ -736,7 +716,9 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
                     name="district"
                     size="medium"
                     InputProps={{
-                      startAdornment: <LocationOn sx={{ color: "text.secondary", mr: 1 }} />,
+                      startAdornment: (
+                        <LocationOn sx={{ color: "text.secondary", mr: 1 }} />
+                      ),
                     }}
                   />
                 </Grid>
@@ -747,7 +729,9 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
                     name="state"
                     size="medium"
                     InputProps={{
-                      startAdornment: <LocationOn sx={{ color: "text.secondary", mr: 1 }} />,
+                      startAdornment: (
+                        <LocationOn sx={{ color: "text.secondary", mr: 1 }} />
+                      ),
                     }}
                   />
                 </Grid>
@@ -758,7 +742,9 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
                     name="country"
                     size="medium"
                     InputProps={{
-                      startAdornment: <Language sx={{ color: "text.secondary", mr: 1 }} />,
+                      startAdornment: (
+                        <Language sx={{ color: "text.secondary", mr: 1 }} />
+                      ),
                     }}
                   />
                 </Grid>
@@ -769,7 +755,9 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
                     name="zipCode"
                     size="medium"
                     InputProps={{
-                      startAdornment: <LocationOn sx={{ color: "text.secondary", mr: 1 }} />,
+                      startAdornment: (
+                        <LocationOn sx={{ color: "text.secondary", mr: 1 }} />
+                      ),
                     }}
                   />
                 </Grid>
@@ -778,12 +766,25 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
           </Grid>
 
           <Grid item xs={12} md={6}>
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 1 }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                mb: 1,
+              }}
+            >
               <Typography variant="subtitle1" sx={{ fontWeight: 500 }}>
                 Present Address
               </Typography>
               <FormControlLabel
-                control={<Switch name="sameAsPermanent" onChange={handleSwitchChange} color="primary" />}
+                control={
+                  <Switch
+                    name="sameAsPermanent"
+                    onChange={handleSwitchChange}
+                    color="primary"
+                  />
+                }
                 label="Same as Permanent"
               />
             </Box>
@@ -805,7 +806,14 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
                     rows={2}
                     InputProps={{
                       startAdornment: (
-                        <LocationOn sx={{ color: "text.secondary", mr: 1, alignSelf: "flex-start", mt: 1.5 }} />
+                        <LocationOn
+                          sx={{
+                            color: "text.secondary",
+                            mr: 1,
+                            alignSelf: "flex-start",
+                            mt: 1.5,
+                          }}
+                        />
                       ),
                     }}
                   />
@@ -844,7 +852,12 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
             />
           </Grid>
           <Grid item xs={12} md={4}>
-            <CraftDatePicker fullWidth label="Joining Date" name="joiningDate" size="medium" />
+            <CraftDatePicker
+              fullWidth
+              label="Joining Date"
+              name="joiningDate"
+              size="medium"
+            />
           </Grid>
           <Grid item xs={12} md={4}>
             <CraftInputWithIcon
@@ -854,7 +867,9 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
               type="number"
               size="medium"
               InputProps={{
-                startAdornment: <AttachMoney sx={{ color: "text.secondary", mr: 1 }} />,
+                startAdornment: (
+                  <AttachMoney sx={{ color: "text.secondary", mr: 1 }} />
+                ),
               }}
             />
           </Grid>
@@ -883,7 +898,10 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
             <Typography variant="h6" color="primary" gutterBottom>
               Educational Qualifications
             </Typography>
-            <Paper elevation={2} sx={{ p: 2, mb: 3, position: "relative", borderRadius: 2 }}>
+            <Paper
+              elevation={2}
+              sx={{ p: 2, mb: 3, position: "relative", borderRadius: 2 }}
+            >
               <IconButton
                 size="small"
                 sx={{
@@ -892,7 +910,7 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
                   right: 8,
                   color: "error.main",
                 }}
-              // onClick={() => removeEducation(index)}
+                // onClick={() => removeEducation(index)}
               >
                 <Clear fontSize="small" />
               </IconButton>
@@ -904,7 +922,9 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
                     name="degree"
                     size="medium"
                     InputProps={{
-                      startAdornment: <School sx={{ color: "text.secondary", mr: 1 }} />,
+                      startAdornment: (
+                        <School sx={{ color: "text.secondary", mr: 1 }} />
+                      ),
                     }}
                   />
                 </Grid>
@@ -915,7 +935,11 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
                     name="institution"
                     size="medium"
                     InputProps={{
-                      startAdornment: <BusinessCenter sx={{ color: "text.secondary", mr: 1 }} />,
+                      startAdornment: (
+                        <BusinessCenter
+                          sx={{ color: "text.secondary", mr: 1 }}
+                        />
+                      ),
                     }}
                   />
                 </Grid>
@@ -926,7 +950,11 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
                     name="year"
                     size="medium"
                     InputProps={{
-                      startAdornment: <CalendarMonth sx={{ color: "text.secondary", mr: 1 }} />,
+                      startAdornment: (
+                        <CalendarMonth
+                          sx={{ color: "text.secondary", mr: 1 }}
+                        />
+                      ),
                     }}
                   />
                 </Grid>
@@ -937,20 +965,30 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
                     name="specialization"
                     size="medium"
                     InputProps={{
-                      startAdornment: <School sx={{ color: "text.secondary", mr: 1 }} />,
+                      startAdornment: (
+                        <School sx={{ color: "text.secondary", mr: 1 }} />
+                      ),
                     }}
                   />
                 </Grid>
               </Grid>
             </Paper>
-            <Button variant="outlined" startIcon={<Add />} onClick={addEducation} sx={{ mb: 4, borderRadius: 100 }}>
+            <Button
+              variant="outlined"
+              startIcon={<Add />}
+              onClick={addEducation}
+              sx={{ mb: 4, borderRadius: 100 }}
+            >
               Add Education
             </Button>
 
             <Typography variant="h6" color="primary" gutterBottom>
               Certifications
             </Typography>
-            <Paper elevation={2} sx={{ p: 2, mb: 3, position: "relative", borderRadius: 2 }}>
+            <Paper
+              elevation={2}
+              sx={{ p: 2, mb: 3, position: "relative", borderRadius: 2 }}
+            >
               <IconButton
                 size="small"
                 sx={{
@@ -959,7 +997,7 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
                   right: 8,
                   color: "error.main",
                 }}
-              // onClick={() => removeCertification(index)}
+                // onClick={() => removeCertification(index)}
               >
                 <Clear fontSize="small" />
               </IconButton>
@@ -971,7 +1009,11 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
                     name="certificateName"
                     size="medium"
                     InputProps={{
-                      startAdornment: <CardMembership sx={{ color: "text.secondary", mr: 1 }} />,
+                      startAdornment: (
+                        <CardMembership
+                          sx={{ color: "text.secondary", mr: 1 }}
+                        />
+                      ),
                     }}
                   />
                 </Grid>
@@ -982,7 +1024,11 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
                     name="issuedBy"
                     size="medium"
                     InputProps={{
-                      startAdornment: <BusinessCenter sx={{ color: "text.secondary", mr: 1 }} />,
+                      startAdornment: (
+                        <BusinessCenter
+                          sx={{ color: "text.secondary", mr: 1 }}
+                        />
+                      ),
                     }}
                   />
                 </Grid>
@@ -993,7 +1039,11 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
                     name="year"
                     size="medium"
                     InputProps={{
-                      startAdornment: <CalendarMonth sx={{ color: "text.secondary", mr: 1 }} />,
+                      startAdornment: (
+                        <CalendarMonth
+                          sx={{ color: "text.secondary", mr: 1 }}
+                        />
+                      ),
                     }}
                   />
                 </Grid>
@@ -1004,20 +1054,32 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
                     name="description"
                     size="medium"
                     InputProps={{
-                      startAdornment: <CardMembership sx={{ color: "text.secondary", mr: 1 }} />,
+                      startAdornment: (
+                        <CardMembership
+                          sx={{ color: "text.secondary", mr: 1 }}
+                        />
+                      ),
                     }}
                   />
                 </Grid>
               </Grid>
             </Paper>
-            <Button variant="outlined" startIcon={<Add />} onClick={addCertification} sx={{ mb: 4, borderRadius: 100 }}>
+            <Button
+              variant="outlined"
+              startIcon={<Add />}
+              onClick={addCertification}
+              sx={{ mb: 4, borderRadius: 100 }}
+            >
               Add Certification
             </Button>
 
             <Typography variant="h6" color="primary" gutterBottom>
               Work Experience
             </Typography>
-            <Paper elevation={2} sx={{ p: 2, mb: 3, position: "relative", borderRadius: 2 }}>
+            <Paper
+              elevation={2}
+              sx={{ p: 2, mb: 3, position: "relative", borderRadius: 2 }}
+            >
               <IconButton
                 size="small"
                 sx={{
@@ -1026,7 +1088,7 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
                   right: 8,
                   color: "error.main",
                 }}
-              // onClick={() => removeExperience(index)}
+                // onClick={() => removeExperience(index)}
               >
                 <Clear fontSize="small" />
               </IconButton>
@@ -1038,7 +1100,11 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
                     name="organization"
                     size="medium"
                     InputProps={{
-                      startAdornment: <BusinessCenter sx={{ color: "text.secondary", mr: 1 }} />,
+                      startAdornment: (
+                        <BusinessCenter
+                          sx={{ color: "text.secondary", mr: 1 }}
+                        />
+                      ),
                     }}
                   />
                 </Grid>
@@ -1049,7 +1115,9 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
                     name="position"
                     size="medium"
                     InputProps={{
-                      startAdornment: <Work sx={{ color: "text.secondary", mr: 1 }} />,
+                      startAdornment: (
+                        <Work sx={{ color: "text.secondary", mr: 1 }} />
+                      ),
                     }}
                   />
                 </Grid>
@@ -1060,7 +1128,11 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
                     name="from"
                     size="medium"
                     InputProps={{
-                      startAdornment: <CalendarMonth sx={{ color: "text.secondary", mr: 1 }} />,
+                      startAdornment: (
+                        <CalendarMonth
+                          sx={{ color: "text.secondary", mr: 1 }}
+                        />
+                      ),
                     }}
                   />
                 </Grid>
@@ -1071,7 +1143,11 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
                     name="to"
                     size="medium"
                     InputProps={{
-                      startAdornment: <CalendarMonth sx={{ color: "text.secondary", mr: 1 }} />,
+                      startAdornment: (
+                        <CalendarMonth
+                          sx={{ color: "text.secondary", mr: 1 }}
+                        />
+                      ),
                     }}
                   />
                 </Grid>
@@ -1085,14 +1161,26 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
                     size="medium"
                     InputProps={{
                       startAdornment: (
-                        <BusinessCenter sx={{ color: "text.secondary", mr: 1, alignSelf: "flex-start", mt: 1.5 }} />
+                        <BusinessCenter
+                          sx={{
+                            color: "text.secondary",
+                            mr: 1,
+                            alignSelf: "flex-start",
+                            mt: 1.5,
+                          }}
+                        />
                       ),
                     }}
                   />
                 </Grid>
               </Grid>
             </Paper>
-            <Button variant="outlined" startIcon={<Add />} onClick={addExperience} sx={{ borderRadius: 100 }}>
+            <Button
+              variant="outlined"
+              startIcon={<Add />}
+              onClick={addExperience}
+              sx={{ borderRadius: 100 }}
+            >
               Add Experience
             </Button>
           </Grid>
@@ -1139,7 +1227,11 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
                     name="activeSession"
                     size="medium"
                     InputProps={{
-                      startAdornment: <CalendarMonth sx={{ color: "text.secondary", mr: 1 }} />,
+                      startAdornment: (
+                        <CalendarMonth
+                          sx={{ color: "text.secondary", mr: 1 }}
+                        />
+                      ),
                     }}
                   />
                 </Grid>
@@ -1149,7 +1241,7 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
         </Grid>
       ),
     },
-  ]
+  ];
 
   return (
     <Box
@@ -1171,7 +1263,7 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
           boxShadow: "0 4px 20px rgba(33, 150, 243, 0.4)",
         }}
       >
-        <Container maxWidth="xl" sx={{p:{xs:"4px"}}}>
+        <Container maxWidth="xl" sx={{ p: { xs: "4px" } }}>
           <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
             <Person sx={{ fontSize: 40, mr: 2 }} />
             <Typography variant="h4" component="h1" sx={{ fontWeight: 700 }}>
@@ -1186,7 +1278,7 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
         </Container>
       </Box>
 
-      <Container maxWidth="xl" sx={{p:{xs:"4px"}}}>
+      <Container maxWidth="xl" sx={{ p: { xs: "4px" } }}>
         <Box sx={{ mb: 3 }}>
           <Link href="/dashboard/teacher/list" passHref>
             <Button
@@ -1207,7 +1299,11 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
         <CraftForm
           onSubmit={handleSubmit}
           defaultValues={defaultValues}
-          key={Object.keys(defaultValues).length > 0 ? "form-with-data" : "empty-form"}
+          key={
+            Object.keys(defaultValues).length > 0
+              ? "form-with-data"
+              : "empty-form"
+          }
         >
           <Paper
             elevation={3}
@@ -1254,7 +1350,8 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
                             startIcon={<Save />}
                             sx={{
                               borderRadius: 100,
-                              background: "linear-gradient(135deg, #1976d2 0%, #2196f3 100%)",
+                              background:
+                                "linear-gradient(135deg, #1976d2 0%, #2196f3 100%)",
                               boxShadow: "0 4px 10px rgba(33, 150, 243, 0.3)",
                               px: 3,
                             }}
@@ -1267,7 +1364,8 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
                             onClick={handleNext}
                             sx={{
                               borderRadius: 100,
-                              background: "linear-gradient(135deg, #1976d2 0%, #2196f3 100%)",
+                              background:
+                                "linear-gradient(135deg, #1976d2 0%, #2196f3 100%)",
                               boxShadow: "0 4px 10px rgba(33, 150, 243, 0.3)",
                               px: 3,
                             }}
@@ -1312,20 +1410,27 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
         >
           <Help sx={{ color: "#2e7d32", mt: 0.5 }} />
           <Box>
-            <Typography variant="subtitle1" sx={{ color: "#2e7d32", fontWeight: 600 }}>
+            <Typography
+              variant="subtitle1"
+              sx={{ color: "#2e7d32", fontWeight: 600 }}
+            >
               Need Help?
             </Typography>
             <Typography variant="body2" sx={{ color: "#1b5e20" }}>
-              Registering a teacher is the first step in the onboarding process. After registration, you can manage the
-              teacher's professional records, attendance, and salary payments. Make sure to fill in all fields marked
-              with an asterisk (*) for successful registration.
+              Registering a teacher is the first step in the onboarding process.
+              After registration, you can manage the teacher's professional
+              records, attendance, and salary payments. Make sure to fill in all
+              fields marked with an asterisk (*) for successful registration.
             </Typography>
           </Box>
         </Paper>
       </Container>
 
       {/* Success Backdrop */}
-      <Backdrop sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }} open={success}>
+      <Backdrop
+        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={success}
+      >
         <Box
           sx={{
             display: "flex",
@@ -1352,7 +1457,10 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
           >
             <CheckCircle sx={{ fontSize: 50, color: "#2e7d32" }} />
           </Box>
-          <Typography variant="h5" sx={{ color: "#2e7d32", fontWeight: 600, mb: 1 }}>
+          <Typography
+            variant="h5"
+            sx={{ color: "#2e7d32", fontWeight: 600, mb: 1 }}
+          >
             Success!
           </Typography>
           <Typography variant="body1" sx={{ color: "text.secondary", mb: 3 }}>
@@ -1365,11 +1473,19 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
       </Backdrop>
 
       {/* Snackbar for notifications */}
-      <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleCloseSnackbar}>
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: "100%" }}>
+      <Snackbar
+        open={snackbar.open}
+        autoHideDuration={6000}
+        onClose={handleCloseSnackbar}
+      >
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
           {snackbar.message}
         </Alert>
       </Snackbar>
     </Box>
-  )
+  );
 }

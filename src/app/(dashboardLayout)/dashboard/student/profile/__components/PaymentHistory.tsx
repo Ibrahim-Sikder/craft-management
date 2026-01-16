@@ -1,13 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import CraftTable, { Column, RowAction } from "@/components/Table";
-import {
-  Delete,
-  Download,
-  Money,
-  Print,
-  Receipt,
-  Visibility,
-} from "@mui/icons-material";
+import { Download, Print, Receipt, Visibility } from "@mui/icons-material";
 import {
   Box,
   Button,
@@ -70,56 +63,11 @@ const PaymentHistory = ({ singleStudent }: any) => {
     }
   }, [payments]);
 
-  const handlePrintReceipt = (payment: any) => {
-    if (!payment) return;
+  const handlePrintReceipt = () => {};
 
-    // Set the payment ID
-    setSelectedPaymentId(payment._id);
+  const handleDownloadReceipt = () => {};
 
-    // payment data থেকে ReceiptData format এ convert করুন
-    const receiptData: ReceiptData = {
-      name: payment.student || "Student Name",
-      jamatGroup: payment.enrollment || "Course Name",
-      stdId: payment.studentId || "N/A",
-      roll: payment.originalPayment?.roll || "N/A",
-      section: payment.originalPayment?.section || "N/A",
-      payDate: new Date(payment.paymentDate).toLocaleDateString("en-US", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      }),
-      invNo: payment.receiptNo,
-      receivedBy: payment.collectedBy || "System",
-      items: [
-        {
-          description: payment.feeType || "Fee Payment",
-          amount: payment.amountPaid || 0,
-        },
-      ],
-      total: payment.amountPaid || 0,
-      generatedDate: new Date().toLocaleDateString("en-US", {
-        day: "2-digit",
-        month: "short",
-        year: "numeric",
-      }),
-      studentId: payment.studentId,
-      paymentMethod: payment.paymentMethod,
-      transactionId: payment.transactionId,
-    };
-
-    setSelectedReceiptData(receiptData);
-    setReceiptViewerOpen(true);
-  };
-
-  const handleDownloadReceipt = (payment: any) => {
-    console.log("Download receipt for payment:", payment);
-    // Implement download functionality
-  };
-
-  const handleViewDetails = (payment: any) => {
-    console.log("View details for payment:", payment);
-    // Implement view details functionality
-  };
+  const handleViewDetails = () => {};
 
   const handleCloseReceiptViewer = () => {
     setReceiptViewerOpen(false);
@@ -254,21 +202,21 @@ const PaymentHistory = ({ singleStudent }: any) => {
     {
       label: "View Details",
       icon: <Visibility fontSize="small" />,
-      onClick: (row: any) => handleViewDetails(row),
+      onClick: () => handleViewDetails(),
       color: "info",
       tooltip: "View payment details",
     },
     {
       label: "Download Receipt",
       icon: <Download fontSize="small" />,
-      onClick: (row: any) => handleDownloadReceipt(row),
+      onClick: () => handleDownloadReceipt(),
       color: "primary",
       tooltip: "Download payment receipt",
     },
     {
       label: "Print Receipt",
       icon: <Print fontSize="small" />,
-      onClick: (row: any) => handlePrintReceipt(row),
+      onClick: () => handlePrintReceipt(),
       color: "secondary",
       tooltip: "Print payment receipt",
     },
@@ -293,55 +241,6 @@ const PaymentHistory = ({ singleStudent }: any) => {
     console.log("Add new payment");
   };
 
-  const handleBulkExport = () => {
-    console.log("Bulk export payments");
-  };
-
-  const handleBulkPrint = (selectedRows: any[]) => {
-    if (selectedRows.length > 0) {
-      handlePrintReceipt(selectedRows[0]);
-    }
-  };
-
-  const handleBulkDelete = (selectedRows: any[]) => {
-    const ids = selectedRows.map((r) => r._id);
-    console.log("Deleting selected payments with IDs:", ids);
-
-    if (
-      window.confirm(
-        `Are you sure you want to delete ${selectedRows.length} payments?`
-      )
-    ) {
-      console.log("Deleting selected payments:", selectedRows);
-    }
-  };
-
-  if (!payments || !Array.isArray(payments) || payments.length === 0) {
-    return (
-      <Box sx={{ textAlign: "center", py: 8 }}>
-        <Money sx={{ fontSize: 80, color: "text.secondary", mb: 2 }} />
-        <Typography variant="h5" color="text.secondary" gutterBottom>
-          No Payment Records Found
-        </Typography>
-        <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-          There are no payment records to display.
-        </Typography>
-        <Button
-          variant="contained"
-          startIcon={<Receipt />}
-          onClick={handleAddPayment}
-          sx={{
-            borderRadius: "10px",
-            px: 3,
-            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-          }}
-        >
-          Create New Payment
-        </Button>
-      </Box>
-    );
-  }
-
   return (
     <Box>
       <Typography
@@ -359,7 +258,6 @@ const PaymentHistory = ({ singleStudent }: any) => {
         Payment History
       </Typography>
 
-      {/* Summary Cards */}
       <Box sx={{ mb: 4 }}>
         <Card
           variant="outlined"
@@ -450,24 +348,6 @@ const PaymentHistory = ({ singleStudent }: any) => {
         onExport={handleExport}
         onPrint={handlePrint}
         onAdd={handleAddPayment}
-        bulkActions={[
-          {
-            label: "Export Selected",
-            icon: <Download fontSize="small" />,
-            onClick: handleBulkExport,
-          },
-          {
-            label: "Print Receipts",
-            icon: <Print fontSize="small" />,
-            onClick: handleBulkPrint,
-          },
-          {
-            label: "Delete Selected",
-            icon: <Delete fontSize="small" />,
-            onClick: handleBulkDelete,
-            color: "error",
-          },
-        ]}
         customToolbar={
           <Button
             variant="contained"

@@ -1,26 +1,175 @@
 @import "tailwindcss";
 
-/* :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-} */
 
 body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+}
+
+
+
+  .invoicePrintWrap {
+    background-color: #ddd;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    margin: 0 !important;
+    padding: 121px !important;
+    top: 77px;
+  }
+
+.invoicePrint {
+  width: 8.27in;
+  margin: 0 auto;
+  background-color: #fff;
+  min-height: 11in;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding-top: 15px;
+  height: 100%;
+}
+
+
+
+  @media print {
+  @page {
+    margin: 0px;
+  }
+
+  @page :first {
+    margin-top: 0;
+  }
+
+  @page {
+    margin-top: 20px;
+  }
+
+  .no-top-margin {
+    margin-top: 0 !important;
+  }
+
+  .invoicePrintWrap {
+    page-break-after: always;
+  }
+
+  .invoicePrintWrap:not(:first-of-type) {
+    margin-top: 20px;
+  }
+}
+
+.receiptRow , .receiptRow td{
+    border: 1px solid #c0c2c1;
+  padding:2px !important;
+  font-size: 12px !important;
+    padding: 3px !important;
+  margin: 0 !important;
+  font-size: 12px !important;
+  text-align: center !important;
+}
+
+
+.printInvoiceBtnGroup {
+    display: flex;
+    width: 500px;
+    justify-content: center;
+    align-items: center;
+    margin: 37px auto;
+    gap: 5px;
+    position: relative;
+    top: -43px;
+    right: -141px;
+}
+
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+
+  body {
+    background: #fff !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+
+  .invoicePrintWrap,
+  .invoicePrintWrap * {
+    visibility: visible;
+  }
+
+  .invoicePrintWrap {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .invoicePrint {
+    width: 210mm !important;  
+    min-height: 297mm !important; 
+    margin: 0 auto !important;
+    background: #fff !important;
+    box-shadow: none !important;
+    padding: 10mm !important;
+
+  }
+
+
+  .buttonGroup,
+  .printInvoiceBtnGroup,
+  .SearchBtn,
+  .submitQutationBtn {
+    display: none !important;
+  }
+
+
+  .invoiceTable2,
+  .invoicTable {
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+
+  .invoiceTable2 th,
+  .invoiceTable2 td,
+  .invoicTable th,
+  .invoicTable td {
+    border: 1px solid #000 !important;
+    padding: 4px !important;
+    margin: 0 !important;
+    font-size: 11px !important;
+    text-align: center !important;
+    word-wrap: break-word !important;
+    white-space: normal !important;
+  }
+
+  .invoiceTable2 th {
+    background: #4670a1c0 !important;
+    color: #fff !important;
+    -webkit-print-color-adjust: exact;
+  }
+
+}
+/* Add to your global CSS */
+.invoicePrintWrap {
+  min-height: 100%;
+}
+
+.MuiDialog-paper {
+  max-height: 90vh !important;
+}
+
+/* For print */
+@media print {
+  .invoicePrintWrap {
+    min-height: 100vh !important;
+    height: 100vh !important;
+  }
 }
