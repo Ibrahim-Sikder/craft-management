@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// app/components/EnhancedTable.tsx
 "use client";
 
 import {
@@ -277,14 +276,14 @@ const CraftTable: React.FC<EnhancedTableProps> = ({
   const [selectedRows, setSelectedRows] = useState<string[]>([]);
   const [sortColumn, setSortColumn] = useState(defaultSortColumn || "");
   const [sortDirection, setSortDirection] = useState<"asc" | "desc">(
-    defaultSortDirection
+    defaultSortDirection,
   );
   const [filterAnchor, setFilterAnchor] = useState<null | HTMLElement>(null);
   const [columnMenuAnchor, setColumnMenuAnchor] = useState<null | HTMLElement>(
-    null
+    null,
   );
   const [actionMenuAnchor, setActionMenuAnchor] = useState<null | HTMLElement>(
-    null
+    null,
   );
   const [currentRow, setCurrentRow] = useState<any>(null);
   const [columnVisibility, setColumnVisibility] = useState<
@@ -292,14 +291,14 @@ const CraftTable: React.FC<EnhancedTableProps> = ({
   >(
     columns.reduce(
       (acc, column) => ({ ...acc, [column.id]: column.visible !== false }),
-      {}
-    )
+      {},
+    ),
   );
   const [filters, setFilters] = useState<Record<string, string>>({});
   const [pageState, setPageState] = useState(page);
   const [rowsPerPageState, setRowsPerPageState] = useState(rowsPerPage);
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(
-    null
+    null,
   );
 
   // Sync with props
@@ -326,7 +325,7 @@ const CraftTable: React.FC<EnhancedTableProps> = ({
             value !== undefined &&
             String(value).toLowerCase().includes(searchTerm.toLowerCase())
           );
-        })
+        }),
       );
     }
 
@@ -429,7 +428,7 @@ const CraftTable: React.FC<EnhancedTableProps> = ({
   };
 
   const handleChangeRowsPerPage = (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const newRowsPerPage = parseInt(event.target.value, 10);
     setRowsPerPageState(newRowsPerPage);
@@ -458,7 +457,7 @@ const CraftTable: React.FC<EnhancedTableProps> = ({
 
   const handleBulkAction = (action: BulkAction) => {
     const selectedData = data.filter((row) =>
-      selectedRows.includes(row[idField])
+      selectedRows.includes(row[idField]),
     );
     if (action.disabled && action.disabled(selectedData)) return;
     action.onClick(selectedData);
@@ -466,7 +465,7 @@ const CraftTable: React.FC<EnhancedTableProps> = ({
 
   const handleActionMenuClick = (
     event: React.MouseEvent<HTMLElement>,
-    row: any
+    row: any,
   ) => {
     setActionMenuAnchor(event.currentTarget);
     setCurrentRow(row);
@@ -741,10 +740,12 @@ const CraftTable: React.FC<EnhancedTableProps> = ({
 
   // Separate row actions into direct buttons and menu items
   const directActions = rowActions.filter(
-    (action) => !action.inMenu || action.alwaysShow || action.label === "Delete"
+    (action) =>
+      !action.inMenu || action.alwaysShow || action.label === "Delete",
   );
   const menuActions = rowActions.filter(
-    (action) => action.inMenu && action.label !== "Delete" && !action.alwaysShow
+    (action) =>
+      action.inMenu && action.label !== "Delete" && !action.alwaysShow,
   );
 
   // Calculate total rows count (for server-side pagination)
@@ -872,7 +873,7 @@ const CraftTable: React.FC<EnhancedTableProps> = ({
                         borderColor: theme.palette.primary.main,
                         backgroundColor: alpha(
                           theme.palette.primary.main,
-                          0.04
+                          0.04,
                         ),
                       },
                     }}
@@ -987,8 +988,8 @@ const CraftTable: React.FC<EnhancedTableProps> = ({
                       action.disabled &&
                       action.disabled(
                         data.filter((row) =>
-                          selectedRows.includes(row[idField])
-                        )
+                          selectedRows.includes(row[idField]),
+                        ),
                       )
                     }
                     sx={{
@@ -1119,7 +1120,7 @@ const CraftTable: React.FC<EnhancedTableProps> = ({
                             ))}
                         </Box>
                       </TableCell>
-                    )
+                    ),
                 )}
 
                 {rowActions.length > 0 && (
@@ -1166,7 +1167,7 @@ const CraftTable: React.FC<EnhancedTableProps> = ({
                           borderRadius: "50%",
                           backgroundColor: alpha(
                             theme.palette.primary.main,
-                            0.1
+                            0.1,
                           ),
                           display: "flex",
                           alignItems: "center",
@@ -1244,7 +1245,7 @@ const CraftTable: React.FC<EnhancedTableProps> = ({
                           >
                             {renderCellContent(column, row)}
                           </TableCell>
-                        )
+                        ),
                     )}
 
                     {rowActions.length > 0 && (
@@ -1272,7 +1273,7 @@ const CraftTable: React.FC<EnhancedTableProps> = ({
                                   backgroundColor: action.color
                                     ? alpha(
                                         theme.palette[action.color].main,
-                                        0.1
+                                        0.1,
                                       )
                                     : undefined,
                                   color: action.color
@@ -1299,7 +1300,7 @@ const CraftTable: React.FC<EnhancedTableProps> = ({
                               <Menu
                                 anchorEl={actionMenuAnchor}
                                 open={Boolean(
-                                  actionMenuAnchor && currentRow?.id === row.id
+                                  actionMenuAnchor && currentRow?.id === row.id,
                                 )}
                                 onClose={handleActionMenuClose}
                                 PaperProps={{
@@ -1329,7 +1330,7 @@ const CraftTable: React.FC<EnhancedTableProps> = ({
                                       "&:hover": {
                                         backgroundColor: alpha(
                                           theme.palette.primary.main,
-                                          0.1
+                                          0.1,
                                         ),
                                       },
                                     }}
@@ -1412,7 +1413,7 @@ const CraftTable: React.FC<EnhancedTableProps> = ({
             {columns
               .filter(
                 (column) =>
-                  column.filterable && columnVisibility[column.id] !== false
+                  column.filterable && columnVisibility[column.id] !== false,
               )
               .map((column) => (
                 <Box key={column.id} sx={{ mb: 2.5 }}>

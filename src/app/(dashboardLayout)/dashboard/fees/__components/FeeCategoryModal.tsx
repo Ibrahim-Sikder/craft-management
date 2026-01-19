@@ -37,11 +37,12 @@ export default function FeeCategoryModal({ open, setOpen, id }: any) {
       feeType: Array.isArray(data.feeType)
         ? data.feeType[0] ?? ""
         : data.feeType,
+      category: Array.isArray(data.category)
+        ? data.category[0] ?? ""
+        : data.category,
 
       feeAmount: Number(data.feeAmount),
     };
-
-    console.log(submitData);
 
     try {
       let res;
@@ -113,7 +114,25 @@ export default function FeeCategoryModal({ open, setOpen, id }: any) {
                 icon={<Class color="primary" />}
               />
             </Grid>
+            <Grid item xs={12}>
+              <CraftAutoComplete
+                fullWidth
+                label="Category"
+                name="category"
+                margin="none"
+                options={[
+                  { title: "Residential" },
+                  { title: "Residential No Meal" },
+                  { title: "Non-Residential" },
+                  { title: "Non-Residential One Meal" },
+                  { title: "Day Care" },
+                  { title: "Day Care One Meal" },
+                ]}
 
+                sx={inputStyle}
+              />
+
+            </Grid>
             <Grid item xs={12}>
               <CraftAutoComplete
                 fullWidth
@@ -122,14 +141,15 @@ export default function FeeCategoryModal({ open, setOpen, id }: any) {
                 margin="none"
 
                 options={[
-                  { title: "Tution Fee" },
-                  { title: "Monthly Fee" },
                   { title: "Admission Fee" },
-                  { title: "Meal Fee" },
-                  { title: "House Rent" },
+                  { title: "Tuition Fee" },
                   { title: "Day Care Fee" },
+                  { title: "Tuition Fee" },
                   { title: "Exam Fee" },
                   { title: "Form Fee" },
+                  { title: "Meal Fee" },
+                  { title: "Seat Rent" },
+                  { title: "Monthly Fee" },
                 ]}
                 sx={inputStyle}
               />
