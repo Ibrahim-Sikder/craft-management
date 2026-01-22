@@ -16,9 +16,18 @@ const paymentApi = baseApi.injectEndpoints({
         method: "GET",
       }),
     }),
+    getPayment: build.query({
+      query: (id) => ({
+        url: `/payments/${id}`,
+        method: "GET",
+      }),
+    }),
   }),
   overrideExisting: false,
 });
 
-export const { useCreateBulkPaymentMutation, useGenerateReceiptQuery } =
-  paymentApi;
+export const {
+  useCreateBulkPaymentMutation,
+  useGenerateReceiptQuery,
+  useGetPaymentQuery,
+} = paymentApi;

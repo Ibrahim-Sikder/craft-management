@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useEffect } from "react"
+import { useState, useEffect } from "react";
 import {
   Box,
   Typography,
@@ -19,20 +19,16 @@ import {
   InputLabel,
   Select,
   Divider,
-
   CircularProgress,
-
   Tabs,
   Tab,
-
   Card,
   CardContent,
   Avatar,
   Zoom,
-
   Backdrop,
-} from "@mui/material"
-import { styled, useTheme } from "@mui/material/styles"
+} from "@mui/material";
+import { styled, useTheme } from "@mui/material/styles";
 import {
   Add as AddIcon,
   Edit as EditIcon,
@@ -46,9 +42,9 @@ import {
   Person as PersonIcon,
   Event as EventIcon,
   Subject as SubjectIcon,
-} from "@mui/icons-material"
-import { useRouter } from "next/navigation"
-import { motion } from "framer-motion"
+} from "@mui/icons-material";
+import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
 
 // Styled components
 const StyledCard = styled(Card)(({ theme }) => ({
@@ -60,7 +56,7 @@ const StyledCard = styled(Card)(({ theme }) => ({
     transform: "translateY(-5px)",
     boxShadow: "0 15px 35px rgba(0,0,0,0.15)",
   },
-}))
+}));
 
 const GradientButton = styled(Button)(({ theme }) => ({
   background: `linear-gradient(90deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
@@ -72,14 +68,14 @@ const GradientButton = styled(Button)(({ theme }) => ({
     boxShadow: "0 8px 25px rgba(0, 0, 0, 0.3)",
     transform: "translateY(-2px)",
   },
-}))
+}));
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   borderRadius: 16,
   overflow: "hidden",
   boxShadow: "0 10px 40px rgba(0, 0, 0, 0.1)",
   border: "1px solid rgba(255, 255, 255, 0.2)",
-}))
+}));
 
 // Mock data for exams
 const mockExams = [
@@ -123,7 +119,7 @@ const mockExams = [
     endDate: "2023-12-15",
     status: "Upcoming",
   },
-]
+];
 
 // Mock data for subjects
 const mockSubjects = [
@@ -137,14 +133,14 @@ const mockSubjects = [
   { id: 8, name: "Social Studies", code: "SS101" },
   { id: 9, name: "Computer", code: "COMP101" },
   { id: 10, name: "Art", code: "ART101" },
-]
+];
 
 // Mock data for exam schedules
 const mockSchedules = [
   {
     id: 1,
     examId: 5,
-    class: "One A",
+    class: "One",
     subject: "Quran Recitation",
     date: "2023-12-01",
     startTime: "09:00",
@@ -155,7 +151,7 @@ const mockSchedules = [
   {
     id: 2,
     examId: 5,
-    class: "One A",
+    class: "One",
     subject: "Islamic Studies",
     date: "2023-12-02",
     startTime: "09:00",
@@ -166,7 +162,7 @@ const mockSchedules = [
   {
     id: 3,
     examId: 5,
-    class: "One A",
+    class: "One",
     subject: "Mathematics",
     date: "2023-12-03",
     startTime: "09:00",
@@ -177,7 +173,7 @@ const mockSchedules = [
   {
     id: 4,
     examId: 5,
-    class: "One B",
+    class: "One",
     subject: "Quran Recitation",
     date: "2023-12-01",
     startTime: "11:00",
@@ -188,7 +184,7 @@ const mockSchedules = [
   {
     id: 5,
     examId: 5,
-    class: "One B",
+    class: "One",
     subject: "Islamic Studies",
     date: "2023-12-02",
     startTime: "11:00",
@@ -218,28 +214,38 @@ const mockSchedules = [
     room: "Hifz Hall",
     invigilator: "Hafiz Abdullah",
   },
-]
+];
 
 // Available classes
-const availableClasses = ["Hifz", "One A", "One B", "Nazera", "Two", "Three", "Four", "Five", "Six"]
+const availableClasses = [
+  "Hifz",
+  "One",
+  "One",
+  "Nazera",
+  "Two",
+  "Three",
+  "Four",
+  "Five",
+  "Six",
+];
 
 const ExamSchedulePage = () => {
-  const theme = useTheme()
-  const router = useRouter()
-  const [exams, setExams] = useState(mockExams)
-  const [schedules, setSchedules] = useState(mockSchedules)
-  const [subjects, setSubjects] = useState(mockSubjects)
-  const [selectedExam, setSelectedExam] = useState<any>(mockExams[4]) 
-  const [selectedClass, setSelectedClass] = useState<string>("All")
-  const [openDialog, setOpenDialog] = useState(false)
-  const [editSchedule, setEditSchedule] = useState<any>(null)
-  const [loading, setLoading] = useState(false)
-  const [pageLoading, setPageLoading] = useState(true)
+  const theme = useTheme();
+  const router = useRouter();
+  const [exams, setExams] = useState(mockExams);
+  const [schedules, setSchedules] = useState(mockSchedules);
+  const [subjects, setSubjects] = useState(mockSubjects);
+  const [selectedExam, setSelectedExam] = useState<any>(mockExams[4]);
+  const [selectedClass, setSelectedClass] = useState<string>("All");
+  const [openDialog, setOpenDialog] = useState(false);
+  const [editSchedule, setEditSchedule] = useState<any>(null);
+  const [loading, setLoading] = useState(false);
+  const [pageLoading, setPageLoading] = useState(true);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
     severity: "success" as "success" | "error",
-  })
+  });
 
   // Form state
   const [formData, setFormData] = useState({
@@ -251,7 +257,7 @@ const ExamSchedulePage = () => {
     endTime: "",
     room: "",
     invigilator: "",
-  })
+  });
 
   // Animation variants
   const containerVariants = {
@@ -262,7 +268,7 @@ const ExamSchedulePage = () => {
         staggerChildren: 0.1,
       },
     },
-  }
+  };
 
   const itemVariants = {
     hidden: { y: 20, opacity: 0 },
@@ -274,28 +280,28 @@ const ExamSchedulePage = () => {
         stiffness: 100,
       },
     },
-  }
+  };
 
   useEffect(() => {
     // Simulate loading
     const timer = setTimeout(() => {
-      setPageLoading(false)
-    }, 1000)
-    return () => clearTimeout(timer)
-  }, [])
+      setPageLoading(false);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, []);
 
   const handleExamChange = (event: React.SyntheticEvent, newValue: number) => {
-    const exam = exams.find((e) => e.id === newValue)
-    setSelectedExam(exam)
-  }
+    const exam = exams.find((e) => e.id === newValue);
+    setSelectedExam(exam);
+  };
 
   const handleClassChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSelectedClass(event.target.value)
-  }
+    setSelectedClass(event.target.value);
+  };
 
   const handleOpenDialog = (schedule?: any) => {
     if (schedule) {
-      setEditSchedule(schedule)
+      setEditSchedule(schedule);
       setFormData({
         examId: schedule.examId,
         class: schedule.class,
@@ -305,9 +311,9 @@ const ExamSchedulePage = () => {
         endTime: schedule.endTime,
         room: schedule.room,
         invigilator: schedule.invigilator,
-      })
+      });
     } else {
-      setEditSchedule(null)
+      setEditSchedule(null);
       setFormData({
         examId: selectedExam?.id || "",
         class: "",
@@ -317,110 +323,117 @@ const ExamSchedulePage = () => {
         endTime: "",
         room: "",
         invigilator: "",
-      })
+      });
     }
-    setOpenDialog(true)
-  }
+    setOpenDialog(true);
+  };
 
   const handleCloseDialog = () => {
-    setOpenDialog(false)
-  }
+    setOpenDialog(false);
+  };
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
+    const { name, value } = e.target;
     setFormData({
       ...formData,
       [name]: value,
-    })
-  }
+    });
+  };
 
   const handleSelectChange = (e: any) => {
-    const { name, value } = e.target
+    const { name, value } = e.target;
     setFormData({
       ...formData,
       [name]: value,
-    })
-  }
+    });
+  };
 
   const handleSubmit = () => {
-    setLoading(true)
+    setLoading(true);
     setTimeout(() => {
       if (editSchedule) {
         // Update existing schedule
         const updatedSchedules = schedules.map((schedule) =>
-          schedule.id === editSchedule.id ? { ...schedule, ...formData } : schedule,
-        )
-        setSchedules(updatedSchedules)
+          schedule.id === editSchedule.id
+            ? { ...schedule, ...formData }
+            : schedule
+        );
+        setSchedules(updatedSchedules);
         setSnackbar({
           open: true,
           message: "Exam schedule updated successfully!",
           severity: "success",
-        })
+        });
       } else {
         // Add new schedule
         const newSchedule = {
           id: schedules.length + 1,
           ...formData,
-        }
-        setSchedules([...schedules, newSchedule])
+        };
+        setSchedules([...schedules, newSchedule]);
         setSnackbar({
           open: true,
           message: "Exam schedule created successfully!",
           severity: "success",
-        })
+        });
       }
-      setLoading(false)
-      handleCloseDialog()
-    }, 1000)
-  }
+      setLoading(false);
+      handleCloseDialog();
+    }, 1000);
+  };
 
   const handleDelete = (id: number) => {
-    setSchedules(schedules.filter((schedule) => schedule.id !== id))
+    setSchedules(schedules.filter((schedule) => schedule.id !== id));
     setSnackbar({
       open: true,
       message: "Exam schedule deleted successfully!",
       severity: "success",
-    })
-  }
+    });
+  };
 
   const handleCloseSnackbar = () => {
     setSnackbar({
       ...snackbar,
       open: false,
-    })
-  }
+    });
+  };
 
   const filteredSchedules = schedules.filter(
-    (schedule) => schedule.examId === selectedExam?.id && (selectedClass === "All" || schedule.class === selectedClass),
-  )
+    (schedule) =>
+      schedule.examId === selectedExam?.id &&
+      (selectedClass === "All" || schedule.class === selectedClass)
+  );
 
   // Group schedules by class
   const schedulesByClass = filteredSchedules.reduce((acc: any, schedule) => {
     if (!acc[schedule.class]) {
-      acc[schedule.class] = []
+      acc[schedule.class] = [];
     }
-    acc[schedule.class].push(schedule)
-    return acc
-  }, {})
+    acc[schedule.class].push(schedule);
+    return acc;
+  }, {});
 
   // Group schedules by date for calendar view
   const schedulesByDate = filteredSchedules.reduce((acc: any, schedule) => {
     if (!acc[schedule.date]) {
-      acc[schedule.date] = []
+      acc[schedule.date] = [];
     }
-    acc[schedule.date].push(schedule)
-    return acc
-  }, {})
+    acc[schedule.date].push(schedule);
+    return acc;
+  }, {});
 
   // Get unique dates
-  const uniqueDates = Object.keys(schedulesByDate).sort()
+  const uniqueDates = Object.keys(schedulesByDate).sort();
 
   if (pageLoading) {
     return (
-      <Backdrop sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }} open={true}>
+      <Backdrop
+        sx={{ color: "#fff", zIndex: (theme) => theme.zIndex.drawer + 1 }}
+        open={true}
+      >
         <CircularProgress color="inherit" />
       </Backdrop>
-    )
+    );
   }
 
   return (
@@ -436,7 +449,16 @@ const ExamSchedulePage = () => {
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
       >
-        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 4, alignItems: "center", flexWrap: "wrap", gap: 2 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            mb: 4,
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: 2,
+          }}
+        >
           <Box sx={{ display: "flex", alignItems: "center" }}>
             <IconButton
               onClick={() => router.push("/dashboard/admin/exams")}
@@ -495,7 +517,9 @@ const ExamSchedulePage = () => {
                   bgcolor: "rgba(79, 1, 135, 0.04)",
                 },
               }}
-              onClick={() => alert("Download functionality will be implemented")}
+              onClick={() =>
+                alert("Download functionality will be implemented")
+              }
             >
               Export
             </Button>
@@ -546,19 +570,39 @@ const ExamSchedulePage = () => {
                   <Tab
                     key={exam.id}
                     label={
-                      <Box sx={{ display: "flex", alignItems: "center", flexDirection: "column", py: 1 }}>
-                        <Typography variant="body1" sx={{ fontWeight: 600, mb: 0.5 }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          alignItems: "center",
+                          flexDirection: "column",
+                          py: 1,
+                        }}
+                      >
+                        <Typography
+                          variant="body1"
+                          sx={{ fontWeight: 600, mb: 0.5 }}
+                        >
                           {exam.name}
                         </Typography>
                         <Box sx={{ display: "flex", alignItems: "center" }}>
-                          <CalendarIcon sx={{ fontSize: 16, mr: 0.5, color: "text.secondary" }} />
+                          <CalendarIcon
+                            sx={{
+                              fontSize: 16,
+                              mr: 0.5,
+                              color: "text.secondary",
+                            }}
+                          />
                           <Typography variant="caption" color="text.secondary">
                             {exam.startDate} - {exam.endDate}
                           </Typography>
                           <Chip
                             label={exam.status}
                             size="small"
-                            color={exam.status === "Completed" ? "success" : "primary"}
+                            color={
+                              exam.status === "Completed"
+                                ? "success"
+                                : "primary"
+                            }
                             sx={{ ml: 1, height: 20, borderRadius: 3 }}
                           />
                         </Box>
@@ -579,7 +623,14 @@ const ExamSchedulePage = () => {
               </Tabs>
             </Box>
 
-            <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3, alignItems: "center" }}>
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "space-between",
+                mb: 3,
+                alignItems: "center",
+              }}
+            >
               <Typography
                 variant="h6"
                 sx={{
@@ -597,7 +648,6 @@ const ExamSchedulePage = () => {
                   labelId="class-filter-label"
                   value={selectedClass}
                   label="Class Filter"
-                
                   size="small"
                   sx={{ borderRadius: 3 }}
                 >
@@ -630,11 +680,20 @@ const ExamSchedulePage = () => {
                   >
                     <CalendarIcon sx={{ fontSize: 40 }} />
                   </Avatar>
-                  <Typography variant="h5" gutterBottom sx={{ fontWeight: 600 }}>
+                  <Typography
+                    variant="h5"
+                    gutterBottom
+                    sx={{ fontWeight: 600 }}
+                  >
                     No schedules found
                   </Typography>
-                  <Typography variant="body1" color="text.secondary" sx={{ mb: 3, maxWidth: 500, mx: "auto" }}>
-                    No exam schedules have been created for this exam yet. Click the button below to add your first schedule.
+                  <Typography
+                    variant="body1"
+                    color="text.secondary"
+                    sx={{ mb: 3, maxWidth: 500, mx: "auto" }}
+                  >
+                    No exam schedules have been created for this exam yet. Click
+                    the button below to add your first schedule.
                   </Typography>
                   <GradientButton
                     variant="contained"
@@ -681,7 +740,12 @@ const ExamSchedulePage = () => {
                         <Grid container spacing={3}>
                           {schedulesByDate[date].map((schedule: any) => (
                             <Grid item xs={12} md={4} key={schedule.id}>
-                              <Zoom in={true} style={{ transitionDelay: `${index * 100 + 100}ms` }}>
+                              <Zoom
+                                in={true}
+                                style={{
+                                  transitionDelay: `${index * 100 + 100}ms`,
+                                }}
+                              >
                                 <StyledCard>
                                   <CardContent sx={{ p: 3 }}>
                                     <Box
@@ -698,21 +762,30 @@ const ExamSchedulePage = () => {
                                           color="primary"
                                           sx={{ borderRadius: 3, mb: 1 }}
                                         />
-                                        <Typography variant="h6" sx={{ fontWeight: 600, mb: 0.5 }}>
+                                        <Typography
+                                          variant="h6"
+                                          sx={{ fontWeight: 600, mb: 0.5 }}
+                                        >
                                           {schedule.subject}
                                         </Typography>
                                       </Box>
                                       <Box sx={{ display: "flex" }}>
                                         <IconButton
                                           size="small"
-                                          onClick={() => handleOpenDialog(schedule)}
-                                          sx={{ color: theme.palette.primary.main }}
+                                          onClick={() =>
+                                            handleOpenDialog(schedule)
+                                          }
+                                          sx={{
+                                            color: theme.palette.primary.main,
+                                          }}
                                         >
                                           <EditIcon fontSize="small" />
                                         </IconButton>
                                         <IconButton
                                           size="small"
-                                          onClick={() => handleDelete(schedule.id)}
+                                          onClick={() =>
+                                            handleDelete(schedule.id)
+                                          }
                                           color="error"
                                         >
                                           <DeleteIcon fontSize="small" />
@@ -722,21 +795,61 @@ const ExamSchedulePage = () => {
 
                                     <Divider sx={{ mb: 2 }} />
 
-                                    <Box sx={{ display: "flex", alignItems: "center", mb: 1.5 }}>
-                                      <AccessTimeIcon sx={{ fontSize: 20, mr: 1.5, color: "text.secondary" }} />
+                                    <Box
+                                      sx={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        mb: 1.5,
+                                      }}
+                                    >
+                                      <AccessTimeIcon
+                                        sx={{
+                                          fontSize: 20,
+                                          mr: 1.5,
+                                          color: "text.secondary",
+                                        }}
+                                      />
                                       <Typography variant="body2">
-                                        {schedule.startTime} - {schedule.endTime}
+                                        {schedule.startTime} -{" "}
+                                        {schedule.endTime}
                                       </Typography>
                                     </Box>
 
-                                    <Box sx={{ display: "flex", alignItems: "center", mb: 1.5 }}>
-                                      <RoomIcon sx={{ fontSize: 20, mr: 1.5, color: "text.secondary" }} />
-                                      <Typography variant="body2">{schedule.room}</Typography>
+                                    <Box
+                                      sx={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        mb: 1.5,
+                                      }}
+                                    >
+                                      <RoomIcon
+                                        sx={{
+                                          fontSize: 20,
+                                          mr: 1.5,
+                                          color: "text.secondary",
+                                        }}
+                                      />
+                                      <Typography variant="body2">
+                                        {schedule.room}
+                                      </Typography>
                                     </Box>
 
-                                    <Box sx={{ display: "flex", alignItems: "center" }}>
-                                      <PersonIcon sx={{ fontSize: 20, mr: 1.5, color: "text.secondary" }} />
-                                      <Typography variant="body2">{schedule.invigilator}</Typography>
+                                    <Box
+                                      sx={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                      }}
+                                    >
+                                      <PersonIcon
+                                        sx={{
+                                          fontSize: 20,
+                                          mr: 1.5,
+                                          color: "text.secondary",
+                                        }}
+                                      />
+                                      <Typography variant="body2">
+                                        {schedule.invigilator}
+                                      </Typography>
                                     </Box>
                                   </CardContent>
                                 </StyledCard>
@@ -761,12 +874,9 @@ const ExamSchedulePage = () => {
         maxWidth="md"
         fullWidth
         TransitionComponent={Zoom}
-      >
-    </Dialog>
+      ></Dialog>
     </Box>
-  )
-}
+  );
+};
 
-export default ExamSchedulePage
-
-
+export default ExamSchedulePage;

@@ -435,11 +435,10 @@ const StudentList = () => {
       onClick: (row: any) => handleDelete(row._id),
       color: "error",
       tooltip: "Delete Student",
-      inMenu: true, // This will put delete action in the menu
+      inMenu: true,
     },
   ];
 
-  // Apply backend filters to the data
   const filteredData = useMemo(() => {
     let filtered = students;
 

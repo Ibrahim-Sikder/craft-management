@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react/no-unescaped-entities */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -73,6 +74,7 @@ const StudentForm = ({ id }: StudentFormProps) => {
       refetchOnMountOrArgChange: true,
     }
   );
+  console.log("single student", data);
 
   const router = useRouter();
 
@@ -87,11 +89,34 @@ const StudentForm = ({ id }: StudentFormProps) => {
   useEffect(() => {
     if (data?.data) {
       const studentData = data.data;
+      console.log("Student data for mapping:", studentData);
+
       setFormData({
         sameAsPermanent: studentData.sameAsPermanent || false,
         sendAdmissionSMS: studentData.sendAdmissionSMS || false,
         sendAttendanceSMS: studentData.sendAttendanceSMS || false,
       });
+
+      // Process class data for autocomplete
+      const classArray = studentData.className || [];
+      const mappedClasses = classArray.map((cls: any) => ({
+        label: cls?.className || "",
+        value: cls?._id || "",
+      }));
+
+      // Process section data for autocomplete
+      const sectionArray = studentData.section || [];
+      const mappedSections = sectionArray.map((sec: any) => ({
+        label: sec?.name || "",
+        value: sec?._id || "",
+      }));
+
+      // Process session data for autocomplete
+      const sessionArray = studentData.activeSession || [];
+      const mappedSessions = sessionArray.map((ses: any) => ({
+        label: ses?.sessionName || "",
+        value: ses?._id || "",
+      }));
 
       const formDefaultValues = {
         // Basic Information
@@ -118,44 +143,37 @@ const StudentForm = ({ id }: StudentFormProps) => {
         motherProfession: studentData.motherProfession || "",
 
         // Guardian Information
-        "guardianInfo.guardianName":
-          studentData.guardianInfo?.guardianName || "",
-        "guardianInfo.guardianMobile":
-          studentData.guardianInfo?.guardianMobile || "",
-        "guardianInfo.relation": studentData.guardianInfo?.relation || "",
-        "guardianInfo.address": studentData.guardianInfo?.address || "",
+        "guardianInfo.guardianName": studentData.guardianName || "",
+        "guardianInfo.guardianMobile": studentData.guardianMobile || "",
+        "guardianInfo.relation": studentData.relation || "",
+        "guardianInfo.address": studentData.guardianAddress || "",
 
         // Address Information
-        "permanentAddress.village": studentData.permanentAddress?.village || "",
-        "permanentAddress.postOffice":
-          studentData.permanentAddress?.postOffice || "",
-        "permanentAddress.postCode":
-          studentData.permanentAddress?.postCode || "",
-        "permanentAddress.policeStation":
-          studentData.permanentAddress?.policeStation || "",
-        "permanentAddress.district":
-          studentData.permanentAddress?.district || "",
+        "permanentAddress.village": studentData.permanentAddress || "",
+        "permanentAddress.postOffice": studentData.permanentPostOffice || "",
+        "permanentAddress.postCode": studentData.permanentPostCode || "",
+        "permanentAddress.policeStation": studentData.permanentThana || "",
+        "permanentAddress.district": studentData.permanentDistrict || "",
 
-        "presentAddress.village": studentData.presentAddress?.village || "",
-        "presentAddress.postOffice":
-          studentData.presentAddress?.postOffice || "",
-        "presentAddress.postCode": studentData.presentAddress?.postCode || "",
-        "presentAddress.policeStation":
-          studentData.presentAddress?.policeStation || "",
-        "presentAddress.district": studentData.presentAddress?.district || "",
+        "presentAddress.village": studentData.presentAddress || "",
+        "presentAddress.postOffice": studentData.presentPostOffice || "",
+        "presentAddress.postCode": studentData.presentPostCode || "",
+        "presentAddress.policeStation": studentData.presentThana || "",
+        "presentAddress.district": studentData.presentDistrict || "",
 
         // Academic Information
-        className: studentData.className || [],
+        className: mappedClasses,
         studentClassRoll: studentData.studentClassRoll || "",
         batch: studentData.batch || "",
-        section: studentData.section || [],
-        activeSession: studentData.activeSession || [],
+        section: mappedSections,
+        activeSession: mappedSessions,
         status: studentData.status || "",
         studentType: studentData.studentType || "",
         additionalNote: studentData.additionalNote || "",
         previousDues: studentData.previousDues || 0,
       };
 
+      console.log("Form default values:", formDefaultValues);
       setDefaultValues(formDefaultValues);
     }
   }, [data]);
@@ -229,7 +247,7 @@ const StudentForm = ({ id }: StudentFormProps) => {
       return;
     }
 
-    // Process arrays
+    // Process arrays for autocomplete fields
     const classArray = Array.isArray(data.className)
       ? data.className.map((item: any) => item.value || item)
       : data.className
@@ -247,14 +265,6 @@ const StudentForm = ({ id }: StudentFormProps) => {
       : data.activeSession
         ? [data.activeSession]
         : [];
-
-    // Build nested objects
-    const guardianInfo = {
-      guardianName: data["guardianInfo.guardianName"] || "",
-      guardianMobile: data["guardianInfo.guardianMobile"] || "",
-      relation: data["guardianInfo.relation"] || "",
-      address: data["guardianInfo.address"] || "",
-    };
 
     const permanentAddress = {
       village: data["permanentAddress.village"] || "",
@@ -301,12 +311,25 @@ const StudentForm = ({ id }: StudentFormProps) => {
       motherMobile: data.motherMobile || "",
       motherProfession: data.motherProfession || "",
 
-      // Guardian Information
-      guardianInfo,
+      // Guardian Information (flat structure)
+      guardianName: data["guardianInfo.guardianName"] || "",
+      guardianMobile: data["guardianInfo.guardianMobile"] || "",
+      relation: data["guardianInfo.relation"] || "",
+      guardianAddress: data["guardianInfo.address"] || "",
 
       // Address Information
-      permanentAddress,
-      presentAddress,
+      permanentAddress: data["permanentAddress.village"] || "",
+      permanentPostOffice: data["permanentAddress.postOffice"] || "",
+      permanentPostCode: data["permanentAddress.postCode"] || "",
+      permanentThana: data["permanentAddress.policeStation"] || "",
+      permanentDistrict: data["permanentAddress.district"] || "",
+
+      presentAddress: data["presentAddress.village"] || "",
+      presentPostOffice: data["presentAddress.postOffice"] || "",
+      presentPostCode: data["presentAddress.postCode"] || "",
+      presentThana: data["presentAddress.policeStation"] || "",
+      presentDistrict: data["presentAddress.district"] || "",
+
       sameAsPermanent: formData.sameAsPermanent,
 
       // Academic Information
@@ -371,7 +394,6 @@ const StudentForm = ({ id }: StudentFormProps) => {
         pb: 8,
       }}
     >
-      {/* Header */}
       <Box>
         <Container maxWidth="xl" sx={{ p: { xs: "4px" } }}>
           <Box sx={{ display: "flex", justifyContent: "center", mb: 2 }}>

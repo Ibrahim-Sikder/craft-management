@@ -48,6 +48,7 @@ type TStateProps = {
     value: readonly Option[],
     getTagProps: (params: { index: number }) => Record<string, any>
   ) => React.ReactNode;
+  isOptionEqualToValue?: (option: any, value: any) => boolean;
 };
 
 const CraftIntAutoCompleteWithIcon = ({
@@ -69,6 +70,7 @@ const CraftIntAutoCompleteWithIcon = ({
   renderOption,
   renderTags,
   size = "small",
+  isOptionEqualToValue,
 }: TStateProps) => {
   const { control } = useFormContext();
 
@@ -89,9 +91,11 @@ const CraftIntAutoCompleteWithIcon = ({
           freeSolo={freeSolo}
           options={options}
           getOptionLabel={getOptionLabel}
-          value={field.value || defaultValue}
+          // --- FIX: Ensure value is handled correctly for single vs multiple ---
+          value={field.value !== undefined ? field.value : (multiple ? [] : null)}
           renderOption={renderOption}
           disabled={disabled}
+          isOptionEqualToValue={isOptionEqualToValue}
           renderTags={
             renderTags ||
             ((value: readonly any[], getTagProps) =>
@@ -113,12 +117,10 @@ const CraftIntAutoCompleteWithIcon = ({
                 );
               }))
           }
+          // --- FIX: Do NOT force array wrapping if multiple is false ---
           onChange={(event, newValue) => {
-            const processedValue = Array.isArray(newValue)
-              ? newValue
-              : [newValue];
-
-            field.onChange(processedValue);
+            // If multiple is false, pass newValue directly. If true, pass array.
+            field.onChange(newValue);
 
             if (onChange) {
               onChange(event, newValue);

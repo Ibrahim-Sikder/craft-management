@@ -51,8 +51,8 @@
 // // Sample data for demonstration
 // const classes = [
 //   { id: 1, name: "Hifz" },
-//   { id: 2, name: "One B" },
-//   { id: 3, name: "One A" },
+//   { id: 2, name: "One" },
+//   { id: 3, name: "One" },
 //   { id: 4, name: "Nazera" },
 //   { id: 5, name: "Six" },
 //   { id: 6, name: "Five" },
@@ -62,14 +62,14 @@
 // ]
 
 // const students = [
-//   { id: 1, name: "Ahmed Ali", rollNumber: "001", class: "One A", gender: "Male", image: "/placeholder.svg" },
-//   { id: 2, name: "Sara Khan", rollNumber: "002", class: "One A", gender: "Female", image: "/placeholder.svg" },
-//   { id: 3, name: "Zain Ahmed", rollNumber: "003", class: "One A", gender: "Male", image: "/placeholder.svg" },
-//   { id: 4, name: "Fatima Zahra", rollNumber: "004", class: "One A", gender: "Female", image: "/placeholder.svg" },
-//   { id: 5, name: "Ibrahim Hassan", rollNumber: "005", class: "One A", gender: "Male", image: "/placeholder.svg" },
-//   { id: 6, name: "Aisha Malik", rollNumber: "006", class: "One A", gender: "Female", image: "/placeholder.svg" },
-//   { id: 7, name: "Omar Farooq", rollNumber: "007", class: "One A", gender: "Male", image: "/placeholder.svg" },
-//   { id: 8, name: "Maryam Nawaz", rollNumber: "008", class: "One A", gender: "Female", image: "/placeholder.svg" },
+//   { id: 1, name: "Ahmed Ali", rollNumber: "001", class: "One", gender: "Male", image: "/placeholder.svg" },
+//   { id: 2, name: "Sara Khan", rollNumber: "002", class: "One", gender: "Female", image: "/placeholder.svg" },
+//   { id: 3, name: "Zain Ahmed", rollNumber: "003", class: "One", gender: "Male", image: "/placeholder.svg" },
+//   { id: 4, name: "Fatima Zahra", rollNumber: "004", class: "One", gender: "Female", image: "/placeholder.svg" },
+//   { id: 5, name: "Ibrahim Hassan", rollNumber: "005", class: "One", gender: "Male", image: "/placeholder.svg" },
+//   { id: 6, name: "Aisha Malik", rollNumber: "006", class: "One", gender: "Female", image: "/placeholder.svg" },
+//   { id: 7, name: "Omar Farooq", rollNumber: "007", class: "One", gender: "Male", image: "/placeholder.svg" },
+//   { id: 8, name: "Maryam Nawaz", rollNumber: "008", class: "One", gender: "Female", image: "/placeholder.svg" },
 // ]
 
 // // Styled components
@@ -134,7 +134,7 @@
 
 // const StudentAttendancePage = () => {
 //   const [selectedDate, setSelectedDate] = useState(formatDateForInput(new Date()))
-//   const [selectedClass, setSelectedClass] = useState("One A")
+//   const [selectedClass, setSelectedClass] = useState("One")
 //   const [attendanceData, setAttendanceData] = useState<{ [key: number]: string }>(
 //     // Initialize with all students present
 //     students.reduce(
@@ -478,7 +478,7 @@
 
 // export default StudentAttendancePage
 
-import React from 'react';
+import React from "react";
 
 const page = () => {
   return (

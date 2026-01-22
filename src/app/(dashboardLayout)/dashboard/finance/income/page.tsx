@@ -71,7 +71,7 @@
 //     category: "Tuition Fee",
 //     amount: 25000,
 //     student: "Ahmed Ali",
-//     class: "One A",
+//     class: "One",
 //     receiptNo: "REC-001",
 //     paymentMethod: "Cash",
 //     description: "Monthly tuition fee for May 2023",
@@ -82,7 +82,7 @@
 //     category: "Admission Fee",
 //     amount: 15000,
 //     student: "Sara Khan",
-//     class: "One B",
+//     class: "One",
 //     receiptNo: "REC-002",
 //     paymentMethod: "Bank Transfer",
 //     description: "New admission fee",
@@ -654,7 +654,7 @@
 
 // export default IncomePage
 
-import React from 'react';
+import React from "react";
 
 const page = () => {
   return (

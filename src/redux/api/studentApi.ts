@@ -46,7 +46,6 @@ export const studentApi = baseApi.injectEndpoints({
   }),
 });
 
-
 export const {
   useCreateStudentsMutation,
   useGetAllStudentsQuery,

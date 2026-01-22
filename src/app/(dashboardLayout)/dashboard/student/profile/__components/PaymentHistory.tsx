@@ -1,14 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import CraftTable, { Column, RowAction } from "@/components/Table";
-import {
-  Delete,
-  Download,
-  Edit,
-  Money,
-  Print,
-  Receipt,
-  Visibility,
-} from "@mui/icons-material";
+import { Download, Print, Receipt, Visibility } from "@mui/icons-material";
 import {
   Box,
   Button,
@@ -19,14 +11,19 @@ import {
   useTheme,
 } from "@mui/material";
 import { useEffect, useState } from "react";
+import ReceiptViewer, { ReceiptData } from "./ReceiptViewer";
 
-const PaymentHistory = ({ payments }: any) => {
+const PaymentHistory = ({ singleStudent }: any) => {
   const theme = useTheme();
+  const payments = singleStudent?.data?.payments;
 
   const [isLoading, setIsLoading] = useState(false);
   const [processedPayments, setProcessedPayments] = useState<any[]>([]);
+  const [receiptViewerOpen, setReceiptViewerOpen] = useState(false);
+  const [selectedReceiptData, setSelectedReceiptData] =
+    useState<ReceiptData | null>(null);
+  const [selectedPaymentId, setSelectedPaymentId] = useState<string>("");
 
-  // Process payment data when component mounts or payments change
   useEffect(() => {
     if (!payments || !Array.isArray(payments)) {
       setProcessedPayments([]);
@@ -54,6 +51,7 @@ const PaymentHistory = ({ payments }: any) => {
         transactionId: payment.transactionId || "",
         createdAt: payment.createdAt,
         updatedAt: payment.updatedAt,
+        originalPayment: payment,
       }));
 
       setProcessedPayments(processed);
@@ -65,7 +63,18 @@ const PaymentHistory = ({ payments }: any) => {
     }
   }, [payments]);
 
-  // Calculate summary statistics
+  const handlePrintReceipt = () => {};
+
+  const handleDownloadReceipt = () => {};
+
+  const handleViewDetails = () => {};
+
+  const handleCloseReceiptViewer = () => {
+    setReceiptViewerOpen(false);
+    setSelectedReceiptData(null);
+    setSelectedPaymentId("");
+  };
+
   const summary = {
     totalPayments: processedPayments.length,
     totalAmount: processedPayments.reduce(
@@ -86,12 +95,28 @@ const PaymentHistory = ({ payments }: any) => {
     ).length,
   };
 
-  // Define columns for the payment table
   const columns: Column[] = [
+    {
+      id: "_id",
+      label: "Payment ID",
+      minWidth: 200,
+      sortable: true,
+      filterable: true,
+      type: "text",
+      format: (value: string) => value?.slice(-8) || "N/A",
+    },
     {
       id: "receiptNo",
       label: "Receipt No",
       minWidth: 140,
+      sortable: true,
+      filterable: true,
+      type: "text",
+    },
+    {
+      id: "student",
+      label: "Student",
+      minWidth: 180,
       sortable: true,
       filterable: true,
       type: "text",
@@ -136,6 +161,14 @@ const PaymentHistory = ({ payments }: any) => {
       minWidth: 150,
       sortable: true,
       type: "date",
+      format: (value: string) => {
+        const date = new Date(value);
+        return date.toLocaleDateString("en-US", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+        });
+      },
     },
     {
       id: "collectedBy",
@@ -152,141 +185,61 @@ const PaymentHistory = ({ payments }: any) => {
       sortable: true,
       filterable: true,
       type: "status",
-    },
-    {
-      id: "note",
-      label: "Notes",
-      minWidth: 180,
-      sortable: false,
-      filterable: true,
-      type: "text",
+      format: (value: string) => {
+        const statusColors: any = {
+          completed: "success",
+          paid: "success",
+          partial: "warning",
+          pending: "warning",
+          unpaid: "error",
+        };
+        return statusColors[value] || "default";
+      },
     },
   ];
 
-  // Define row actions
   const rowActions: RowAction[] = [
     {
       label: "View Details",
       icon: <Visibility fontSize="small" />,
-      onClick: (row) => {
-        console.log("View payment details:", row);
-      },
+      onClick: () => handleViewDetails(),
       color: "info",
       tooltip: "View payment details",
     },
     {
       label: "Download Receipt",
       icon: <Download fontSize="small" />,
-      onClick: (row) => {
-        console.log("Download receipt for:", row.receiptNo);
-      },
+      onClick: () => handleDownloadReceipt(),
       color: "primary",
       tooltip: "Download payment receipt",
     },
     {
       label: "Print Receipt",
       icon: <Print fontSize="small" />,
-      onClick: (row) => {
-        console.log("Print receipt for:", row.receiptNo);
-      },
+      onClick: () => handlePrintReceipt(),
       color: "secondary",
       tooltip: "Print payment receipt",
     },
-    {
-      label: "Edit Payment",
-      icon: <Edit fontSize="small" />,
-      onClick: (row) => {
-        console.log("Edit payment:", row.receiptNo);
-      },
-      color: "warning",
-      tooltip: "Edit payment record",
-      inMenu: true,
-    },
-    {
-      label: "Delete Payment",
-      icon: <Delete fontSize="small" />,
-      onClick: (row) => {
-        console.log("Delete payment:", row.receiptNo);
-        if (
-          window.confirm(
-            `Are you sure you want to delete payment ${row.receiptNo}?`
-          )
-        ) {
-          // Delete logic here
-        }
-      },
-      color: "error",
-      tooltip: "Delete payment record",
-      inMenu: true,
-    },
   ];
 
-  // Handler functions
   const handleExport = () => {
-    console.log("Exporting payment data...");
+    console.log("Export all payments");
   };
 
   const handlePrint = () => {
-    console.log("Printing payment list...");
+    console.log("Print all payments");
   };
 
   const handleRefresh = () => {
-    console.log("Refreshing payment data...");
     setIsLoading(true);
-    // Refresh logic here
     setTimeout(() => {
       setIsLoading(false);
     }, 1000);
   };
 
   const handleAddPayment = () => {
-    console.log("Adding new payment...");
+    console.log("Add new payment");
   };
-
-  const handleBulkExport = (selectedRows: any[]) => {
-    console.log("Exporting selected payments:", selectedRows);
-  };
-
-  const handleBulkPrint = (selectedRows: any[]) => {
-    console.log("Printing receipts for:", selectedRows);
-  };
-
-  const handleBulkDelete = (selectedRows: any[]) => {
-    if (
-      window.confirm(
-        `Are you sure you want to delete ${selectedRows.length} payments?`
-      )
-    ) {
-      console.log("Deleting selected payments:", selectedRows);
-    }
-  };
-
-  // If no data is available
-  if (!payments || !Array.isArray(payments) || payments.length === 0) {
-    return (
-      <Box sx={{ textAlign: "center", py: 8 }}>
-        <Money sx={{ fontSize: 80, color: "text.secondary", mb: 2 }} />
-        <Typography variant="h5" color="text.secondary" gutterBottom>
-          No Payment Records Found
-        </Typography>
-        <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-          There are no payment records to display.
-        </Typography>
-        <Button
-          variant="contained"
-          startIcon={<Receipt />}
-          onClick={handleAddPayment}
-          sx={{
-            borderRadius: "10px",
-            px: 3,
-            background: `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
-          }}
-        >
-          Create New Payment
-        </Button>
-      </Box>
-    );
-  }
 
   return (
     <Box>
@@ -305,7 +258,6 @@ const PaymentHistory = ({ payments }: any) => {
         Payment History
       </Typography>
 
-      {/* Summary Cards */}
       <Box sx={{ mb: 4 }}>
         <Card
           variant="outlined"
@@ -320,7 +272,6 @@ const PaymentHistory = ({ payments }: any) => {
               Payment Summary
             </Typography>
 
-            {/* Summary Stats */}
             <Box
               sx={{ display: "flex", flexWrap: "wrap", gap: 4, mt: 2, mb: 2 }}
             >
@@ -343,7 +294,6 @@ const PaymentHistory = ({ payments }: any) => {
               </Box>
             </Box>
 
-            {/* Status Summary */}
             <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, mt: 2 }}>
               <Chip
                 label={`${summary.completedPayments} Paid`}
@@ -398,24 +348,6 @@ const PaymentHistory = ({ payments }: any) => {
         onExport={handleExport}
         onPrint={handlePrint}
         onAdd={handleAddPayment}
-        bulkActions={[
-          {
-            label: "Export Selected",
-            icon: <Download fontSize="small" />,
-            onClick: handleBulkExport,
-          },
-          {
-            label: "Print Receipts",
-            icon: <Print fontSize="small" />,
-            onClick: handleBulkPrint,
-          },
-          {
-            label: "Delete Selected",
-            icon: <Delete fontSize="small" />,
-            onClick: handleBulkDelete,
-            color: "error",
-          },
-        ]}
         customToolbar={
           <Button
             variant="contained"
@@ -436,6 +368,16 @@ const PaymentHistory = ({ payments }: any) => {
           </Button>
         }
       />
+
+      {selectedReceiptData && (
+        <ReceiptViewer
+          open={receiptViewerOpen}
+          onClose={handleCloseReceiptViewer}
+          receiptData={selectedReceiptData}
+          id={selectedPaymentId}
+          student={singleStudent}
+        />
+      )}
     </Box>
   );
 };
