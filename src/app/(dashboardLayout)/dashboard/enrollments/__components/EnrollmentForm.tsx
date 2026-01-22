@@ -282,7 +282,7 @@ const DynamicFeeFields = ({
           item.categoryName === categoryName
       ) || [];
 
-      let allFeeItems: any[] = [];
+      const allFeeItems: any[] = [];
 
       matchingEntries.forEach((entry: any) => {
         if (entry.feeItems && Array.isArray(entry.feeItems)) {
@@ -563,7 +563,12 @@ const DynamicFeeFields = ({
                           ? "Select Category"
                           : "Select class first"
                       }
-                      options={categoryOptions}
+                      // options={categoryOptions}
+                      options={categoryOptions.map(opt => ({
+                        label: String(opt.label || ''),
+                        value: String(opt.value || ''),
+                        name: String(opt.name || opt.label || '')
+                      }))}
                       fullWidth
                       multiple
                       icon={<CalendarMonth color="primary" />}
