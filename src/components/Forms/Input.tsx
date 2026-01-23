@@ -1,6 +1,6 @@
-import { SxProps, TextField, TextFieldProps } from "@mui/material"; 
-import React, { ChangeEvent } from "react"; 
-import { Controller, useFormContext } from "react-hook-form";  
+import { SxProps, TextField, TextFieldProps } from "@mui/material";
+import React, { ChangeEvent } from "react";
+import { Controller, useFormContext } from "react-hook-form";
 
 type TInputProps = {
   name: string;
@@ -17,11 +17,11 @@ type TInputProps = {
   rows?: number;
   disabled?: boolean;
   value?: string;
-  defaultValue?: string;  
+  defaultValue?: string;
   autoFocus?: boolean;
-InputProps?: TextFieldProps["InputProps"];
-  onChange?: (event: ChangeEvent<HTMLInputElement>) => void; 
-};   
+  InputProps?: TextFieldProps["InputProps"];
+  onChange?: (event: ChangeEvent<HTMLInputElement>) => void;
+};
 
 const CraftInput = ({
   name,
@@ -41,15 +41,15 @@ const CraftInput = ({
   onChange,
   value,
   InputProps,
-  defaultValue, 
+  defaultValue,
 }: TInputProps) => {
   const { control } = useFormContext();
-  
+
   return (
     <Controller
       control={control}
       name={name}
-      defaultValue={defaultValue} 
+      defaultValue={defaultValue}
       render={({
         field: { onChange: fieldOnChange, value: fieldValue },
         fieldState: { error },
@@ -76,8 +76,8 @@ const CraftInput = ({
         />
       )}
     />
-  ); 
-};  
+  );
+};
 
 export default CraftInput;
 

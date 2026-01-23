@@ -14,17 +14,15 @@ import {
 } from "@mui/material";
 import { SxProps } from "@mui/material/styles";
 
-// Define a more flexible Option type
+
 type Option = {
   id?: string;
   value?: string;
   name?: string;
   label?: string;
   capacity?: number;
-  [key: string]: any; // Allow any additional properties
+  [key: string]: any;
 };
-
-// Extend AutocompleteProps to include all MUI Autocomplete props
 type TStateProps = {
   name: string;
   label?: React.ReactNode;
@@ -240,151 +238,3 @@ const CraftIntAutoCompleteWithIcon = ({
 
 export default CraftIntAutoCompleteWithIcon;
 
-
-// type Option = {
-//   id?: string;
-//   value?: string;
-//   name?: string;
-//   label?: string;
-//   capacity?: number;
-// };
-
-// type TStateProps = {
-//   name: string;
-//   label?: React.ReactNode;
-//   fullWidth?: boolean;
-//   sx?: SxProps;
-//   helperText?: React.ReactNode;
-//   required?: boolean;
-//   disabled?: boolean;
-//   options: Option[];
-//   size?: "small" | "medium";
-//   multiple?: boolean;
-//   freeSolo?: boolean;
-//   margin?: "none" | "normal" | "dense";
-//   defaultValue?: any;
-//   placeholder?: string;
-//   onInputChange?: (event: React.SyntheticEvent, value: string) => void;
-//   onChange?: (event: React.SyntheticEvent, value: any) => void;
-//   icon?: React.ReactNode;
-//   renderOption?: (
-//     props: React.HTMLAttributes<HTMLLIElement>,
-//     option: Option,
-//     state: AutocompleteRenderOptionState
-//   ) => React.ReactNode;
-//   renderTags?: (
-//     value: readonly Option[],
-//     getTagProps: (params: { index: number }) => Record<string, any>
-//   ) => React.ReactNode;
-//   isOptionEqualToValue?: (option: any, value: any) => boolean;
-// };
-
-// const CraftIntAutoCompleteWithIcon = ({
-//   name,
-//   label = "Autocomplete",
-//   fullWidth = true,
-//   sx,
-//   required,
-//   options,
-//   margin = "normal",
-//   multiple = true,
-//   freeSolo = true,
-//   defaultValue = [],
-//   disabled = false,
-//   placeholder = "Select options",
-//   onInputChange,
-//   onChange,
-//   icon,
-//   renderOption,
-//   renderTags,
-//   size = "small",
-//   isOptionEqualToValue,
-// }: TStateProps) => {
-//   const { control } = useFormContext();
-
-//   const getOptionLabel = (option: any): string => {
-//     if (typeof option === "string") return option;
-//     return option.name || option.label || "";
-//   };
-
-//   return (
-//     <Controller
-//       control={control}
-//       name={name}
-//       defaultValue={defaultValue}
-//       render={({ field, fieldState: { error } }) => (
-//         <Autocomplete
-//           {...field}
-//           multiple={multiple}
-//           freeSolo={freeSolo}
-//           options={options}
-//           getOptionLabel={getOptionLabel}
-//           // --- FIX: Ensure value is handled correctly for single vs multiple ---
-//           value={field.value !== undefined ? field.value : (multiple ? [] : null)}
-//           renderOption={renderOption}
-//           disabled={disabled}
-//           isOptionEqualToValue={isOptionEqualToValue}
-//           renderTags={
-//             renderTags ||
-//             ((value: readonly any[], getTagProps) =>
-//               value.map((option: any, index: number) => {
-//                 const tagProps = getTagProps({ index });
-//                 const { key, ...restTagProps } = tagProps;
-//                 return (
-//                   <Chip
-//                     key={key || index}
-//                     variant="outlined"
-//                     label={getOptionLabel(option)}
-//                     {...restTagProps}
-//                     sx={{
-//                       bgcolor: alpha("#1976d2", 0.1),
-//                       color: "#1976d2",
-//                       fontWeight: 500,
-//                     }}
-//                   />
-//                 );
-//               }))
-//           }
-//           // --- FIX: Do NOT force array wrapping if multiple is false ---
-//           onChange={(event, newValue) => {
-//             // If multiple is false, pass newValue directly. If true, pass array.
-//             field.onChange(newValue);
-
-//             if (onChange) {
-//               onChange(event, newValue);
-//             }
-//           }}
-//           onInputChange={onInputChange}
-//           renderInput={(params) => (
-//             <TextField
-//               {...params}
-//               label={label}
-//               placeholder={placeholder}
-//               fullWidth={fullWidth}
-//               required={required}
-//               margin={margin}
-//               size={size}
-//               error={!!error}
-//               helperText={error?.message}
-//               variant="outlined"
-//               sx={sx}
-//               InputProps={{
-//                 ...params.InputProps,
-//                 startAdornment: (
-//                   <>
-//                     {icon && (
-//                       <InputAdornment position="start">{icon}</InputAdornment>
-//                     )}
-//                     {params.InputProps.startAdornment}
-//                   </>
-//                 ),
-//               }}
-//             />
-//           )}
-//         />
-//       )}
-//     />
-//   );
-// };
-
-// export default CraftIntAutoCompleteWithIcon;
