@@ -316,7 +316,6 @@ const PaymentHistory = ({ singleStudent }: any) => {
         </Card>
       </Box>
 
-      {/* Payment Records Table */}
       <CraftTable
         title="Payment Transactions"
         subtitle={`${processedPayments.length} payment records found`}
