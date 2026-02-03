@@ -9,7 +9,7 @@ import { useGetAllFeesQuery } from "@/redux/api/feesApi";
 import { useGetAllFeeCategoriesQuery } from "@/redux/api/feeCategoryApi";
 import { useGetAllSectionsQuery } from "@/redux/api/sectionApi";
 
-export function useAcademicOption(limit = 10, initialSearch = "") {
+export function useAcademicOption(limit = 100, initialSearch = "") {
   const [page] = useState(0);
   const [searchTerm] = useState(initialSearch);
   const studentDepartment = "Hifz Student";
@@ -60,12 +60,12 @@ export function useAcademicOption(limit = 10, initialSearch = "") {
   // Transform to select options
   const teacherOptions = useMemo(
     () => transformToSelectOptions(teacherData?.data, "name"),
-    [teacherData]
+    [teacherData],
   );
 
   const studentOptions = useMemo(
     () => transformToSelectOptions(studentData?.data, "name"),
-    [studentData]
+    [studentData],
   );
 
   const classOptions = useMemo(() => {
@@ -115,6 +115,6 @@ export function useAcademicOption(limit = 10, initialSearch = "") {
     feesOptions,
     feeCategoryOptions,
     feeCategoryData,
-    sectionData
+    sectionData,
   };
 }

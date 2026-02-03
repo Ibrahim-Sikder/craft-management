@@ -1,14 +1,13 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import CraftTable, { Column, RowAction } from "@/components/Table";
-import { Download, Print, Receipt, Visibility } from "@mui/icons-material";
+import { Download, Print, Visibility } from "@mui/icons-material";
 import {
   Box,
-  Button,
   Card,
   CardContent,
   Chip,
   Typography,
-  useTheme,
+  useTheme
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import ReceiptViewer, { ReceiptData } from "./ReceiptViewer";
@@ -63,11 +62,11 @@ const PaymentHistory = ({ singleStudent }: any) => {
     }
   }, [payments]);
 
-  const handlePrintReceipt = () => {};
+  const handlePrintReceipt = () => { };
 
-  const handleDownloadReceipt = () => {};
+  const handleDownloadReceipt = () => { };
 
-  const handleViewDetails = () => {};
+  const handleViewDetails = () => { };
 
   const handleCloseReceiptViewer = () => {
     setReceiptViewerOpen(false);
@@ -222,9 +221,6 @@ const PaymentHistory = ({ singleStudent }: any) => {
     },
   ];
 
-  const handleExport = () => {
-    console.log("Export all payments");
-  };
 
   const handlePrint = () => {
     console.log("Print all payments");
@@ -320,7 +316,6 @@ const PaymentHistory = ({ singleStudent }: any) => {
         </Card>
       </Box>
 
-      {/* Payment Records Table */}
       <CraftTable
         title="Payment Transactions"
         subtitle={`${processedPayments.length} payment records found`}
@@ -345,28 +340,9 @@ const PaymentHistory = ({ singleStudent }: any) => {
         showRowNumbers={true}
         rowNumberHeader="#"
         onRefresh={handleRefresh}
-        onExport={handleExport}
         onPrint={handlePrint}
         onAdd={handleAddPayment}
-        customToolbar={
-          <Button
-            variant="contained"
-            startIcon={<Receipt />}
-            onClick={handleAddPayment}
-            sx={{
-              borderRadius: "10px",
-              px: 3,
-              background: `linear-gradient(135deg, ${theme.palette.success.main} 0%, ${theme.palette.success.dark} 100%)`,
-              "&:hover": {
-                transform: "translateY(-1px)",
-                boxShadow: `0 6px 20px ${theme.palette.success.light}60`,
-              },
-              transition: "all 0.2s ease-in-out",
-            }}
-          >
-            New Payment
-          </Button>
-        }
+
       />
 
       {selectedReceiptData && (
