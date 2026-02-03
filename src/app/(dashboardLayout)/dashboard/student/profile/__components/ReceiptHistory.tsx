@@ -73,7 +73,7 @@ const ReceiptHistory: React.FC<ReceiptHistoryProps> = ({
     }
   };
 
-  const handleDeleteReceipt = () => {};
+  const handleDeleteReceipt = () => { };
 
   const handlePrintReceipt = () => {
     // This can be called from ReceiptDetailsDialog
@@ -82,7 +82,7 @@ const ReceiptHistory: React.FC<ReceiptHistoryProps> = ({
     }
   };
 
-  const handleDownloadReceipt = () => {};
+  const handleDownloadReceipt = () => { };
 
   const handleViewReceipt = (receipt: any) => {
     setSelectedReceipt(receipt);
@@ -94,7 +94,7 @@ const ReceiptHistory: React.FC<ReceiptHistoryProps> = ({
     setShowPrintDialog(true);
   };
 
-  const handleDownloadRowReceipt = () => {};
+  const handleDownloadRowReceipt = () => { };
 
   const handleRefresh = () => {
     refetch();
