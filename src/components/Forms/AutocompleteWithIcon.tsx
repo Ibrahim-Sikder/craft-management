@@ -10,8 +10,10 @@ import {
   InputAdornment,
   alpha,
   AutocompleteRenderOptionState,
+  AutocompleteProps,
 } from "@mui/material";
 import { SxProps } from "@mui/material/styles";
+
 
 type Option = {
   id?: string;
@@ -19,8 +21,8 @@ type Option = {
   name?: string;
   label?: string;
   capacity?: number;
+  [key: string]: any;
 };
-
 type TStateProps = {
   name: string;
   label?: React.ReactNode;
@@ -48,7 +50,25 @@ type TStateProps = {
     value: readonly Option[],
     getTagProps: (params: { index: number }) => Record<string, any>
   ) => React.ReactNode;
-};
+  isOptionEqualToValue?: (option: any, value: any) => boolean;
+  disableClearable?: boolean;
+  readOnly?: boolean;
+  filterOptions?: (options: Option[], state: any) => Option[];
+  getOptionDisabled?: (option: Option) => boolean;
+  loading?: boolean;
+  loadingText?: React.ReactNode;
+  noOptionsText?: React.ReactNode;
+  autoHighlight?: boolean;
+  autoSelect?: boolean;
+  blurOnSelect?: boolean;
+  clearOnBlur?: boolean;
+  clearOnEscape?: boolean;
+  selectOnFocus?: boolean;
+  limitTags?: number;
+  open?: boolean;
+  onOpen?: (event: React.SyntheticEvent) => void;
+  onClose?: (event: React.SyntheticEvent) => void;
+} & Partial<AutocompleteProps<any, boolean, boolean, boolean>>;
 
 const CraftIntAutoCompleteWithIcon = ({
   name,
@@ -69,12 +89,56 @@ const CraftIntAutoCompleteWithIcon = ({
   renderOption,
   renderTags,
   size = "small",
+  isOptionEqualToValue,
+  disableClearable = false,
+  readOnly = false,
+  filterOptions,
+  getOptionDisabled,
+  loading = false,
+  loadingText = "Loading...",
+  noOptionsText = "No options",
+  autoHighlight = true,
+  autoSelect = false,
+  blurOnSelect = false,
+  clearOnBlur = true,
+  clearOnEscape = false,
+  selectOnFocus = true,
+  limitTags = -1,
+  open,
+  onOpen,
+  onClose,
+  ...otherProps // Capture any other Autocomplete props
 }: TStateProps) => {
   const { control } = useFormContext();
 
   const getOptionLabel = (option: any): string => {
     if (typeof option === "string") return option;
-    return option.name || option.label || "";
+    if (typeof option === "object" && option !== null) {
+      return option.label || option.name || option.value || "";
+    }
+    return String(option);
+  };
+
+  // Helper function to safely get option value for comparison
+  const defaultIsOptionEqualToValue = (option: any, value: any): boolean => {
+    if (!option || !value) return false;
+
+    // Handle string comparisons
+    if (typeof option === 'string' && typeof value === 'string') {
+      return option === value;
+    }
+
+    // Handle object comparisons
+    const optValue = option.value || option.id || option.label || option.name;
+    const valValue = value.value || value.id || value.label || value.name;
+
+    // If both have values, compare them
+    if (optValue !== undefined && valValue !== undefined) {
+      return String(optValue) === String(valValue);
+    }
+
+    // Fallback to object reference equality
+    return option === value;
   };
 
   return (
@@ -85,13 +149,32 @@ const CraftIntAutoCompleteWithIcon = ({
       render={({ field, fieldState: { error } }) => (
         <Autocomplete
           {...field}
+          {...otherProps} // Spread any additional Autocomplete props
           multiple={multiple}
           freeSolo={freeSolo}
           options={options}
           getOptionLabel={getOptionLabel}
-          value={field.value || defaultValue}
+          disableClearable={disableClearable}
+          readOnly={readOnly}
+          value={field.value !== undefined ? field.value : (multiple ? [] : null)}
           renderOption={renderOption}
-          disabled={disabled}
+          disabled={disabled || readOnly}
+          isOptionEqualToValue={isOptionEqualToValue || defaultIsOptionEqualToValue}
+          filterOptions={filterOptions}
+          getOptionDisabled={getOptionDisabled}
+          loading={loading}
+          loadingText={loadingText}
+          noOptionsText={noOptionsText}
+          autoHighlight={autoHighlight}
+          autoSelect={autoSelect}
+          blurOnSelect={blurOnSelect}
+          clearOnBlur={clearOnBlur}
+          clearOnEscape={clearOnEscape}
+          selectOnFocus={selectOnFocus}
+          limitTags={limitTags}
+          open={open}
+          onOpen={onOpen}
+          onClose={onClose}
           renderTags={
             renderTags ||
             ((value: readonly any[], getTagProps) =>
@@ -114,12 +197,7 @@ const CraftIntAutoCompleteWithIcon = ({
               }))
           }
           onChange={(event, newValue) => {
-            const processedValue = Array.isArray(newValue)
-              ? newValue
-              : [newValue];
-
-            field.onChange(processedValue);
-
+            field.onChange(newValue);
             if (onChange) {
               onChange(event, newValue);
             }
@@ -140,6 +218,7 @@ const CraftIntAutoCompleteWithIcon = ({
               sx={sx}
               InputProps={{
                 ...params.InputProps,
+                readOnly: readOnly,
                 startAdornment: (
                   <>
                     {icon && (
@@ -158,3 +237,4 @@ const CraftIntAutoCompleteWithIcon = ({
 };
 
 export default CraftIntAutoCompleteWithIcon;
+

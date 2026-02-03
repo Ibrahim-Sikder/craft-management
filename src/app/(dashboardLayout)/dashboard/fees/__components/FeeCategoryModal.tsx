@@ -1,10 +1,24 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { Class, Save as SaveIcon } from "@mui/icons-material";
-import { Box, Button, Grid } from "@mui/material";
-import { FieldValues } from "react-hook-form";
+import {
+  Add as AddIcon,
+  Class,
+  Delete as DeleteIcon,
+  Save as SaveIcon,
+} from "@mui/icons-material";
+import {
+  Box,
+  Button,
+  CircularProgress,
+  Grid,
+  IconButton,
+  Paper,
+  Typography,
+} from "@mui/material";
+import { useEffect, useMemo } from "react";
 
+import CraftAutoComplete from "@/components/Forms/AutoComplete";
 import CraftIntAutoCompleteWithIcon from "@/components/Forms/AutocompleteWithIcon";
 import CraftForm from "@/components/Forms/Form";
 import CraftInput from "@/components/Forms/Input";
@@ -16,8 +30,111 @@ import {
   useUpdateFeeCategoryMutation,
 } from "@/redux/api/feeCategoryApi";
 import { buttonStyle, inputStyle } from "@/style/customeStyle";
+import { useState } from "react";
 import toast from "react-hot-toast";
-import CraftSelect from "@/components/Forms/Select";
+import { FieldValues } from "react-hook-form";
+import { CATEGORY_OPTIONS, FEE_TYPE_OPTIONS } from "@/options/feeCategory";
+
+const FeeItemsField = ({ feeItems, onAdd, onRemove }: any) => {
+  return (
+    <Grid item xs={12}>
+      <Paper
+        sx={{
+          p: 3,
+          bgcolor: "background.paper",
+          border: "1px solid",
+          borderColor: "divider",
+          borderRadius: 2,
+        }}
+      >
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 2,
+          }}
+        >
+          <Typography variant="h6" component="div">
+            Fee Items <span style={{ color: "red" }}>*</span>
+          </Typography>
+          <Button
+            variant="outlined"
+            startIcon={<AddIcon />}
+            onClick={onAdd}
+            size="small"
+          >
+            Add Fee Item
+          </Button>
+        </Box>
+
+        {feeItems.length === 0 ? (
+          <Typography
+            color="text.secondary"
+            sx={{ textAlign: "center", py: 3, fontStyle: "italic" }}
+          >
+            No fee items added.
+          </Typography>
+        ) : (
+          feeItems.map((item: any, index: number) => (
+            <Box
+              key={item.tempId || index}
+              sx={{
+                mb: 2,
+                p: 2,
+                border: "1px solid",
+                borderColor: "divider",
+                borderRadius: 1,
+                bgcolor: "background.default",
+              }}
+            >
+              <Grid container spacing={2} alignItems="center">
+                <Grid item xs={12} sm={5}>
+                  <CraftAutoComplete
+                    fullWidth
+                    label="Fee Type"
+                    name={`feeItems.${index}.feeType`}
+                    margin="none"
+                    options={FEE_TYPE_OPTIONS}
+                    sx={inputStyle}
+                    placeholder="Select fee type"
+                  />
+                </Grid>
+                <Grid item xs={12} sm={5}>
+                  <CraftInput
+                    fullWidth
+                    label="Amount"
+                    name={`feeItems.${index}.amount`}
+                    type="number"
+                    margin="none"
+                    sx={inputStyle}
+                    placeholder="Enter amount"
+                  />
+                </Grid>
+                <Grid
+                  item
+                  xs={12}
+                  sm={2}
+                  sx={{ display: "flex", justifyContent: "center" }}
+                >
+                  {feeItems.length > 1 && (
+                    <IconButton
+                      onClick={() => onRemove(index)}
+                      color="error"
+                      size="small"
+                    >
+                      <DeleteIcon />
+                    </IconButton>
+                  )}
+                </Grid>
+              </Grid>
+            </Box>
+          ))
+        )}
+      </Paper>
+    </Grid>
+  );
+};
 
 export default function FeeCategoryModal({ open, setOpen, id }: any) {
   const [createFeeCategory] = useCreateFeeCategoryMutation();
@@ -27,135 +144,242 @@ export default function FeeCategoryModal({ open, setOpen, id }: any) {
   });
   const { classOptions } = useAcademicOption();
 
+  const [feeItems, setFeeItems] = useState<
+    Array<{ tempId: number; feeType: any[]; amount: string }>
+  >([{ tempId: Date.now(), feeType: [], amount: "" }]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const normalizeFeeType = (feeTypeData: any): string => {
+    if (!feeTypeData) return "";
+    if (typeof feeTypeData === "string") return feeTypeData;
+    if (Array.isArray(feeTypeData)) {
+      if (feeTypeData.length > 0 && feeTypeData[0]?.title) {
+        return feeTypeData[0].title;
+      }
+      if (feeTypeData.length > 0 && typeof feeTypeData[0] === "string") {
+        return feeTypeData[0];
+      }
+      return "";
+    }
+    if (feeTypeData?.title) {
+      return feeTypeData.title;
+    }
+
+    return "";
+  };
+
+  const defaultValues = useMemo(() => {
+    if (id && singleFee?.data) {
+      const classOption = classOptions.find(
+        (option: any) => option.label === singleFee.data.className,
+      );
+      const backendFeeItems = singleFee.data.feeItems?.map((item: any) => ({
+        feeType: item.feeType ? [{ title: item.feeType }] : [],
+        amount: item.amount?.toString() || "",
+      })) || [{ feeType: [], amount: "" }];
+
+      return {
+        class: classOption ? [classOption] : [],
+        category: singleFee.data.categoryName
+          ? [{ title: singleFee.data.categoryName }]
+          : [],
+        feeItems: backendFeeItems,
+      };
+    }
+    return {
+      class: [],
+      category: [],
+      feeItems: [{ feeType: [], amount: "" }],
+    };
+  }, [id, singleFee, classOptions]);
+  useEffect(() => {
+    if (id && singleFee?.data) {
+      const backendFeeItems = singleFee.data.feeItems?.map((item: any) => ({
+        tempId: Date.now() + Math.random(),
+        feeType: item.feeType ? [{ title: item.feeType }] : [],
+        amount: item.amount?.toString() || "",
+      })) || [{ tempId: Date.now(), feeType: [], amount: "" }];
+      setFeeItems(backendFeeItems);
+    } else if (!id && open) {
+      setFeeItems([{ tempId: Date.now(), feeType: [], amount: "" }]);
+    }
+  }, [id, singleFee, open]);
+
   const handleSubmit = async (data: FieldValues) => {
-    console.log(data);
+
+    if (!data.class || data.class.length === 0)
+      return toast.error("Please select a class");
+    if (!data.feeItems || data.feeItems.length === 0)
+      return toast.error("Please add at least one fee item");
+
+    console.log("Processing fee items:", data.feeItems);
+    const validFeeItems = data.feeItems.filter((item: any) => {
+      const feeTypeValue = normalizeFeeType(item.feeType);
+      const amountValue = item.amount;
+      const isValid =
+        feeTypeValue &&
+        feeTypeValue.trim() !== "" &&
+        amountValue !== "" &&
+        !isNaN(Number(amountValue)) &&
+        Number(amountValue) > 0;
+
+      return isValid;
+    });
+
+    console.log("Valid fee items:", validFeeItems);
+
+    if (validFeeItems.length === 0) {
+      toast.error("Please add valid fee items");
+      return;
+    }
+    const feeTypeSet = new Set();
+    const hasDuplicates = validFeeItems.some((item: any) => {
+      const feeTypeValue = normalizeFeeType(item.feeType);
+      if (feeTypeSet.has(feeTypeValue)) {
+        toast.error(`Duplicate fee type: ${feeTypeValue}`);
+        return true;
+      }
+      feeTypeSet.add(feeTypeValue);
+      return false;
+    });
+
+    if (hasDuplicates) return;
+
     const submitData = {
-      ...data,
-      class: data.class[0]?.label || data.class,
-      feeAmount: Number(data.feeAmount),
+      categoryName: data.category[0]?.title || normalizeFeeType(data.category),
+      className: data.class[0]?.label,
+      feeItems: validFeeItems.map((item: any) => ({
+        feeType: normalizeFeeType(item.feeType),
+        amount: Number(item.amount),
+      })),
     };
 
+    setIsSubmitting(true);
     try {
-      let res;
+      const res = id
+        ? await updateFeeCategory({ id, data: submitData }).unwrap()
+        : await createFeeCategory(submitData).unwrap();
 
-      if (id) {
-        res = await updateFeeCategory({ id, data: submitData }).unwrap();
-        if (res?.success) {
-          toast.success(res.message || "Fee category updated successfully!");
-          setOpen(false);
-        }
-      } else {
-        res = await createFeeCategory(submitData).unwrap();
-        if (res?.success) {
-          toast.success(res.message || "Fee category created successfully!");
-          setOpen(false);
-        }
+      if (res?.success) {
+        toast.success(res.message || "Saved successfully!");
+        setOpen(false);
       }
     } catch (err: any) {
-      toast.error(
-        err?.data?.message || err?.message || "Failed to save fee category!"
-      );
+      console.error("Submission error:", err);
+      toast.error(err?.data?.message || "Failed to save!");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  const getDefaultValues = () => {
-    if (id && singleFee?.data) {
-      const classOption = classOptions.find(
-        (option: any) => option.label === singleFee.data.class
-      );
+  const handleAddFeeItem = () => {
+    const newFeeItem = { tempId: Date.now(), feeType: [], amount: "" };
+    setFeeItems([...feeItems, newFeeItem]);
+  };
 
-      return {
-        class: classOption || { label: singleFee.data.class },
-        feeType: singleFee.data.feeType || "",
-        feeAmount: singleFee.data.feeAmount || "",
-      };
+  const handleRemoveFeeItem = (index: number) => {
+    if (feeItems.length > 1) {
+      const newFeeItems = [...feeItems];
+      newFeeItems.splice(index, 1);
+      setFeeItems(newFeeItems);
     }
-
-    return {
-      class: null,
-      feeType: "",
-      feeAmount: "",
-    };
   };
 
   const title = id ? "Update Fee Category" : "Add New Fee Category";
+  const totalLoading = isLoading || isSubmitting;
 
   return (
-    <CraftModal open={open} setOpen={setOpen} title={title} size="md">
-      <CraftForm
-        onSubmit={handleSubmit}
-        defaultValues={getDefaultValues()}
-        key={id || "create"}
-      >
-        <Box sx={{ mb: 6 }}>
-          <Grid container spacing={3}>
-            <Grid item xs={12} sm={12}>
-              <CraftIntAutoCompleteWithIcon
-                name="class"
-                label={
-                  <span>
-                    Class <span style={{ color: "red" }}>*</span>
-                  </span>
-                }
-                placeholder="Select Class"
-                options={classOptions}
-                fullWidth
-                multiple
-                icon={<Class color="primary" />}
-              />
-            </Grid>
-
-            <Grid item xs={12}>
-              <CraftSelect
-                fullWidth
-                items={[
-                  "Admission Fee",
-                  "Monthly Fee",
-                  "Tution Fee",
-                  "Day Care Fee",
-                  "Meal Fee",
-                  "Housing Fee",
-                ]}
-                label="Fee Type"
-                name="feeType"
-                margin="none"
-                sx={inputStyle}
-                required
-              />
-            </Grid>
-
-            <Grid item xs={12}>
-              <CraftInput
-                fullWidth
-                label="Fee Amount"
-                name="feeAmount"
-                type="number"
-                margin="none"
-                sx={inputStyle}
-              />
-            </Grid>
-          </Grid>
-        </Box>
-
+    <CraftModal open={open} setOpen={setOpen} title={title} size="lg">
+      {isLoading && id ? (
         <Box
           sx={{
             display: "flex",
-            gap: 2,
-            justifyContent: "flex-end",
-            pt: 3,
+            justifyContent: "center",
+            alignItems: "center",
+            height: "300px",
           }}
         >
-          <Button
-            type="submit"
-            variant="contained"
-            endIcon={<SaveIcon />}
-            sx={buttonStyle}
-            disabled={isLoading}
-          >
-            {id ? "Update Fee Record" : "Save Fee Record"}
-          </Button>
+          <CircularProgress />
         </Box>
-      </CraftForm>
+      ) : (
+        <CraftForm
+          onSubmit={handleSubmit}
+          defaultValues={defaultValues}
+          key={`${id || "create"}-${open}`}
+        >
+          <Box>
+            <Grid container spacing={3}>
+              <Grid item xs={12} sm={6}>
+                <CraftIntAutoCompleteWithIcon
+                  name="class"
+                  label={
+                    <span>
+                      Class <span style={{ color: "red" }}>*</span>
+                    </span>
+                  }
+                  placeholder="Select Class"
+                  options={classOptions}
+                  fullWidth
+                  icon={<Class color="primary" />}
+                  sx={inputStyle}
+                />
+              </Grid>
+
+              <Grid item xs={12} sm={6}>
+                <CraftAutoComplete
+                  fullWidth
+                  label="Category"
+                  name="category"
+                  margin="none"
+                  options={CATEGORY_OPTIONS}
+                  sx={inputStyle}
+                />
+              </Grid>
+
+              <FeeItemsField
+                feeItems={feeItems}
+                onAdd={handleAddFeeItem}
+                onRemove={handleRemoveFeeItem}
+              />
+            </Grid>
+
+            <Box
+              sx={{
+                display: "flex",
+                gap: 2,
+                justifyContent: "flex-end",
+                pt: 3,
+                mt: 3,
+                borderTop: "1px solid",
+                borderColor: "divider",
+              }}
+            >
+              <Button
+                type="button"
+                variant="outlined"
+                onClick={() => setOpen(false)}
+                disabled={totalLoading}
+              >
+                Cancel
+              </Button>
+              <Button
+                type="submit"
+                variant="contained"
+                endIcon={
+                  totalLoading ? (
+                    <CircularProgress size={20} color="inherit" />
+                  ) : (
+                    <SaveIcon />
+                  )
+                }
+                sx={buttonStyle}
+                disabled={totalLoading}
+              >
+                {totalLoading ? "Saving..." : id ? "Update" : "Save"}
+              </Button>
+            </Box>
+          </Box>
+        </CraftForm>
+      )}
     </CraftModal>
   );
 }

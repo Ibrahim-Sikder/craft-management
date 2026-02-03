@@ -1,11 +1,11 @@
 /* eslint-disable react/no-unescaped-entities */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
+import { useState } from "react";
 import {
   Box,
   Typography,
@@ -38,7 +38,7 @@ import {
   Card,
   CardContent,
   Avatar,
-} from "@mui/material"
+} from "@mui/material";
 import {
   ArrowBack as ArrowBackIcon,
   Print as PrintIcon,
@@ -46,9 +46,9 @@ import {
   Assessment as AssessmentIcon,
   Download as DownloadIcon,
   Edit as EditIcon,
-} from "@mui/icons-material"
-import { useTheme } from "@mui/material/styles"
-import { useRouter } from "next/navigation"
+} from "@mui/icons-material";
+import { useTheme } from "@mui/material/styles";
+import { useRouter } from "next/navigation";
 
 // Mock data for exams
 const mockExams = [
@@ -92,21 +92,51 @@ const mockExams = [
     endDate: "2023-12-15",
     status: "Upcoming",
   },
-]
+];
 
 // Mock data for subjects
 const mockSubjects = [
-  { id: 1, name: "Quran Recitation", code: "QR101", fullMarks: 100, passMarks: 40 },
-  { id: 2, name: "Islamic Studies", code: "IS101", fullMarks: 100, passMarks: 40 },
-  { id: 3, name: "Arabic Language", code: "AL101", fullMarks: 100, passMarks: 40 },
-  { id: 4, name: "Mathematics", code: "MATH101", fullMarks: 100, passMarks: 40 },
+  {
+    id: 1,
+    name: "Quran Recitation",
+    code: "QR101",
+    fullMarks: 100,
+    passMarks: 40,
+  },
+  {
+    id: 2,
+    name: "Islamic Studies",
+    code: "IS101",
+    fullMarks: 100,
+    passMarks: 40,
+  },
+  {
+    id: 3,
+    name: "Arabic Language",
+    code: "AL101",
+    fullMarks: 100,
+    passMarks: 40,
+  },
+  {
+    id: 4,
+    name: "Mathematics",
+    code: "MATH101",
+    fullMarks: 100,
+    passMarks: 40,
+  },
   { id: 5, name: "Science", code: "SCI101", fullMarks: 100, passMarks: 40 },
   { id: 6, name: "English", code: "ENG101", fullMarks: 100, passMarks: 40 },
   { id: 7, name: "Urdu", code: "URD101", fullMarks: 100, passMarks: 40 },
-  { id: 8, name: "Social Studies", code: "SS101", fullMarks: 100, passMarks: 40 },
+  {
+    id: 8,
+    name: "Social Studies",
+    code: "SS101",
+    fullMarks: 100,
+    passMarks: 40,
+  },
   { id: 9, name: "Computer", code: "COMP101", fullMarks: 100, passMarks: 40 },
   { id: 10, name: "Art", code: "ART101", fullMarks: 50, passMarks: 20 },
-]
+];
 
 // Mock data for students
 const mockStudents = [
@@ -114,7 +144,7 @@ const mockStudents = [
     id: 1,
     rollNo: "001",
     name: "Ahmed Ali",
-    class: "One A",
+    class: "One",
     photo: "/placeholder.svg?height=100&width=100",
     results: {
       1: {
@@ -149,7 +179,7 @@ const mockStudents = [
     id: 2,
     rollNo: "002",
     name: "Fatima Khan",
-    class: "One A",
+    class: "One",
     photo: "/placeholder.svg?height=100&width=100",
     results: {
       1: {
@@ -184,7 +214,7 @@ const mockStudents = [
     id: 3,
     rollNo: "003",
     name: "Muhammad Usman",
-    class: "One A",
+    class: "One",
     photo: "/placeholder.svg?height=100&width=100",
     results: {
       1: {
@@ -215,125 +245,138 @@ const mockStudents = [
       },
     },
   },
-]
+];
 
 // Available classes
-const availableClasses = ["Hifz", "One A", "One B", "Nazera", "Two", "Three", "Four", "Five", "Six"]
+const availableClasses = [
+  "Hifz",
+  "One",
+  "One",
+  "Nazera",
+  "Two",
+  "Three",
+  "Four",
+  "Five",
+  "Six",
+];
 
 const ExamResultsPage = () => {
-  const theme = useTheme()
-  const router = useRouter()
-  const [exams, setExams] = useState(mockExams)
-  const [students, setStudents] = useState(mockStudents)
-  const [subjects, setSubjects] = useState(mockSubjects)
-  const [selectedExam, setSelectedExam] = useState<any>(mockExams[0]) // Default to the first exam
-  const [selectedClass, setSelectedClass] = useState<string>("One A")
-  const [selectedStudent, setSelectedStudent] = useState<any>(null)
-  const [openDialog, setOpenDialog] = useState(false)
-  const [openStudentDialog, setOpenStudentDialog] = useState(false)
-  const [loading, setLoading] = useState(false)
+  const theme = useTheme();
+  const router = useRouter();
+  const [exams, setExams] = useState(mockExams);
+  const [students, setStudents] = useState(mockStudents);
+  const [subjects, setSubjects] = useState(mockSubjects);
+  const [selectedExam, setSelectedExam] = useState<any>(mockExams[0]); // Default to the first exam
+  const [selectedClass, setSelectedClass] = useState<string>("One");
+  const [selectedStudent, setSelectedStudent] = useState<any>(null);
+  const [openDialog, setOpenDialog] = useState(false);
+  const [openStudentDialog, setOpenStudentDialog] = useState(false);
+  const [loading, setLoading] = useState(false);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
     severity: "success" as "success" | "error",
-  })
+  });
 
   // Form state for marks
-  const [marksFormData, setMarksFormData] = useState<any>({})
+  const [marksFormData, setMarksFormData] = useState<any>({});
 
   const handleExamChange = (event: React.SyntheticEvent, newValue: number) => {
-    const exam = exams.find((e) => e.id === newValue)
-    setSelectedExam(exam)
-  }
+    const exam = exams.find((e) => e.id === newValue);
+    setSelectedExam(exam);
+  };
 
   const handleClassChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSelectedClass(event.target.value)
-  }
+    setSelectedClass(event.target.value);
+  };
 
   const handleOpenDialog = (student?: any) => {
     if (student) {
-      setSelectedStudent(student)
+      setSelectedStudent(student);
 
       // Initialize form data with current marks
-      const initialMarks: any = {}
+      const initialMarks: any = {};
       subjects.forEach((subject) => {
-        const result = student.results[selectedExam.id]?.[subject.name]
-        initialMarks[subject.name] = result ? result.marks : ""
-      })
+        const result = student.results[selectedExam.id]?.[subject.name];
+        initialMarks[subject.name] = result ? result.marks : "";
+      });
 
-      setMarksFormData(initialMarks)
+      setMarksFormData(initialMarks);
     } else {
-      setSelectedStudent(null)
-      setMarksFormData({})
+      setSelectedStudent(null);
+      setMarksFormData({});
     }
-    setOpenDialog(true)
-  }
+    setOpenDialog(true);
+  };
 
   const handleCloseDialog = () => {
-    setOpenDialog(false)
-  }
+    setOpenDialog(false);
+  };
 
   const handleOpenStudentDialog = (student: any) => {
-    setSelectedStudent(student)
-    setOpenStudentDialog(true)
-  }
+    setSelectedStudent(student);
+    setOpenStudentDialog(true);
+  };
 
   const handleCloseStudentDialog = () => {
-    setOpenStudentDialog(false)
-  }
+    setOpenStudentDialog(false);
+  };
 
-  const handleMarksChange = (e: React.ChangeEvent<HTMLInputElement>, subject: string) => {
-    const { value } = e.target
+  const handleMarksChange = (
+    e: React.ChangeEvent<HTMLInputElement>,
+    subject: string
+  ) => {
+    const { value } = e.target;
     setMarksFormData({
       ...marksFormData,
       [subject]: value,
-    })
-  }
+    });
+  };
 
   const handleSubmitMarks = () => {
-    setLoading(true)
+    setLoading(true);
     setTimeout(() => {
       // Update student results
       const updatedStudents = students.map((student) => {
         if (student.id === selectedStudent.id) {
           // Create a new results object if it doesn't exist
           // const currentResults = student.results[selectedExam.id] || {}
-          const newResults: any = {}
+          const newResults: any = {};
 
           // Update marks and calculate grades for each subject
           Object.keys(marksFormData).forEach((subject) => {
-            const subjectInfo = subjects.find((s) => s.name === subject)
-            const marks = Number(marksFormData[subject])
+            const subjectInfo = subjects.find((s) => s.name === subject);
+            const marks = Number(marksFormData[subject]);
 
-            let grade = "F"
-            let remarks = "Fail"
+            let grade = "F";
+            let remarks = "Fail";
 
             if (marks >= 90) {
-              grade = "A+"
-              remarks = "Excellent"
+              grade = "A+";
+              remarks = "Excellent";
             } else if (marks >= 80) {
-              grade = "A"
-              remarks = "Very Good"
+              grade = "A";
+              remarks = "Very Good";
             } else if (marks >= 70) {
-              grade = "B+"
-              remarks = "Good"
+              grade = "B+";
+              remarks = "Good";
             } else if (marks >= 60) {
-              grade = "B"
-              remarks = "Satisfactory"
+              grade = "B";
+              remarks = "Satisfactory";
             } else if (marks >= 50) {
-              grade = "C"
-              remarks = "Average"
+              grade = "C";
+              remarks = "Average";
             } else if (marks >= 40) {
-              grade = "D"
-              remarks = "Below Average"
+              grade = "D";
+              remarks = "Below Average";
             }
 
             newResults[subject] = {
               marks,
               grade,
               remarks,
-            }
-          })
+            };
+          });
 
           return {
             ...student,
@@ -344,71 +387,85 @@ const ExamResultsPage = () => {
                 ...newResults,
               },
             },
-          }
+          };
         }
-        return student
-      })
+        return student;
+      });
 
-      setStudents(updatedStudents)
+      setStudents(updatedStudents);
       setSnackbar({
         open: true,
         message: "Marks updated successfully!",
         severity: "success",
-      })
-      setLoading(false)
-      handleCloseDialog()
-    }, 1000)
-  }
+      });
+      setLoading(false);
+      handleCloseDialog();
+    }, 1000);
+  };
 
   const handleCloseSnackbar = () => {
     setSnackbar({
       ...snackbar,
       open: false,
-    })
-  }
+    });
+  };
 
-  const filteredStudents = students.filter((student) => student.class === selectedClass)
+  const filteredStudents = students.filter(
+    (student) => student.class === selectedClass
+  );
 
   // Calculate student statistics
   const calculateStats = (student: any) => {
-    if (!student.results[selectedExam.id]) return { total: 0, obtained: 0, percentage: 0, grade: "N/A" }
+    if (!student.results[selectedExam.id])
+      return { total: 0, obtained: 0, percentage: 0, grade: "N/A" };
 
-    const results = student.results[selectedExam.id]
-    let totalMarks = 0
-    let obtainedMarks = 0
-    let subjectCount = 0
+    const results = student.results[selectedExam.id];
+    let totalMarks = 0;
+    let obtainedMarks = 0;
+    let subjectCount = 0;
 
     subjects.forEach((subject) => {
       if (results[subject.name]) {
-        totalMarks += subject.fullMarks
-        obtainedMarks += results[subject.name].marks
-        subjectCount++
+        totalMarks += subject.fullMarks;
+        obtainedMarks += results[subject.name].marks;
+        subjectCount++;
       }
-    })
+    });
 
-    const percentage = subjectCount > 0 ? (obtainedMarks / totalMarks) * 100 : 0
+    const percentage =
+      subjectCount > 0 ? (obtainedMarks / totalMarks) * 100 : 0;
 
-    let grade = "F"
-    if (percentage >= 90) grade = "A+"
-    else if (percentage >= 80) grade = "A"
-    else if (percentage >= 70) grade = "B+"
-    else if (percentage >= 60) grade = "B"
-    else if (percentage >= 50) grade = "C"
-    else if (percentage >= 40) grade = "D"
+    let grade = "F";
+    if (percentage >= 90) grade = "A+";
+    else if (percentage >= 80) grade = "A";
+    else if (percentage >= 70) grade = "B+";
+    else if (percentage >= 60) grade = "B";
+    else if (percentage >= 50) grade = "C";
+    else if (percentage >= 40) grade = "D";
 
     return {
       total: totalMarks,
       obtained: obtainedMarks,
       percentage: percentage.toFixed(2),
       grade,
-    }
-  }
+    };
+  };
 
   return (
     <Box sx={{ p: 3 }}>
-      <Box sx={{ display: "flex", justifyContent: "space-between", mb: 4, alignItems: "center" }}>
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "space-between",
+          mb: 4,
+          alignItems: "center",
+        }}
+      >
         <Box sx={{ display: "flex", alignItems: "center" }}>
-          <IconButton onClick={() => router.push("/dashboard/admin/exams")} sx={{ mr: 2, bgcolor: "rgba(0,0,0,0.04)" }}>
+          <IconButton
+            onClick={() => router.push("/dashboard/admin/exams")}
+            sx={{ mr: 2, bgcolor: "rgba(0,0,0,0.04)" }}
+          >
             <ArrowBackIcon />
           </IconButton>
           <Typography variant="h4" component="h1" sx={{ fontWeight: 600 }}>
@@ -416,7 +473,12 @@ const ExamResultsPage = () => {
           </Typography>
         </Box>
         <Box sx={{ display: "flex", gap: 2 }}>
-          <Button variant="outlined" startIcon={<PrintIcon />} sx={{ borderRadius: 2 }} onClick={() => window.print()}>
+          <Button
+            variant="outlined"
+            startIcon={<PrintIcon />}
+            sx={{ borderRadius: 2 }}
+            onClick={() => window.print()}
+          >
             Print
           </Button>
           <Button
@@ -451,18 +513,28 @@ const ExamResultsPage = () => {
               <Tab
                 key={exam.id}
                 label={
-                  <Box sx={{ display: "flex", alignItems: "center", flexDirection: "column" }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      flexDirection: "column",
+                    }}
+                  >
                     <Typography variant="body1" sx={{ fontWeight: 500 }}>
                       {exam.name}
                     </Typography>
-                    <Box sx={{ display: "flex", alignItems: "center", mt: 0.5 }}>
+                    <Box
+                      sx={{ display: "flex", alignItems: "center", mt: 0.5 }}
+                    >
                       <Typography variant="caption" color="text.secondary">
                         {exam.startDate} - {exam.endDate}
                       </Typography>
                       <Chip
                         label={exam.status}
                         size="small"
-                        color={exam.status === "Completed" ? "success" : "primary"}
+                        color={
+                          exam.status === "Completed" ? "success" : "primary"
+                        }
                         sx={{ ml: 1, height: 20 }}
                       />
                     </Box>
@@ -479,7 +551,11 @@ const ExamResultsPage = () => {
           <Grid item xs={12} md={4}>
             <FormControl fullWidth size="small">
               <InputLabel id="class-select-label">Class</InputLabel>
-              <Select labelId="class-select-label" value={selectedClass} label="Class">
+              <Select
+                labelId="class-select-label"
+                value={selectedClass}
+                label="Class"
+              >
                 {availableClasses.map((cls) => (
                   <MenuItem key={cls} value={cls}>
                     {cls}
@@ -494,7 +570,12 @@ const ExamResultsPage = () => {
                 placeholder="Search student..."
                 size="small"
                 InputProps={{
-                  startAdornment: <SearchIcon fontSize="small" sx={{ mr: 1, color: "text.secondary" }} />,
+                  startAdornment: (
+                    <SearchIcon
+                      fontSize="small"
+                      sx={{ mr: 1, color: "text.secondary" }}
+                    />
+                  ),
                 }}
                 sx={{ width: 250 }}
               />
@@ -515,7 +596,7 @@ const ExamResultsPage = () => {
         ) : (
           <Grid container spacing={3}>
             {filteredStudents.map((student) => {
-              const stats = calculateStats(student)
+              const stats = calculateStats(student);
               return (
                 <Grid item xs={12} md={4} key={student.id}>
                   <Card
@@ -530,8 +611,14 @@ const ExamResultsPage = () => {
                     }}
                   >
                     <CardContent>
-                      <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-                        <Avatar src={student.photo} alt={student.name} sx={{ width: 60, height: 60, mr: 2 }} />
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", mb: 2 }}
+                      >
+                        <Avatar
+                          src={student.photo}
+                          alt={student.name}
+                          sx={{ width: 60, height: 60, mr: 2 }}
+                        />
                         <Box>
                           <Typography variant="h6" sx={{ fontWeight: 600 }}>
                             {student.name}
@@ -582,14 +669,25 @@ const ExamResultsPage = () => {
                             Status:
                           </Typography>
                           <Chip
-                            label={Number(stats.percentage) >= 40 ? "Pass" : "Fail"}
+                            label={
+                              Number(stats.percentage) >= 40 ? "Pass" : "Fail"
+                            }
                             size="small"
-                            color={Number(stats.percentage) >= 40 ? "success" : "error"}
+                            color={
+                              Number(stats.percentage) >= 40
+                                ? "success"
+                                : "error"
+                            }
                           />
                         </Grid>
                       </Grid>
 
-                      <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                      <Box
+                        sx={{
+                          display: "flex",
+                          justifyContent: "space-between",
+                        }}
+                      >
                         <Button
                           variant="outlined"
                           size="small"
@@ -612,14 +710,19 @@ const ExamResultsPage = () => {
                     </CardContent>
                   </Card>
                 </Grid>
-              )
+              );
             })}
           </Grid>
         )}
       </Paper>
 
       {/* Edit Marks Dialog */}
-      <Dialog open={openDialog} onClose={handleCloseDialog} maxWidth="md" fullWidth>
+      <Dialog
+        open={openDialog}
+        onClose={handleCloseDialog}
+        maxWidth="md"
+        fullWidth
+      >
         <DialogTitle sx={{ pb: 1 }}>
           <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
             Edit Marks for {selectedStudent?.name}
@@ -630,7 +733,11 @@ const ExamResultsPage = () => {
         </DialogTitle>
         <Divider />
         <DialogContent sx={{ pt: 3 }}>
-          <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 2 }}>
+          <TableContainer
+            component={Paper}
+            elevation={0}
+            sx={{ borderRadius: 2 }}
+          >
             <Table>
               <TableHead>
                 <TableRow>
@@ -651,7 +758,9 @@ const ExamResultsPage = () => {
                         type="number"
                         size="small"
                         value={marksFormData[subject.name] || ""}
-                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleMarksChange(e, subject.name)}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                          handleMarksChange(e, subject.name)
+                        }
                         inputProps={{ min: 0, max: subject.fullMarks }}
                         sx={{ width: 100 }}
                       />
@@ -663,7 +772,11 @@ const ExamResultsPage = () => {
           </TableContainer>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3 }}>
-          <Button onClick={handleCloseDialog} variant="outlined" color="inherit">
+          <Button
+            onClick={handleCloseDialog}
+            variant="outlined"
+            color="inherit"
+          >
             Cancel
           </Button>
           <Button
@@ -671,7 +784,9 @@ const ExamResultsPage = () => {
             variant="contained"
             color="primary"
             disabled={loading}
-            startIcon={loading && <CircularProgress size={20} color="inherit" />}
+            startIcon={
+              loading && <CircularProgress size={20} color="inherit" />
+            }
           >
             {loading ? "Saving..." : "Save Marks"}
           </Button>
@@ -679,16 +794,26 @@ const ExamResultsPage = () => {
       </Dialog>
 
       {/* Student Result Details Dialog */}
-      <Dialog open={openStudentDialog} onClose={handleCloseStudentDialog} maxWidth="md" fullWidth>
+      <Dialog
+        open={openStudentDialog}
+        onClose={handleCloseStudentDialog}
+        maxWidth="md"
+        fullWidth
+      >
         <DialogTitle sx={{ pb: 1 }}>
           <Box sx={{ display: "flex", alignItems: "center" }}>
-            <Avatar src={selectedStudent?.photo} alt={selectedStudent?.name} sx={{ width: 50, height: 50, mr: 2 }} />
+            <Avatar
+              src={selectedStudent?.photo}
+              alt={selectedStudent?.name}
+              sx={{ width: 50, height: 50, mr: 2 }}
+            />
             <Box>
               <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
                 {selectedStudent?.name} - Result Card
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                {selectedExam?.name} | Class: {selectedStudent?.class} | Roll No: {selectedStudent?.rollNo}
+                {selectedExam?.name} | Class: {selectedStudent?.class} | Roll
+                No: {selectedStudent?.rollNo}
               </Typography>
             </Box>
           </Box>
@@ -720,9 +845,17 @@ const ExamResultsPage = () => {
                     Result Status
                   </Typography>
                   <Chip
-                    label={Number(calculateStats(selectedStudent).percentage) >= 40 ? "Pass" : "Fail"}
+                    label={
+                      Number(calculateStats(selectedStudent).percentage) >= 40
+                        ? "Pass"
+                        : "Fail"
+                    }
                     size="small"
-                    color={Number(calculateStats(selectedStudent).percentage) >= 40 ? "success" : "error"}
+                    color={
+                      Number(calculateStats(selectedStudent).percentage) >= 40
+                        ? "success"
+                        : "error"
+                    }
                   />
                 </Box>
                 <Box>
@@ -743,25 +876,33 @@ const ExamResultsPage = () => {
                 </Box>
               </Box>
 
-              <TableContainer component={Paper} elevation={0} sx={{ borderRadius: 2, mb: 3 }}>
+              <TableContainer
+                component={Paper}
+                elevation={0}
+                sx={{ borderRadius: 2, mb: 3 }}
+              >
                 <Table>
                   <TableHead>
                     <TableRow>
                       <TableCell sx={{ fontWeight: 600 }}>Subject</TableCell>
                       <TableCell sx={{ fontWeight: 600 }}>Full Marks</TableCell>
                       <TableCell sx={{ fontWeight: 600 }}>Pass Marks</TableCell>
-                      <TableCell sx={{ fontWeight: 600 }}>Obtained Marks</TableCell>
+                      <TableCell sx={{ fontWeight: 600 }}>
+                        Obtained Marks
+                      </TableCell>
                       <TableCell sx={{ fontWeight: 600 }}>Grade</TableCell>
                       <TableCell sx={{ fontWeight: 600 }}>Remarks</TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
                     {subjects.map((subject) => {
-                      const result = selectedStudent.results[selectedExam.id]?.[subject.name] || {
+                      const result = selectedStudent.results[selectedExam.id]?.[
+                        subject.name
+                      ] || {
                         marks: "-",
                         grade: "-",
                         remarks: "-",
-                      }
+                      };
                       return (
                         <TableRow key={subject.id}>
                           <TableCell>{subject.name}</TableCell>
@@ -783,7 +924,7 @@ const ExamResultsPage = () => {
                           </TableCell>
                           <TableCell>{result.remarks}</TableCell>
                         </TableRow>
-                      )
+                      );
                     })}
                   </TableBody>
                 </Table>
@@ -795,7 +936,8 @@ const ExamResultsPage = () => {
                     Total Marks
                   </Typography>
                   <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                    {calculateStats(selectedStudent).obtained} / {calculateStats(selectedStudent).total}
+                    {calculateStats(selectedStudent).obtained} /{" "}
+                    {calculateStats(selectedStudent).total}
                   </Typography>
                 </Box>
                 <Box sx={{ textAlign: "right" }}>
@@ -807,7 +949,8 @@ const ExamResultsPage = () => {
                       ? "Excellent performance! Keep up the good work."
                       : Number(calculateStats(selectedStudent).percentage) >= 60
                         ? "Good performance. Continue to work hard."
-                        : Number(calculateStats(selectedStudent).percentage) >= 40
+                        : Number(calculateStats(selectedStudent).percentage) >=
+                            40
                           ? "Satisfactory performance. Need to improve in some subjects."
                           : "Needs significant improvement. Please focus on studies."}
                   </Typography>
@@ -817,16 +960,25 @@ const ExamResultsPage = () => {
           )}
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3 }}>
-          <Button onClick={() => window.print()} variant="outlined" startIcon={<PrintIcon />} sx={{ mr: "auto" }}>
+          <Button
+            onClick={() => window.print()}
+            variant="outlined"
+            startIcon={<PrintIcon />}
+            sx={{ mr: "auto" }}
+          >
             Print Result
           </Button>
-          <Button onClick={handleCloseStudentDialog} variant="outlined" color="inherit">
+          <Button
+            onClick={handleCloseStudentDialog}
+            variant="outlined"
+            color="inherit"
+          >
             Close
           </Button>
           <Button
             onClick={() => {
-              handleCloseStudentDialog()
-              handleOpenDialog(selectedStudent)
+              handleCloseStudentDialog();
+              handleOpenDialog(selectedStudent);
             }}
             variant="contained"
             color="primary"
@@ -844,12 +996,16 @@ const ExamResultsPage = () => {
         onClose={handleCloseSnackbar}
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       >
-        <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: "100%" }}>
+        <Alert
+          onClose={handleCloseSnackbar}
+          severity={snackbar.severity}
+          sx={{ width: "100%" }}
+        >
           {snackbar.message}
         </Alert>
       </Snackbar>
     </Box>
-  )
-}
+  );
+};
 
-export default ExamResultsPage
+export default ExamResultsPage;

@@ -11,12 +11,7 @@ import CraftForm from "@/components/Forms/Form";
 import CraftSelect from "@/components/Forms/Select";
 import { customTheme } from "@/data";
 import { useAcademicOption } from "@/hooks/useAcademicOption";
-import {
-  classHour,
-  handWritting,
-  lessonEvaluation,
-  subjectName,
-} from "@/options";
+import { classHour, handWritting, lessonEvaluation } from "@/options";
 import {
   useCreateClassReportMutation,
   useGetSingleClassReportQuery,
@@ -24,7 +19,6 @@ import {
 } from "@/redux/api/classReportApi";
 import { useGetAllStudentsQuery } from "@/redux/api/studentApi";
 import { boxStyleReport } from "@/style/customeStyle";
-import { getFromLocalStorage } from "@/utils/local.storage";
 import {
   Add,
   Delete as DeleteIcon,
@@ -74,7 +68,6 @@ import toast from "react-hot-toast";
 import TodayLesson from "./TodayLesson";
 import TodayTask from "./TodayTask";
 
-// Define a type for student evaluation
 type StudentEvaluation = {
   studentId: string;
   lessonEvaluation: string;

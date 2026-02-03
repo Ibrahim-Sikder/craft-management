@@ -1,69 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useEffect } from "react"
+import type { Teacher, TeacherStatus } from "@/interface";
 import {
-  Box,
-  Container,
-  Typography,
-  Paper,
-  Grid,
-  CardContent,
-  CardMedia,
-  CardActions,
-  Avatar,
-  Button,
-  IconButton,
-  InputAdornment,
-  Tab,
-  Tabs,
-  Menu,
-  MenuItem,
-  Divider,
-  Rating,
-  LinearProgress,
-  Tooltip,
-  useTheme,
-  alpha,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  DialogContentText,
-  Snackbar,
-  Alert,
-} from "@mui/material"
-import {
-  Search as SearchIcon,
-  ViewModule as GridViewIcon,
-  ViewList as ListViewIcon,
-  ViewKanban as KanbanViewIcon,
-  Add as AddIcon,
-  MoreVert as MoreVertIcon,
-  Download as DownloadIcon,
-  Print as PrintIcon,
-  Mail as MailIcon,
-  Phone as PhoneIcon,
-  School as SchoolIcon,
-  Work as WorkIcon,
-  Group as GroupIcon,
-  CheckCircle as CheckCircleIcon,
-  Cancel as CancelIcon,
-  ArrowUpward as ArrowUpwardIcon,
-  ArrowDownward as ArrowDownwardIcon,
-  Sort as SortIcon,
-  Refresh as RefreshIcon,
-  Visibility,
-  Edit,
-  Delete,
-} from "@mui/icons-material"
-import { motion } from "framer-motion"
-import { useDeleteTeacherMutation, useGetAllTeachersQuery } from "@/redux/api/teacherApi"
-import type { Teacher, TeacherStatus } from "@/interface"
-import Link from "next/link"
+  useDeleteTeacherMutation,
+  useGetAllTeachersQuery,
+} from "@/redux/api/teacherApi";
 import {
   DepartmentChip,
   GradientHeader,
@@ -72,9 +17,63 @@ import {
   StatusChip,
   StyledBadge,
   StyledCard,
-} from "@/style/customeStyle"
-import { useRouter } from "next/navigation"
-import Swal from "sweetalert2"
+} from "@/style/customeStyle";
+import {
+  Add as AddIcon,
+  ArrowDownward as ArrowDownwardIcon,
+  ArrowUpward as ArrowUpwardIcon,
+  Cancel as CancelIcon,
+  CheckCircle as CheckCircleIcon,
+  Delete,
+  Download as DownloadIcon,
+  Edit,
+  Mail as MailIcon,
+  MoreVert as MoreVertIcon,
+  Phone,
+  Print as PrintIcon,
+  Refresh as RefreshIcon,
+  School as SchoolIcon,
+  Search as SearchIcon,
+  Sort as SortIcon,
+  Visibility,
+  Work as WorkIcon,
+} from "@mui/icons-material";
+import {
+  Alert,
+  alpha,
+  Avatar,
+  Box,
+  Button,
+  CardActions,
+  CardContent,
+  CardMedia,
+  Container,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+  Divider,
+  Grid,
+  IconButton,
+  InputAdornment,
+  LinearProgress,
+  Menu,
+  MenuItem,
+  Paper,
+  Rating,
+  Snackbar,
+  Tab,
+  Tabs,
+  Tooltip,
+  Typography,
+  useTheme,
+} from "@mui/material";
+import { motion } from "framer-motion";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import Swal from "sweetalert2";
 
 const departmentColors: Record<string, string> = {
   Languages: "#3a7bd5",
@@ -86,46 +85,49 @@ const departmentColors: Record<string, string> = {
   Art: "#c471ed",
   Music: "#12c2e9",
   "Not Specified": "#888888",
-}
+};
 
 const departmentsList = [
   "Languages",
   "Mathematics",
   "Science",
-  "History", 
-  "Computer Science", 
-  "Physical Education", 
-  "Art", 
+  "History",
+  "Computer Science",
+  "Physical Education",
+  "Art",
   "Music",
-  "Not Specified"
-]
+  "Not Specified",
+];
 
 export default function TeacherList() {
-  const theme = useTheme()
-  const router = useRouter()
-  const [teachers, setTeachers] = useState<Teacher[]>([])
-  const [searchQuery, setSearchQuery] = useState("")
-  const [tabValue, setTabValue] = useState(0)
-  const [sortBy, setSortBy] = useState<"name" | "department" | "experience" | "rating" | "performance">("name")
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc")
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
-  const [filterDepartment, setFilterDepartment] = useState("all")
-  const [teacherMenuAnchorEl, setTeacherMenuAnchorEl] = useState<null | HTMLElement>(null)
-  const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null)
-  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false)
-  const [page, setPage] = useState(0)
-  const [rowsPerPage, setRowsPerPage] = useState(30)
-  const [searchTerm, setSearchTerm] = useState("")
+  const theme = useTheme();
+  const router = useRouter();
+  const [teachers, setTeachers] = useState<Teacher[]>([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [tabValue, setTabValue] = useState(0);
+  const [sortBy, setSortBy] = useState<
+    "name" | "department" | "experience" | "rating" | "performance"
+  >("name");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [filterDepartment, setFilterDepartment] = useState("all");
+  const [teacherMenuAnchorEl, setTeacherMenuAnchorEl] =
+    useState<null | HTMLElement>(null);
+  const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(30);
+  const [searchTerm, setSearchTerm] = useState("");
 
   const [snackbar, setSnackbar] = useState<{
-    open: boolean
-    message: string
-    severity: "success" | "error" | "info" | "warning"
+    open: boolean;
+    message: string;
+    severity: "success" | "error" | "info" | "warning";
   }>({
     open: false,
     message: "",
     severity: "success",
-  })
+  });
 
   const {
     data: teacherData,
@@ -135,102 +137,117 @@ export default function TeacherList() {
     limit: rowsPerPage,
     page: page + 1,
     searchTerm: searchTerm,
-  })
+  });
 
-  const [deleteTeacher] = useDeleteTeacherMutation()
+  const [deleteTeacher] = useDeleteTeacherMutation();
 
   useEffect(() => {
     if (teacherData && teacherData.data && !isLoading) {
-      const formattedTeachers = teacherData.data.map((teacher: any, index: number) => {
-        let department = "Not Specified"
-        if (teacher.department) {
-          department = teacher.department
-        } else if (teacher.professionalInfo?.department) {
-          department = teacher.professionalInfo.department
-        }
+      const formattedTeachers = teacherData.data.map(
+        (teacher: any, index: number) => {
+          let department = "Not Specified";
+          if (teacher.department) {
+            department = teacher.department;
+          } else if (teacher.professionalInfo?.department) {
+            department = teacher.professionalInfo.department;
+          }
 
-        const teacherName = teacher.englishName || teacher.name || "Unknown"
-      
-        const status = (teacher.status?.toLowerCase() === "active" || 
-                      teacher.additionalInfo?.status?.toLowerCase() === "active") 
-                      ? "Active" as TeacherStatus 
-                      : "Inactive" as TeacherStatus
-        const experience = calculateExperience(teacher.joiningDate || teacher.professionalInfo?.joiningDate)
-        
-        return {
-          id: index + 1,
-          _id: teacher._id,
-          name: teacherName,
-          teacherPhoto: teacher.teacherPhoto || "",
-          department: department,
-          status: status,
-          email: teacher.email || "Not Available",
-          phone: teacher.phone || "Not Available",
-          subjects: [],
-          classes: [],
-          experience: experience,
-          rating: "4.5",
-          performance: 85,
-          students: 120, 
-          joinDate: new Date(teacher.joiningDate || teacher.professionalInfo?.joiningDate || teacher.createdAt).toLocaleDateString(),
-          qualifications: teacher.designation || teacher.professionalInfo?.designation || "Teacher",
-          teacherId: teacher.teacherId || "",
-        }
-      })
+          const teacherName = teacher.englishName || teacher.name || "Unknown";
 
-      setTeachers(formattedTeachers)
+          const status =
+            teacher.status?.toLowerCase() === "active" ||
+            teacher.additionalInfo?.status?.toLowerCase() === "active"
+              ? ("Active" as TeacherStatus)
+              : ("Inactive" as TeacherStatus);
+          const experience = calculateExperience(
+            teacher.joiningDate || teacher.professionalInfo?.joiningDate
+          );
+
+          return {
+            id: index + 1,
+            _id: teacher._id,
+            name: teacherName,
+            teacherPhoto: teacher.teacherPhoto || "",
+            department: department,
+            status: status,
+            email: teacher.email || "Not Available",
+            phone: teacher.phone || "Not Available",
+            subjects: [],
+            classes: [],
+            experience: experience,
+            rating: "4.5",
+            performance: 85,
+            students: 120,
+            joinDate: new Date(
+              teacher.joiningDate ||
+                teacher.professionalInfo?.joiningDate ||
+                teacher.createdAt
+            ).toLocaleDateString(),
+            qualifications:
+              teacher.designation ||
+              teacher.professionalInfo?.designation ||
+              "Teacher",
+            teacherId: teacher.teacherId || "",
+          };
+        }
+      );
+
+      setTeachers(formattedTeachers);
     }
-  }, [teacherData, isLoading])
+  }, [teacherData, isLoading]);
 
   const calculateExperience = (joiningDate: string | undefined) => {
-    if (!joiningDate) return 0
-    const joinDate = new Date(joiningDate)
-    const now = new Date()
-    const yearsDiff = Math.floor((now.getTime() - joinDate.getTime()) / (365 * 24 * 60 * 60 * 1000))
-    return yearsDiff >= 0 ? yearsDiff : 0 
-  }
+    if (!joiningDate) return 0;
+    const joinDate = new Date(joiningDate);
+    const now = new Date();
+    const yearsDiff = Math.floor(
+      (now.getTime() - joinDate.getTime()) / (365 * 24 * 60 * 60 * 1000)
+    );
+    return yearsDiff >= 0 ? yearsDiff : 0;
+  };
 
-
-  const handleTeacherMenuOpen = (event: React.MouseEvent<HTMLElement>, teacher: Teacher) => {
-    setTeacherMenuAnchorEl(event.currentTarget)
-    setSelectedTeacher(teacher)
-  }
+  const handleTeacherMenuOpen = (
+    event: React.MouseEvent<HTMLElement>,
+    teacher: Teacher
+  ) => {
+    setTeacherMenuAnchorEl(event.currentTarget);
+    setSelectedTeacher(teacher);
+  };
 
   const handleTeacherMenuClose = () => {
-    setTeacherMenuAnchorEl(null)
-  }
+    setTeacherMenuAnchorEl(null);
+  };
 
   const handleSortClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget)
-  }
+    setAnchorEl(event.currentTarget);
+  };
 
   const handleSortClose = () => {
-    setAnchorEl(null)
-  }
+    setAnchorEl(null);
+  };
 
   const handleViewTeacher = (teacher: Teacher) => {
-    router.push(`/dashboard/teacher/profile/${teacher._id}`)
-    handleTeacherMenuClose()
-  }
+    router.push(`/dashboard/teacher/profile/${teacher._id}`);
+    handleTeacherMenuClose();
+  };
 
   const handleEditTeacher = (teacher: Teacher) => {
-    router.push(`/dashboard/teacher/update/${teacher._id}`)
-    handleTeacherMenuClose()
-  }
+    router.push(`/dashboard/teacher/update/${teacher._id}`);
+    handleTeacherMenuClose();
+  };
 
   const handleDeleteConfirm = (teacher: Teacher) => {
-    setSelectedTeacher(teacher)
-    setDeleteConfirmOpen(true)
-    handleTeacherMenuClose()
-  }
+    setSelectedTeacher(teacher);
+    setDeleteConfirmOpen(true);
+    handleTeacherMenuClose();
+  };
 
   const handleDeleteTeacher = async () => {
-    if (!selectedTeacher) return
-    handleTeacherMenuClose()
-    setDeleteConfirmOpen(false)
+    if (!selectedTeacher) return;
+    handleTeacherMenuClose();
+    setDeleteConfirmOpen(false);
 
     try {
-
       const result = await Swal.fire({
         title: "Are you sure?",
         text: `You want to delete ${selectedTeacher.name}?`,
@@ -238,51 +255,51 @@ export default function TeacherList() {
         showCancelButton: true,
         confirmButtonColor: "#3085d6",
         cancelButtonColor: "#d33",
-        confirmButtonText: "Yes, delete it!"
-      })
+        confirmButtonText: "Yes, delete it!",
+      });
 
       if (result.isConfirmed) {
-        await deleteTeacher(selectedTeacher._id).unwrap()
-        
+        await deleteTeacher(selectedTeacher._id).unwrap();
+
         Swal.fire({
           title: "Deleted!",
           text: `${selectedTeacher.name} has been deleted successfully.`,
-          icon: "success"
-        })
-        
-        refetch()
+          icon: "success",
+        });
+
+        refetch();
       }
     } catch (err: any) {
       Swal.fire({
         title: "Error!",
         text: err.data?.message || "Failed to delete teacher",
-        icon: "error"
-      })
+        icon: "error",
+      });
     }
-  }
+  };
 
   const handleCloseSnackbar = () => {
-    setSnackbar({ ...snackbar, open: false })
-  }
+    setSnackbar({ ...snackbar, open: false });
+  };
 
   const handleSortChange = (field: typeof sortBy) => {
     if (sortBy === field) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc")
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
-      setSortBy(field)
-      setSortDirection("asc")
+      setSortBy(field);
+      setSortDirection("asc");
     }
-    handleSortClose()
-  }
+    handleSortClose();
+  };
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue)
-    setFilterDepartment(newValue === 0 ? "all" : departmentsList[newValue - 1])
-  }
+    setTabValue(newValue);
+    setFilterDepartment(newValue === 0 ? "all" : departmentsList[newValue - 1]);
+  };
 
   const handleRefresh = () => {
-    refetch()
-  }
+    refetch();
+  };
 
   const filteredTeachers = teachers
     .filter(
@@ -290,19 +307,28 @@ export default function TeacherList() {
         (searchQuery === "" ||
           teacher.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           teacher.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          teacher.department.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          (teacher.teacherId && teacher.teacherId.toLowerCase().includes(searchQuery.toLowerCase()))) &&
-        (filterDepartment === "all" || teacher.department === filterDepartment),
+          teacher.department
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase()) ||
+          (teacher.teacherId &&
+            teacher.teacherId
+              .toLowerCase()
+              .includes(searchQuery.toLowerCase()))) &&
+        (filterDepartment === "all" || teacher.department === filterDepartment)
     )
     .sort((a, b) => {
-      let comparison = 0
-      if (sortBy === "name") comparison = a.name.localeCompare(b.name)
-      else if (sortBy === "department") comparison = a.department.localeCompare(b.department)
-      else if (sortBy === "experience") comparison = a.experience - b.experience
-      else if (sortBy === "rating") comparison = Number.parseFloat(a.rating) - Number.parseFloat(b.rating)
-      else if (sortBy === "performance") comparison = a.performance - b.performance
-      return sortDirection === "asc" ? comparison : -comparison
-    })
+      let comparison = 0;
+      if (sortBy === "name") comparison = a.name.localeCompare(b.name);
+      else if (sortBy === "department")
+        comparison = a.department.localeCompare(b.department);
+      else if (sortBy === "experience")
+        comparison = a.experience - b.experience;
+      else if (sortBy === "rating")
+        comparison = Number.parseFloat(a.rating) - Number.parseFloat(b.rating);
+      else if (sortBy === "performance")
+        comparison = a.performance - b.performance;
+      return sortDirection === "asc" ? comparison : -comparison;
+    });
 
   return (
     <Box sx={{ minHeight: "100vh", backgroundColor: "#f8fafc" }}>
@@ -310,17 +336,37 @@ export default function TeacherList() {
         <Container maxWidth="xl" sx={{ p: { xs: "4px" } }}>
           <Grid container spacing={3} alignItems="center">
             <Grid item xs={12} md={6}>
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-                <Typography variant="h3" fontWeight={700} color="white" gutterBottom>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                <Typography
+                  variant="h3"
+                  fontWeight={700}
+                  color="white"
+                  gutterBottom
+                >
                   Teacher Management
                 </Typography>
-                <Typography variant="h6" fontWeight={400} color="white" sx={{ opacity: 0.8 }}>
+                <Typography
+                  variant="h6"
+                  fontWeight={400}
+                  color="white"
+                  sx={{ opacity: 0.8 }}
+                >
                   Manage your teaching staff with our powerful dashboard
                 </Typography>
               </motion.div>
             </Grid>
             <Grid item xs={12} md={6}>
-              <Box sx={{ display: "flex", justifyContent: { xs: "flex-start", md: "flex-end" }, gap: 2 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: { xs: "flex-start", md: "flex-end" },
+                  gap: 2,
+                }}
+              >
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -382,8 +428,8 @@ export default function TeacherList() {
                     placeholder="Search teachers by name, ID, email, or department..."
                     value={searchQuery}
                     onChange={(e: any) => {
-                      setSearchQuery(e.target.value)
-                      setSearchTerm(e.target.value)
+                      setSearchQuery(e.target.value);
+                      setSearchTerm(e.target.value);
                     }}
                     InputProps={{
                       startAdornment: (
@@ -395,16 +441,31 @@ export default function TeacherList() {
                   />
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <Box sx={{ display: "flex", justifyContent: { xs: "flex-start", md: "flex-end" }, gap: 1 }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: { xs: "flex-start", md: "flex-end" },
+                      gap: 1,
+                    }}
+                  >
                     <Tooltip title="Sort options">
                       <IconButton onClick={handleSortClick}>
                         <SortIcon />
                       </IconButton>
                     </Tooltip>
-                    <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleSortClose}>
+                    <Menu
+                      anchorEl={anchorEl}
+                      open={Boolean(anchorEl)}
+                      onClose={handleSortClose}
+                    >
                       <MenuItem onClick={() => handleSortChange("name")}>
                         <Box
-                          sx={{ display: "flex", alignItems: "center", width: "100%", justifyContent: "space-between" }}
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            width: "100%",
+                            justifyContent: "space-between",
+                          }}
                         >
                           <Typography>Name</Typography>
                           {sortBy === "name" &&
@@ -417,7 +478,12 @@ export default function TeacherList() {
                       </MenuItem>
                       <MenuItem onClick={() => handleSortChange("department")}>
                         <Box
-                          sx={{ display: "flex", alignItems: "center", width: "100%", justifyContent: "space-between" }}
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            width: "100%",
+                            justifyContent: "space-between",
+                          }}
                         >
                           <Typography>Department</Typography>
                           {sortBy === "department" &&
@@ -430,7 +496,12 @@ export default function TeacherList() {
                       </MenuItem>
                       <MenuItem onClick={() => handleSortChange("experience")}>
                         <Box
-                          sx={{ display: "flex", alignItems: "center", width: "100%", justifyContent: "space-between" }}
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            width: "100%",
+                            justifyContent: "space-between",
+                          }}
                         >
                           <Typography>Experience</Typography>
                           {sortBy === "experience" &&
@@ -443,7 +514,12 @@ export default function TeacherList() {
                       </MenuItem>
                       <MenuItem onClick={() => handleSortChange("rating")}>
                         <Box
-                          sx={{ display: "flex", alignItems: "center", width: "100%", justifyContent: "space-between" }}
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            width: "100%",
+                            justifyContent: "space-between",
+                          }}
                         >
                           <Typography>Rating</Typography>
                           {sortBy === "rating" &&
@@ -456,7 +532,12 @@ export default function TeacherList() {
                       </MenuItem>
                       <MenuItem onClick={() => handleSortChange("performance")}>
                         <Box
-                          sx={{ display: "flex", alignItems: "center", width: "100%", justifyContent: "space-between" }}
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            width: "100%",
+                            justifyContent: "space-between",
+                          }}
                         >
                           <Typography>Performance</Typography>
                           {sortBy === "performance" &&
@@ -509,7 +590,9 @@ export default function TeacherList() {
                   <Tab
                     key={dept}
                     label={
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
                         <Box
                           sx={{
                             width: 10,
@@ -545,7 +628,9 @@ export default function TeacherList() {
                             component="div"
                             sx={{
                               height: 100,
-                              backgroundColor: departmentColors[teacher.department] || departmentColors["Not Specified"],
+                              backgroundColor:
+                                departmentColors[teacher.department] ||
+                                departmentColors["Not Specified"],
                               position: "relative",
                             }}
                           />
@@ -561,12 +646,19 @@ export default function TeacherList() {
                             {teacher.status === "active" ? (
                               <StyledBadge
                                 overlap="circular"
-                                anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                                anchorOrigin={{
+                                  vertical: "bottom",
+                                  horizontal: "right",
+                                }}
                                 variant="dot"
                               >
                                 <Avatar
                                   src={teacher.teacherPhoto}
-                                  sx={{ width: 80, height: 80, border: "4px solid white" }}
+                                  sx={{
+                                    width: 80,
+                                    height: 80,
+                                    border: "4px solid white",
+                                  }}
                                 >
                                   {teacher.name.charAt(0)}
                                 </Avatar>
@@ -574,7 +666,11 @@ export default function TeacherList() {
                             ) : (
                               <Avatar
                                 src={teacher.teacherPhoto}
-                                sx={{ width: 80, height: 80, border: "4px solid white" }}
+                                sx={{
+                                  width: 80,
+                                  height: 80,
+                                  border: "4px solid white",
+                                }}
                               >
                                 {teacher.name.charAt(0)}
                               </Avatar>
@@ -583,55 +679,124 @@ export default function TeacherList() {
                         </Box>
                         <CardContent sx={{ pt: 5, pb: 2 }}>
                           <Box sx={{ textAlign: "center", mb: 2 }}>
-                            <Typography variant="h6" fontWeight={600} gutterBottom>
+                            <Typography
+                              variant="h6"
+                              fontWeight={600}
+                              gutterBottom
+                            >
                               {teacher.name}
                             </Typography>
-                            <Typography variant="body2" color="text.secondary" gutterBottom>
+                            <Typography
+                              variant="body2"
+                              color="text.secondary"
+                              gutterBottom
+                            >
                               ID: {teacher.teacherId}
                             </Typography>
                             <DepartmentChip
                               label={teacher.department}
                               size="small"
                               sx={{
-                                backgroundColor: alpha(departmentColors[teacher.department] || departmentColors["Not Specified"], 0.1),
-                                color: departmentColors[teacher.department] || departmentColors["Not Specified"],
+                                backgroundColor: alpha(
+                                  departmentColors[teacher.department] ||
+                                    departmentColors["Not Specified"],
+                                  0.1
+                                ),
+                                color:
+                                  departmentColors[teacher.department] ||
+                                  departmentColors["Not Specified"],
                               }}
                             />
                           </Box>
 
                           <Box sx={{ mb: 2 }}>
-                            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                              <SchoolIcon fontSize="small" sx={{ color: "text.secondary", mr: 1 }} />
-                              <Typography variant="body2" color="text.secondary">
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                mb: 1,
+                              }}
+                            >
+                              <SchoolIcon
+                                fontSize="small"
+                                sx={{ color: "text.secondary", mr: 1 }}
+                              />
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                              >
                                 {teacher.qualifications}
                               </Typography>
                             </Box>
-                            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                              <WorkIcon fontSize="small" sx={{ color: "text.secondary", mr: 1 }} />
-                              <Typography variant="body2" color="text.secondary">
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                mb: 1,
+                              }}
+                            >
+                              <WorkIcon
+                                fontSize="small"
+                                sx={{ color: "text.secondary", mr: 1 }}
+                              />
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                              >
                                 {teacher.experience} years experience
                               </Typography>
                             </Box>
-                            <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                              <MailIcon fontSize="small" sx={{ color: "text.secondary", mr: 1 }} />
-                              <Typography variant="body2" color="text.secondary" noWrap>
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                mb: 1,
+                              }}
+                            >
+                              <MailIcon
+                                fontSize="small"
+                                sx={{ color: "text.secondary", mr: 1 }}
+                              />
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                                noWrap
+                              >
                                 {teacher.email}
                               </Typography>
                             </Box>
                             <Box sx={{ display: "flex", alignItems: "center" }}>
-                              <PhoneIcon fontSize="small" sx={{ color: "text.secondary", mr: 1 }} />
-                              <Typography variant="body2" color="text.secondary">
+                              <Phone
+                                fontSize="small"
+                                sx={{ color: "text.secondary", mr: 1 }}
+                              />
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                              >
                                 {teacher.phone}
                               </Typography>
                             </Box>
                           </Box>
 
                           <Box sx={{ mb: 2 }}>
-                            <Typography variant="body2" fontWeight={500} gutterBottom>
+                            <Typography
+                              variant="body2"
+                              fontWeight={500}
+                              gutterBottom
+                            >
                               Performance
                             </Typography>
-                            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                              <PerformanceIndicator value={teacher.performance} />
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 1,
+                              }}
+                            >
+                              <PerformanceIndicator
+                                value={teacher.performance}
+                              />
                               <Typography variant="body2" fontWeight={600}>
                                 {teacher.performance}%
                               </Typography>
@@ -639,9 +804,16 @@ export default function TeacherList() {
                           </Box>
                         </CardContent>
                         <Divider />
-                        <CardActions sx={{ justifyContent: "space-between", px: 2 }}>
+                        <CardActions
+                          sx={{ justifyContent: "space-between", px: 2 }}
+                        >
                           <Box sx={{ display: "flex", alignItems: "center" }}>
-                            <Rating value={Number.parseFloat(teacher.rating)} precision={0.5} size="small" readOnly />
+                            <Rating
+                              value={Number.parseFloat(teacher.rating)}
+                              precision={0.5}
+                              size="small"
+                              readOnly
+                            />
                             <Typography variant="body2" sx={{ ml: 1 }}>
                               {teacher.rating}
                             </Typography>
@@ -673,7 +845,9 @@ export default function TeacherList() {
                               bgcolor: "rgba(255, 255, 255, 0.9)",
                               "&:hover": { bgcolor: "rgba(255, 255, 255, 1)" },
                             }}
-                            onClick={(event) => handleTeacherMenuOpen(event, teacher)}
+                            onClick={(event) =>
+                              handleTeacherMenuOpen(event, teacher)
+                            }
                           >
                             <MoreVertIcon fontSize="small" />
                           </IconButton>
@@ -684,7 +858,14 @@ export default function TeacherList() {
                 ))}
               </Grid>
             ) : (
-              <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "center",
+                  alignItems: "center",
+                  height: "200px",
+                }}
+              >
                 <Typography variant="h6" color="text.secondary">
                   No teachers found matching your search criteria
                 </Typography>
@@ -695,18 +876,28 @@ export default function TeacherList() {
       </Container>
 
       {/* Teacher Action Menu */}
-      <Menu anchorEl={teacherMenuAnchorEl} open={Boolean(teacherMenuAnchorEl)} onClose={handleTeacherMenuClose}>
-        <MenuItem onClick={() => selectedTeacher && handleViewTeacher(selectedTeacher)}>
+      <Menu
+        anchorEl={teacherMenuAnchorEl}
+        open={Boolean(teacherMenuAnchorEl)}
+        onClose={handleTeacherMenuClose}
+      >
+        <MenuItem
+          onClick={() => selectedTeacher && handleViewTeacher(selectedTeacher)}
+        >
           <Visibility fontSize="small" sx={{ mr: 1 }} />
           View Profile
         </MenuItem>
-        <MenuItem onClick={() => selectedTeacher && handleEditTeacher(selectedTeacher)}>
+        <MenuItem
+          onClick={() => selectedTeacher && handleEditTeacher(selectedTeacher)}
+        >
           <Edit fontSize="small" sx={{ mr: 1 }} />
           Edit
         </MenuItem>
         <Divider />
         <MenuItem
-          onClick={() => selectedTeacher && handleDeleteConfirm(selectedTeacher)}
+          onClick={() =>
+            selectedTeacher && handleDeleteConfirm(selectedTeacher)
+          }
           sx={{ color: theme.palette.error.main }}
         >
           <Delete fontSize="small" sx={{ mr: 1 }} />
@@ -722,12 +913,17 @@ export default function TeacherList() {
         <DialogTitle>Delete Teacher</DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete {selectedTeacher?.name}? This action cannot be undone.
+            Are you sure you want to delete {selectedTeacher?.name}? This action
+            cannot be undone.
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setDeleteConfirmOpen(false)}>Cancel</Button>
-          <Button onClick={handleDeleteTeacher} color="error" variant="contained">
+          <Button
+            onClick={handleDeleteTeacher}
+            color="error"
+            variant="contained"
+          >
             Delete
           </Button>
         </DialogActions>
@@ -738,16 +934,16 @@ export default function TeacherList() {
         open={snackbar.open}
         autoHideDuration={6000}
         onClose={handleCloseSnackbar}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       >
         <Alert
           onClose={handleCloseSnackbar}
           severity={snackbar.severity}
-          sx={{ width: '100%' }}
+          sx={{ width: "100%" }}
         >
           {snackbar.message}
         </Alert>
       </Snackbar>
     </Box>
-  )
+  );
 }

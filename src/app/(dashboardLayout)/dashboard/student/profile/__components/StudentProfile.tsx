@@ -7,26 +7,15 @@ import type React from "react";
 import { studentData } from "@/data/data";
 import { useGetSingleStudentQuery } from "@/redux/api/studentApi";
 import {
-  Assignment,
-  AttachFile,
   Book,
   CheckCircle,
-  EmojiEvents,
-  Event,
-  FileDownload,
-  Grade,
   Info,
-  Notifications,
   Payment,
   Person,
-  Print,
   School,
-  Settings,
-  Timeline,
 } from "@mui/icons-material";
 import {
   Box,
-  Button,
   Card,
   CardContent,
   Chip,
@@ -39,18 +28,11 @@ import {
   useTheme,
 } from "@mui/material";
 import { useState } from "react";
-import StudentAchivement from "./StudentAchivement";
-import StudentAnnouncement from "./StudentAnnouncement";
-import StudentDocument from "./StudentDocument";
-import StudentFee from "./StudentFee";
-import StudentHomeWork from "./StudentHomeWork";
-import StudentOverview from "./StudentOverview";
-import StudentResult from "./StudentResult";
-import StudentSubject from "./StudentSubject";
-import StudentTimetable from "./StudentTimetable";
-import { getStatusColor } from "./Utils";
 import PaymentHistory from "./PaymentHistory";
 import ReceiptHistory from "./ReceiptHistory";
+import StudentFee from "./StudentFee";
+import StudentOverview from "./StudentOverview";
+import { getStatusColor } from "./Utils";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -146,7 +128,6 @@ const StudentProfile = ({ params }: PageProps) => {
         </CardContent>
       </Card>
 
-      {/* Quick Stats */}
       <Grid container spacing={3} sx={{ mb: 3 }}>
         <Grid item xs={12} sm={6} md={3}>
           <Paper
@@ -227,7 +208,6 @@ const StudentProfile = ({ params }: PageProps) => {
         </Grid>
       </Grid>
 
-      {/* Main Content Tabs */}
       <Card sx={{ mb: 3 }}>
         <Box sx={{ borderBottom: 1, borderColor: "divider" }}>
           <Tabs
@@ -238,57 +218,29 @@ const StudentProfile = ({ params }: PageProps) => {
             aria-label="student profile tabs"
           >
             <Tab icon={<Info />} label="Overview" />
-            <Tab icon={<Grade />} label="Results" />
-            <Tab icon={<Assignment />} label="Homework" />
-            <Tab icon={<Timeline />} label="Attendance" />
             <Tab icon={<Book />} label="Receipt History" />
-            <Tab icon={<Event />} label="Timetable" />
             <Tab icon={<Payment />} label="Fees" />
             <Tab icon={<Payment />} label="Payment History" />
-            <Tab icon={<Notifications />} label="Announcements" />
-            <Tab icon={<AttachFile />} label="Documents" />
-            <Tab icon={<EmojiEvents />} label="Achievements" />
           </Tabs>
         </Box>
-
-        {/* Overview Tab */}
         <TabPanel value={tabValue} index={0}>
           <StudentOverview student={singleStudent?.data} />
         </TabPanel>
+
         <TabPanel value={tabValue} index={1}>
-          <StudentResult />
-        </TabPanel>
-        <TabPanel value={tabValue} index={2}>
-          <StudentHomeWork />
-        </TabPanel>
-        <TabPanel value={tabValue} index={3}></TabPanel>
-        <TabPanel value={tabValue} index={4}>
           <ReceiptHistory
             studentId={singleStudent?.data?._id}
             studentName={singleStudent?.data?.name}
           />
         </TabPanel>
-
-        <TabPanel value={tabValue} index={5}>
-          <StudentTimetable />
-        </TabPanel>
-        <TabPanel value={tabValue} index={6}>
+        <TabPanel value={tabValue} index={2}>
           <StudentFee
             studentFees={singleStudent?.data?.fees}
             student={singleStudent?.data}
           />
         </TabPanel>
-        <TabPanel value={tabValue} index={7}>
-          <PaymentHistory payments={singleStudent?.data?.payments} />
-        </TabPanel>
-        <TabPanel value={tabValue} index={8}>
-          <StudentAnnouncement />
-        </TabPanel>
-        <TabPanel value={tabValue} index={9}>
-          <StudentDocument />
-        </TabPanel>
-        <TabPanel value={tabValue} index={10}>
-          <StudentAchivement />
+        <TabPanel value={tabValue} index={3}>
+          <PaymentHistory singleStudent={singleStudent} />
         </TabPanel>
       </Card>
     </Container>
