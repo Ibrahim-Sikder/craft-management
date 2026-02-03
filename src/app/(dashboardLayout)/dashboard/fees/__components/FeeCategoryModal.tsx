@@ -148,6 +148,7 @@ export default function FeeCategoryModal({ open, setOpen, id }: any) {
     Array<{ tempId: number; feeType: any[]; amount: string }>
   >([{ tempId: Date.now(), feeType: [], amount: "" }]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+
   const normalizeFeeType = (feeTypeData: any): string => {
     if (!feeTypeData) return "";
     if (typeof feeTypeData === "string") return feeTypeData;
@@ -163,22 +164,29 @@ export default function FeeCategoryModal({ open, setOpen, id }: any) {
     if (feeTypeData?.title) {
       return feeTypeData.title;
     }
-
     return "";
+  };
+
+  // Get single class value for update mode
+  const getSingleClassValue = () => {
+    if (id && singleFee?.data) {
+      const classOption = classOptions.find(
+        (option: any) => option.label === singleFee.data.className
+      );
+      return classOption ? [classOption] : [];
+    }
+    return [];
   };
 
   const defaultValues = useMemo(() => {
     if (id && singleFee?.data) {
-      const classOption = classOptions.find(
-        (option: any) => option.label === singleFee.data.className,
-      );
       const backendFeeItems = singleFee.data.feeItems?.map((item: any) => ({
         feeType: item.feeType ? [{ title: item.feeType }] : [],
         amount: item.amount?.toString() || "",
       })) || [{ feeType: [], amount: "" }];
 
       return {
-        class: classOption ? [classOption] : [],
+        classes: getSingleClassValue(), // For update, use single class
         category: singleFee.data.categoryName
           ? [{ title: singleFee.data.categoryName }]
           : [],
@@ -186,11 +194,12 @@ export default function FeeCategoryModal({ open, setOpen, id }: any) {
       };
     }
     return {
-      class: [],
+      classes: [], // Multiple classes selection for create
       category: [],
       feeItems: [{ feeType: [], amount: "" }],
     };
   }, [id, singleFee, classOptions]);
+
   useEffect(() => {
     if (id && singleFee?.data) {
       const backendFeeItems = singleFee.data.feeItems?.map((item: any) => ({
@@ -205,13 +214,22 @@ export default function FeeCategoryModal({ open, setOpen, id }: any) {
   }, [id, singleFee, open]);
 
   const handleSubmit = async (data: FieldValues) => {
+    // Validation for class selection
+    if (!data.classes || data.classes.length === 0) {
+      return toast.error("Please select at least one class");
+    }
 
-    if (!data.class || data.class.length === 0)
-      return toast.error("Please select a class");
-    if (!data.feeItems || data.feeItems.length === 0)
+    // Validation for category
+    if (!data.category || data.category.length === 0) {
+      return toast.error("Please select a category");
+    }
+
+    // Validation for fee items
+    if (!data.feeItems || data.feeItems.length === 0) {
       return toast.error("Please add at least one fee item");
+    }
 
-    console.log("Processing fee items:", data.feeItems);
+    // Process and validate fee items
     const validFeeItems = data.feeItems.filter((item: any) => {
       const feeTypeValue = normalizeFeeType(item.feeType);
       const amountValue = item.amount;
@@ -221,16 +239,15 @@ export default function FeeCategoryModal({ open, setOpen, id }: any) {
         amountValue !== "" &&
         !isNaN(Number(amountValue)) &&
         Number(amountValue) > 0;
-
       return isValid;
     });
-
-    console.log("Valid fee items:", validFeeItems);
 
     if (validFeeItems.length === 0) {
       toast.error("Please add valid fee items");
       return;
     }
+
+    // Check for duplicate fee types
     const feeTypeSet = new Set();
     const hasDuplicates = validFeeItems.some((item: any) => {
       const feeTypeValue = normalizeFeeType(item.feeType);
@@ -244,24 +261,55 @@ export default function FeeCategoryModal({ open, setOpen, id }: any) {
 
     if (hasDuplicates) return;
 
-    const submitData = {
-      categoryName: data.category[0]?.title || normalizeFeeType(data.category),
-      className: data.class[0]?.label,
-      feeItems: validFeeItems.map((item: any) => ({
-        feeType: normalizeFeeType(item.feeType),
-        amount: Number(item.amount),
-      })),
-    };
+    // Get category name
+    const categoryName = data.category[0]?.title || normalizeFeeType(data.category);
+
+    // Prepare fee items data
+    const feeItemsData = validFeeItems.map((item: any) => ({
+      feeType: normalizeFeeType(item.feeType),
+      amount: Number(item.amount),
+    }));
 
     setIsSubmitting(true);
     try {
-      const res = id
-        ? await updateFeeCategory({ id, data: submitData }).unwrap()
-        : await createFeeCategory(submitData).unwrap();
+      if (id) {
+        // Update mode - single class
+        const classNames = data.classes.map((cls: any) => cls.label);
+        if (classNames.length !== 1) {
+          toast.error("Update mode supports only one class");
+          return;
+        }
 
-      if (res?.success) {
-        toast.success(res.message || "Saved successfully!");
-        setOpen(false);
+        const submitData = {
+          categoryName,
+          className: classNames[0],
+          feeItems: feeItemsData,
+        };
+
+        const res = await updateFeeCategory({ id, data: submitData }).unwrap();
+        if (res?.success) {
+          toast.success(res.message || "Updated successfully!");
+          setOpen(false);
+        }
+      } else {
+        // Create mode - multiple classes
+        const classNames = data.classes.map((cls: any) => cls.label);
+
+        // Create array of fee categories for each class
+        const feeCategoriesData = classNames.map((className: string) => ({
+          categoryName,
+          className,
+          feeItems: feeItemsData,
+        }));
+
+        const res = await createFeeCategory(feeCategoriesData).unwrap();
+        if (res?.success) {
+          const message = classNames.length > 1
+            ? `${classNames.length} fee categories created successfully!`
+            : "Fee category created successfully!";
+          toast.success(message);
+          setOpen(false);
+        }
       }
     } catch (err: any) {
       console.error("Submission error:", err);
@@ -308,32 +356,53 @@ export default function FeeCategoryModal({ open, setOpen, id }: any) {
         >
           <Box>
             <Grid container spacing={3}>
-              <Grid item xs={12} sm={6}>
+              <Grid item xs={12} sm={id ? 12 : 6}>
                 <CraftIntAutoCompleteWithIcon
-                  name="class"
+                  name="classes"
                   label={
                     <span>
-                      Class <span style={{ color: "red" }}>*</span>
+                      Class{!id && "es"} <span style={{ color: "red" }}>*</span>
+                      {!id && <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
+                        (Select multiple for multiple classes)
+                      </Typography>}
                     </span>
                   }
-                  placeholder="Select Class"
+                  placeholder={id ? "Select Class" : "Select Classes"}
                   options={classOptions}
                   fullWidth
                   icon={<Class color="primary" />}
                   sx={inputStyle}
+                  multiple={!id} // Allow multiple selection only in create mode
                 />
               </Grid>
 
-              <Grid item xs={12} sm={6}>
-                <CraftAutoComplete
-                  fullWidth
-                  label="Category"
-                  name="category"
-                  margin="none"
-                  options={CATEGORY_OPTIONS}
-                  sx={inputStyle}
-                />
-              </Grid>
+              {!id && (
+                <Grid item xs={12} sm={6}>
+                  <CraftAutoComplete
+                    fullWidth
+                    label="Category"
+                    name="category"
+                    margin="none"
+                    options={CATEGORY_OPTIONS}
+                    sx={inputStyle}
+                    placeholder="Select category"
+                  />
+                </Grid>
+              )}
+
+              {id && (
+                <Grid item xs={12} sm={6}>
+                  <CraftAutoComplete
+                    fullWidth
+                    label="Category"
+                    name="category"
+                    margin="none"
+                    options={CATEGORY_OPTIONS}
+                    sx={inputStyle}
+                    placeholder="Select category"
+                  />
+                </Grid>
+              )}
 
               <FeeItemsField
                 feeItems={feeItems}
@@ -374,7 +443,11 @@ export default function FeeCategoryModal({ open, setOpen, id }: any) {
                 sx={buttonStyle}
                 disabled={totalLoading}
               >
-                {totalLoading ? "Saving..." : id ? "Update" : "Save"}
+                {totalLoading
+                  ? "Saving..."
+                  : id
+                    ? "Update"
+                    : "Save"}
               </Button>
             </Box>
           </Box>
