@@ -153,7 +153,7 @@ const FeeAmountHandler = ({
         }));
 
         setValue(`fees.${feeIndex}.feeItems`, formattedItems);
-        const totalAmount = formattedItems.reduce((sum: number, item: any) => sum + (item.amount || 0), 0);
+        const totalAmount = formattedItems?.reduce((sum: number, item: any) => sum + (item.amount || 0), 0);
         setValue(`fees.${feeIndex}.feeAmount`, totalAmount.toString());
       } else {
         setValue(`fees.${feeIndex}.feeItems`, []);
@@ -224,7 +224,7 @@ const DynamicFeeFields = ({
 
   const calculateTotalAmount = (feeItems: any[]) => {
     if (!Array.isArray(feeItems)) return 0;
-    return feeItems.reduce((total, item) => total + (item.amount || 0), 0);
+    return feeItems?.reduce((total, item) => total + (item.amount || 0), 0);
   };
 
   useEffect(() => {
@@ -650,7 +650,7 @@ const DynamicFeeFields = ({
                                 <Grid item xs={3.5}>
                                   <Box sx={{ p: 1.5, bgcolor: alpha(theme.palette.info.light, 0.1), borderRadius: 1, border: `1px solid ${alpha(theme.palette.info.main, 0.2)}` }}>
                                     <Typography variant="body2" color="info.main" align="center">
-                                      Total Advance: ৳{feeItems.reduce((sum: number, item: any) => sum + (parseFloat(item.advanceAmount) || 0), 0).toLocaleString()}
+                                      Total Advance: ৳{feeItems?.reduce((sum: number, item: any) => sum + (parseFloat(item.advanceAmount) || 0), 0).toLocaleString()}
                                     </Typography>
                                   </Box>
                                 </Grid>
@@ -739,7 +739,7 @@ const transformEnrollmentDataToForm = (
 
     const formFees = [];
     for (const [category, categoryFees] of feesByCategory) {
-      const feeAmount = categoryFees.reduce((sum: number, fee: any) => sum + (fee.amount || 0), 0);
+      const feeAmount = categoryFees?.reduce((sum: number, fee: any) => sum + (fee.amount || 0), 0);
       const feeItems = categoryFees.map((fee: any) => {
         const typeStr = fee.feeType || "";
         const typeObj = typeOptions.find((opt: any) => opt.value === typeStr) || { label: typeStr, value: typeStr };
