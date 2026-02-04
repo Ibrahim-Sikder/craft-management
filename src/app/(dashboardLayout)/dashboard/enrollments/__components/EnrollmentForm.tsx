@@ -851,7 +851,7 @@ const StudentInformationStep = () => {
           <CraftInputWithIcon margin="none" size="medium" fullWidth label={<span>Student Name<span style={{ color: "red" }}>*</span></span>} name="studentName" placeholder="Full Name in English" InputProps={{ startAdornment: <Person sx={{ color: "text.secondary", mr: 1 }} /> }} />
         </Grid>
         <Grid item xs={12} md={4}>
-          <CraftInputWithIcon margin="none" size="medium" fullWidth label="Mobile No." name="mobileNo" placeholder="01XXXXXXXXX" InputProps={{ startAdornment: <Phone sx={{ color: "text.secondary", mr: 1 }} /> }} />
+          <CraftInputWithIcon margin="none" size="medium" fullWidth label={<span>Mobile No<span style={{ color: "red" }}>*</span></span>} name="mobileNo" placeholder="01XXXXXXXXX" InputProps={{ startAdornment: <Phone sx={{ color: "text.secondary", mr: 1 }} /> }} />
         </Grid>
         <Grid item xs={12} md={4}>
           <CraftInputWithIcon margin="none" size="medium" fullWidth label="Session" name="session" placeholder="2024-2025" InputProps={{ startAdornment: <CalendarMonth sx={{ color: "text.secondary", mr: 1 }} /> }} />
