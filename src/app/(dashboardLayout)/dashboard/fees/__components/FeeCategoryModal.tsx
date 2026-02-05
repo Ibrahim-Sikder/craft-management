@@ -373,7 +373,7 @@ export default function FeeCategoryModal({ open, setOpen, id }: any) {
                   fullWidth
                   icon={<Class color="primary" />}
                   sx={inputStyle}
-                  multiple={!id} // Allow multiple selection only in create mode
+                  multiple={!id}
                 />
               </Grid>
 
