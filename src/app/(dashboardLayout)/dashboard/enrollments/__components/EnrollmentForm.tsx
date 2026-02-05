@@ -554,7 +554,7 @@ const DynamicFeeFields = ({
                       justifyContent: 'space-between'
                     }}>
                       <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
-                        {selectionMode === 'all' ? "All Fees Selected" : "Only Admission Fee"}
+                        {selectionMode === 'all' ? "Selected All Fee" : "Selected All Fee"}
                       </Typography>
                       <FormControlLabel
                         control={
@@ -602,9 +602,12 @@ const DynamicFeeFields = ({
                             <Grid item xs={12} key={itemIndex}>
                               <Grid container spacing={2} alignItems="center" sx={{ mb: 1 }}>
                                 <Grid item xs={4.5}>
-                                  <CraftIntAutoCompleteWithIcon
+                                  {/* <CraftIntAutoCompleteWithIcon
+
+                                    freeSolo
                                     name={`fees.${index}.feeItems.${itemIndex}.feeType`} label="" options={classSpecificFeeOptions} size="small" fullWidth
-                                    placeholder="Select Fee Type" multiple={false} freeSolo={true}
+                                    placeholder="Select Fee Type" multiple={false}
+
                                     icon={<Description color="disabled" sx={{ fontSize: 16 }} />}
                                     disableClearable={false} disabled={!isClassSelected}
                                     isOptionEqualToValue={(option: any, value: any) => {
@@ -613,8 +616,40 @@ const DynamicFeeFields = ({
                                       const valVal = typeof value === 'string' ? value : value.value;
                                       return optVal === valVal;
                                     }}
+
+                                    onChange={(e: any, val: any) => { handleItemFieldChange(index, itemIndex, 'feeType', val); }}
+                                  /> */}
+
+                                  <CraftIntAutoCompleteWithIcon
+                                    freeSolo
+                                    name={`fees.${index}.feeItems.${itemIndex}.feeType`}
+                                    label=""
+                                    options={classSpecificFeeOptions}
+                                    size="small"
+                                    fullWidth
+                                    placeholder="Select Fee Type"
+                                    multiple={false}
+                                    icon={<Description color="disabled" sx={{ fontSize: 16 }} />}
+                                    disableClearable={false}
+                                    disabled={!isClassSelected}
+                                    isOptionEqualToValue={(option: any, value: any) => {
+                                      if (!option || !value) return false;
+                                      const optVal = typeof option === 'string' ? option : option.value;
+                                      const valVal = typeof value === 'string' ? value : value.value;
+                                      return optVal === valVal;
+                                    }}
+                                    // --- ADD THIS PROPS BELOW ---
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter") {
+                                        e.preventDefault();
+                                        // If your component needs to manually blur or close the popover, you might need logic here,
+                                        // but usually preventDefault is enough to stop the form submit.
+                                      }
+                                    }}
+                                    // ----------------------------
                                     onChange={(e: any, val: any) => { handleItemFieldChange(index, itemIndex, 'feeType', val); }}
                                   />
+
                                 </Grid>
                                 <Grid item xs={3}>
                                   <CraftInputWithIcon name={`fees.${index}.feeItems.${itemIndex}.amount`} label="" fullWidth margin="none" size="small" type="number"
