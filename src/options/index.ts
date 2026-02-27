@@ -261,5 +261,42 @@ export const months = [
   "September",
   "October",
   "November",
-  "December"
+  "December",
+];
+
+export const departmentOptions = ["hifz", "academic", "nazera", "tajbid"];
+
+export const genderOptions = ["male", "female"];
+
+export const fatherProfessionOptions = [
+  "Engineer",
+  "Teacher",
+  "Business",
+  "Doctor",
+  "Farmer",
+  "Service",
+  "Lawyer",
+  "Other",
+];
+
+// Mother profession options
+export const motherProfessionOptions = [
+  "Housewife",
+  "Teacher",
+  "Doctor",
+  "Business",
+  "Service",
+  "Other",
+];
+
+export const classOption = [
+  "One",
+  "Tow",
+  "Three",
+  "Four",
+  "Five",
+  "Six",
+  "Eight",
+  "Nazera",
+  "Hifz",
 ];

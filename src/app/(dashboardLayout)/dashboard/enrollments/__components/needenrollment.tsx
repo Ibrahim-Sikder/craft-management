@@ -81,7 +81,7 @@
 // import AddFeeModal from "../../student/profile/__components/AddFeeModal";
 // import PaymentModal from "../../student/profile/__components/PaymentModal";
 
-// // Smooth Organic Animation for Steps
+
 // const fadeInSlideUp = {
 //   animation: "fadeInSlideUp 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both",
 //   "@keyframes fadeInSlideUp": {
@@ -90,7 +90,7 @@
 //   },
 // };
 
-// // --- HELPER: Fee Amount Handler ---
+// // Fee Amount Handler ---
 // const FeeAmountHandler = ({
 //   feeIndex,
 //   feeCategoryData,
@@ -101,7 +101,6 @@
 //   const { watch, setValue } = useFormContext();
 //   const selectedClass = watch(`fees.${feeIndex}.className`);
 //   const selectedCategory = watch(`fees.${feeIndex}.category`);
-//   // Watch the selection mode (default to 'admission' if not set)
 //   const selectionMode = watch(`fees.${feeIndex}.selectionMode`) || 'admission';
 
 //   useEffect(() => {
@@ -136,7 +135,6 @@
 //       });
 
 //       if (feeItems.length > 0) {
-//         // LOGIC UPDATE: Filter based on selectionMode
 //         let itemsToSet = feeItems;
 //         if (selectionMode === 'admission') {
 //           itemsToSet = feeItems.filter((item: any) => {
@@ -155,7 +153,7 @@
 //         }));
 
 //         setValue(`fees.${feeIndex}.feeItems`, formattedItems);
-//         const totalAmount = formattedItems.reduce((sum: number, item: any) => sum + (item.amount || 0), 0);
+//         const totalAmount = formattedItems?.reduce((sum: number, item: any) => sum + (item.amount || 0), 0);
 //         setValue(`fees.${feeIndex}.feeAmount`, totalAmount.toString());
 //       } else {
 //         setValue(`fees.${feeIndex}.feeItems`, []);
@@ -167,7 +165,7 @@
 //   return null;
 // };
 
-// // --- HELPER: Dynamic Fee Fields ---
+// //  Dynamic Fee Fields ---
 // const DynamicFeeFields = ({
 //   classOptions,
 //   feeCategoryData,
@@ -226,7 +224,7 @@
 
 //   const calculateTotalAmount = (feeItems: any[]) => {
 //     if (!Array.isArray(feeItems)) return 0;
-//     return feeItems.reduce((total, item) => total + (item.amount || 0), 0);
+//     return feeItems?.reduce((total, item) => total + (item.amount || 0), 0);
 //   };
 
 //   useEffect(() => {
@@ -264,7 +262,7 @@
 //       className: classNameValue,
 //       feeItems: [],
 //       feeAmount: "",
-//       selectionMode: 'admission', // Default to admission only
+//       selectionMode: 'admission',
 //     });
 //   };
 
@@ -304,7 +302,6 @@
 //       });
 
 //       if (allFeeItems.length > 0) {
-//         // LOGIC UPDATE: Filter based on selectionMode
 //         let itemsToProcess = allFeeItems;
 //         if (selectionMode === 'admission') {
 //           itemsToProcess = allFeeItems.filter((item: any) => {
@@ -340,12 +337,9 @@
 //     }
 //   };
 
-//   // Handle toggle switch change
 //   const handleSelectionModeChange = (index: number, isChecked: boolean) => {
 //     const newMode = isChecked ? 'all' : 'admission';
 //     setValue(`fees.${index}.selectionMode`, newMode);
-
-//     // Re-trigger category change to update items based on new mode
 //     const currentCategory = watch(`fees.${index}.category`);
 //     if (currentCategory) {
 //       handleCategoryChange(index, currentCategory);
@@ -560,7 +554,7 @@
 //                       justifyContent: 'space-between'
 //                     }}>
 //                       <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
-//                         {selectionMode === 'all' ? "All Fees Selected" : "Only Admission Fee"}
+//                         {selectionMode === 'all' ? "Selected All Fee" : "Selected All Fee"}
 //                       </Typography>
 //                       <FormControlLabel
 //                         control={
@@ -608,9 +602,12 @@
 //                             <Grid item xs={12} key={itemIndex}>
 //                               <Grid container spacing={2} alignItems="center" sx={{ mb: 1 }}>
 //                                 <Grid item xs={4.5}>
-//                                   <CraftIntAutoCompleteWithIcon
+//                                   {/* <CraftIntAutoCompleteWithIcon
+
+//                                     freeSolo
 //                                     name={`fees.${index}.feeItems.${itemIndex}.feeType`} label="" options={classSpecificFeeOptions} size="small" fullWidth
-//                                     placeholder="Select Fee Type" multiple={false} freeSolo={true}
+//                                     placeholder="Select Fee Type" multiple={false}
+
 //                                     icon={<Description color="disabled" sx={{ fontSize: 16 }} />}
 //                                     disableClearable={false} disabled={!isClassSelected}
 //                                     isOptionEqualToValue={(option: any, value: any) => {
@@ -619,8 +616,40 @@
 //                                       const valVal = typeof value === 'string' ? value : value.value;
 //                                       return optVal === valVal;
 //                                     }}
+
+//                                     onChange={(e: any, val: any) => { handleItemFieldChange(index, itemIndex, 'feeType', val); }}
+//                                   /> */}
+
+//                                   <CraftIntAutoCompleteWithIcon
+//                                     freeSolo
+//                                     name={`fees.${index}.feeItems.${itemIndex}.feeType`}
+//                                     label=""
+//                                     options={classSpecificFeeOptions}
+//                                     size="small"
+//                                     fullWidth
+//                                     placeholder="Select Fee Type"
+//                                     multiple={false}
+//                                     icon={<Description color="disabled" sx={{ fontSize: 16 }} />}
+//                                     disableClearable={false}
+//                                     disabled={!isClassSelected}
+//                                     isOptionEqualToValue={(option: any, value: any) => {
+//                                       if (!option || !value) return false;
+//                                       const optVal = typeof option === 'string' ? option : option.value;
+//                                       const valVal = typeof value === 'string' ? value : value.value;
+//                                       return optVal === valVal;
+//                                     }}
+//                                     // --- ADD THIS PROPS BELOW ---
+//                                     onKeyDown={(e) => {
+//                                       if (e.key === "Enter") {
+//                                         e.preventDefault();
+//                                         // If your component needs to manually blur or close the popover, you might need logic here,
+//                                         // but usually preventDefault is enough to stop the form submit.
+//                                       }
+//                                     }}
+//                                     // ----------------------------
 //                                     onChange={(e: any, val: any) => { handleItemFieldChange(index, itemIndex, 'feeType', val); }}
 //                                   />
+
 //                                 </Grid>
 //                                 <Grid item xs={3}>
 //                                   <CraftInputWithIcon name={`fees.${index}.feeItems.${itemIndex}.amount`} label="" fullWidth margin="none" size="small" type="number"
@@ -656,7 +685,7 @@
 //                                 <Grid item xs={3.5}>
 //                                   <Box sx={{ p: 1.5, bgcolor: alpha(theme.palette.info.light, 0.1), borderRadius: 1, border: `1px solid ${alpha(theme.palette.info.main, 0.2)}` }}>
 //                                     <Typography variant="body2" color="info.main" align="center">
-//                                       Total Advance: ৳{feeItems.reduce((sum: number, item: any) => sum + (parseFloat(item.advanceAmount) || 0), 0).toLocaleString()}
+//                                       Total Advance: ৳{feeItems?.reduce((sum: number, item: any) => sum + (parseFloat(item.advanceAmount) || 0), 0).toLocaleString()}
 //                                     </Typography>
 //                                   </Box>
 //                                 </Grid>
@@ -691,7 +720,7 @@
 //   );
 // };
 
-// // --- HELPER: Transform Data ---
+// //Transform Data ---
 // const transformEnrollmentDataToForm = (
 //   enrollmentData: any,
 //   classOptions: any[],
@@ -745,7 +774,7 @@
 
 //     const formFees = [];
 //     for (const [category, categoryFees] of feesByCategory) {
-//       const feeAmount = categoryFees.reduce((sum: number, fee: any) => sum + (fee.amount || 0), 0);
+//       const feeAmount = categoryFees?.reduce((sum: number, fee: any) => sum + (fee.amount || 0), 0);
 //       const feeItems = categoryFees.map((fee: any) => {
 //         const typeStr = fee.feeType || "";
 //         const typeObj = typeOptions.find((opt: any) => opt.value === typeStr) || { label: typeStr, value: typeStr };
@@ -756,7 +785,7 @@
 //         className: formatClassForForm(classData),
 //         feeItems: feeItems,
 //         feeAmount: feeAmount.toString(),
-//         selectionMode: "admission", // Default when editing existing data
+//         selectionMode: "admission",
 //       });
 //     }
 //     return formFees;
@@ -843,7 +872,7 @@
 //   return transformedData;
 // };
 
-// // --- STEPS COMPONENTS ---
+// //COMPONENTS ---
 // const StudentInformationStep = () => {
 //   return (
 //     <Box sx={{ ...fadeInSlideUp }}>
@@ -857,7 +886,7 @@
 //           <CraftInputWithIcon margin="none" size="medium" fullWidth label={<span>Student Name<span style={{ color: "red" }}>*</span></span>} name="studentName" placeholder="Full Name in English" InputProps={{ startAdornment: <Person sx={{ color: "text.secondary", mr: 1 }} /> }} />
 //         </Grid>
 //         <Grid item xs={12} md={4}>
-//           <CraftInputWithIcon margin="none" size="medium" fullWidth label="Mobile No." name="mobileNo" placeholder="01XXXXXXXXX" InputProps={{ startAdornment: <Phone sx={{ color: "text.secondary", mr: 1 }} /> }} />
+//           <CraftInputWithIcon margin="none" size="medium" fullWidth label={<span>Mobile No<span style={{ color: "red" }}>*</span></span>} name="mobileNo" placeholder="01XXXXXXXXX" InputProps={{ startAdornment: <Phone sx={{ color: "text.secondary", mr: 1 }} /> }} />
 //         </Grid>
 //         <Grid item xs={12} md={4}>
 //           <CraftInputWithIcon margin="none" size="medium" fullWidth label="Session" name="session" placeholder="2024-2025" InputProps={{ startAdornment: <CalendarMonth sx={{ color: "text.secondary", mr: 1 }} /> }} />
@@ -1191,12 +1220,13 @@
 //   const id = searchParams.get("id");
 //   const [open, setOpen] = useState(false);
 
-//   // --- MODAL STATES ---
 //   const [openSuccessModal, setOpenSuccessModal] = useState(false);
 //   const [openPrintModal, setOpenPrintModal] = useState(false);
 //   const [openAddFeeModal, setOpenAddFeeModal] = useState(false);
 //   const [openPaymentModal, setOpenPaymentModal] = useState(false);
+
 //   const [enrolledStudentData, setEnrolledStudentData] = useState<any>(null);
+
 
 //   const { classOptions, feeCategoryData } = useAcademicOption();
 //   const [createEnrollment] = useCreateEnrollmentMutation();
@@ -1248,7 +1278,6 @@
 //     }
 //   }, [id, singleEnrollment, classOptions, feeCategoryData]);
 
-//   // --- HANDLERS ---
 //   const handleFinishProcess = () => {
 //     setOpenSuccessModal(false);
 //     setOpenPrintModal(false);
@@ -1292,7 +1321,7 @@
 //         fees.forEach((fee: any) => {
 //           if (fee.feeItems && Array.isArray(fee.feeItems)) {
 //             fee.feeItems.forEach((item: any) => {
-//               const fType = typeof item.feeType === 'string' ? item.feeType : item.feeType?.value;
+//               const fType = typeof item.feeType === 'string' ? item.feeType : item.feeType?.value || '';
 //               if (item.isSelected && fType && String(fType).toLowerCase().includes('monthly')) total += parseFloat(item.amount) || 0;
 //             });
 //           }
@@ -1308,7 +1337,6 @@
 //       const totalPayNowInput = parseFloat(submitData.paidAmount) || 0;
 //       let allFeeItems: any[] = [];
 //       submitData.fees.forEach((fee: any) => {
-//         // Filter out selectionMode before processing
 //         const { selectionMode, ...restFee } = fee;
 //         if (restFee.feeItems && Array.isArray(restFee.feeItems)) allFeeItems = [...allFeeItems, ...restFee.feeItems];
 //       });
@@ -1440,9 +1468,10 @@
 //       if (id) res = await updateEnrollment({ id, data: finalSubmitData }).unwrap();
 //       else res = await createEnrollment(finalSubmitData).unwrap();
 
+
 //       if (res?.success) {
 //         toast.success(res?.message || "Student enrolled successfully");
-//         setEnrolledStudentData(res.data || finalSubmitData);
+//         setEnrolledStudentData(res.data);
 //         setOpenSuccessModal(true);
 //       } else {
 //         throw new Error(res?.message || "Failed to enroll student");
@@ -1473,17 +1502,39 @@
 
 //   if ((id && enrollmentLoading) || !defaultValues) return <LoadingState />;
 
+//   // Helper to safely extract class label for display in modals
+//   const getClassLabel = (clsData: any) => {
+//     if (!clsData) return "";
+//     if (Array.isArray(clsData) && clsData.length > 0) {
+//       return clsData[0]?.label || clsData[0]?.className || clsData[0];
+//     }
+//     if (typeof clsData === 'object') return clsData.label || clsData.className;
+//     return clsData;
+//   };
+
+//   // Prepare data for Payment Modal based on the API response structure
 //   const feeDataForPaymentModal = enrolledStudentData ? {
 //     _id: enrolledStudentData._id,
 //     feeType: "Enrollment Due",
 //     month: enrolledStudentData.session,
-//     class: enrolledStudentData.className?.[0]?.label || "N/A",
+//     class: getClassLabel(enrolledStudentData.className),
 //     amount: enrolledStudentData.totalAmount,
 //     discount: enrolledStudentData.totalDiscount,
 //     waiver: 0,
 //     paidAmount: enrolledStudentData.paidAmount,
-//     dueAmount: enrolledStudentData.dueAmount
+//     dueAmount: enrolledStudentData.dueAmount,
+//     studentName: enrolledStudentData.studentName
 //   } : {};
+
+//   // Prepare data for AddFee Modal based on the API response structure
+//   // The user requested "only className, student name". 
+//   // However, AddFeeModal usually expects a full student object or at least an ID.
+//   // We will construct a minimal object that satisfies the requirement.
+//   const studentDataForAddFeeModal = enrolledStudentData?.student ? {
+//     ...enrolledStudentData.student,
+//     className: enrolledStudentData.className, // Ensure we use the top-level class which has labels
+//     name: enrolledStudentData.studentName // Ensure we use the top-level name
+//   } : enrolledStudentData;
 
 //   return (
 //     <Box sx={{ bgcolor: alpha(theme.palette.background.default, 0.5), minHeight: "100vh" }}>
@@ -1530,7 +1581,6 @@
 //           </Box>
 //         </Container>
 
-//         {/* --- SUCCESS MODAL --- */}
 //         <Dialog open={openSuccessModal} onClose={() => { }} maxWidth="sm" fullWidth PaperProps={{ sx: { borderRadius: 3, p: 2, textAlign: 'center' } }}>
 //           <DialogContent sx={{ py: 4 }}>
 //             <Avatar sx={{ bgcolor: "success.main", width: 64, height: 64, margin: "0 auto 16px" }}>
@@ -1542,33 +1592,34 @@
 //           </DialogContent>
 //           <DialogActions sx={{ justifyContent: "center", gap: 2, pb: 3, flexDirection: "column" }}>
 //             <Box sx={{ display: 'flex', gap: 2, width: '100%', justifyContent: 'center', flexWrap: 'wrap' }}>
-
 //               {enrolledStudentData?.dueAmount > 0 && (
-//                 <Button
-//                   variant="contained"
-//                   color="warning"
-//                   onClick={handlePayDueAmount}
-//                   startIcon={<Payment />}
-//                   sx={{ borderRadius: 2, px: 3 }}
-//                 >
+//                 <Button variant="contained" color="warning" onClick={handlePayDueAmount} startIcon={<Payment />} sx={{ borderRadius: 2, px: 3 }}>
 //                   Pay Due Amount (৳{enrolledStudentData.dueAmount.toLocaleString()})
 //                 </Button>
 //               )}
-
 //               <Button variant="outlined" onClick={handlePrintReceipt} startIcon={<Print />} sx={{ borderRadius: 2, px: 3 }}>Print Receipt</Button>
 //               <Button variant="contained" onClick={handleAddAdditionalFee} startIcon={<Payment />} sx={{ borderRadius: 2, px: 3, bgcolor: "primary.main" }}>Add Additional Fee</Button>
 //             </Box>
-//             <Button variant="text" onClick={handleFinishProcess} color="text.secondary">Close & Go to List</Button>
+//             <Button variant="text" onClick={handleFinishProcess} >Close & Go to List</Button>
 //           </DialogActions>
 //         </Dialog>
 
-//         {/* --- PRINT MODAL --- */}
-//         <PrintModal open={openPrintModal} setOpen={setOpenPrintModal} receipt={enrolledStudentData} previousPayments={enrolledStudentData?.fees || []} />
+//         {/* --- MODALS --- */}
 
-//         {/* --- ADD FEE MODAL --- */}
-//         <AddFeeModal open={openAddFeeModal} setOpen={setOpenAddFeeModal} student={enrolledStudentData} />
+//         <PrintModal
+//           open={openPrintModal}
+//           setOpen={setOpenPrintModal}
+//           receipt={enrolledStudentData?.data?.receipt}
+//           previousPayments={enrolledStudentData?.receipt?.fees || []}
+//           student={enrolledStudentData?.student || enrolledStudentData}
+//         />
 
-//         {/* --- PAYMENT MODAL (FOR DUE AMOUNT) --- */}
+//         <AddFeeModal
+//           open={openAddFeeModal}
+//           setOpen={setOpenAddFeeModal}
+//           student={studentDataForAddFeeModal?.data}
+//         />
+
 //         <PaymentModal
 //           open={openPaymentModal}
 //           onClose={() => setOpenPaymentModal(false)}
