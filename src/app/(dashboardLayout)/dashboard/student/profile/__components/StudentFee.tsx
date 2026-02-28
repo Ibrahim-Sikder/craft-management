@@ -50,7 +50,7 @@ const StudentFee = ({
   const [customizationModalOpen, setCustomizationModalOpen] = useState(false);
   const [selectedFee, setSelectedFee] = useState<any>(null);
   const [filteredFees, setFilteredFees] = useState<any[]>([]);
-  const [feeTypeFilter,] = useState<string>("all");
+  const [feeTypeFilter] = useState<string>("all");
   const [bulkPaymentModalOpen, setBulkPaymentModalOpen] = useState(false);
   const [lateFeeSummary, setLateFeeSummary] = useState({
     totalLateFees: 0,
@@ -63,7 +63,7 @@ const StudentFee = ({
       setFilteredFees(studentFees);
     } else {
       setFilteredFees(
-        studentFees?.filter((fee) => fee?.feeType === feeTypeFilter)
+        studentFees?.filter((fee) => fee?.feeType === feeTypeFilter),
       );
     }
 
@@ -77,12 +77,16 @@ const StudentFee = ({
           if (fee.lateFeeCustomized) {
             acc.totalCustomized += 1;
           }
-          if (fee.dueDate && new Date(fee.dueDate) < new Date() && fee.status !== 'paid') {
+          if (
+            fee.dueDate &&
+            new Date(fee.dueDate) < new Date() &&
+            fee.status !== "paid"
+          ) {
             acc.totalOverdue += 1;
           }
           return acc;
         },
-        { totalLateFees: 0, totalCustomized: 0, totalOverdue: 0 }
+        { totalLateFees: 0, totalCustomized: 0, totalOverdue: 0 },
       );
       setLateFeeSummary(summary);
     }
@@ -121,7 +125,7 @@ const StudentFee = ({
             "Content-Type": "application/json",
           },
           body: JSON.stringify(adjustmentData),
-        }
+        },
       );
 
       if (response.ok) {
@@ -184,23 +188,23 @@ const StudentFee = ({
   const calculateSummary = () => {
     const totalFees = studentFees?.reduce(
       (sum, fee) => sum + (fee.amount || 0),
-      0
+      0,
     );
     const totalPaid = studentFees?.reduce(
       (sum, fee) => sum + (fee.paidAmount || 0),
-      0
+      0,
     );
     const totalDue = studentFees?.reduce(
       (sum, fee) => sum + (fee.dueAmount || 0),
-      0
+      0,
     );
     const totalDiscount = studentFees?.reduce(
       (sum, fee) => sum + (fee.discount || 0),
-      0
+      0,
     );
     const totalWaiver = studentFees?.reduce(
       (sum, fee) => sum + (fee.waiver || 0),
-      0
+      0,
     );
     const totalAdjustments = totalDiscount + totalWaiver;
 
@@ -350,16 +354,16 @@ const StudentFee = ({
       render: (row: any) => {
         const today = new Date();
         const dueDate = row.dueDate ? new Date(row.dueDate) : null;
-        const isOverdue = dueDate && dueDate < today && row.status !== 'paid';
+        const isOverdue = dueDate && dueDate < today && row.status !== "paid";
 
         return (
           <Box>
             <Typography
               variant="body2"
-              color={isOverdue ? 'error' : 'text.primary'}
-              fontWeight={isOverdue ? 'bold' : 'normal'}
+              color={isOverdue ? "error" : "text.primary"}
+              fontWeight={isOverdue ? "bold" : "normal"}
             >
-              {row.dueDate ? new Date(row.dueDate).toLocaleDateString() : 'N/A'}
+              {row.dueDate ? new Date(row.dueDate).toLocaleDateString() : "N/A"}
             </Typography>
             {isOverdue && (
               <Chip
@@ -367,7 +371,7 @@ const StudentFee = ({
                 size="small"
                 color="error"
                 variant="outlined"
-                sx={{ mt: 0.5, height: 20, fontSize: '0.625rem' }}
+                sx={{ mt: 0.5, height: 20, fontSize: "0.625rem" }}
               />
             )}
           </Box>
@@ -387,30 +391,50 @@ const StudentFee = ({
           <Box>
             {row.lateFeeAmount > 0 ? (
               <>
-                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 0.5 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "flex-end",
+                    gap: 0.5,
+                  }}
+                >
                   <Typography
                     variant="body2"
                     color="warning.main"
                     fontWeight="bold"
                     sx={{
-                      textDecoration: row.lateFeeCustomized ? 'underline' : 'none',
-                      textDecorationStyle: 'dotted',
+                      textDecoration: row.lateFeeCustomized
+                        ? "underline"
+                        : "none",
+                      textDecorationStyle: "dotted",
                     }}
                   >
                     ৳{row.lateFeeAmount?.toLocaleString()}
                   </Typography>
                   {row.lateFeeCustomized && (
                     <Tooltip title="Customized">
-                      <Edit sx={{ fontSize: 14, color: 'success.main' }} />
+                      <Edit sx={{ fontSize: 14, color: "success.main" }} />
                     </Tooltip>
                   )}
                 </Box>
-                <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.625rem', display: 'block' }}>
+                <Typography
+                  variant="caption"
+                  color="text.secondary"
+                  sx={{ fontSize: "0.625rem", display: "block" }}
+                >
                   {row.lateFeeDays || 0} days @ ৳{row.lateFeePerDay || 100}/day
                 </Typography>
                 {row.lateFeeApplied && (
-                  <Typography variant="caption" color="text.secondary" sx={{ fontSize: '0.625rem' }}>
-                    Applied: {row.lateFeeAppliedDate ? new Date(row.lateFeeAppliedDate).toLocaleDateString() : ''}
+                  <Typography
+                    variant="caption"
+                    color="text.secondary"
+                    sx={{ fontSize: "0.625rem" }}
+                  >
+                    Applied:{" "}
+                    {row.lateFeeAppliedDate
+                      ? new Date(row.lateFeeAppliedDate).toLocaleDateString()
+                      : ""}
                   </Typography>
                 )}
               </>
@@ -433,7 +457,7 @@ const StudentFee = ({
 
         const today = new Date();
         const dueDate = row.dueDate ? new Date(row.dueDate) : null;
-        const isOverdue = dueDate && dueDate < today && row.status !== 'paid';
+        const isOverdue = dueDate && dueDate < today && row.status !== "paid";
 
         if (row.lateFeeAmount > 0) {
           return (
@@ -442,7 +466,7 @@ const StudentFee = ({
               size="small"
               color={row.lateFeeCustomized ? "success" : "warning"}
               variant={row.lateFeeCustomized ? "filled" : "outlined"}
-              sx={{ height: 24, fontWeight: 'bold' }}
+              sx={{ height: 24, fontWeight: "bold" }}
               icon={row.lateFeeCustomized ? <CheckCircle /> : undefined}
             />
           );
@@ -664,19 +688,25 @@ const StudentFee = ({
             ৳{summary.totalAdjustments?.toLocaleString() || 0}
           </Typography>
           <Typography variant="caption">
-            Discount: ৳{summary.totalDiscount?.toLocaleString() || 0} | Waiver: ৳
-            {summary.totalWaiver?.toLocaleString() || 0}
+            Discount: ৳{summary.totalDiscount?.toLocaleString() || 0} | Waiver:
+            ৳{summary.totalWaiver?.toLocaleString() || 0}
           </Typography>
         </Paper>
         <Paper
-          sx={{ p: 2, minWidth: 150, bgcolor: "secondary.light", color: "white" }}
+          sx={{
+            p: 2,
+            minWidth: 150,
+            bgcolor: "secondary.light",
+            color: "white",
+          }}
         >
           <Typography variant="subtitle2">Late Fee Summary</Typography>
           <Typography variant="h6">
             ৳{lateFeeSummary.totalLateFees?.toLocaleString() || 0}
           </Typography>
           <Typography variant="caption">
-            Customized: {lateFeeSummary.totalCustomized} | Overdue: {lateFeeSummary.totalOverdue}
+            Customized: {lateFeeSummary.totalCustomized} | Overdue:{" "}
+            {lateFeeSummary.totalOverdue}
           </Typography>
         </Paper>
       </Box>
@@ -716,9 +746,7 @@ const StudentFee = ({
               variant="contained"
               startIcon={<AttachMoney />}
               onClick={() => setBulkPaymentModalOpen(true)}
-              disabled={
-                !studentFees?.filter((fee) => fee.dueAmount > 0).length
-              }
+              disabled={!studentFees?.filter((fee) => fee.dueAmount > 0).length}
               sx={{
                 background: "linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)",
                 "&:hover": {
@@ -746,7 +774,7 @@ const StudentFee = ({
             onClick: (selectedRows) => {
               console.log("Applying bulk discount to:", selectedRows);
               alert(
-                `Applying discount to ${selectedRows.length} selected fees`
+                `Applying discount to ${selectedRows.length} selected fees`,
               );
             },
           },
@@ -754,9 +782,12 @@ const StudentFee = ({
             label: "Apply Bulk Late Fee Customization",
             icon: <WarningIcon fontSize="small" />,
             onClick: (selectedRows) => {
-              console.log("Applying bulk late fee customization to:", selectedRows);
+              console.log(
+                "Applying bulk late fee customization to:",
+                selectedRows,
+              );
               alert(
-                `Bulk late fee customization for ${selectedRows.length} fees - Coming soon!`
+                `Bulk late fee customization for ${selectedRows.length} fees - Coming soon!`,
               );
             },
           },
