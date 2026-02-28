@@ -255,7 +255,7 @@ export default function AdmissionApplications() {
     const { data, isLoading, refetch } = useGetAllAdmissionApplicationsQuery(queryParams)
 
     const handleRefresh = () => refetch()
-    const handleAddNew = () => router.push('/dashboard/admission-application/new')
+    const handleAddNew = () => router.push('/dashboard/online-application/new')
 
     const handleView = (row: any) => {
         setModalLoading(true)
@@ -278,7 +278,7 @@ export default function AdmissionApplications() {
             Swal.fire('Error', 'Application ID not found', 'error');
             return;
         }
-        router.push(`/dashboard/admission-application/edit?id=${id}`);
+        router.push(`/dashboard/online-application/edit?id=${id}`);
     }
 
     const handleDelete = async (row: any) => {

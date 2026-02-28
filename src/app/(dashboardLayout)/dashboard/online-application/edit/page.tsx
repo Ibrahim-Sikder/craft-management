@@ -174,7 +174,7 @@ export default function EditAdmissionApplication() {
             const res = await updateApplication({ id, data: apiData }).unwrap();
 
             if (res.success) {
-                router.push('/dashboard/admission-application');
+                router.push('/dashboard/online-application');
             }
 
         } catch (error: any) {

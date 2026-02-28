@@ -166,7 +166,16 @@ export const navigationItems: NavigationItem[] = [
     path: "/dashboard/enrollments/list",
     roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
   },
-
+  {
+    title: "Online Admissions",
+    icon: (
+      <ColorfulIcon color="#5D4037">
+        <TableChart />
+      </ColorfulIcon>
+    ),
+    path: "/dashboard/online-application",
+    roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+  },
   {
     title: "Academic",
     icon: (

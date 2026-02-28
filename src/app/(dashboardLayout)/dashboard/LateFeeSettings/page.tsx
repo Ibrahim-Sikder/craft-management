@@ -1,7 +1,6 @@
 'use client'
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-// components/LateFeeSettings.tsx
 import { Save, Settings, Update } from '@mui/icons-material';
 import {
     Box,
