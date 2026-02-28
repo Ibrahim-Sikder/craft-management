@@ -11,57 +11,117 @@ import {
     CheckCircle,
     Cancel,
     Pending,
-    Download,
-    Print,
-    Add,
-    Refresh,
     PictureAsPdf,
     Phone,
 } from '@mui/icons-material'
 import {
     Box,
     Chip,
-    Tooltip,
     Avatar,
     Typography,
     useTheme,
     useMediaQuery,
-    Badge,
-    Snackbar,
-    Alert,
 } from '@mui/material'
-import { format } from 'date-fns'
-import { bn } from 'date-fns/locale'
 import { useRouter } from 'next/navigation'
 import CraftTable, { Column, RowAction, BulkAction } from '@/components/Table'
 import { AdmissionDetailModal } from './__components/AdmissionDetailModal'
+import Swal from 'sweetalert2'
 
+// --- BACKEND INTERFACES ---
+export type TAdmissionStatus = 'pending' | 'approved' | 'rejected';
 
-const StatusChip = ({ status }: { status: string }) => {
-    const statusConfig: Record<string, { color: 'success' | 'warning' | 'error' | 'info' | 'default'; icon: JSX.Element; label: string }> = {
+export interface TAdmissionApplication {
+    applicationId: string;
+    academicYear: string;
+    _id: string;
+    studentInfo: {
+        nameBangla: string;
+        nameEnglish: string;
+        dateOfBirth: Date;
+        age: number;
+        gender?: 'male' | 'female' | 'other';
+        department: string;
+        class: string;
+        session: string;
+        nidBirth?: string;
+        bloodGroup?: string;
+        nationality?: string;
+        studentPhoto?: string;
+    };
+    academicInfo?: {
+        previousSchool?: string;
+        previousClass?: string;
+        gpa?: string;
+    };
+    parentInfo: {
+        father: {
+            nameBangla: string;
+            nameEnglish: string;
+            profession?: string;
+            education?: string;
+            mobile: string;
+            whatsapp?: string;
+        };
+        mother: {
+            nameBangla: string;
+            nameEnglish: string;
+            profession?: string;
+            education?: string;
+            mobile?: string;
+            whatsapp?: string;
+        };
+        guardian?: {
+            nameBangla?: string;
+            nameEnglish?: string;
+            relation?: string;
+            mobile?: string;
+            whatsapp?: string;
+            profession?: string;
+            address?: string;
+        };
+    };
+    address: {
+        present: {
+            village?: string;
+            postOffice?: string;
+            postCode?: string;
+            policeStation?: string;
+            district?: string;
+        };
+        permanent: {
+            village: string;
+            postOffice: string;
+            postCode?: string;
+            policeStation: string;
+            district: string;
+        };
+    };
+    termsAccepted: boolean;
+    status: TAdmissionStatus;
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
+const StatusChip = ({ status }: { status: TAdmissionStatus }) => {
+    const statusConfig: Record<TAdmissionStatus, { color: 'success' | 'warning' | 'error'; icon: JSX.Element; label: string }> = {
         pending: {
             color: 'warning',
             icon: <Pending sx={{ fontSize: 16 }} />,
-            label: 'বিচারাধীন',
+            label: 'Pending',
         },
         approved: {
             color: 'success',
             icon: <CheckCircle sx={{ fontSize: 16 }} />,
-            label: 'অনুমোদিত',
+            label: 'Approved',
         },
         rejected: {
             color: 'error',
             icon: <Cancel sx={{ fontSize: 16 }} />,
-            label: 'বাতিল',
-        },
-        enrolled: {
-            color: 'info',
-            icon: <CheckCircle sx={{ fontSize: 16 }} />,
-            label: 'ভর্তিকৃত',
+            label: 'Rejected',
         },
     }
 
-    const config = statusConfig[status?.toLowerCase()] || statusConfig.pending
+    const config = statusConfig[status] || statusConfig.pending
 
     return (
         <Chip
@@ -73,18 +133,13 @@ const StatusChip = ({ status }: { status: string }) => {
                 fontWeight: 600,
                 borderRadius: '8px',
                 minWidth: { xs: 80, sm: 100 },
-                '& .MuiChip-icon': {
-                    fontSize: 16,
-                },
-                '& .MuiChip-label': {
-                    px: { xs: 1, sm: 2 },
-                },
+                '& .MuiChip-icon': { fontSize: 16 },
+                '& .MuiChip-label': { px: { xs: 1, sm: 2 } },
             }}
         />
     )
 }
 
-// Department chip
 const DepartmentChip = ({ department }: { department: string }) => {
     const departmentColors: Record<string, string> = {
         hifz: '#8B5CF6',
@@ -92,7 +147,6 @@ const DepartmentChip = ({ department }: { department: string }) => {
         nazera: '#10B981',
         tajbid: '#F59E0B',
     }
-
     const departmentLabels: Record<string, string> = {
         hifz: 'হিফজ',
         academic: 'একাডেমিক',
@@ -111,15 +165,12 @@ const DepartmentChip = ({ department }: { department: string }) => {
                 borderRadius: '8px',
                 border: `1px solid ${departmentColors[department] || '#6B7280'}30`,
                 minWidth: { xs: 70, sm: 90 },
-                '& .MuiChip-label': {
-                    px: { xs: 1, sm: 1.5 },
-                },
+                '& .MuiChip-label': { px: { xs: 1, sm: 1.5 } },
             }}
         />
     )
 }
 
-// Student avatar component
 const StudentAvatar = ({ name, photo }: { name: string; photo?: string }) => {
     return (
         <Box sx={{
@@ -155,52 +206,6 @@ const StudentAvatar = ({ name, photo }: { name: string; photo?: string }) => {
     )
 }
 
-// Date formatter
-const formatDate = (date: string | Date) => {
-    try {
-        return format(new Date(date), 'dd MMM yyyy', { locale: bn })
-    } catch {
-        return 'Invalid date'
-    }
-}
-
-// Document status component
-const DocumentStatus = ({ documents }: { documents: any }) => {
-    const docs = documents || {}
-    const submittedCount = Object.values(docs).filter(Boolean).length
-    const totalCount = 5 // photographs, birthCertificate, markSheet, transferCertificate, characterCertificate
-
-    return (
-        <Tooltip title={`${submittedCount}/${totalCount} documents submitted`}>
-            <Badge
-                badgeContent={submittedCount}
-                color={submittedCount === totalCount ? 'success' : 'warning'}
-                sx={{
-                    '& .MuiBadge-badge': {
-                        fontSize: { xs: '0.6rem', sm: '0.75rem' },
-                        height: { xs: 18, sm: 20 },
-                        minWidth: { xs: 18, sm: 20 },
-                    }
-                }}
-            >
-                <Chip
-                    label={`${submittedCount}/${totalCount}`}
-                    size="small"
-                    color={submittedCount === totalCount ? 'success' : 'warning'}
-                    sx={{
-                        fontWeight: 600,
-                        '& .MuiChip-label': {
-                            px: { xs: 1, sm: 1.5 },
-                            fontSize: { xs: '0.7rem', sm: '0.75rem' }
-                        }
-                    }}
-                />
-            </Badge>
-        </Tooltip>
-    )
-}
-
-// Mobile number component
 const MobileNumber = ({ number }: { number: string }) => {
     return (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
@@ -218,16 +223,9 @@ export default function AdmissionApplications() {
     const isMobile = useMediaQuery(theme.breakpoints.down('sm'))
     const isTablet = useMediaQuery(theme.breakpoints.between('sm', 'md'))
 
-    // --- UPDATED: Initialize Update and Delete Mutation Hooks ---
+    // Mutation Hooks
     const [updateApplication, { isLoading: isUpdating }] = useUpdateAdmissionApplicationMutation()
     const [deleteAdmissionApplication, { isLoading: isDeleting }] = useDeleteAdmissionApplicationMutation()
-
-    // Snackbar state for feedback
-    const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
-        open: false,
-        message: '',
-        severity: 'success'
-    });
 
     const [page, setPage] = useState(0)
     const [rowsPerPage, setRowsPerPage] = useState(isMobile ? 5 : 10)
@@ -241,12 +239,10 @@ export default function AdmissionApplications() {
     const [selectedApplication, setSelectedApplication] = useState<any>(null)
     const [modalLoading, setModalLoading] = useState(false)
 
-    // Update rows per page based on screen size
     useEffect(() => {
         setRowsPerPage(isMobile ? 5 : isTablet ? 8 : 10)
     }, [isMobile, isTablet])
 
-    // Build query params
     const queryParams = useMemo(() => ({
         page: page + 1,
         limit: rowsPerPage,
@@ -256,186 +252,183 @@ export default function AdmissionApplications() {
         ...filters,
     }), [page, rowsPerPage, searchTerm, sortColumn, sortDirection, filters])
 
-    // Fetch applications with filters
-    const { data, isLoading, error, refetch } = useGetAllAdmissionApplicationsQuery(queryParams)
+    const { data, isLoading, refetch } = useGetAllAdmissionApplicationsQuery(queryParams)
 
-    // Handle refresh
-    const handleRefresh = () => {
-        refetch()
-    }
+    const handleRefresh = () => refetch()
+    const handleAddNew = () => router.push('/dashboard/admission-application/new')
 
-    // Handle add new application
-    const handleAddNew = () => {
-        router.push('/dashboard/admission-application/new')
-    }
-
-    // Handle view application - opens modal
     const handleView = (row: any) => {
         setModalLoading(true)
         setSelectedApplication(row)
         setModalOpen(true)
-        setTimeout(() => {
-            setModalLoading(false)
-        }, 500)
+        setTimeout(() => setModalLoading(false), 500)
     }
 
-    // Handle close modal
     const handleCloseModal = () => {
         setModalOpen(false)
-        setTimeout(() => {
-            setSelectedApplication(null)
-        }, 300)
+        setTimeout(() => setSelectedApplication(null), 300)
     }
 
-    // Handle edit application - CORRECTED VERSION WITH ID
+    // Helper to safely get ID
+    const getId = (row: any) => row?._id;
+
     const handleEdit = (row: any) => {
-        const applicationId = row._id || row.id || row.applicationId;
-        if (!applicationId) {
-            console.error('No ID found for application:', row);
-            alert('Application ID not found');
+        const id = getId(row);
+        if (!id) {
+            Swal.fire('Error', 'Application ID not found', 'error');
             return;
         }
-        router.push(`/dashboard/admission-application/edit?id=${applicationId}`);
+        router.push(`/dashboard/admission-application/edit?id=${id}`);
     }
 
-    // --- UPDATED: Handle delete application ---
     const handleDelete = async (row: any) => {
-        const applicationId = row._id || row.id || row.applicationId;
-        if (!applicationId) return;
+        const id = getId(row);
+        if (!id) return;
 
-        if (window.confirm('Are you sure you want to delete this application?')) {
+        const result = await Swal.fire({
+            title: 'Are you sure?',
+            text: "You won't be able to revert this!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Yes, delete it!',
+            cancelButtonText: 'No, cancel!'
+        });
+
+        if (result.isConfirmed) {
             try {
-                await deleteAdmissionApplication(applicationId).unwrap();
-                setSnackbar({ open: true, message: 'Application deleted successfully', severity: 'success' });
-                // The API invalidates tags, but explicit refetch ensures immediate UI update
+                await deleteAdmissionApplication(id).unwrap();
+                Swal.fire('Deleted!', 'Application has been deleted.', 'success');
                 refetch();
             } catch (error: any) {
                 console.error('Delete failed:', error);
-                setSnackbar({ open: true, message: error?.data?.message || 'Failed to delete application', severity: 'error' });
+                Swal.fire('Failed!', error?.data?.message || 'Failed to delete application', 'error');
             }
         }
     }
 
-    // --- UPDATED: Handle approve application ---
-    const handleApprove = async (row: any) => {
-        const applicationId = row._id || row.id || row.applicationId;
-        if (!applicationId) return;
+    const handleUpdateStatus = async (row: any, newStatus: 'approved' | 'rejected') => {
+        const id = getId(row);
+        if (!id) return;
 
-        try {
-            await updateApplication({
-                id: applicationId,
-                data: { status: 'approved' }
-            }).unwrap();
+        const isApproval = newStatus === 'approved';
+        const result = await Swal.fire({
+            title: `${isApproval ? 'Approve' : 'Reject'} Application?`,
+            text: `Are you sure you want to ${isApproval ? 'approve' : 'reject'} this application?`,
+            icon: isApproval ? 'question' : 'warning',
+            showCancelButton: true,
+            confirmButtonColor: isApproval ? '#10B981' : '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: `Yes, ${isApproval ? 'Approve' : 'Reject'}!`,
+        });
 
-            setSnackbar({ open: true, message: 'Application approved successfully', severity: 'success' });
-            refetch();
-        } catch (error: any) {
-            console.error('Approve failed:', error);
-            setSnackbar({ open: true, message: error?.data?.message || 'Failed to approve application', severity: 'error' });
-        }
-    }
-
-    // --- UPDATED: Handle reject application ---
-    const handleReject = async (row: any) => {
-        const applicationId = row._id || row.id || row.applicationId;
-        if (!applicationId) return;
-
-        if (!window.confirm('Are you sure you want to reject this application?')) return;
-
-        try {
-            await updateApplication({
-                id: applicationId,
-                data: { status: 'rejected' }
-            }).unwrap();
-
-            setSnackbar({ open: true, message: 'Application rejected', severity: 'success' });
-            refetch();
-        } catch (error: any) {
-            console.error('Reject failed:', error);
-            setSnackbar({ open: true, message: error?.data?.message || 'Failed to reject application', severity: 'error' });
-        }
-    }
-
-    // Handle print application
-    const handlePrint = (row: any) => {
-        const applicationId = row._id || row.id || row.applicationId;
-        window.open(`/dashboard/admission-application/print?id=${applicationId}`, '_blank')
-    }
-
-    // Handle download PDF
-    const handleDownloadPDF = (row: any) => {
-        const applicationId = row._id || row.id || row.applicationId;
-        console.log('Download PDF for application with ID:', applicationId);
-    }
-
-    // --- UPDATED: Handle bulk approve ---
-    const handleBulkApprove = async (selectedRows: any[]) => {
-        const ids = selectedRows.map(r => r._id || r.id || r.applicationId).filter(Boolean);
-        if (ids.length === 0) return;
-
-        if (!window.confirm(`Are you sure you want to approve ${ids.length} applications?`)) return;
-
-        try {
-            await Promise.all(ids.map(id =>
-                updateApplication({ id, data: { status: 'approved' } }).unwrap()
-            ));
-
-            setSnackbar({ open: true, message: `${ids.length} applications approved`, severity: 'success' });
-            refetch();
-        } catch (error: any) {
-            console.error('Bulk approve failed:', error);
-            setSnackbar({ open: true, message: 'Some applications failed to update', severity: 'error' });
-        }
-    }
-
-    // --- UPDATED: Handle bulk delete ---
-    const handleBulkDelete = async (selectedRows: any[]) => {
-        const ids = selectedRows.map(r => r._id || r.id || r.applicationId).filter(Boolean);
-        if (ids.length === 0) return;
-
-        if (window.confirm(`Are you sure you want to delete ${ids.length} applications?`)) {
+        if (result.isConfirmed) {
             try {
-                // Since API takes single ID, we map over all IDs
-                await Promise.all(ids.map(id => deleteAdmissionApplication(id).unwrap()));
+                await updateApplication({
+                    id: id,
+                    data: { status: newStatus }
+                }).unwrap();
 
-                setSnackbar({ open: true, message: `${ids.length} applications deleted successfully`, severity: 'success' });
+                Swal.fire({
+                    icon: 'success',
+                    title: `${isApproval ? 'Approved!' : 'Rejected!'}`,
+                    text: `Application has been ${isApproval ? 'approved' : 'rejected'}.`,
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+
                 refetch();
             } catch (error: any) {
-                console.error('Bulk delete failed:', error);
-                setSnackbar({ open: true, message: 'Some applications failed to delete', severity: 'error' });
+                console.error('Update failed:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Failed!',
+                    text: error?.data?.message || `Failed to ${isApproval ? 'approve' : 'reject'} application`,
+                });
             }
         }
     }
 
-    const handleBulkExport = (selectedRows: any[]) => {
-        const ids = selectedRows.map(r => r._id || r.id || r.applicationId).filter(Boolean);
-        console.log('Bulk export applications with IDs:', ids);
+    const handleApprove = (row: any) => handleUpdateStatus(row, 'approved');
+    const handleReject = (row: any) => handleUpdateStatus(row, 'rejected');
+
+    const handleDownloadPDF = (row: any) => {
+        const id = getId(row);
+        console.log('Download PDF for application with ID:', id);
+        // Implement PDF download logic here
     }
 
-    // Handle export all
-    const handleExport = () => {
-        console.log('Export all data')
+    // --- Bulk Actions ---
+    const handleBulkAction = async (selectedRows: any[], actionType: 'approve' | 'delete') => {
+        const ids = selectedRows.map(r => r._id).filter(Boolean);
+        if (ids.length === 0) return;
+
+        const isDelete = actionType === 'delete';
+        const title = isDelete ? `Delete ${ids.length} Applications?` : `Approve ${ids.length} Applications?`;
+        const text = isDelete
+            ? `You are about to delete ${ids.length} applications.`
+            : "This action cannot be undone.";
+        const confirmBtnText = isDelete ? 'Yes, delete all!' : 'Yes, Approve All!';
+        const confirmColor = isDelete ? '#d33' : '#10B981';
+
+        const result = await Swal.fire({
+            title,
+            text,
+            icon: isDelete ? 'warning' : 'question',
+            showCancelButton: true,
+            confirmButtonColor: confirmColor,
+            confirmButtonText: confirmBtnText
+        });
+
+        if (result.isConfirmed) {
+            try {
+                // Use Promise.allSettled to handle partial failures
+                const promises = ids.map(id =>
+                    isDelete
+                        ? deleteAdmissionApplication(id).unwrap()
+                        : updateApplication({ id, data: { status: 'approved' } }).unwrap()
+                );
+
+                const results = await Promise.allSettled(promises);
+                const succeeded = results.filter(r => r.status === 'fulfilled').length;
+                const failed = results.filter(r => r.status === 'rejected').length;
+
+                if (failed === 0) {
+                    Swal.fire('Success!', `${succeeded} applications ${isDelete ? 'deleted' : 'approved'}.`, 'success');
+                } else {
+                    Swal.fire('Partial Success', `${succeeded} ${isDelete ? 'deleted' : 'approved'}, ${failed} failed.`, 'warning');
+                }
+
+                refetch();
+            } catch (error: any) {
+                Swal.fire('Error', 'Operation failed partially or completely.', 'error');
+            }
+        }
     }
 
-    // Define columns for the table
+    const handleBulkApprove = (selectedRows: any[]) => handleBulkAction(selectedRows, 'approve');
+    const handleBulkDelete = (selectedRows: any[]) => handleBulkAction(selectedRows, 'delete');
+
+
     const columns: Column[] = useMemo(() => {
         const baseColumns: Column[] = [
             {
-                id: 'studentInfo',
-                label: 'শিক্ষার্থী',
+                id: 'nameBangla',
+                label: 'Student',
                 minWidth: isMobile ? 150 : 250,
                 sortable: true,
                 filterable: true,
                 render: (row: any) => (
                     <StudentAvatar
-                        name={row.studentInfo?.nameBangla || row.studentInfo?.nameEnglish}
-                        photo={row.studentInfo?.studentPhoto}
+                        name={row.nameBangla || row.nameEnglish}
+                        photo={row.studentPhoto}
                     />
                 ),
             },
             {
                 id: 'applicationId',
-                label: 'আইডি',
+                label: 'ID',
                 minWidth: isMobile ? 80 : 120,
                 sortable: true,
                 render: (row: any) => (
@@ -450,8 +443,8 @@ export default function AdmissionApplications() {
                 ),
             },
             {
-                id: 'studentDepartment',
-                label: 'বিভাগ',
+                id: 'department',
+                label: 'Department',
                 minWidth: isMobile ? 80 : 120,
                 sortable: true,
                 filterable: true,
@@ -461,102 +454,61 @@ export default function AdmissionApplications() {
                     { label: 'নাজেরা', value: 'nazera' },
                     { label: 'তাজবীদ', value: 'tajbid' },
                 ],
-                render: (row: any) => <DepartmentChip department={row.studentInfo?.department || row.studentInfo?.studentDepartment} />,
+                render: (row: any) => <DepartmentChip department={row.department} />,
             },
             {
                 id: 'class',
-                label: 'শ্রেণি',
+                label: 'Class',
                 minWidth: isMobile ? 70 : 100,
                 sortable: true,
                 filterable: true,
                 render: (row: any) => (
                     <Typography variant="body2" sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>
-                        {row.studentInfo?.Class || row.studentInfo?.class || 'N/A'}
+                        {row.class || 'N/A'}
                     </Typography>
                 ),
             },
             {
                 id: 'status',
-                label: 'অবস্থা',
+                label: 'Status',
                 minWidth: isMobile ? 90 : 120,
                 sortable: true,
                 filterable: true,
                 filterOptions: [
-                    { label: 'বিচারাধীন', value: 'pending' },
-                    { label: 'অনুমোদিত', value: 'approved' },
-                    { label: 'বাতিল', value: 'rejected' },
-                    { label: 'ভর্তিকৃত', value: 'enrolled' },
+                    { label: 'Pending', value: 'pending' },
+                    { label: 'Approved', value: 'approved' },
+                    { label: 'Rejected', value: 'rejected' },
                 ],
                 render: (row: any) => <StatusChip status={row.status} />,
             },
         ];
 
         if (!isMobile) {
-            baseColumns.push(
-                {
-                    id: 'fatherName',
-                    label: 'পিতার নাম',
-                    minWidth: isTablet ? 140 : 180,
-                    sortable: true,
-                    filterable: true,
-                    render: (row: any) => (
-                        <Typography variant="body2" sx={{ fontSize: { xs: '0.75rem', sm: '0.875rem' } }}>
-                            {row.parentInfo?.father?.nameBangla || row.parentInfo?.father?.nameEnglish || 'N/A'}
-                        </Typography>
-                    ),
-                },
-                {
-                    id: 'mobile',
-                    label: 'মোবাইল',
-                    minWidth: isTablet ? 120 : 140,
-                    sortable: true,
-                    render: (row: any) => <MobileNumber number={row.parentInfo?.father?.mobile} />,
-                }
-            );
-        }
-
-        baseColumns.push(
-            {
-                id: 'academicYear',
-                label: 'সেশন',
-                minWidth: isMobile ? 70 : 100,
-                sortable: true,
-                filterable: true,
-                render: (row: any) => (
-                    <Typography variant="body2" sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>
-                        {row.academicYear || new Date().getFullYear().toString()}
-                    </Typography>
-                ),
-            }
-        );
-
-        if (!isMobile) {
             baseColumns.push({
-                id: 'createdAt',
-                label: 'আবেদনের তারিখ',
-                minWidth: isTablet ? 110 : 140,
+                id: 'mobile',
+                label: 'Mobile',
+                minWidth: isTablet ? 120 : 140,
                 sortable: true,
-                type: 'date',
-                render: (row: any) => (
-                    <Typography variant="body2" sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>
-                        {formatDate(row.createdAt)}
-                    </Typography>
-                ),
+                render: (row: any) => <MobileNumber number={row.mobile || row.fatherMobile} />,
             });
         }
 
         baseColumns.push({
-            id: 'documents',
-            label: 'ডকুমেন্টস',
-            minWidth: isMobile ? 80 : 120,
-            align: 'center',
-            render: (row: any) => <DocumentStatus documents={row.documents} />,
+            id: 'academicYear',
+            label: 'Session',
+            minWidth: isMobile ? 70 : 100,
+            sortable: true,
+            filterable: true,
+            render: (row: any) => (
+                <Typography variant="body2" sx={{ fontSize: { xs: '0.7rem', sm: '0.875rem' } }}>
+                    {row.academicYear || new Date().getFullYear().toString()}
+                </Typography>
+            ),
         });
 
         return baseColumns;
     }, [isMobile, isTablet]);
 
-    // Define row actions
     const rowActions: RowAction[] = useMemo(() => [
         {
             label: 'View',
@@ -575,17 +527,6 @@ export default function AdmissionApplications() {
             color: 'primary',
             inMenu: isMobile,
             alwaysShow: !isMobile,
-            disabled: (row) => row.status === 'approved' || row.status === 'rejected' || row.status === 'enrolled',
-        },
-        {
-            label: 'Delete',
-            icon: <Delete fontSize="small" />,
-            onClick: handleDelete,
-            tooltip: 'Delete application',
-            color: 'error',
-            inMenu: false,
-            alwaysShow: true,
-            disabled: () => isDeleting || isUpdating, // Disable if any global operation is happening
         },
         {
             label: 'Approve',
@@ -594,7 +535,6 @@ export default function AdmissionApplications() {
             tooltip: 'Approve application',
             color: 'success',
             inMenu: true,
-            disabled: (row) => row.status === 'approved' || row.status === 'rejected' || row.status === 'enrolled' || isUpdating || isDeleting,
         },
         {
             label: 'Reject',
@@ -602,15 +542,6 @@ export default function AdmissionApplications() {
             onClick: handleReject,
             tooltip: 'Reject application',
             color: 'error',
-            inMenu: true,
-            disabled: (row) => row.status === 'approved' || row.status === 'rejected' || row.status === 'enrolled' || isUpdating || isDeleting,
-        },
-        {
-            label: 'Print',
-            icon: <Print fontSize="small" />,
-            onClick: handlePrint,
-            tooltip: 'Print application',
-            color: 'info',
             inMenu: true,
         },
         {
@@ -621,9 +552,18 @@ export default function AdmissionApplications() {
             color: 'secondary',
             inMenu: true,
         },
+        {
+            label: 'Delete',
+            icon: <Delete fontSize="small" />,
+            onClick: handleDelete,
+            tooltip: 'Delete application',
+            color: 'error',
+            inMenu: false,
+            alwaysShow: true,
+            disabled: () => isDeleting || isUpdating,
+        },
     ], [isMobile, isUpdating, isDeleting]);
 
-    // Define bulk actions
     const bulkActions: BulkAction[] = useMemo(() => [
         {
             label: 'Approve',
@@ -631,7 +571,7 @@ export default function AdmissionApplications() {
             onClick: handleBulkApprove,
             color: 'success',
             disabled: (selectedRows: any[]) =>
-                selectedRows.some(row => row.status === 'approved' || row.status === 'rejected' || row.status === 'enrolled') || isUpdating || isDeleting,
+                selectedRows.some(row => row.status !== 'pending') || isUpdating || isDeleting,
         },
         {
             label: 'Delete',
@@ -640,23 +580,31 @@ export default function AdmissionApplications() {
             color: 'error',
             disabled: () => isDeleting || isUpdating,
         },
-        {
-            label: 'Export',
-            icon: <Download fontSize="small" />,
-            onClick: handleBulkExport,
-            color: 'info',
-        },
     ], [isUpdating, isDeleting]);
 
-    // Transform API data to match table structure
     const tableData = useMemo(() => {
-        return data?.data?.map((item: any) => ({
-            ...item,
-            ...item.studentInfo,
-            ...item.parentInfo,
-            ...item.academicInfo,
-        })) || []
-    }, [data])
+        if (!data?.data) return [];
+        return data.data.map((item: any) => {
+            return {
+                _id: item._id,
+                applicationId: item.applicationId,
+                status: item.status,
+                academicYear: item.academicYear,
+                nameBangla: item.studentInfo?.nameBangla,
+                nameEnglish: item.studentInfo?.nameEnglish,
+                studentPhoto: item.studentInfo?.studentPhoto,
+                department: item.studentInfo?.department,
+                class: item.studentInfo?.class,
+                mobile: item.parentInfo?.father?.mobile, // Flattening for easier access in table
+                fatherMobile: item.parentInfo?.father?.mobile,
+                // Keep original objects for modal
+                studentInfo: item.studentInfo,
+                parentInfo: item.parentInfo,
+                academicInfo: item.academicInfo,
+                address: item.address,
+            };
+        }) || []
+    }, [data]);
 
     return (
         <>
@@ -676,7 +624,6 @@ export default function AdmissionApplications() {
                     onPageChange={setPage}
                     onRowsPerPageChange={setRowsPerPage}
                     onRefresh={handleRefresh}
-                    onExport={handleExport}
                     onAdd={handleAddNew}
                     onSearchChange={setSearchTerm}
                     onSortChange={(column, direction) => {
@@ -714,22 +661,6 @@ export default function AdmissionApplications() {
                 application={selectedApplication}
                 loading={modalLoading}
             />
-
-            {/* Snackbar for feedback */}
-            <Snackbar
-                open={snackbar.open}
-                autoHideDuration={4000}
-                onClose={() => setSnackbar({ ...snackbar, open: false })}
-                anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-            >
-                <Alert
-                    onClose={() => setSnackbar({ ...snackbar, open: false })}
-                    severity={snackbar.severity}
-                    sx={{ width: '100%' }}
-                >
-                    {snackbar.message}
-                </Alert>
-            </Snackbar>
         </>
     )
 }

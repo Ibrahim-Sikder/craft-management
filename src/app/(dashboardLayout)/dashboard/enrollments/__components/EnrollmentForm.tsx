@@ -19,6 +19,7 @@ import {
   useUpdateEnrollmentMutation,
 } from "@/redux/api/enrollmentApi";
 import { useGetAllStudentsQuery } from "@/redux/api/studentApi";
+import { useGetAllAdmissionApplicationsQuery } from "@/redux/api/admissionApplication";
 import {
   AccessTime,
   AccountCircle,
@@ -47,6 +48,8 @@ import {
   School as SchoolIcon,
   Work,
   Print,
+  Assignment,
+  FileCopy,
 } from "@mui/icons-material";
 import {
   Alert,
@@ -75,10 +78,12 @@ import {
   Typography,
   alpha,
   useTheme,
+  Divider,
+  Chip,
 } from "@mui/material";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useEffect, useState } from "react";
-import { useFieldArray, useFormContext } from "react-hook-form";
+import { useEffect, useState, useCallback } from "react";
+import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
 import toast from "react-hot-toast";
 import PrintModal from "../../student/profile/__components/PrintModal";
 import AddFeeModal from "../../student/profile/__components/AddFeeModal";
@@ -95,6 +100,108 @@ const fadeInSlideUp = {
     "0%": { opacity: 0, transform: "translateY(15px)" },
     "100%": { opacity: 1, transform: "translateY(0)" },
   },
+};
+
+// --- Admission Application Selector Component ---
+const AdmissionApplicationSelector = ({ onSelect }: { onSelect: (application: any) => void }) => {
+  const theme = useTheme();
+
+  // Fetch data directly here to ensure we get the FULL list and FULL objects
+  const { data: applicationsData, isLoading } = useGetAllAdmissionApplicationsQuery({
+    limit: 100,
+    status: 'approved'
+  });
+
+
+  const options = applicationsData?.data?.map((app: any) => ({
+    label: `${app.applicationId || app._id} - ${app.studentInfo?.nameEnglish || app.studentInfo?.nameBangla || 'Unknown'}`,
+    value: app._id,
+    application: app
+  })) || [];
+  console.log('this is application id ', options)
+
+  const [selectedApp, setSelectedApp] = useState<any>(null);
+
+  const handleApplicationSelect = (event: any, value: any) => {
+    if (value && value.application) {
+      setSelectedApp(value.application);
+      onSelect(value.application);
+
+      const studentName = value.application?.studentInfo?.nameBangla ||
+        value.application?.studentInfo?.nameEnglish ||
+        'Student';
+      toast.success(`Application for ${studentName} loaded`);
+    } else {
+      setSelectedApp(null);
+    }
+  };
+
+  return (
+    <Paper
+      elevation={0}
+      sx={{
+        p: 3,
+        mb: 3,
+        borderRadius: 3,
+        background: `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.05)} 0%, ${alpha(theme.palette.info.main, 0.05)} 100%)`,
+        border: `1px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+        position: 'relative',
+        overflow: 'hidden'
+      }}
+    >
+      <Box sx={{ position: 'absolute', top: 0, right: 0, p: 1 }}>
+        <Chip
+          icon={<FileCopy fontSize="small" />}
+          label="Auto-fill from Application"
+          size="small"
+          color="primary"
+          variant="outlined"
+        />
+      </Box>
+
+      <Grid container spacing={2} alignItems="center">
+        <Grid item xs={12} md={8}>
+          <CraftIntAutoCompleteWithIcon
+            name="admissionApplication"
+            label="Select Admission Application"
+            placeholder="Search by ID or Student Name..."
+            options={options}
+            size="medium"
+            multiple={false}
+            icon={<Assignment color="primary" />}
+            onChange={handleApplicationSelect}
+            loading={isLoading}
+            fullWidth
+            helperText="Select an approved application to auto-fill the form"
+          />
+        </Grid>
+        <Grid item xs={12} md={4}>
+          {selectedApp && (
+            <Box sx={{ display: 'flex', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
+              <Chip
+                label={`Status: ${selectedApp.status}`}
+                color={selectedApp.status === 'approved' ? 'success' : 'warning'}
+                size="small"
+              />
+              <Chip
+                label={`ID: ${selectedApp.applicationId || selectedApp._id?.slice(-6)}`}
+                variant="outlined"
+                size="small"
+              />
+              {selectedApp.studentInfo && (
+                <Chip
+                  label={`Class: ${selectedApp.studentInfo.class}`}
+                  variant="outlined"
+                  size="small"
+                  color="primary"
+                />
+              )}
+            </Box>
+          )}
+        </Grid>
+      </Grid>
+    </Paper>
+  );
 };
 
 // --- Fee Amount Handler ---
@@ -158,7 +265,6 @@ const FeeAmountHandler = ({
           const amount = item.amount;
 
           if (typeLabel.toLowerCase().includes('monthly fee') && selectionMode !== 'admission') {
-            // CHANGE: Do NOT expand into 12 items. Keep as ONE item with range fields.
             formattedItems.push({
               feeType: { label: "Monthly Fee", value: "Monthly Fee" },
               amount: amount,
@@ -349,7 +455,6 @@ const DynamicFeeFields = ({
           const amount = item.amount;
 
           if (typeLabel.toLowerCase().includes('monthly fee') && selectionMode !== 'admission') {
-            // CHANGE: Do NOT expand. Keep as ONE item.
             feeItems.push({
               feeType: { label: "Monthly Fee", value: "Monthly Fee" },
               amount: amount,
@@ -433,7 +538,6 @@ const DynamicFeeFields = ({
     }
   };
 
-  // New Handler for Range Discount
   const handleApplyRangeDiscount = (feeIndex: number, itemIndex: number, startMonth: string, endMonth: string, amount: number) => {
     if (!startMonth || !endMonth) {
       toast.error("Please select start and end month");
@@ -512,7 +616,6 @@ const DynamicFeeFields = ({
             const classSpecificFeeOptions = getFeeTypeOptionsForClass(classNameStr);
             const selectionMode = watch(`fees.${index}.selectionMode`) || 'admission';
 
-            // Temp state for the range selectors in UI
             const [rangeStart, setRangeStart] = useState("");
             const [rangeEnd, setRangeEnd] = useState("");
             const [rangeAmt, setRangeAmt] = useState(0);
@@ -701,7 +804,6 @@ const DynamicFeeFields = ({
                                     </Tooltip>
                                   </Grid>
 
-                                  {/* Monthly Range Discount UI for this specific item */}
                                   {isMonthly && (
                                     <Grid item xs={12} sx={{ mt: 1 }}>
                                       <Paper variant="outlined" sx={{ p: 1.5, borderColor: theme.palette.info.main, bgcolor: alpha(theme.palette.info.light, 0.1) }}>
@@ -761,10 +863,6 @@ const DynamicFeeFields = ({
                                   <Box sx={{ p: 1.5, bgcolor: alpha(theme.palette.error.light, 0.1), borderRadius: 1, border: `1px solid ${alpha(theme.palette.error.main, 0.2)}` }}>
                                     <Typography variant="body2" color="error.main" align="center">
                                       Disc: ৳{feeItems?.reduce((sum: number, item: any) => {
-                                        // Calculate Discount for Display
-                                        // If Monthly with range: Discount = RangeAmt * (EndIndex - StartIndex + 1)
-                                        // If Monthly no range: Discount = 0 (or simple discount)
-                                        // If Normal: Discount
                                         let d = parseFloat(item.discount) || 0;
                                         if (item.isMonthly && item.discountRangeStart && item.discountRangeEnd) {
                                           const sIndex = MONTHS.indexOf(item.discountRangeStart);
@@ -1031,7 +1129,7 @@ const AddressDocumentsStep = () => {
   );
 };
 
-// --- FEE STEP & LOGIC ---
+// --- FEE STEP ---
 
 const FeeStep = ({ classOptions, feeCategoryData, studentData }: any) => {
   const theme = useTheme();
@@ -1049,7 +1147,7 @@ const FeeStep = ({ classOptions, feeCategoryData, studentData }: any) => {
       if (fee.feeItems && Array.isArray(fee.feeItems)) {
         fee.feeItems.forEach((item: any) => {
           let amt = parseFloat(item.amount) || 0;
-          if (item.isMonthly) amt = amt * 12; // Multiply for display
+          if (item.isMonthly) amt = amt * 12;
           total += amt;
         });
       }
@@ -1082,7 +1180,6 @@ const FeeStep = ({ classOptions, feeCategoryData, studentData }: any) => {
     const totalFees = calculateTotalFees();
     const totalItemDiscounts = calculateTotalItemDiscounts();
 
-    // Removed Global Discount logic
     const netPayable = totalFees - totalItemDiscounts;
     const paidAmountNum = parseFloat(paidAmount) || 0;
     const dueAmount = Math.max(0, netPayable - paidAmountNum);
@@ -1183,19 +1280,166 @@ const FeeStep = ({ classOptions, feeCategoryData, studentData }: any) => {
   );
 };
 
-// --- TRANSFORM DATA ---
+// --- TRANSFORM FUNCTIONS ---
+
+const transformApplicationToFormData = (application: any, classOptions: any[]) => {
+  if (!application) {
+    console.log('No application data provided');
+    return null;
+  }
+
+  // Destructure data based on the provided structure
+  const studentInfo = application.studentInfo || {};
+  const parentInfo = application.parentInfo || {};
+  const address = application.address || {};
+  const presentAddress = address.present || {};
+  const permanentAddress = address.permanent || {};
+  const fatherInfo = parentInfo.father || {};
+  const motherInfo = parentInfo.mother || {};
+  const guardianInfo = parentInfo.guardian || {};
+  const documents = application.documents || {};
+  const academicInfo = application.academicInfo || {};
+
+  // Helper to format date to YYYY-MM-DD
+  const formatDate = (dateString: string) => {
+    if (!dateString) return null;
+    try {
+      const date = new Date(dateString);
+      return date.toISOString().split('T')[0];
+    } catch {
+      return null;
+    }
+  };
+
+  // Format Class for Form (Handle string "Class 6" to Object format)
+  const formatClassForForm = (classData: any) => {
+    if (!classData) return [];
+
+    // classData is expected to be a string like "Class 6" based on user data
+    if (typeof classData === 'string') {
+      // Try to find exact match in existing options
+      const matchedClass = classOptions?.find((opt: any) => opt.label === classData || opt.value === classData);
+
+      if (matchedClass) {
+        return [matchedClass];
+      } else {
+        // Fallback: Create a synthetic option so the form doesn't crash
+        return [{ label: classData, name: classData, value: classData }];
+      }
+    }
+    return [];
+  };
+
+  // Transform Class Data
+  const formattedClass = formatClassForForm(studentInfo.class);
+
+  const formData = {
+    // Student Information
+    studentId: application.applicationId || "",
+    studentNameBangla: studentInfo.nameBangla || "",
+    studentPhoto: studentInfo.studentPhoto || "",
+    studentName: studentInfo.nameEnglish || "",
+    mobileNo: fatherInfo.mobile || motherInfo.mobile || guardianInfo.mobile || "", // Priority: Father > Mother > Guardian
+    session: application.academicYear || new Date().getFullYear().toString(),
+    category: "residential", // Default as not in sample data
+    dateOfBirth: formatDate(studentInfo.dateOfBirth),
+    nidBirth: studentInfo.nidBirth || "",
+    bloodGroup: studentInfo.bloodGroup || "",
+    nationality: studentInfo.nationality || "Bangladeshi",
+
+    // Academic Information
+    className: formattedClass,
+    studentDepartment: studentInfo.department || "academic", // "Science" in sample
+    rollNumber: "", // Not in sample
+    section: "", // Not in sample
+    group: "", // Not in sample
+    optionalSubject: "", // Not in sample
+    shift: studentInfo.session || "", // "Morning" in sample
+
+    // Father's Information
+    fatherName: fatherInfo.nameEnglish || "",
+    fatherNameBangla: fatherInfo.nameBangla || "",
+    fatherMobile: fatherInfo.mobile || "",
+    fatherNid: "", // Not in sample
+    fatherProfession: fatherInfo.profession || "",
+    fatherIncome: 0,
+
+    // Mother's Information
+    motherName: motherInfo.nameEnglish || "",
+    motherNameBangla: motherInfo.nameBangla || "",
+    motherMobile: motherInfo.mobile || "",
+    motherNid: "", // Not in sample
+    motherProfession: motherInfo.profession || "",
+    motherIncome: 0,
+
+    // Present Address
+    village: presentAddress.village || "",
+    postOffice: presentAddress.postOffice || "",
+    postCode: presentAddress.postCode || "",
+    policeStation: presentAddress.policeStation || "",
+    district: presentAddress.district || "",
+
+    // Permanent Address
+    permVillage: permanentAddress.village || "",
+    permPostOffice: permanentAddress.postOffice || "",
+    permPostCode: permanentAddress.postCode || "",
+    permPoliceStation: permanentAddress.policeStation || "",
+    permDistrict: permanentAddress.district || "",
+
+    // Guardian Information
+    guardianName: guardianInfo.nameEnglish || "",
+    guardianRelation: guardianInfo.relation || "",
+    guardianMobile: guardianInfo.mobile || "",
+    guardianVillage: "", // Not in sample data
+
+    // Previous School Information
+    formerInstitution: academicInfo.previousSchool || "",
+    formerVillage: "",
+
+    // Documents
+    birthCertificate: documents.birthCertificate || false,
+    transferCertificate: documents.transferCertificate || false,
+    characterCertificate: documents.characterCertificate || false,
+    markSheet: documents.markSheet || false,
+    photographs: documents.photographs || false,
+
+    // Terms & Conditions
+    termsAccepted: application.termsAccepted || false,
+
+    // Fee Structure (initialize with empty fee entry based on selected class)
+    fees: [{
+      category: [],
+      className: formattedClass,
+      feeItems: [],
+      feeAmount: "",
+      selectionMode: "admission"
+    }],
+
+    // Payment related
+    admissionFee: 0,
+    monthlyFee: 0,
+    discountAmount: 0,
+    paymentMethod: { label: "Cash", value: "cash" },
+
+    // Additional fields
+    studentIdSelect: null,
+    studentNameSelect: null,
+    totalAmount: 0,
+    totalDiscount: 0,
+    netPayable: 0,
+    paidAmount: 0,
+    dueAmount: 0,
+    advanceBalance: 0,
+  };
+
+  return formData;
+};
+
 const transformEnrollmentDataToForm = (
   enrollmentData: any,
   classOptions: any[],
   feeCategoryData: any
 ) => {
-  // If editing and the fees are already 12 separate months (from old system), 
-  // we might want to group them back or just show them as is. 
-  // For simplicity in this iteration, we assume new structure or simple mapping.
-  // Ideally, backend would return the single Monthly Fee with range info.
-  // But since this is a "Corrected Code" request, I will keep it simple 
-  // and just map whatever comes back. If backend returns 12 items, 12 items show.
-
   if (!enrollmentData?.data) return null;
   const data = enrollmentData.data;
 
@@ -1255,7 +1499,6 @@ const transformEnrollmentDataToForm = (
           isSelected: true,
           discount: fee.discount || 0,
           isMonthly: typeStr.toLowerCase().includes('monthly'),
-          // Preserve range info if available
           discountRangeStart: fee.discountRangeStart || "",
           discountRangeEnd: fee.discountRangeEnd || "",
           discountRangeAmount: fee.discountRangeAmount || 0,
@@ -1279,7 +1522,7 @@ const transformEnrollmentDataToForm = (
 
   const paymentMethodObj = { label: "Cash", value: "cash" };
 
-  const transformedData = {
+  return {
     studentId: data.studentId || data.student?.studentId || "",
     studentNameBangla: data.nameBangla || data.student?.nameBangla || "",
     studentPhoto: data.studentPhoto || data.student?.studentPhoto || "",
@@ -1347,7 +1590,6 @@ const transformEnrollmentDataToForm = (
     dueAmount: data.dueAmount || 0,
     advanceBalance: data.advanceBalance || 0,
   };
-  return transformedData;
 };
 
 // --- MAIN COMPONENT ---
@@ -1416,6 +1658,36 @@ const EnrollmentForm = () => {
     }
   }, [id, singleEnrollment, classOptions, feeCategoryData]);
 
+  const handleApplicationSelect = useCallback((application: any) => {
+    console.log('=== handleApplicationSelect called ===');
+    console.log('Received application:', application);
+
+    if (!application) {
+      console.log('No application data received');
+      return;
+    }
+
+    const formData = transformApplicationToFormData(application, classOptions);
+    console.log('Form data after transformation:', formData);
+
+    if (formData) {
+      setDefaultValues(formData);
+      setFormKey((prev) => prev + 1);
+
+      // Show success message with student name
+      const studentName = formData.studentNameBangla || formData.studentName;
+      toast.success(`Application data loaded for ${studentName}`);
+
+      // Optionally move to next step after a short delay
+      setTimeout(() => {
+        setActiveStep(1); // Move to Academic Info step
+      }, 500);
+    } else {
+      console.log('Form data transformation failed');
+      toast.error('Failed to load application data');
+    }
+  }, [classOptions]);
+
   const handleFinishProcess = () => {
     setOpenSuccessModal(false);
     setOpenPrintModal(false);
@@ -1444,23 +1716,48 @@ const EnrollmentForm = () => {
       setSubmitting(true);
       const { studentIdSelect, studentNameSelect, ...submitData } = data;
 
-      if (!submitData.studentName) { toast.error("Student name is required"); setSubmitting(false); return; }
-      if (!submitData.mobileNo) { toast.error("Mobile number is required"); setSubmitting(false); return; }
-      if (!submitData.className || submitData.className.length === 0) { toast.error("Class selection is required"); setSubmitting(false); return; }
+      // Validation
+      if (!submitData.studentName) {
+        toast.error("Student name is required");
+        setSubmitting(false);
+        return;
+      }
+      if (!submitData.mobileNo) {
+        toast.error("Mobile number is required");
+        setSubmitting(false);
+        return;
+      }
+      if (!submitData.className || submitData.className.length === 0) {
+        toast.error("Class selection is required");
+        setSubmitting(false);
+        return;
+      }
 
-      const classNameArray = submitData.className && submitData.className.length > 0 ? submitData.className.map((cls: any) => cls.value || cls).filter(Boolean) : [];
-      if (!classNameArray.length) { toast.error("Class selection is required"); setSubmitting(false); return; }
+      const classNameArray = submitData.className && submitData.className.length > 0
+        ? submitData.className.map((cls: any) => cls.value || cls).filter(Boolean)
+        : [];
 
-      const paymentMethodValue = typeof submitData.paymentMethod === 'object' ? submitData.paymentMethod.value : submitData.paymentMethod || 'cash';
+      if (!classNameArray.length) {
+        toast.error("Class selection is required");
+        setSubmitting(false);
+        return;
+      }
 
+      const paymentMethodValue = typeof submitData.paymentMethod === 'object'
+        ? submitData.paymentMethod.value
+        : submitData.paymentMethod || 'cash';
+
+      // Calculate totals
       const calculateTotalFees = (fees: any[]) => {
         let total = 0;
         fees.forEach((fee: any) => {
-          if (fee.feeItems && Array.isArray(fee.feeItems)) fee.feeItems.forEach((item: any) => {
-            let amt = parseFloat(item.amount) || 0;
-            if (item.isMonthly) amt = amt * 12;
-            total += amt;
-          });
+          if (fee.feeItems && Array.isArray(fee.feeItems)) {
+            fee.feeItems.forEach((item: any) => {
+              let amt = parseFloat(item.amount) || 0;
+              if (item.isMonthly) amt = amt * 12;
+              total += amt;
+            });
+          }
         });
         return total;
       };
@@ -1487,41 +1784,42 @@ const EnrollmentForm = () => {
 
       const totalFees = calculateTotalFees(submitData.fees || []);
       const totalDiscounts = calculateTotalDiscounts(submitData.fees || []);
-
       const totalPayNowInput = parseFloat(submitData.paidAmount) || 0;
-      let allFeeItems: any[] = [];
-      submitData.fees.forEach((fee: any) => {
-        const { selectionMode, ...restFee } = fee;
-        if (restFee.feeItems && Array.isArray(restFee.feeItems)) allFeeItems = [...allFeeItems, ...restFee.feeItems];
-      });
 
-      // We will pass the raw data to backend. Backend handles the expansion and exact discount logic.
-      // Just need to structure `fees` array correctly.
-
+      // Transform fees for backend
       const transformedFees = Array.isArray(submitData.fees)
-        ? submitData.fees.filter((fee: any) => fee.category && fee.category.length > 0 && fee.className && fee.className.length > 0 && fee.feeItems && fee.feeItems.length > 0).flatMap((fee: any) => {
+        ? submitData.fees.filter((fee: any) =>
+          fee.category && fee.category.length > 0 &&
+          fee.className && fee.className.length > 0 &&
+          fee.feeItems && fee.feeItems.length > 0
+        ).flatMap((fee: any) => {
           const className = fee.className[0]?.label || fee.className[0] || "";
           const categoryName = fee.category[0]?.label || fee.category[0] || "";
+
           return fee.feeItems.filter((item: any) => item.isSelected !== false).map((item: any) => {
             const fType = typeof item.feeType === 'string' ? item.feeType : item.feeType?.value;
             return {
               feeType: fType || "",
-              amount: item.amount || 0,
+              amount: parseFloat(item.amount) || 0,
               className: className,
               category: categoryName,
               advanceAmount: parseFloat(item.advanceAmount) || 0,
-              discount: parseFloat(item.discount) || 0, // General flat discount for this item
+              discount: parseFloat(item.discount) || 0,
               isMonthly: item.isMonthly || false,
-              // Range Properties
               discountRangeStart: item.discountRangeStart || "",
               discountRangeEnd: item.discountRangeEnd || "",
               discountRangeAmount: parseFloat(item.discountRangeAmount) || 0,
-              paymentMethod: paymentMethodValue
+              paymentMethod: paymentMethodValue,
+              month: item.month || (item.isMonthly ? undefined : 'Admission')
             };
           });
         }) : [];
 
-      if (transformedFees.length === 0) { toast.error("At least one valid fee item is required"); setSubmitting(false); return; }
+      if (transformedFees.length === 0) {
+        toast.error("At least one valid fee item is required");
+        setSubmitting(false);
+        return;
+      }
 
       const studentAdvanceBalance = submitData.advanceBalance || 0;
       const netPayable = totalFees - totalDiscounts;
@@ -1529,64 +1827,132 @@ const EnrollmentForm = () => {
       const dueAmount = Math.max(0, netPayable - paidAmount);
 
       let paymentStatus = 'pending';
-      if (dueAmount <= 0) paymentStatus = 'paid'; else if (paidAmount > 0) paymentStatus = 'partial';
+      if (dueAmount <= 0) paymentStatus = 'paid';
+      else if (paidAmount > 0) paymentStatus = 'partial';
 
+      // Prepare final submit data
       const finalSubmitData: any = {
-        studentName: submitData.studentName || "", nameBangla: submitData.studentNameBangla || "", studentPhoto: submitData.studentPhoto || "",
-        mobileNo: submitData.mobileNo || "", rollNumber: submitData.rollNumber || "",
+        // Student Information
+        studentName: submitData.studentName || "",
+        nameBangla: submitData.studentNameBangla || "",
+        studentPhoto: submitData.studentPhoto || "",
+        mobileNo: submitData.mobileNo || "",
+        rollNumber: submitData.rollNumber || "",
         birthDate: submitData.dateOfBirth ? new Date(submitData.dateOfBirth).toISOString() : "",
-        birthRegistrationNo: submitData.nidBirth || "", bloodGroup: submitData.bloodGroup || "",
-        nationality: submitData.nationality || "Bangladeshi", className: classNameArray, section: submitData.section || "",
-        roll: submitData.roll || submitData.rollNumber || "", session: submitData.session || new Date().getFullYear().toString(),
-        batch: submitData.group || "", studentType: submitData.category || "Residential",
+        birthRegistrationNo: submitData.nidBirth || "",
+        bloodGroup: submitData.bloodGroup || "",
+        nationality: submitData.nationality || "Bangladeshi",
+
+        // Academic Information
+        className: classNameArray,
+        section: submitData.section || "",
+        roll: submitData.roll || submitData.rollNumber || "",
+        session: submitData.session || new Date().getFullYear().toString(),
+        group: submitData.group || "",
+        category: submitData.category || "Residential",
         studentDepartment: submitData.studentDepartment || "hifz",
-        fatherName: submitData.fatherName || "", fatherNameBangla: submitData.fatherNameBangla || "",
-        fatherMobile: submitData.fatherMobile || "", fatherNid: submitData.fatherNid || "",
-        fatherProfession: submitData.fatherProfession || "", fatherIncome: Number(submitData.fatherIncome) || 0,
-        motherName: submitData.motherName || "", motherNameBangla: submitData.motherNameBangla || "",
-        motherMobile: submitData.motherMobile || "", motherNid: submitData.motherNid || "",
-        motherProfession: submitData.motherProfession || "", motherIncome: Number(submitData.motherIncome) || 0,
+
+        // Father's Information
+        fatherName: submitData.fatherName || "",
+        fatherNameBangla: submitData.fatherNameBangla || "",
+        fatherMobile: submitData.fatherMobile || "",
+        fatherNid: submitData.fatherNid || "",
+        fatherProfession: submitData.fatherProfession || "",
+        fatherIncome: Number(submitData.fatherIncome) || 0,
+
+        // Mother's Information
+        motherName: submitData.motherName || "",
+        motherNameBangla: submitData.motherNameBangla || "",
+        motherMobile: submitData.motherMobile || "",
+        motherNid: submitData.motherNid || "",
+        motherProfession: submitData.motherProfession || "",
+        motherIncome: Number(submitData.motherIncome) || 0,
+
+        // Address Information
         presentAddress: {
-          village: submitData.village || "", postOffice: submitData.postOffice || "",
-          postCode: submitData.postCode || "", policeStation: submitData.policeStation || "", district: submitData.district || ""
+          village: submitData.village || "",
+          postOffice: submitData.postOffice || "",
+          postCode: submitData.postCode || "",
+          policeStation: submitData.policeStation || "",
+          district: submitData.district || ""
         },
         permanentAddress: {
-          village: submitData.permVillage || "", postOffice: submitData.permPostOffice || "",
-          postCode: submitData.permPostCode || "", policeStation: submitData.permPoliceStation || "", district: submitData.permDistrict || ""
+          village: submitData.permVillage || "",
+          postOffice: submitData.permPostOffice || "",
+          postCode: submitData.permPostCode || "",
+          policeStation: submitData.permPoliceStation || "",
+          district: submitData.permDistrict || ""
         },
+
+        // Guardian Information
         guardianInfo: {
-          name: submitData.guardianName || "", relation: submitData.guardianRelation || "",
-          mobile: submitData.guardianMobile || "", address: submitData.guardianVillage || ""
+          name: submitData.guardianName || "",
+          relation: submitData.guardianRelation || "",
+          mobile: submitData.guardianMobile || "",
+          address: submitData.guardianVillage || ""
         },
-        previousSchool: { institution: submitData.formerInstitution || "", address: submitData.formerVillage || "" },
+
+        // Previous School
+        previousSchool: {
+          institution: submitData.formerInstitution || "",
+          address: submitData.formerVillage || ""
+        },
+
+        // Documents
         documents: {
-          birthCertificate: Boolean(submitData.birthCertificate), transferCertificate: Boolean(submitData.transferCertificate),
-          characterCertificate: Boolean(submitData.characterCertificate), markSheet: Boolean(submitData.markSheet),
+          birthCertificate: Boolean(submitData.birthCertificate),
+          transferCertificate: Boolean(submitData.transferCertificate),
+          characterCertificate: Boolean(submitData.characterCertificate),
+          markSheet: Boolean(submitData.markSheet),
           photographs: Boolean(submitData.photographs),
         },
-        fees: transformedFees, termsAccepted: Boolean(submitData.termsAccepted),
-        admissionFee: Number(submitData.admissionFee) || 0, monthlyFee: Number(submitData.monthlyFee) || 0,
+
+        // Fees and Payment
+        fees: transformedFees,
+        termsAccepted: Boolean(submitData.termsAccepted),
+        admissionFee: Number(submitData.admissionFee) || 0,
+        monthlyFee: Number(submitData.monthlyFee) || 0,
         discountAmount: Number(submitData.discountAmount) || 0,
-        advanceBalance: studentAdvanceBalance, paymentStatus: paymentStatus, totalAmount: totalFees,
-        totalDiscount: totalDiscounts, netPayable: netPayable, paidAmount: paidAmount,
-        dueAmount: dueAmount, paymentMethod: paymentMethodValue,
+        advanceBalance: studentAdvanceBalance,
+
+        // Payment Summary
+        paymentStatus: paymentStatus,
+        totalAmount: totalFees,
+        totalDiscount: totalDiscounts,
+        netPayable: netPayable,
+        paidAmount: paidAmount,
+        dueAmount: dueAmount,
+        paymentMethod: paymentMethodValue,
+
+        // Additional
+        collectedBy: "Admin", // You might want to get this from auth context
       };
 
       let res;
-      if (id) res = await updateEnrollment({ id, data: finalSubmitData }).unwrap();
-      else res = await createEnrollment(finalSubmitData).unwrap();
+      if (id) {
+        res = await updateEnrollment({ id, data: finalSubmitData }).unwrap();
+      } else {
+        res = await createEnrollment(finalSubmitData).unwrap();
+      }
 
       if (res?.success) {
         toast.success(res?.message || "Student enrolled successfully");
         setEnrolledStudentData(res.data);
         setOpenSuccessModal(true);
+
+        // Log the student data to verify relations
+        console.log('Enrollment successful:', res.data);
+        console.log('Student payments:', res.data.student?.payments);
+        console.log('Student receipts:', res.data.student?.receipts);
+        console.log('Student fees:', res.data.student?.fees);
       } else {
         throw new Error(res?.message || "Failed to enroll student");
       }
     } catch (err: any) {
       console.error("Submission error:", err);
       let errorMessage = "Failed to enroll student!";
-      if (err?.data?.message) errorMessage = err.data.message; else if (err?.message) errorMessage = err.message;
+      if (err?.data?.message) errorMessage = err.data.message;
+      else if (err?.message) errorMessage = err.message;
       toast.error(errorMessage);
     } finally {
       setSubmitting(false);
@@ -1648,9 +2014,13 @@ const EnrollmentForm = () => {
               </Avatar>
               <Box ml={2}>
                 <Typography variant="h5" sx={{ fontWeight: "bold", color: "text.primary" }}>Craft International Institute</Typography>
+                <Typography variant="subtitle2" color="text.secondary">Student Enrollment Form</Typography>
               </Box>
             </Box>
           </Paper>
+
+          {/* Admission Application Selector - Added at the top */}
+          {!id && <AdmissionApplicationSelector onSelect={handleApplicationSelect} />}
 
           <Paper elevation={0} sx={{ p: 0, borderRadius: 3, background: "#fff", boxShadow: "0 4px 30px rgba(0,0,0,0.03)", overflow: "visible", minHeight: 600 }}>
             <Box sx={{ px: 4, py: 2, borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`, display: "flex", justifyContent: "flex-end", alignItems: "center" }}>
