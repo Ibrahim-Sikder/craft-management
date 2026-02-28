@@ -177,6 +177,16 @@ export const navigationItems: NavigationItem[] = [
     roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
   },
   {
+    title: "Discount Student",
+    icon: (
+      <ColorfulIcon color="#5D4037">
+        <TableChart />
+      </ColorfulIcon>
+    ),
+    path: "/dashboard/student/discount",
+    roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+  },
+  {
     title: "Academic",
     icon: (
       <ColorfulIcon color="#0F9D58">

@@ -35,18 +35,20 @@ import {
   School,
   Phone,
   Email,
+  Discount as DiscountIcon,
 } from "@mui/icons-material";
 import Link from "next/link";
 import {
   useDeleteStudentMutation,
   useGetAllStudentsQuery,
 } from "@/redux/api/studentApi";
-
 import Swal from "sweetalert2";
 import { useGetAllClassesQuery } from "@/redux/api/classApi";
 import { useGetAllSectionsQuery } from "@/redux/api/sectionApi";
 import { useGetAllMetaQuery } from "@/redux/api/metaApi";
 import CraftTable, { Column, RowAction } from "@/components/Table";
+import DiscountSummaryModal from "./__components/DiscountSummaryModal";
+import DiscountFilter from "./__components/DiscountFilter";
 
 const StudentList = () => {
   const theme = useTheme();
@@ -69,6 +71,11 @@ const StudentList = () => {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
   const [showFilters, setShowFilters] = useState(false);
+  const [showDiscountFilter, setShowDiscountFilter] = useState(false);
+  const [discountSummaryOpen, setDiscountSummaryOpen] = useState(false);
+  const [selectedStudentForDiscount, setSelectedStudentForDiscount] =
+    useState<any>(null);
+  const [filteredStudents, setFilteredStudents] = useState<any[]>([]);
   const [filters, setFilters] = useState({
     className: "",
     section: "",
@@ -79,7 +86,6 @@ const StudentList = () => {
 
   const { data: metaData } = useGetAllMetaQuery({});
 
-  // Fetch real data from backend
   const {
     data: studentData,
     isLoading,
@@ -89,6 +95,8 @@ const StudentList = () => {
     page: page + 1,
     searchTerm: searchTerm,
   });
+
+  console.log("student ", studentData);
 
   // Fetch class and section data separately
   const { data: classData } = useGetAllClassesQuery({});
@@ -153,7 +161,7 @@ const StudentList = () => {
     });
   };
 
-  // Reset filters
+  // Reset all filters
   const resetFilters = () => {
     setFilters({
       className: "",
@@ -164,6 +172,9 @@ const StudentList = () => {
     });
     setSearchTerm("");
     setPage(0);
+    setShowFilters(false);
+    setShowDiscountFilter(false);
+    setFilteredStudents([]);
     refetch();
   };
 
@@ -178,6 +189,7 @@ const StudentList = () => {
 
   const handleRefresh = () => {
     refetch();
+    setFilteredStudents([]);
   };
 
   const handleExport = () => {
@@ -194,11 +206,16 @@ const StudentList = () => {
     window.location.href = "/dashboard/student/create";
   };
 
+  const handleViewDiscountSummary = (student: any) => {
+    setSelectedStudentForDiscount(student);
+    setDiscountSummaryOpen(true);
+  };
+
   const getStudentTypeColor = (type: string) => {
     switch (type) {
       case "Residential":
         return customColors.accent1;
-      case "Non-Residential":
+      case "Non-residential":
         return customColors.accent3;
       case "Day-care":
         return customColors.accent4;
@@ -400,6 +417,52 @@ const StudentList = () => {
       ),
     },
     {
+      id: "discountIndicator",
+      label: "Discount",
+      minWidth: 100,
+      sortable: true,
+      filterable: true,
+      render: (row: any) => {
+        const hasDiscount = row.fees?.some(
+          (fee: any) =>
+            fee.discount > 0 ||
+            fee.waiver > 0 ||
+            (fee.lateFeeCustomizations?.length > 0 &&
+              fee.lateFeeCustomizations.some(
+                (c: any) => c.newAmount < c.previousAmount,
+              )),
+        );
+
+        const totalDiscount =
+          row.fees?.reduce((sum: number, fee: any) => {
+            const discount = (fee.discount || 0) + (fee.waiver || 0);
+            const lateFeeDiscounts =
+              fee.lateFeeCustomizations?.reduce(
+                (acc: number, c: any) =>
+                  acc +
+                  (c.newAmount < c.previousAmount
+                    ? c.previousAmount - c.newAmount
+                    : 0),
+                0,
+              ) || 0;
+            return sum + discount + lateFeeDiscounts;
+          }, 0) || 0;
+
+        if (!hasDiscount)
+          return <Typography color="text.disabled">No Discount</Typography>;
+
+        return (
+          <Chip
+            label={`৳${totalDiscount.toLocaleString()}`}
+            size="small"
+            color="success"
+            icon={<DiscountIcon />}
+            sx={{ fontWeight: "bold" }}
+          />
+        );
+      },
+    },
+    {
       id: "status",
       label: "Status",
       minWidth: 100,
@@ -428,6 +491,14 @@ const StudentList = () => {
       },
       color: "primary",
       tooltip: "Edit Student",
+    },
+    {
+      label: "Discount Summary",
+      icon: <DiscountIcon fontSize="small" />,
+      onClick: (row: any) => handleViewDiscountSummary(row),
+      color: "success",
+      tooltip: "View Discount Details",
+      inMenu: true,
     },
     {
       label: "Delete",
@@ -464,19 +535,19 @@ const StudentList = () => {
 
     if (filters.status) {
       filtered = filtered.filter(
-        (student: any) => student.status === filters.status
+        (student: any) => student.status === filters.status,
       );
     }
 
     if (filters.gender) {
       filtered = filtered.filter(
-        (student: any) => student.gender === filters.gender
+        (student: any) => student.gender === filters.gender,
       );
     }
 
     if (filters.studentType) {
       filtered = filtered.filter(
-        (student: any) => student.studentType === filters.studentType
+        (student: any) => student.studentType === filters.studentType,
       );
     }
 
@@ -616,6 +687,15 @@ const StudentList = () => {
               >
                 <Button
                   variant="outlined"
+                  startIcon={<DiscountIcon />}
+                  onClick={() => setShowDiscountFilter(!showDiscountFilter)}
+                  color={showDiscountFilter ? "success" : "inherit"}
+                  sx={{ borderRadius: 6 }}
+                >
+                  Discount Filter
+                </Button>
+                <Button
+                  variant="outlined"
                   startIcon={<FilterList />}
                   onClick={() => setShowFilters(!showFilters)}
                   color={showFilters ? "primary" : "inherit"}
@@ -649,6 +729,7 @@ const StudentList = () => {
           </Grid>
         </Box>
 
+        {/* Regular Filters */}
         {showFilters && (
           <Box
             sx={{
@@ -759,12 +840,20 @@ const StudentList = () => {
           </Box>
         )}
 
+        {/* Discount Filter */}
+        {showDiscountFilter && (
+          <DiscountFilter
+            students={students}
+            onFilterChange={setFilteredStudents}
+          />
+        )}
+
         {/* Using the CraftTable component with all features */}
         <CraftTable
           title="Students"
-          subtitle={`Total: ${filteredData.length} students`}
+          subtitle={`Total: ${showDiscountFilter ? filteredStudents.length : filteredData.length} students`}
           columns={columns}
-          data={filteredData}
+          data={showDiscountFilter ? filteredStudents : filteredData}
           loading={isLoading}
           page={page}
           rowsPerPage={rowsPerPage}
@@ -800,6 +889,14 @@ const StudentList = () => {
           fadeIn={true}
         />
       </Card>
+
+      {/* Discount Summary Modal */}
+      <DiscountSummaryModal
+        open={discountSummaryOpen}
+        onClose={() => setDiscountSummaryOpen(false)}
+        student={selectedStudentForDiscount}
+        fees={selectedStudentForDiscount?.fees || []}
+      />
     </Container>
   );
 };
