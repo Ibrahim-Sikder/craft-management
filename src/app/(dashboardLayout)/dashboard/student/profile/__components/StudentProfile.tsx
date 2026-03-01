@@ -29,8 +29,7 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 import PaymentHistory from "./PaymentHistory";
-import ReceiptHistory from "./ReceiptHistory";
-import StudentFee from "./PaidStudentFee";
+import ReceiptHistory from "./ReceiptHistory";;
 import StudentOverview from "./StudentOverview";
 import { getStatusColor } from "./Utils";
 import DueStudentFee from "./DueStudentFee";
@@ -71,6 +70,7 @@ const StudentProfile = ({ params }: PageProps) => {
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
+  console.log('single student', singleStudent)
 
   return (
     <Container maxWidth="xl" sx={{ p: { xs: "4px" } }}>

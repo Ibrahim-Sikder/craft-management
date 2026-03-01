@@ -724,7 +724,7 @@ const DueStudentFee = ({
       <AddFeeModal
         open={addFeeModalOpen}
         setOpen={handleCloseAddFeeModal}
-        onAddFee={handleAddFee}
+        // onAddFee={handleAddFee}
         student={student}
       />
 
