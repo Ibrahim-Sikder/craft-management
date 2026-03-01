@@ -736,6 +736,7 @@ const DueStudentFee = ({
         onApplyAdjustment={handleAdjustmentSuccess}
       />
 
+
       {/* Late Fee Customization Modal */}
       <LateFeeCustomizationModal
         open={customizationModalOpen}
