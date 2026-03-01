@@ -16,7 +16,7 @@ import AddFeeModal from "./AddFeeModal";
 import BulkPaymentModal from "./BulkPaymentModal";
 import LateFeeCustomizationModal from "./LateFeeCustomizationModal";
 import PaymentModal from "./PaymentModal";
-import FeeSummaryCards from "./FeeSummaryCards"; // Import the new component
+import FeeSummaryCards from "./FeeSummaryCards";
 
 interface StudentFeeProps {
   studentFees: any[];
@@ -38,7 +38,6 @@ const PaidStudentFee = ({
   onDelete,
   onDownload,
   onPay,
-  onAddFee,
   student,
   refetch,
 }: StudentFeeProps) => {
@@ -155,13 +154,6 @@ const PaidStudentFee = ({
     setAddFeeModalOpen(false);
   };
 
-  const handleAddFee = (feeData: any) => {
-    console.log("Adding new fee:", feeData);
-    if (onAddFee) {
-      onAddFee(feeData);
-    }
-    if (refetch) refetch();
-  };
 
   // Calculate summary statistics for paid fees only
   const calculateSummary = () => {
@@ -660,7 +652,7 @@ const PaidStudentFee = ({
       <AddFeeModal
         open={addFeeModalOpen}
         setOpen={handleCloseAddFeeModal}
-        onAddFee={handleAddFee}
+
         student={student}
       />
 
