@@ -167,7 +167,7 @@ export const navigationItems: NavigationItem[] = [
     roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
   },
   {
-    title: "Online Admissions",
+    title: "Pending Admissions",
     icon: (
       <ColorfulIcon color="#5D4037">
         <TableChart />
