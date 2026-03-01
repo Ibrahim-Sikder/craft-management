@@ -35,7 +35,7 @@ export default function AllStudentFee() {
   const handleApplyAdjustment = async (adjustmentData: any) => {
     try {
       const response = await fetch(
-        "http://localhost:5000/api/v1/fee-adjustments",
+        "https://server.craftinternationalinstitute.com/api/v1/fee-adjustments",
         {
           method: "POST",
           headers: {

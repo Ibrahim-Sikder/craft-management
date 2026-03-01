@@ -2,7 +2,6 @@
 import FeeAdjustmentModal from "@/components/FeeAdjustmentModal";
 import CraftTable, { Column, RowAction } from "@/components/Table";
 import {
-  AttachMoney,
   Delete,
   Discount,
   Download,
@@ -13,12 +12,13 @@ import {
   CheckCircle,
   History,
 } from "@mui/icons-material";
-import { Box, Button, Chip, Paper, Typography, Tooltip } from "@mui/material";
+import { Box, Button, Chip, Typography, Tooltip } from "@mui/material";
 import { useEffect, useState } from "react";
 import AddFeeModal from "./AddFeeModal";
 import PaymentModal from "./PaymentModal";
 import BulkPaymentModal from "./BulkPaymentModal";
 import LateFeeCustomizationModal from "./LateFeeCustomizationModal";
+import FeeSummaryCards from "./FeeSummaryCards"; // Import the new component
 
 interface StudentFeeProps {
   studentFees: any[];
@@ -33,12 +33,11 @@ interface StudentFeeProps {
   refetch?: () => void;
 }
 
-const StudentFee = ({
+const DueStudentFee = ({
   studentFees,
   loading = false,
   onView,
   onDelete,
-  onDownload,
   onPay,
   onAddFee,
   student,
@@ -50,7 +49,6 @@ const StudentFee = ({
   const [customizationModalOpen, setCustomizationModalOpen] = useState(false);
   const [selectedFee, setSelectedFee] = useState<any>(null);
   const [filteredFees, setFilteredFees] = useState<any[]>([]);
-  const [feeTypeFilter] = useState<string>("all");
   const [bulkPaymentModalOpen, setBulkPaymentModalOpen] = useState(false);
   const [lateFeeSummary, setLateFeeSummary] = useState({
     totalLateFees: 0,
@@ -58,18 +56,16 @@ const StudentFee = ({
     totalOverdue: 0,
   });
 
+  // Filter only unpaid fees
   useEffect(() => {
-    if (feeTypeFilter === "all") {
-      setFilteredFees(studentFees);
-    } else {
-      setFilteredFees(
-        studentFees?.filter((fee) => fee?.feeType === feeTypeFilter),
-      );
-    }
+    // Filter to show only unpaid fees
+    const unpaidFees =
+      studentFees?.filter((fee) => fee?.status === "unpaid") || [];
+    setFilteredFees(unpaidFees);
 
-    // Calculate late fee summary
-    if (studentFees?.length) {
-      const summary = studentFees.reduce(
+    // Calculate late fee summary for unpaid fees only
+    if (unpaidFees?.length) {
+      const summary = unpaidFees.reduce(
         (acc, fee) => {
           if (fee.lateFeeAmount > 0) {
             acc.totalLateFees += fee.lateFeeAmount;
@@ -89,8 +85,14 @@ const StudentFee = ({
         { totalLateFees: 0, totalCustomized: 0, totalOverdue: 0 },
       );
       setLateFeeSummary(summary);
+    } else {
+      setLateFeeSummary({
+        totalLateFees: 0,
+        totalCustomized: 0,
+        totalOverdue: 0,
+      });
     }
-  }, [studentFees, feeTypeFilter]);
+  }, [studentFees]);
 
   const handlePayClick = (fee: any) => {
     setSelectedFee(fee);
@@ -133,8 +135,6 @@ const StudentFee = ({
         setAdjustmentModalOpen(false);
         if (refetch) {
           refetch();
-        } else {
-          window.location.reload();
         }
       } else {
         throw new Error("Failed to apply adjustment");
@@ -148,8 +148,6 @@ const StudentFee = ({
   const handleCustomizationSuccess = () => {
     if (refetch) {
       refetch();
-    } else {
-      window.location.reload();
     }
   };
 
@@ -184,25 +182,28 @@ const StudentFee = ({
     if (refetch) refetch();
   };
 
-  // Calculate summary statistics
+  // Calculate summary statistics for unpaid fees only
   const calculateSummary = () => {
-    const totalFees = studentFees?.reduce(
+    const unpaidFees =
+      studentFees?.filter((fee) => fee?.status === "unpaid") || [];
+
+    const totalFees = unpaidFees?.reduce(
       (sum, fee) => sum + (fee.amount || 0),
       0,
     );
-    const totalPaid = studentFees?.reduce(
+    const totalPaid = unpaidFees?.reduce(
       (sum, fee) => sum + (fee.paidAmount || 0),
       0,
     );
-    const totalDue = studentFees?.reduce(
+    const totalDue = unpaidFees?.reduce(
       (sum, fee) => sum + (fee.dueAmount || 0),
       0,
     );
-    const totalDiscount = studentFees?.reduce(
+    const totalDiscount = unpaidFees?.reduce(
       (sum, fee) => sum + (fee.discount || 0),
       0,
     );
-    const totalWaiver = studentFees?.reduce(
+    const totalWaiver = unpaidFees?.reduce(
       (sum, fee) => sum + (fee.waiver || 0),
       0,
     );
@@ -233,14 +234,6 @@ const StudentFee = ({
       id: "month",
       label: "Month",
       minWidth: 120,
-      sortable: true,
-      filterable: true,
-      type: "text",
-    },
-    {
-      id: "class",
-      label: "Class",
-      minWidth: 100,
       sortable: true,
       filterable: true,
       type: "text",
@@ -328,11 +321,7 @@ const StudentFee = ({
       type: "number",
       format: (value: number) => `৳${value?.toLocaleString()}`,
       render: (row: any) => (
-        <Typography
-          color={row.dueAmount > 0 ? "error" : "success"}
-          variant="body2"
-          fontWeight="bold"
-        >
+        <Typography color="error" variant="body2" fontWeight="bold">
           ৳{row.dueAmount?.toLocaleString() || "0"}
         </Typography>
       ),
@@ -354,7 +343,7 @@ const StudentFee = ({
       render: (row: any) => {
         const today = new Date();
         const dueDate = row.dueDate ? new Date(row.dueDate) : null;
-        const isOverdue = dueDate && dueDate < today && row.status !== "paid";
+        const isOverdue = dueDate && dueDate < today;
 
         return (
           <Box>
@@ -457,7 +446,7 @@ const StudentFee = ({
 
         const today = new Date();
         const dueDate = row.dueDate ? new Date(row.dueDate) : null;
-        const isOverdue = dueDate && dueDate < today && row.status !== "paid";
+        const isOverdue = dueDate && dueDate < today;
 
         if (row.lateFeeAmount > 0) {
           return (
@@ -483,9 +472,9 @@ const StudentFee = ({
         } else {
           return (
             <Chip
-              label="On Time"
+              label="Due Soon"
               size="small"
-              color="success"
+              color="warning"
               variant="outlined"
               sx={{ height: 24 }}
             />
@@ -501,21 +490,6 @@ const StudentFee = ({
       sortable: true,
       type: "number",
       format: (value: number) => `৳${value?.toLocaleString()}`,
-    },
-    {
-      id: "paymentDate",
-      label: "Payment Date",
-      minWidth: 150,
-      sortable: true,
-      type: "date",
-      format: (value: string) => {
-        if (!value) return "Not Paid";
-        try {
-          return new Date(value).toLocaleDateString();
-        } catch {
-          return "Invalid Date";
-        }
-      },
     },
     {
       id: "paymentMethod",
@@ -605,7 +579,6 @@ const StudentFee = ({
       onClick: (row) => handleCustomizeLateFeeClick(row),
       color: "warning",
       tooltip: "Customize late fee amount",
-      // disabled: (row) => !row.lateFeeAmount || row.lateFeeAmount === 0 || row.status === "paid",
       inMenu: true,
     },
     {
@@ -614,16 +587,6 @@ const StudentFee = ({
       onClick: (row) => handlePayClick(row),
       color: "primary",
       tooltip: "Make payment",
-      disabled: (row) => row.status === "paid",
-    },
-    {
-      label: "Download Receipt",
-      icon: <Download fontSize="small" />,
-      onClick: (row) => onDownload?.(row),
-      color: "secondary",
-      tooltip: "Download payment receipt",
-      disabled: (row) => row.status === "unpaid" || row.paidAmount === 0,
-      inMenu: true,
     },
     {
       label: "View Late Fee History",
@@ -651,70 +614,19 @@ const StudentFee = ({
   return (
     <Box>
       <Typography variant="h6" gutterBottom>
-        Student Fee Management
+        Due Student Fee Management
       </Typography>
 
-      {/* Summary Cards */}
-      <Box sx={{ display: "flex", gap: 2, mb: 3, flexWrap: "wrap" }}>
-        <Paper
-          sx={{ p: 2, minWidth: 150, bgcolor: "primary.light", color: "white" }}
-        >
-          <Typography variant="subtitle2">Total Fees</Typography>
-          <Typography variant="h6">
-            ৳{summary.totalFees?.toLocaleString() || 0}
-          </Typography>
-        </Paper>
-        <Paper
-          sx={{ p: 2, minWidth: 150, bgcolor: "success.light", color: "white" }}
-        >
-          <Typography variant="subtitle2">Total Paid</Typography>
-          <Typography variant="h6">
-            ৳{summary.totalPaid?.toLocaleString() || 0}
-          </Typography>
-        </Paper>
-        <Paper
-          sx={{ p: 2, minWidth: 150, bgcolor: "error.light", color: "white" }}
-        >
-          <Typography variant="subtitle2">Total Due</Typography>
-          <Typography variant="h6">
-            ৳{summary.totalDue?.toLocaleString() || 0}
-          </Typography>
-        </Paper>
-        <Paper
-          sx={{ p: 2, minWidth: 150, bgcolor: "warning.light", color: "white" }}
-        >
-          <Typography variant="subtitle2">Total Adjustments</Typography>
-          <Typography variant="h6">
-            ৳{summary.totalAdjustments?.toLocaleString() || 0}
-          </Typography>
-          <Typography variant="caption">
-            Discount: ৳{summary.totalDiscount?.toLocaleString() || 0} | Waiver:
-            ৳{summary.totalWaiver?.toLocaleString() || 0}
-          </Typography>
-        </Paper>
-        <Paper
-          sx={{
-            p: 2,
-            minWidth: 150,
-            bgcolor: "secondary.light",
-            color: "white",
-          }}
-        >
-          <Typography variant="subtitle2">Late Fee Summary</Typography>
-          <Typography variant="h6">
-            ৳{lateFeeSummary.totalLateFees?.toLocaleString() || 0}
-          </Typography>
-          <Typography variant="caption">
-            Customized: {lateFeeSummary.totalCustomized} | Overdue:{" "}
-            {lateFeeSummary.totalOverdue}
-          </Typography>
-        </Paper>
-      </Box>
+      {/* Summary Cards - Using the new component */}
+      <FeeSummaryCards
+        type="due"
+        summary={summary}
+        lateFeeSummary={lateFeeSummary}
+      />
 
-      {/* Fee Records Table */}
       <CraftTable
-        title={`${feeTypeFilter === "all" ? "All" : feeTypeFilter} Fee Records`}
-        subtitle={`Total ${studentFees?.length || 0} fee records found`}
+        title="Due Fee Records"
+        subtitle={`Total ${filteredFees?.length || 0} unpaid fee records found`}
         columns={columns}
         data={filteredFees}
         loading={loading}
@@ -725,7 +637,7 @@ const StudentFee = ({
         sortable={true}
         pagination={true}
         idField="_id"
-        emptyStateMessage="No fee records found"
+        emptyStateMessage="No unpaid fee records found"
         height="auto"
         maxHeight="60vh"
         stickyHeader={true}
@@ -735,7 +647,7 @@ const StudentFee = ({
         borderRadius={2}
         showRowNumbers={true}
         rowNumberHeader="#"
-        onRefresh={refetch || (() => window.location.reload())}
+        onRefresh={refetch}
         onExport={() => {
           console.log("Exporting fee data...");
         }}
@@ -744,9 +656,8 @@ const StudentFee = ({
           <Box sx={{ display: "flex", gap: 1 }}>
             <Button
               variant="contained"
-              startIcon={<AttachMoney />}
               onClick={() => setBulkPaymentModalOpen(true)}
-              disabled={!studentFees?.filter((fee) => fee.dueAmount > 0).length}
+              disabled={!filteredFees?.length}
               sx={{
                 background: "linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)",
                 "&:hover": {
@@ -755,15 +666,7 @@ const StudentFee = ({
                 },
               }}
             >
-              Bulk Payment
-            </Button>
-            <Button
-              variant="outlined"
-              startIcon={<Discount />}
-              onClick={() => alert("Bulk adjustment feature coming soon!")}
-              sx={{ textTransform: "none" }}
-            >
-              Bulk Adjustment
+              Bulk Payment ({filteredFees?.length})
             </Button>
           </Box>
         }
@@ -796,13 +699,6 @@ const StudentFee = ({
             icon: <Download fontSize="small" />,
             onClick: (selectedRows) => {
               console.log("Exporting selected:", selectedRows);
-            },
-          },
-          {
-            label: "Generate Bulk Receipts",
-            icon: <Download fontSize="small" />,
-            onClick: (selectedRows) => {
-              console.log("Generating bulk receipts:", selectedRows);
             },
           },
           {
@@ -853,11 +749,11 @@ const StudentFee = ({
         open={bulkPaymentModalOpen}
         onClose={() => setBulkPaymentModalOpen(false)}
         student={student}
-        fees={studentFees?.filter((fee) => fee.dueAmount > 0) || []}
-        refetch={refetch || (() => window.location.reload())}
+        fees={filteredFees}
+        refetch={refetch}
       />
     </Box>
   );
 };
 
-export default StudentFee;
+export default DueStudentFee;

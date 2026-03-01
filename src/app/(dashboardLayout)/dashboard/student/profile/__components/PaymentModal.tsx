@@ -54,11 +54,10 @@ const PaymentModal = ({
 }: PaymentModalProps) => {
   const theme = useTheme();
   const [payFee, { isLoading }] = usePayFeeMutation();
-
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [amount, setAmount] = useState(fee?.dueAmount || 0);
   const [paymentDate, setPaymentDate] = useState(
-    new Date().toISOString().split("T")[0]
+    new Date().toISOString().split("T")[0],
   );
   const [transactionId, setTransactionId] = useState("");
   const [receiptNo, setReceiptNo] = useState(`RCP-${Date.now()}`);
@@ -82,7 +81,7 @@ const PaymentModal = ({
   // Calculate totals including late fees
   const calculateTotals = () => {
     const regularDue = fee?.dueAmount || 0;
-    const lateFee = includeLateFee ? (fee?.lateFeeAmount || 0) : 0;
+    const lateFee = includeLateFee ? fee?.lateFeeAmount || 0 : 0;
     const totalPayable = regularDue + lateFee;
 
     return {
@@ -131,7 +130,8 @@ const PaymentModal = ({
               Payment Successful!
             </Typography>
             <Typography variant="body2">
-              {includeLateFee && fee.lateFeeAmount > 0 &&
+              {includeLateFee &&
+                fee.lateFeeAmount > 0 &&
                 `Late Fee: ৳${Math.min(amount, fee.lateFeeAmount).toLocaleString()} • `}
               Receipt: {receiptNo}
             </Typography>
@@ -139,7 +139,7 @@ const PaymentModal = ({
           {
             duration: 5000,
             icon: "✅",
-          }
+          },
         );
 
         onPaymentSuccess({
@@ -157,8 +157,8 @@ const PaymentModal = ({
       console.error("Payment error:", error);
       toast.error(
         error?.data?.message ||
-        error?.message ||
-        "Failed to process payment. Please try again."
+          error?.message ||
+          "Failed to process payment. Please try again.",
       );
     }
   };
@@ -195,7 +195,7 @@ const PaymentModal = ({
     if (!fee?.dueDate) return false;
     const dueDate = new Date(fee.dueDate);
     const today = new Date();
-    return dueDate < today && fee.status !== 'paid';
+    return dueDate < today && fee.status !== "paid";
   };
 
   return (
@@ -235,16 +235,15 @@ const PaymentModal = ({
         <Box sx={{ p: 3 }}>
           {/* Overdue Warning */}
           {isOverdue() && (
-            <Alert
-              severity="warning"
-              icon={<Warning />}
-              sx={{ mb: 3 }}
-            >
+            <Alert severity="warning" icon={<Warning />} sx={{ mb: 3 }}>
               <Typography variant="body2" fontWeight="bold">
                 This fee is overdue!
               </Typography>
               <Typography variant="caption">
-                Due Date: {fee?.dueDate ? new Date(fee.dueDate).toLocaleDateString() : 'N/A'}
+                Due Date:{" "}
+                {fee?.dueDate
+                  ? new Date(fee.dueDate).toLocaleDateString()
+                  : "N/A"}
               </Typography>
             </Alert>
           )}
@@ -260,7 +259,7 @@ const PaymentModal = ({
                   label={`Late Fee: ৳${fee.lateFeeAmount.toLocaleString()}`}
                   color="error"
                   size="small"
-                  sx={{ fontWeight: 'bold' }}
+                  sx={{ fontWeight: "bold" }}
                 />
               }
             >
@@ -275,8 +274,12 @@ const PaymentModal = ({
             <Table size="small">
               <TableHead>
                 <TableRow sx={{ backgroundColor: theme.palette.grey[100] }}>
-                  <TableCell><strong>Description</strong></TableCell>
-                  <TableCell align="right"><strong>Amount (৳)</strong></TableCell>
+                  <TableCell>
+                    <strong>Description</strong>
+                  </TableCell>
+                  <TableCell align="right">
+                    <strong>Amount (৳)</strong>
+                  </TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
@@ -294,18 +297,28 @@ const PaymentModal = ({
                 </TableRow>
                 <TableRow>
                   <TableCell>Original Amount</TableCell>
-                  <TableCell align="right">৳{fee?.amount?.toLocaleString()}</TableCell>
+                  <TableCell align="right">
+                    ৳{fee?.amount?.toLocaleString()}
+                  </TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell>Discount/Waiver</TableCell>
                   <TableCell align="right" sx={{ color: "error.main" }}>
-                    -৳{((fee?.discount || 0) + (fee?.waiver || 0)).toLocaleString()}
+                    -৳
+                    {(
+                      (fee?.discount || 0) + (fee?.waiver || 0)
+                    ).toLocaleString()}
                   </TableCell>
                 </TableRow>
                 <TableRow>
                   <TableCell>Net Amount</TableCell>
                   <TableCell align="right">
-                    ৳{((fee?.amount || 0) - (fee?.discount || 0) - (fee?.waiver || 0)).toLocaleString()}
+                    ৳
+                    {(
+                      (fee?.amount || 0) -
+                      (fee?.discount || 0) -
+                      (fee?.waiver || 0)
+                    ).toLocaleString()}
                   </TableCell>
                 </TableRow>
                 <TableRow>
@@ -317,30 +330,53 @@ const PaymentModal = ({
 
                 {/* Late Fee Row */}
                 {fee?.lateFeeAmount > 0 && (
-                  <TableRow sx={{ backgroundColor: alpha(theme.palette.warning.light, 0.1) }}>
+                  <TableRow
+                    sx={{
+                      backgroundColor: alpha(theme.palette.warning.light, 0.1),
+                    }}
+                  >
                     <TableCell>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
                         <Warning fontSize="small" color="warning" />
                         <strong>Late Fee</strong>
                       </Box>
                     </TableCell>
-                    <TableCell align="right" sx={{ color: "warning.main", fontWeight: "bold" }}>
+                    <TableCell
+                      align="right"
+                      sx={{ color: "warning.main", fontWeight: "bold" }}
+                    >
                       + ৳{fee.lateFeeAmount?.toLocaleString()}
                     </TableCell>
                   </TableRow>
                 )}
 
                 <TableRow>
-                  <TableCell><strong>Current Due</strong></TableCell>
-                  <TableCell align="right" sx={{ color: "error.main", fontWeight: "bold" }}>
+                  <TableCell>
+                    <strong>Current Due</strong>
+                  </TableCell>
+                  <TableCell
+                    align="right"
+                    sx={{ color: "error.main", fontWeight: "bold" }}
+                  >
                     ৳{totals.regularDue?.toLocaleString()}
                   </TableCell>
                 </TableRow>
 
                 {fee?.lateFeeAmount > 0 && (
                   <TableRow>
-                    <TableCell><strong>Total Payable (with late fee)</strong></TableCell>
-                    <TableCell align="right" sx={{ color: "error.main", fontWeight: "bold", fontSize: '1.1rem' }}>
+                    <TableCell>
+                      <strong>Total Payable (with late fee)</strong>
+                    </TableCell>
+                    <TableCell
+                      align="right"
+                      sx={{
+                        color: "error.main",
+                        fontWeight: "bold",
+                        fontSize: "1.1rem",
+                      }}
+                    >
                       ৳{totals.totalPayable?.toLocaleString()}
                     </TableCell>
                   </TableRow>
@@ -460,7 +496,12 @@ const PaymentModal = ({
                       </Typography>
                     </Grid>
                     <Grid item xs={6}>
-                      <Typography variant="caption" align="right" display="block" color="warning.main">
+                      <Typography
+                        variant="caption"
+                        align="right"
+                        display="block"
+                        color="warning.main"
+                      >
                         + ৳{fee.lateFeeAmount.toLocaleString()}
                       </Typography>
                     </Grid>
@@ -477,7 +518,12 @@ const PaymentModal = ({
                   </Typography>
                 </Grid>
                 <Grid item xs={6}>
-                  <Typography variant="body2" fontWeight="bold" align="right" color="primary">
+                  <Typography
+                    variant="body2"
+                    fontWeight="bold"
+                    align="right"
+                    color="primary"
+                  >
                     ৳{amount.toLocaleString()}
                   </Typography>
                 </Grid>
@@ -492,7 +538,9 @@ const PaymentModal = ({
                     variant="body2"
                     fontWeight="bold"
                     align="right"
-                    color={totals.totalPayable - amount > 0 ? "error" : "success"}
+                    color={
+                      totals.totalPayable - amount > 0 ? "error" : "success"
+                    }
                   >
                     ৳{(totals.totalPayable - amount).toLocaleString()}
                   </Typography>
@@ -502,15 +550,24 @@ const PaymentModal = ({
           )}
 
           {/* Action Buttons */}
-          <Box sx={{ display: "flex", gap: 2, justifyContent: "flex-end", mt: 3 }}>
-            <Button variant="outlined" onClick={onClose} startIcon={<Close />} disabled={isLoading}>
+          <Box
+            sx={{ display: "flex", gap: 2, justifyContent: "flex-end", mt: 3 }}
+          >
+            <Button
+              variant="outlined"
+              onClick={onClose}
+              startIcon={<Close />}
+              disabled={isLoading}
+            >
               Cancel
             </Button>
             <Button
               variant="contained"
               onClick={handlePaymentSubmit}
               startIcon={<CheckCircle />}
-              disabled={isLoading || amount <= 0 || amount > totals.totalPayable}
+              disabled={
+                isLoading || amount <= 0 || amount > totals.totalPayable
+              }
               sx={{
                 background: `linear-gradient(135deg, #1976d2 0%, #115293 100%)`,
                 "&:hover": {

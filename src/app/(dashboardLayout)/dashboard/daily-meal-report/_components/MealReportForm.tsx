@@ -126,7 +126,7 @@ interface MealCountStats {
 }
 
 export default function MealReportForm() {
-    
+
     const [date, setDate] = useState<Date | null>(new Date())
     const [selectedMealTypes, setSelectedMealTypes] = useState<string[]>(mealTypes)
     const [selectedPersons, setSelectedPersons] = useState<Record<string, boolean>>({})
@@ -160,7 +160,7 @@ export default function MealReportForm() {
         page: page + 1,
         searchTerm: searchTerm,
     })
- 
+
 
     const { data: teacherData, isLoading: isLoadingTeachers } = useGetAllTeachersQuery({
         limit: rowsPerPage,
@@ -457,7 +457,7 @@ export default function MealReportForm() {
             const debugData = JSON.stringify(mealReportData, null, 2)
             setDebugInfo(`Submitting: ${debugData}`)
 
-            const directResponse = await fetch(`http://localhost:5000/api/v1/meal-report`, {
+            const directResponse = await fetch(`https://server.craftinternationalinstitute.com/api/v1/meal-report`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
