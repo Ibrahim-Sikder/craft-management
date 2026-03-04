@@ -2940,22 +2940,33 @@ const EnrollmentForm = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
+  const applicationId = searchParams.get("applicationId");
   const [openSuccessModal, setOpenSuccessModal] = useState(false);
   const [openPrintModal, setOpenPrintModal] = useState(false);
   const [openAddFeeModal, setOpenAddFeeModal] = useState(false);
   const [openPaymentModal, setOpenPaymentModal] = useState(false);
   const [enrolledStudentData, setEnrolledStudentData] = useState<any>(null);
+  const [isApplicationLoading, setIsApplicationLoading] = useState(false);
 
   const { classOptions, feeCategoryData } = useAcademicOption();
   const [createEnrollment] = useCreateEnrollmentMutation();
   const [updateEnrollment] = useUpdateEnrollmentMutation();
   const { data: singleEnrollment, isLoading: enrollmentLoading } =
     useGetSingleEnrollmentQuery(id ? { id } : undefined, { skip: !id });
+
+  // Fetch admission application if applicationId is provided
+  const { data: admissionApplications, isLoading: admissionsLoading } =
+    useGetAllAdmissionApplicationsQuery(
+      applicationId ? { applicationId, limit: 1 } : { skip: true },
+      { skip: !applicationId },
+    );
+
   const { data: studentData } = useGetAllStudentsQuery({
     limit,
     page: page + 1,
     searchTerm,
   });
+
   const [submitting, setSubmitting] = useState(false);
   const [defaultValues, setDefaultValues] = useState<any>(null);
   const [formKey, setFormKey] = useState(0);
@@ -2969,7 +2980,9 @@ const EnrollmentForm = () => {
     { label: "Fee Info", icon: <Payment /> },
   ];
 
+  // Load data based on id or applicationId
   useEffect(() => {
+    // Case 1: Edit existing enrollment (has id)
     if (id && singleEnrollment && classOptions.length > 0 && feeCategoryData) {
       const transformedData = transformEnrollmentDataToForm(
         singleEnrollment,
@@ -2982,7 +2995,41 @@ const EnrollmentForm = () => {
         setDefaultValues(transformedData);
         setFormKey((prev) => prev + 1);
       }
-    } else if (!id) {
+    }
+    // Case 2: New enrollment from application (has applicationId)
+    else if (
+      applicationId &&
+      admissionApplications?.data &&
+      admissionApplications.data.length > 0
+    ) {
+      setIsApplicationLoading(true);
+      const application = admissionApplications.data[0];
+
+      // Check if application is approved
+      if (application.status !== "approved") {
+        toast.error("Only approved applications can be enrolled");
+        setTimeout(() => router.push("/dashboard/enrollments/list"), 2000);
+        return;
+      }
+
+      const formData = transformApplicationToFormData(
+        application,
+        classOptions,
+      );
+      if (formData) {
+        setDefaultValues(formData);
+        setFormKey((prev) => prev + 1);
+        const studentName = formData.studentNameBangla || formData.studentName;
+        toast.success(
+          `Application ${application.applicationId} loaded successfully`,
+        );
+      } else {
+        toast.error("Failed to load application data");
+      }
+      setIsApplicationLoading(false);
+    }
+    // Case 3: New empty form
+    else if (!id && !applicationId) {
       setDefaultValues({
         studentId: "",
         studentNameBangla: "",
@@ -3061,7 +3108,15 @@ const EnrollmentForm = () => {
       });
       setFormKey((prev) => prev + 1);
     }
-  }, [id, singleEnrollment, classOptions, feeCategoryData]);
+  }, [
+    id,
+    applicationId,
+    singleEnrollment,
+    admissionApplications,
+    classOptions,
+    feeCategoryData,
+    router,
+  ]);
 
   const handleApplicationSelect = useCallback(
     (application: any) => {
@@ -3359,7 +3414,13 @@ const EnrollmentForm = () => {
       contentWrapper.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  if ((id && enrollmentLoading) || !defaultValues) return <LoadingState />;
+  if (
+    (id && enrollmentLoading) ||
+    (applicationId && admissionsLoading) ||
+    !defaultValues ||
+    isApplicationLoading
+  )
+    return <LoadingState />;
 
   const getClassLabel = (clsData: any) => {
     if (!clsData) return "";
@@ -3444,7 +3505,7 @@ const EnrollmentForm = () => {
             </Box>
           </Paper>
 
-          {!id && (
+          {!id && !applicationId && (
             <AdmissionApplicationSelector onSelect={handleApplicationSelect} />
           )}
 

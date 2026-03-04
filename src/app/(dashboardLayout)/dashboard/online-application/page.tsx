@@ -238,20 +238,20 @@ export default function AdmissionApplications() {
     setTimeout(() => setSelectedApplication(null), 300);
   };
 
-  // Helper to safely get ID
-  const getId = (row: any) => row?._id;
+  // Helper to safely get applicationId
+  const getApplicationId = (row: any) => row?.applicationId;
 
   const handleEdit = (row: any) => {
-    const id = getId(row);
-    if (!id) {
+    const appId = getApplicationId(row);
+    if (!appId) {
       Swal.fire("Error", "Application ID not found", "error");
       return;
     }
-    router.push(`/dashboard/online-application/edit?id=${id}`);
+    router.push(`/dashboard/online-application/edit?id=${appId}`);
   };
 
   const handleDelete = async (row: any) => {
-    const id = getId(row);
+    const id = row?._id; // Delete uses MongoDB _id
     if (!id) return;
 
     const result = await Swal.fire({
@@ -285,7 +285,8 @@ export default function AdmissionApplications() {
     row: any,
     newStatus: "approved" | "rejected",
   ) => {
-    const id = getId(row);
+    const id = row?._id; // Update uses MongoDB _id
+    const appId = row?.applicationId; // For navigation
     if (!id) return;
 
     const isApproval = newStatus === "approved";
@@ -310,11 +311,18 @@ export default function AdmissionApplications() {
           icon: "success",
           title: `${isApproval ? "Approved!" : "Rejected!"}`,
           text: `Application has been ${isApproval ? "approved" : "rejected"}.`,
-          timer: 2000,
+          timer: 1500,
           showConfirmButton: false,
         });
 
-        refetch();
+        // If approved, navigate to enrollment page with applicationId (like OA-0010)
+        if (isApproval) {
+          setTimeout(() => {
+            router.push(`/dashboard/enrollments?applicationId=${appId}`);
+          }, 1500);
+        } else {
+          refetch();
+        }
       } catch (error: any) {
         console.error("Update failed:", error);
         Swal.fire({
@@ -332,10 +340,11 @@ export default function AdmissionApplications() {
   const handleReject = (row: any) => handleUpdateStatus(row, "rejected");
 
   const handleDownloadPDF = (row: any) => {
-    const id = getId(row);
+    const appId = getApplicationId(row);
+    // PDF download logic here using appId
   };
 
-  //  Handle filter change including status
+  // Handle filter change including status
   const handleFilterChange = (filterType: string, value: string) => {
     setFilters((prev) => ({
       ...prev,
@@ -410,6 +419,13 @@ export default function AdmissionApplications() {
             `${succeeded} applications ${isDelete ? "deleted" : "approved"}.`,
             "success",
           );
+
+          // If bulk approve, navigate to enrollment page
+          if (!isDelete && succeeded > 0) {
+            setTimeout(() => {
+              router.push(`/dashboard/enrollments`);
+            }, 1500);
+          }
         } else {
           Swal.fire(
             "Partial Success",
