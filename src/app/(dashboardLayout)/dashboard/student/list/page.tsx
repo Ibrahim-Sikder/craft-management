@@ -79,7 +79,6 @@ const StudentList = () => {
 
   const { data: metaData } = useGetAllMetaQuery({});
 
-  // Fetch real data from backend
   const {
     data: studentData,
     isLoading,
@@ -89,6 +88,8 @@ const StudentList = () => {
     page: page + 1,
     searchTerm: searchTerm,
   });
+
+  console.log("student ", studentData);
 
   // Fetch class and section data separately
   const { data: classData } = useGetAllClassesQuery({});
@@ -464,19 +465,19 @@ const StudentList = () => {
 
     if (filters.status) {
       filtered = filtered.filter(
-        (student: any) => student.status === filters.status
+        (student: any) => student.status === filters.status,
       );
     }
 
     if (filters.gender) {
       filtered = filtered.filter(
-        (student: any) => student.gender === filters.gender
+        (student: any) => student.gender === filters.gender,
       );
     }
 
     if (filters.studentType) {
       filtered = filtered.filter(
-        (student: any) => student.studentType === filters.studentType
+        (student: any) => student.studentType === filters.studentType,
       );
     }
 

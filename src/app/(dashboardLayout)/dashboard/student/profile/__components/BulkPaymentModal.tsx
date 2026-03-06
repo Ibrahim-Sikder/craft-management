@@ -31,7 +31,7 @@ import {
 } from "@mui/material";
 import React, { useState, useEffect } from "react";
 import toast from "react-hot-toast";
-import ReceiptViewer, { ReceiptData } from "./ReceiptViewer";
+import { ReceiptData } from "./ReceiptViewer";
 
 interface Fee {
   _id: string;
@@ -73,43 +73,41 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
   const [paymentMethod, setPaymentMethod] = useState("cash");
   const [transactionId, setTransactionId] = useState("");
   const [note, setNote] = useState("");
-  const [collectedBy, setCollectedBy] = useState("Tanvir Rahman");
+  const [collectedBy, setCollectedBy] = useState("admin");
   const [isProcessing, setIsProcessing] = useState(false);
   const [showReceipt, setShowReceipt] = useState(false);
   const [receiptData, setReceiptData] = useState<ReceiptData | null>(null);
   const [createBulkPayment] = useCreateBulkPaymentMutation();
 
-  // Steps for the payment process
-  const steps = ["Select Fees", "Payment Details", "Confirmation", "Receipt"];
+  const steps = ["Select Fees", "Payment Details", "Confirmation"];
 
-  // Filter only fees with due amount > 0
   const payableFees = fees.filter((fee) => fee.dueAmount > 0);
 
   // Calculate totals for selected fees
   const calculateTotals = () => {
     const selectedFeeObjects = fees.filter((fee) =>
-      selectedFees.includes(fee._id)
+      selectedFees.includes(fee._id),
     );
 
     const totalAmount = selectedFeeObjects.reduce(
       (sum, fee) => sum + fee.amount,
-      0
+      0,
     );
     const totalDiscount = selectedFeeObjects.reduce(
       (sum, fee) => sum + (fee.discount || 0),
-      0
+      0,
     );
     const totalWaiver = selectedFeeObjects.reduce(
       (sum, fee) => sum + (fee.waiver || 0),
-      0
+      0,
     );
     const totalPaid = selectedFeeObjects.reduce(
       (sum, fee) => sum + (fee.paidAmount || 0),
-      0
+      0,
     );
     const totalDue = selectedFeeObjects.reduce(
       (sum, fee) => sum + fee.dueAmount,
-      0
+      0,
     );
     const netAmount = totalAmount - totalDiscount - totalWaiver;
 
@@ -126,47 +124,46 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
 
   const totals = calculateTotals();
 
-  // Reset when modal opens
   useEffect(() => {
     if (open) {
-      // Don't reset if we're on receipt step (after payment success)
-      if (activeStep !== 3) {
-        handleReset();
-      }
+      handleReset();
     }
   }, [open]);
 
-  // Handle fee selection - allow selection of any fee (not just payable ones)
-  const handleSelectFee = (feeId: string) => {
+  // Handle fee selection
+  const handleSelectFee = (
+    e: React.MouseEvent | React.ChangeEvent,
+    feeId: string,
+  ) => {
+    e.stopPropagation();
     setSelectedFees((prev) =>
       prev.includes(feeId)
         ? prev.filter((id) => id !== feeId)
-        : [...prev, feeId]
+        : [...prev, feeId],
     );
   };
 
-  // Handle select all fees (both payable and non-payable)
-  const handleSelectAll = () => {
-    if (selectedFees.length === fees.length) {
-      setSelectedFees([]);
-    } else {
+  // Handle select all fees
+  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    e.stopPropagation();
+    if (e.target.checked) {
       setSelectedFees(fees.map((fee) => fee._id));
+    } else {
+      setSelectedFees([]);
     }
   };
 
   // Handle select only payable fees
   const handleSelectPayable = () => {
-    if (
-      selectedFees.length === payableFees.length &&
-      selectedFees.every((id) => payableFees.some((fee) => fee._id === id))
-    ) {
-      // If all payable fees are selected, deselect them
-      setSelectedFees(
-        selectedFees.filter((id) => !payableFees.some((fee) => fee._id === id))
-      );
+    const payableFeeIds = payableFees.map((fee) => fee._id);
+
+    const allPayableSelected = payableFeeIds.every((id) =>
+      selectedFees.includes(id),
+    );
+
+    if (allPayableSelected) {
+      setSelectedFees(selectedFees.filter((id) => !payableFeeIds.includes(id)));
     } else {
-      // Add all payable fees that aren't already selected
-      const payableFeeIds = payableFees.map((fee) => fee._id);
       const newSelected = [...new Set([...selectedFees, ...payableFeeIds])];
       setSelectedFees(newSelected);
     }
@@ -230,10 +227,8 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
   const generateReceiptData = (paymentResponse: any): ReceiptData => {
     const paymentDate = new Date(paymentResponse.paymentDate || new Date());
 
-    // Generate receipt number if not provided
     const receiptNo = paymentResponse.receiptNo || `RCP-${Date.now()}`;
 
-    // Format date like "14-Dec-2025"
     const formattedDate = paymentDate
       .toLocaleDateString("en-US", {
         day: "2-digit",
@@ -272,7 +267,7 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
     };
   };
 
-  // Handle payment submission
+  // Handle payment submission - MODIFIED to auto-close after success
   const handleSubmitPayment = async () => {
     setIsProcessing(true);
     try {
@@ -293,6 +288,7 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
         const generatedReceiptData = generateReceiptData(result);
         setReceiptData(generatedReceiptData);
 
+        // Show success toast
         toast.success(
           <Box>
             <Typography variant="body1" fontWeight="bold">
@@ -305,12 +301,22 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
           {
             duration: 5000,
             icon: "✅",
-          }
+          },
         );
 
-        setActiveStep(3); // Go to receipt step
+        // Refetch data if refetch function is provided
+        if (refetch) {
+          refetch();
+        }
+
+        // Auto close modal after 1.5 seconds
+        setTimeout(() => {
+          handleReset();
+          onClose();
+        }, 1500);
       } else {
         toast.error(result.message || "Payment failed");
+        setIsProcessing(false);
       }
     } catch (error: any) {
       console.error("Payment error:", error);
@@ -321,7 +327,6 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
       toast.error(errorMessage, {
         duration: 5000,
       });
-    } finally {
       setIsProcessing(false);
     }
   };
@@ -339,33 +344,18 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
     setShowReceipt(false);
   };
 
-  // Handle close - with refetch
+  // Handle close
   const handleClose = () => {
     if (!isProcessing) {
-      // Refetch data if payment was successful
-      if (receiptData && refetch) {
-        refetch();
-      }
       handleReset();
       onClose();
     }
   };
 
-  // Complete process and close modal
-  const handleComplete = () => {
-    toast.success("Payment process completed!");
-    // Refetch data before closing
-    if (refetch) {
-      refetch();
-    }
-    handleReset();
-    onClose();
-  };
+  const isAllSelected = fees.length > 0 && selectedFees.length === fees.length;
 
-  // Handle view receipt
-  const handleViewReceipt = () => {
-    setShowReceipt(true);
-  };
+  const isIndeterminate =
+    selectedFees.length > 0 && selectedFees.length < fees.length;
 
   return (
     <>
@@ -390,7 +380,6 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
             background: "#fff",
           }}
         >
-          {/* Header */}
           <Box
             sx={{
               p: 3,
@@ -413,7 +402,7 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
               <Close />
             </IconButton>
             <Typography variant="h5" fontWeight="bold" gutterBottom>
-              {activeStep === 3 ? "Payment Successful" : "Bulk Fee Payment"}
+              Bulk Fee Payment
             </Typography>
             <Typography variant="body2" sx={{ opacity: 0.9 }}>
               Student: {student.name} ({student.studentId})
@@ -421,38 +410,37 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
           </Box>
 
           {/* Stepper */}
-          {activeStep < 3 && (
-            <Box sx={{ p: 3, background: "#f8f9fa" }}>
-              <Stepper activeStep={activeStep} alternativeLabel>
-                {steps.map((label) => (
-                  <Step key={label}>
-                    <StepLabel>{label}</StepLabel>
-                  </Step>
-                ))}
-              </Stepper>
-            </Box>
-          )}
+          <Box sx={{ p: 3, background: "#f8f9fa" }}>
+            <Stepper activeStep={activeStep} alternativeLabel>
+              {steps.map((label) => (
+                <Step key={label}>
+                  <StepLabel>{label}</StepLabel>
+                </Step>
+              ))}
+            </Stepper>
+          </Box>
 
           {/* Content based on step */}
           <Box sx={{ p: 3 }}>
             {activeStep === 0 && (
-              /* Step 1: Select Fees */
               <>
                 <Alert severity="info" sx={{ mb: 3, borderRadius: 1 }}>
                   Select fees to pay for {student.name}
                 </Alert>
-
-                {/* Selection Actions */}
-                <Box sx={{ mb: 2, display: "flex", gap: 1 }}>
+                <Box sx={{ mb: 2, display: "flex", gap: 1, flexWrap: "wrap" }}>
                   <Button
                     variant="outlined"
                     size="small"
-                    onClick={handleSelectAll}
+                    onClick={() => {
+                      if (isAllSelected) {
+                        setSelectedFees([]);
+                      } else {
+                        setSelectedFees(fees.map((fee) => fee._id));
+                      }
+                    }}
                     sx={{ borderRadius: 0 }}
                   >
-                    {selectedFees.length === fees.length
-                      ? "Deselect All"
-                      : "Select All"}
+                    {isAllSelected ? "Deselect All" : "Select All"}
                   </Button>
                   <Button
                     variant="outlined"
@@ -460,10 +448,12 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
                     onClick={handleSelectPayable}
                     sx={{ borderRadius: 0 }}
                   >
-                    Select Payable
+                    {payableFees.every((fee) => selectedFees.includes(fee._id))
+                      ? "Deselect Payable"
+                      : "Select Payable"}
                   </Button>
                   <Chip
-                    label={`${selectedFees.length} selected`}
+                    label={`${selectedFees.length} selected (৳${totals.totalDue.toLocaleString()})`}
                     color="primary"
                     variant="outlined"
                     sx={{ borderRadius: 0 }}
@@ -490,11 +480,8 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
                           <TableRow sx={{ background: "#f5f5f5" }}>
                             <TableCell padding="checkbox">
                               <Checkbox
-                                checked={selectedFees.length === fees.length}
-                                indeterminate={
-                                  selectedFees.length > 0 &&
-                                  selectedFees.length < fees.length
-                                }
+                                checked={isAllSelected}
+                                indeterminate={isIndeterminate}
                                 onChange={handleSelectAll}
                               />
                             </TableCell>
@@ -532,13 +519,26 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
                             <TableRow
                               key={fee._id}
                               hover
-                              sx={{ cursor: "pointer" }}
-                              onClick={() => handleSelectFee(fee._id)}
+                              sx={{
+                                cursor: "pointer",
+                                backgroundColor: selectedFees.includes(fee._id)
+                                  ? "rgba(25, 118, 210, 0.08)"
+                                  : "inherit",
+                                "&:hover": {
+                                  backgroundColor: selectedFees.includes(
+                                    fee._id,
+                                  )
+                                    ? "rgba(25, 118, 210, 0.12)"
+                                    : "rgba(0, 0, 0, 0.04)",
+                                },
+                              }}
+                              onClick={(e) => handleSelectFee(e, fee._id)}
                             >
                               <TableCell padding="checkbox">
                                 <Checkbox
                                   checked={selectedFees.includes(fee._id)}
-                                  onChange={() => handleSelectFee(fee._id)}
+                                  onChange={(e) => handleSelectFee(e, fee._id)}
+                                  onClick={(e) => e.stopPropagation()}
                                 />
                               </TableCell>
                               <TableCell>{fee.feeType}</TableCell>
@@ -592,16 +592,22 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
                       >
                         <CardContent>
                           <Grid container spacing={2}>
-                            <Grid item xs={3}>
-                              <Typography variant="body2">
+                            <Grid item xs={6} sm={3}>
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                              >
                                 Total Amount
                               </Typography>
                               <Typography variant="h6">
                                 ৳{totals.totalAmount.toLocaleString()}
                               </Typography>
                             </Grid>
-                            <Grid item xs={3}>
-                              <Typography variant="body2">
+                            <Grid item xs={6} sm={3}>
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                              >
                                 Adjustments
                               </Typography>
                               <Typography variant="h6" color="error">
@@ -611,16 +617,24 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
                                 ).toLocaleString()}
                               </Typography>
                             </Grid>
-                            <Grid item xs={3}>
-                              <Typography variant="body2">
+                            <Grid item xs={6} sm={3}>
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                              >
                                 Net Amount
                               </Typography>
                               <Typography variant="h6">
                                 ৳{totals.netAmount.toLocaleString()}
                               </Typography>
                             </Grid>
-                            <Grid item xs={3}>
-                              <Typography variant="body2">Total Due</Typography>
+                            <Grid item xs={6} sm={3}>
+                              <Typography
+                                variant="body2"
+                                color="text.secondary"
+                              >
+                                Total Due
+                              </Typography>
                               <Typography
                                 variant="h5"
                                 color="error"
@@ -647,26 +661,50 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
 
                 <Grid container spacing={2}>
                   <Grid item xs={12}>
-                    <Card sx={{ mb: 2 }}>
+                    <Card sx={{ mb: 2, backgroundColor: "#f5f5f5" }}>
                       <CardContent>
-                        <Typography variant="subtitle2" gutterBottom>
+                        <Typography
+                          variant="subtitle2"
+                          gutterBottom
+                          fontWeight="bold"
+                        >
                           Payment Summary
                         </Typography>
                         <Grid container spacing={2}>
-                          <Grid item xs={6}>
-                            <Typography variant="body2">
+                          <Grid item xs={6} md={3}>
+                            <Typography variant="body2" color="text.secondary">
                               Amount to Pay
                             </Typography>
-                            <Typography variant="h5" color="primary">
+                            <Typography
+                              variant="h5"
+                              color="primary"
+                              fontWeight="bold"
+                            >
                               ৳{totals.totalDue.toLocaleString()}
                             </Typography>
                           </Grid>
-                          <Grid item xs={6}>
-                            <Typography variant="body2">
+                          <Grid item xs={6} md={3}>
+                            <Typography variant="body2" color="text.secondary">
                               Fees Selected
                             </Typography>
                             <Typography variant="h6">
                               {totals.selectedCount}
+                            </Typography>
+                          </Grid>
+                          <Grid item xs={6} md={3}>
+                            <Typography variant="body2" color="text.secondary">
+                              Student
+                            </Typography>
+                            <Typography variant="body2" noWrap>
+                              {student.name}
+                            </Typography>
+                          </Grid>
+                          <Grid item xs={6} md={3}>
+                            <Typography variant="body2" color="text.secondary">
+                              ID
+                            </Typography>
+                            <Typography variant="body2">
+                              {student.studentId}
                             </Typography>
                           </Grid>
                         </Grid>
@@ -682,6 +720,7 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
                       value={paymentMethod}
                       onChange={(e) => setPaymentMethod(e.target.value)}
                       size="small"
+                      required
                     >
                       <MenuItem value="cash">Cash</MenuItem>
                       <MenuItem value="bkash">bKash</MenuItem>
@@ -699,6 +738,7 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
                         onChange={(e) => setTransactionId(e.target.value)}
                         size="small"
                         placeholder={`Enter ${paymentMethod} transaction ID`}
+                        required
                       />
                     </Grid>
                   )}
@@ -716,12 +756,13 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
                   <Grid item xs={12}>
                     <TextField
                       fullWidth
-                      label="Note"
+                      label="Note (Optional)"
                       multiline
                       rows={2}
                       value={note}
                       onChange={(e) => setNote(e.target.value)}
                       size="small"
+                      placeholder="Add any notes about this payment"
                     />
                   </Grid>
                 </Grid>
@@ -735,136 +776,85 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
                   Confirm Payment
                 </Typography>
 
-                <Card sx={{ mb: 2 }}>
+                <Card sx={{ mb: 2, backgroundColor: "#f5f5f5" }}>
                   <CardContent>
-                    <Typography variant="subtitle2" gutterBottom>
+                    <Typography
+                      variant="subtitle2"
+                      gutterBottom
+                      fontWeight="bold"
+                    >
                       Payment Details
                     </Typography>
                     <Grid container spacing={2}>
-                      <Grid item xs={6}>
-                        <Typography variant="body2">Amount</Typography>
-                        <Typography variant="h5" color="primary">
+                      <Grid item xs={6} md={3}>
+                        <Typography variant="body2" color="text.secondary">
+                          Amount
+                        </Typography>
+                        <Typography
+                          variant="h5"
+                          color="primary"
+                          fontWeight="bold"
+                        >
                           ৳{totals.totalDue.toLocaleString()}
                         </Typography>
                       </Grid>
-                      <Grid item xs={6}>
-                        <Typography variant="body2">Payment Method</Typography>
-                        <Typography variant="body1">
-                          {paymentMethod.toUpperCase()}
+                      <Grid item xs={6} md={3}>
+                        <Typography variant="body2" color="text.secondary">
+                          Payment Method
+                        </Typography>
+                        <Typography
+                          variant="body1"
+                          sx={{ textTransform: "uppercase" }}
+                        >
+                          {paymentMethod}
                         </Typography>
                       </Grid>
-                      <Grid item xs={6}>
-                        <Typography variant="body2">Collected By</Typography>
+                      <Grid item xs={6} md={3}>
+                        <Typography variant="body2" color="text.secondary">
+                          Collected By
+                        </Typography>
                         <Typography variant="body1">{collectedBy}</Typography>
+                      </Grid>
+                      <Grid item xs={6} md={3}>
+                        <Typography variant="body2" color="text.secondary">
+                          Fees Count
+                        </Typography>
+                        <Typography variant="body1">
+                          {totals.selectedCount}
+                        </Typography>
                       </Grid>
                       {paymentMethod !== "cash" && transactionId && (
                         <Grid item xs={12}>
-                          <Typography variant="body2">
+                          <Typography variant="body2" color="text.secondary">
                             Transaction ID
                           </Typography>
-                          <Typography variant="body1">
+                          <Typography
+                            variant="body1"
+                            sx={{ fontWeight: "medium" }}
+                          >
                             {transactionId}
                           </Typography>
+                        </Grid>
+                      )}
+                      {note && (
+                        <Grid item xs={12}>
+                          <Typography variant="body2" color="text.secondary">
+                            Note
+                          </Typography>
+                          <Typography variant="body1">{note}</Typography>
                         </Grid>
                       )}
                     </Grid>
                   </CardContent>
                 </Card>
 
-                <Alert severity="info" sx={{ mb: 2 }}>
-                  Please review before confirming
+                <Alert severity="info" sx={{ mb: 2, borderRadius: 1 }}>
+                  Please review all details before confirming the payment
                 </Alert>
-              </>
-            )}
-
-            {activeStep === 3 && (
-              /* Step 4: Receipt */
-              <>
-                {receiptData ? (
-                  <>
-                    <Box
-                      sx={{
-                        textAlign: "center",
-                        mb: 3,
-                        p: 2,
-                        background: "#4caf50",
-                        color: "white",
-                        borderRadius: 1,
-                      }}
-                    >
-                      <CheckCircle sx={{ fontSize: 40, mb: 1 }} />
-                      <Typography variant="h6" gutterBottom>
-                        Payment Successful
-                      </Typography>
-                      <Typography variant="body2">
-                        Receipt No: {receiptData.invNo}
-                      </Typography>
-                    </Box>
-
-                    {/* Quick Summary */}
-                    <Card sx={{ mb: 3 }}>
-                      <CardContent>
-                        <Box
-                          sx={{
-                            display: "flex",
-                            justifyContent: "space-between",
-                            alignItems: "center",
-                            mb: 2,
-                          }}
-                        >
-                          <Typography variant="h6">Payment Receipt</Typography>
-                          <Button
-                            variant="outlined"
-                            size="small"
-                            onClick={handleViewReceipt}
-                            sx={{ borderRadius: 0 }}
-                          >
-                            View Full Receipt
-                          </Button>
-                        </Box>
-                        <Grid container spacing={1}>
-                          <Grid item xs={6}>
-                            <Typography variant="body2">Student</Typography>
-                            <Typography variant="body1">
-                              {receiptData.name}
-                            </Typography>
-                          </Grid>
-                          <Grid item xs={6}>
-                            <Typography variant="body2">Amount Paid</Typography>
-                            <Typography variant="h6">
-                              ৳{receiptData.total.toLocaleString()}
-                            </Typography>
-                          </Grid>
-                        </Grid>
-                      </CardContent>
-                    </Card>
-
-                    {/* Action Buttons */}
-                    <Box
-                      sx={{ display: "flex", gap: 2, justifyContent: "center" }}
-                    >
-                      <Button
-                        variant="contained"
-                        onClick={handleViewReceipt}
-                        sx={{ borderRadius: 0 }}
-                      >
-                        View Receipt
-                      </Button>
-                    </Box>
-                  </>
-                ) : (
-                  <Box sx={{ textAlign: "center", py: 4 }}>
-                    <CircularProgress />
-                    <Typography variant="h6" sx={{ mt: 2 }}>
-                      Generating Receipt...
-                    </Typography>
-                  </Box>
-                )}
               </>
             )}
           </Box>
 
-          {/* Footer Actions */}
           <Box
             sx={{
               p: 2,
@@ -872,56 +862,42 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
               background: "#f8f9fa",
             }}
           >
-            {activeStep < 3 ? (
-              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <Button
-                  onClick={activeStep === 0 ? handleClose : handleBack}
-                  disabled={isProcessing}
-                >
-                  {activeStep === 0 ? "Cancel" : "Back"}
-                </Button>
+            <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+              <Button
+                onClick={activeStep === 0 ? handleClose : handleBack}
+                disabled={isProcessing}
+                variant="outlined"
+              >
+                {activeStep === 0 ? "Cancel" : "Back"}
+              </Button>
 
-                <Button
-                  variant="contained"
-                  onClick={activeStep === 2 ? handleSubmitPayment : handleNext}
-                  disabled={
-                    isProcessing ||
-                    (activeStep === 0 && selectedFees.length === 0) ||
-                    (activeStep === 1 &&
-                      paymentMethod !== "cash" &&
-                      !transactionId)
-                  }
-                  sx={{ minWidth: 120 }}
-                >
-                  {isProcessing ? (
-                    <CircularProgress size={24} />
-                  ) : activeStep === 2 ? (
-                    `Pay ৳${totals.totalDue.toLocaleString()}`
-                  ) : (
-                    "Next"
-                  )}
-                </Button>
-              </Box>
-            ) : (
-              <Box sx={{ display: "flex", justifyContent: "center", gap: 2 }}>
-                <Button
-                  variant="outlined"
-                  onClick={() => {
-                    setActiveStep(0);
-                    handleReset();
-                  }}
-                >
-                  New Payment
-                </Button>
-                <Button
-                  variant="contained"
-                  onClick={handleComplete}
-                  sx={{ background: "#4caf50" }}
-                >
-                  Done
-                </Button>
-              </Box>
-            )}
+              <Button
+                variant="contained"
+                onClick={activeStep === 2 ? handleSubmitPayment : handleNext}
+                disabled={
+                  isProcessing ||
+                  (activeStep === 0 && selectedFees.length === 0) ||
+                  (activeStep === 1 &&
+                    paymentMethod !== "cash" &&
+                    !transactionId)
+                }
+                sx={{
+                  minWidth: 150,
+                  background:
+                    activeStep === 2
+                      ? "linear-gradient(135deg, #4caf50 0%, #2e7d32 100%)"
+                      : undefined,
+                }}
+              >
+                {isProcessing ? (
+                  <CircularProgress size={24} color="inherit" />
+                ) : activeStep === 2 ? (
+                  `Pay ৳${totals.totalDue.toLocaleString()}`
+                ) : (
+                  "Next"
+                )}
+              </Button>
+            </Box>
           </Box>
         </Paper>
       </Modal>

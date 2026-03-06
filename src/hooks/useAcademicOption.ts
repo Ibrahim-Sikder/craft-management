@@ -8,6 +8,7 @@ import { useGetAllSubjectsQuery } from "@/redux/api/subjectApi";
 import { useGetAllFeesQuery } from "@/redux/api/feesApi";
 import { useGetAllFeeCategoriesQuery } from "@/redux/api/feeCategoryApi";
 import { useGetAllSectionsQuery } from "@/redux/api/sectionApi";
+import { useGetAllAdmissionApplicationsQuery } from "@/redux/api/admissionApplication";
 
 export function useAcademicOption(limit = 100, initialSearch = "") {
   const [page] = useState(0);
@@ -16,6 +17,11 @@ export function useAcademicOption(limit = 100, initialSearch = "") {
 
   const { data: classData } = useGetAllClassesQuery({
     limit: limit,
+    page: page + 1,
+    searchTerm: searchTerm,
+  });
+  const { data: applicationData } = useGetAllAdmissionApplicationsQuery({
+    limit: 100,
     page: page + 1,
     searchTerm: searchTerm,
   });
@@ -75,6 +81,13 @@ export function useAcademicOption(limit = 100, initialSearch = "") {
       value: clg._id,
     }));
   }, [classData]);
+  const applicationOption = useMemo(() => {
+    if (!applicationData?.data) return [];
+    return applicationData.data.map((clg: any) => ({
+      label: clg.applicationId,
+      value: clg._id,
+    }));
+  }, [applicationData]);
 
   const feesOptions = useMemo(() => {
     if (!feesData?.data?.data) return [];
@@ -116,5 +129,6 @@ export function useAcademicOption(limit = 100, initialSearch = "") {
     feeCategoryOptions,
     feeCategoryData,
     sectionData,
+    applicationOption,
   };
 }

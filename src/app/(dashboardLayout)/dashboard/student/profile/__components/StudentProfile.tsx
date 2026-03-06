@@ -29,10 +29,11 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 import PaymentHistory from "./PaymentHistory";
-import ReceiptHistory from "./ReceiptHistory";
-import StudentFee from "./StudentFee";
+import ReceiptHistory from "./ReceiptHistory";;
 import StudentOverview from "./StudentOverview";
 import { getStatusColor } from "./Utils";
+import DueStudentFee from "./DueStudentFee";
+import PaidStudentFee from "./PaidStudentFee";
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -69,6 +70,7 @@ const StudentProfile = ({ params }: PageProps) => {
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
+  console.log('single student', singleStudent)
 
   return (
     <Container maxWidth="xl" sx={{ p: { xs: "4px" } }}>
@@ -219,7 +221,8 @@ const StudentProfile = ({ params }: PageProps) => {
           >
             <Tab icon={<Info />} label="Overview" />
             <Tab icon={<Book />} label="Receipt History" />
-            <Tab icon={<Payment />} label="Fees" />
+            <Tab icon={<Payment />} label="Paid Fees" />
+            <Tab icon={<Payment />} label="Due Fees" />
             <Tab icon={<Payment />} label="Payment History" />
           </Tabs>
         </Box>
@@ -234,12 +237,18 @@ const StudentProfile = ({ params }: PageProps) => {
           />
         </TabPanel>
         <TabPanel value={tabValue} index={2}>
-          <StudentFee
+          <PaidStudentFee
             studentFees={singleStudent?.data?.fees}
             student={singleStudent?.data}
           />
         </TabPanel>
         <TabPanel value={tabValue} index={3}>
+          <DueStudentFee
+            studentFees={singleStudent?.data?.fees}
+            student={singleStudent?.data}
+          />
+        </TabPanel>
+        <TabPanel value={tabValue} index={4}>
           <PaymentHistory singleStudent={singleStudent} />
         </TabPanel>
       </Card>

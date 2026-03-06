@@ -156,7 +156,7 @@ const FeeCollection = () => {
             totalPaid: studentItem.totalPaid,
             totalAmount: studentItem.totalAmount,
             feesCount: studentItem.feesCount,
-          })
+          }),
         );
 
         setDueFeesData(transformedData);
@@ -212,7 +212,7 @@ const FeeCollection = () => {
         studentName: studentWithFees.student.name,
         rollNumber: studentWithFees.enrollment.rollNumber,
         mobile: studentWithFees.student.mobile,
-      }))
+      })),
   );
 
   // Define columns based on screen size
@@ -369,7 +369,7 @@ const FeeCollection = () => {
       icon: <Visibility fontSize="small" />,
       onClick: (row) => {
         const student = dueFeesData.find((s) =>
-          s.fees.some((fee) => fee._id === row._id)
+          s.fees.some((fee) => fee._id === row._id),
         );
         if (student) {
           handleViewDetails(student);

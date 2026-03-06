@@ -166,7 +166,7 @@ export default function MealReportForm({ params }: MealReportId) {
     searchTerm: searchTerm,
   })
   const { data: singleMealReport, isLoading } = useGetSingleMealReportQuery(id)
-const router = useRouter()
+  const router = useRouter()
   const { data: teacherData, isLoading: isLoadingTeachers } = useGetAllTeachersQuery({
     limit: rowsPerPage,
     page: page + 1,
@@ -481,7 +481,7 @@ const router = useRouter()
       const debugData = JSON.stringify(mealReportData, null, 2)
       setDebugInfo(`Submitting: ${debugData}`)
 
-      const directResponse = await fetch(`http://localhost:5000/api/v1/meal-report/${id}`, {
+      const directResponse = await fetch(`https://server.craftinternationalinstitute.com/api/v1/meal-report/${id}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

@@ -369,10 +369,11 @@ export default function FeeCategoryModal({ open, setOpen, id }: any) {
                   }
                   placeholder={id ? "Select Class" : "Select Classes"}
                   options={classOptions}
+                  freeSolo
                   fullWidth
                   icon={<Class color="primary" />}
                   sx={inputStyle}
-                  multiple={!id} // Allow multiple selection only in create mode
+                  multiple={!id}
                 />
               </Grid>
 
