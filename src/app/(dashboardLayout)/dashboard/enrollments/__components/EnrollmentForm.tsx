@@ -3953,7 +3953,10 @@ const EnrollmentForm = () => {
       if (id) {
         res = await updateEnrollment({ id, data: finalSubmitData }).unwrap();
       } else {
-        res = await createEnrollment(finalSubmitData).unwrap();
+        res = await createEnrollment({
+          data: finalSubmitData,
+          applicationId: applicationId,
+        }).unwrap();
       }
 
       if (res?.success) {

@@ -68,10 +68,8 @@ interface ApplicationRow {
 }
 
 interface AdmissionApplicationListProps {
-  type: "pending" | "approved" | "rejected";
+  type: "pending" | "approved" | "rejected" | "enrolled";
 }
-
-// ─── Date Formatter ────────────────────────────────────────────────────────────
 
 const formatDate = (date: string | Date) => {
   try {
@@ -89,13 +87,12 @@ const formatShortDate = (date: string | Date) => {
   }
 };
 
-// ─── Status Chip ──────────────────────────────────────────────────────────────
-
+// Update the StatusChip to include 'enrolled' styling
 const StatusChip = ({ status }: { status: TAdmissionStatus }) => {
   const statusConfig: Record<
     string,
     {
-      color: "success" | "warning" | "error" | "info" | "default";
+      color: "success" | "warning" | "error" | "info" | "default" | "secondary";
       icon: JSX.Element;
       label: string;
     }
@@ -116,7 +113,7 @@ const StatusChip = ({ status }: { status: TAdmissionStatus }) => {
       label: "Rejected",
     },
     enrolled: {
-      color: "info",
+      color: "secondary", // or "info" if you prefer
       icon: <HowToReg sx={{ fontSize: 16 }} />,
       label: "Enrolled",
     },
@@ -138,8 +135,6 @@ const StatusChip = ({ status }: { status: TAdmissionStatus }) => {
     />
   );
 };
-
-// ─── Small Reusable Components ─────────────────────────────────────────────────
 
 const DepartmentChip = ({ department }: { department: string }) => {
   const colors: Record<string, string> = {
@@ -212,7 +207,7 @@ const MobileNumber = ({ number }: { number: string }) => (
   </Box>
 );
 
-// ─── Date Display Component ───────────────────────────────────────────────────
+//Date Display Component
 
 const DateDisplay = ({ date }: { date?: string }) => {
   if (!date) return <Typography variant="body2">N/A</Typography>;
@@ -231,8 +226,6 @@ const DateDisplay = ({ date }: { date?: string }) => {
   );
 };
 
-// ─── Helper ────────────────────────────────────────────────────────────────────
-
 function extractClassName(item: any): string {
   if (item.studentInfo?.class) {
     if (
@@ -248,7 +241,7 @@ function extractClassName(item: any): string {
   return "N/A";
 }
 
-// ─── Main Reusable Component ───────────────────────────────────────────────────
+// Main Reusable Component
 
 export default function AdmissionApplicationList({
   type,
@@ -263,11 +256,10 @@ export default function AdmissionApplicationList({
   const [deleteAdmissionApplication, { isLoading: isDeleting }] =
     useDeleteAdmissionApplicationMutation();
 
-  // ── Pagination state ──────────────────────────────────────────────────────
+  // Pagination state
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(isMobile ? 5 : 10);
 
-  // ── Modal ─────────────────────────────────────────────────────────────────
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedApplication, setSelectedApplication] = useState<any>(null);
   const [modalLoading, setModalLoading] = useState(false);
@@ -276,12 +268,13 @@ export default function AdmissionApplicationList({
     setRowsPerPage(isMobile ? 5 : isTablet ? 8 : 10);
   }, [isMobile, isTablet]);
 
-  // ── Fetch applications based on type ──────────────────────────────────────
+  // Fetch applications based on type
   const queryParams = useMemo(() => {
     const params: any = { limit: 1000, page: 1 };
     if (type === "pending") params.status = "pending";
     else if (type === "approved") params.status = "approved";
     else if (type === "rejected") params.status = "rejected";
+    else if (type === "enrolled") params.status = "enrolled";
     params.sort = "-createdAt";
     return params;
   }, [type]);
@@ -289,7 +282,7 @@ export default function AdmissionApplicationList({
   const { data, isLoading, refetch } =
     useGetAllAdmissionApplicationsQuery(queryParams);
 
-  // ── Flatten API data → flat rows ──────────────────────────────────────────
+  // Flatten API data → flat rows
   const tableData: ApplicationRow[] = useMemo(() => {
     if (!data?.data) return [];
     return data.data.map((item: any): ApplicationRow => {
@@ -317,7 +310,7 @@ export default function AdmissionApplicationList({
     });
   }, [data]);
 
-  // ── Class filter options ──────────────────────────────────────────────────
+  // Class filter options
   const classFilterOptions = useMemo(() => {
     const seen = new Set<string>();
     const opts: { label: string; value: string }[] = [];
@@ -332,7 +325,7 @@ export default function AdmissionApplicationList({
 
   const totalCount = data?.meta?.total ?? tableData.length;
 
-  // ── Handlers ─────────────────────────────────────────────────────────────
+  // Handlers
 
   const handleView = useCallback((row: ApplicationRow) => {
     setModalLoading(true);
@@ -386,7 +379,7 @@ export default function AdmissionApplicationList({
     [deleteAdmissionApplication, refetch],
   );
 
-  // ── Core approve handler — fixed to ensure status update completes ──────────
+  //Core approve handler — fixed to ensure status update completes
   const handleUpdateStatus = useCallback(
     async (
       row: ApplicationRow,
@@ -448,7 +441,6 @@ export default function AdmissionApplicationList({
 
         // If approving, navigate to enrollment page with the application data
         if (isApproving) {
-          // Store the application data in sessionStorage for the enrollment page
           if (typeof window !== "undefined") {
             sessionStorage.setItem(
               "approvedApplication",
@@ -732,8 +724,6 @@ export default function AdmissionApplicationList({
 
     return cols;
   }, [isMobile, isTablet, classFilterOptions]);
-
-  // ── Row actions based on type ─────────────────────────────────────────────
   const rowActions: RowAction[] = useMemo(() => {
     const baseActions: RowAction[] = [
       {
@@ -815,7 +805,7 @@ export default function AdmissionApplicationList({
           inMenu: true,
         },
       ];
-    } else {
+    } else if (type === "rejected") {
       return [
         ...baseActions,
         {
@@ -835,6 +825,21 @@ export default function AdmissionApplicationList({
           inMenu: true,
         },
       ];
+    } else {
+      // Enrolled type - mostly view-only actions
+      return [
+        ...baseActions,
+        {
+          label: "View Enrollment",
+          icon: <School fontSize="small" />,
+          onClick: (row: ApplicationRow) => {
+            router.push(`/dashboard/enrollments/${row._id}`);
+          },
+          tooltip: "View enrollment details",
+          color: "info",
+          inMenu: true,
+        },
+      ];
     }
   }, [
     type,
@@ -849,6 +854,7 @@ export default function AdmissionApplicationList({
     handleRestore,
     handleEnroll,
     handleDownloadPDF,
+    router,
   ]);
 
   // ── Bulk actions based on type ────────────────────────────────────────────
@@ -914,7 +920,6 @@ export default function AdmissionApplicationList({
     handleBulkRestore,
   ]);
 
-  // ── Header banner based on type ───────────────────────────────────────────
   const getHeaderBanner = () => {
     if (type === "pending") {
       return (
@@ -1036,7 +1041,7 @@ export default function AdmissionApplicationList({
           </Box>
         </Paper>
       );
-    } else {
+    } else if (type === "rejected") {
       return (
         <Paper
           elevation={0}
@@ -1092,6 +1097,67 @@ export default function AdmissionApplicationList({
               sx={{ borderRadius: 2, textTransform: "none", fontWeight: 600 }}
             >
               Back to Pending
+            </Button>
+          </Box>
+        </Paper>
+      );
+    } else {
+      // Enrolled type
+      return (
+        <Paper
+          elevation={0}
+          sx={{
+            p: 2.5,
+            borderRadius: 3,
+            background: `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.08)} 0%, ${alpha(theme.palette.secondary.light, 0.04)} 100%)`,
+            border: `1px solid ${alpha(theme.palette.secondary.main, 0.25)}`,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            flexWrap: "wrap",
+            gap: 2,
+          }}
+        >
+          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <Box
+              sx={{
+                width: 48,
+                height: 48,
+                borderRadius: 2,
+                bgcolor: alpha(theme.palette.secondary.main, 0.15),
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <HowToReg sx={{ color: "secondary.main", fontSize: 28 }} />
+            </Box>
+            <Box>
+              <Typography variant="h6" fontWeight={700} color="secondary.dark">
+                Enrolled Applications
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                These students have been successfully enrolled
+              </Typography>
+            </Box>
+          </Box>
+          <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
+            <Chip
+              icon={<HowToReg />}
+              label={`Total Enrolled: ${totalCount}`}
+              color="secondary"
+              variant="filled"
+              sx={{ fontWeight: 600 }}
+            />
+            <Button
+              variant="contained"
+              color="secondary"
+              size="small"
+              startIcon={<School />}
+              onClick={() => router.push("/dashboard/enrollments")}
+              sx={{ borderRadius: 2, textTransform: "none", fontWeight: 600 }}
+            >
+              View All Enrollments
             </Button>
           </Box>
         </Paper>

@@ -15,6 +15,7 @@ import {
   CalendarMonth,
   Campaign,
   Category,
+  CheckCircle,
   Class,
   ClassOutlined,
   CloudSync,
@@ -26,6 +27,7 @@ import {
   Description,
   DeveloperBoard,
   DoneAllSharp,
+  EditNote,
   EmojiEvents,
   EventNote,
   FactCheck,
@@ -33,11 +35,13 @@ import {
   FormatListBulleted,
   Grading,
   Group,
+  HowToReg,
   ImportContacts,
   LibraryAdd,
   LibraryBooks,
   ListAlt,
   NotificationAdd,
+  PendingActions,
   Payment,
   PeopleAlt,
   PersonAdd,
@@ -47,6 +51,7 @@ import {
   Quiz,
   Receipt,
   ReceiptLong,
+  Restore,
   Restaurant,
   Savings,
   School as SchoolIcon,
@@ -156,22 +161,84 @@ export const navigationItems: NavigationItem[] = [
       },
     ],
   },
+  // Admissions Section - Grouped under one main Admissions menu
   {
     title: "Admissions",
     icon: (
       <ColorfulIcon color="#5D4037">
-        <TableChart />
+        <EditNote />
+      </ColorfulIcon>
+    ),
+    roles: ["admin", "super_admin"],
+    children: [
+      {
+        title: "All Enrollments",
+        icon: (
+          <ColorfulIcon color="#5D4037">
+            <HowToReg />
+          </ColorfulIcon>
+        ),
+        path: "/dashboard/enrollments/list",
+        roles: ["admin", "super_admin"],
+      },
+      {
+        title: "Pending Applications",
+        icon: (
+          <ColorfulIcon color="#5D4037">
+            <PendingActions />
+          </ColorfulIcon>
+        ),
+        path: "/dashboard/online-application/pending",
+        roles: ["admin", "super_admin"],
+      },
+      {
+        title: "Approved Applications",
+        icon: (
+          <ColorfulIcon color="#5D4037">
+            <CheckCircle />
+          </ColorfulIcon>
+        ),
+        path: "/dashboard/online-application/approved",
+        roles: ["admin", "super_admin"],
+      },
+      {
+        title: "Enrolled Applications",
+        icon: (
+          <ColorfulIcon color="#5D4037">
+            <HowToReg />
+          </ColorfulIcon>
+        ),
+        path: "/dashboard/online-application/enrolled",
+        roles: ["admin", "super_admin"],
+      },
+      {
+        title: "Rejected Applications",
+        icon: (
+          <ColorfulIcon color="#5D4037">
+            <Restore />
+          </ColorfulIcon>
+        ),
+        path: "/dashboard/online-application/rejected",
+        roles: ["admin", "super_admin"],
+      },
+    ],
+  },
+  // Keep individual items for backward compatibility or specific access
+  {
+    title: "All Enrollments",
+    icon: (
+      <ColorfulIcon color="#5D4037">
+        <HowToReg />
       </ColorfulIcon>
     ),
     path: "/dashboard/enrollments/list",
     roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
   },
-
   {
     title: "Pending Admissions",
     icon: (
       <ColorfulIcon color="#5D4037">
-        <TableChart />
+        <PendingActions />
       </ColorfulIcon>
     ),
     path: "/dashboard/online-application/pending",
@@ -181,17 +248,27 @@ export const navigationItems: NavigationItem[] = [
     title: "Approved Admissions",
     icon: (
       <ColorfulIcon color="#5D4037">
-        <TableChart />
+        <CheckCircle />
       </ColorfulIcon>
     ),
     path: "/dashboard/online-application/approved",
     roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
   },
   {
+    title: "Enrolled Applications",
+    icon: (
+      <ColorfulIcon color="#5D4037">
+        <HowToReg />
+      </ColorfulIcon>
+    ),
+    path: "/dashboard/online-application/enrolled",
+    roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+  },
+  {
     title: "Rejected Admissions",
     icon: (
       <ColorfulIcon color="#5D4037">
-        <TableChart />
+        <Restore />
       </ColorfulIcon>
     ),
     path: "/dashboard/online-application/rejected",
@@ -201,7 +278,7 @@ export const navigationItems: NavigationItem[] = [
     title: "Discount Student",
     icon: (
       <ColorfulIcon color="#5D4037">
-        <TableChart />
+        <Savings />
       </ColorfulIcon>
     ),
     path: "/dashboard/student/discount",
@@ -308,7 +385,6 @@ export const navigationItems: NavigationItem[] = [
         path: "/dashboard/hifz/subject/list",
         roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
       },
-
       {
         title: "Soboki Daily Report Add",
         icon: (
@@ -323,7 +399,7 @@ export const navigationItems: NavigationItem[] = [
         title: "Soboki Daily Report List",
         icon: (
           <ColorfulIcon color="#9C27B0">
-            <PostAdd />
+            <Description />
           </ColorfulIcon>
         ),
         path: "/dashboard/hifz/daily-report/soboki/list",
@@ -343,13 +419,12 @@ export const navigationItems: NavigationItem[] = [
         title: "Sunani Daily Report List",
         icon: (
           <ColorfulIcon color="#9C27B0">
-            <PostAdd />
+            <Description />
           </ColorfulIcon>
         ),
         path: "/dashboard/hifz/daily-report/sunani/list",
         roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
       },
-
       {
         title: "Weekly Target List",
         icon: (
@@ -783,14 +858,13 @@ export const navigationItems: NavigationItem[] = [
         title: "Fee Collection",
         icon: (
           <ColorfulIcon color="#009688">
-            <Category />
+            <Payment />
           </ColorfulIcon>
         ),
         roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
       },
     ],
   },
-
   {
     title: "Accounting",
     icon: (
@@ -828,7 +902,6 @@ export const navigationItems: NavigationItem[] = [
             ),
             roles: ["admin", "super_admin"],
           },
-
           {
             path: "/dashboard/accounting/income/category",
             title: "Income Categories",
@@ -911,7 +984,6 @@ export const navigationItems: NavigationItem[] = [
         ),
         roles: ["admin", "super_admin"],
       },
-
       {
         path: "/dashboard/accounting/fees",
         title: "Student Fees ",
@@ -1079,7 +1151,6 @@ export const navigationItems: NavigationItem[] = [
       },
     ],
   },
-
   {
     title: "User Management",
     icon: (
@@ -1090,7 +1161,6 @@ export const navigationItems: NavigationItem[] = [
     path: "/dashboard/user-management",
     roles: ["admin", "super_admin"],
   },
-
   {
     title: "System",
     icon: (
