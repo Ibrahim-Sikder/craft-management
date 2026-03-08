@@ -5,32 +5,21 @@
 import React, { useMemo, useState, useEffect } from "react";
 import {
   Box,
-  Button,
+  Avatar,
   Card,
   Chip,
+  CircularProgress,
   Container,
-  Grid,
-  Paper,
-  TextField,
   Typography,
   useTheme,
   alpha,
-  Avatar,
-  InputAdornment,
-  CircularProgress,
 } from "@mui/material";
 import {
-  Add,
-  Edit,
   Delete,
-  Visibility,
-  Search,
-  Refresh,
-  School,
-  Email,
   Discount as DiscountIcon,
+  Edit,
+  Visibility,
 } from "@mui/icons-material";
-import Link from "next/link";
 import {
   useDeleteStudentMutation,
   useGetAllStudentsQuery,
@@ -39,54 +28,43 @@ import Swal from "sweetalert2";
 import CraftTable, { Column, RowAction } from "@/components/Table";
 import DiscountSummaryModal from "../list/__components/DiscountSummaryModal";
 
-const StudentList = () => {
+const DiscountedStudentList = () => {
   const theme = useTheme();
 
   const customColors = {
-    primary: "#6a1b9a",
-    secondary: "#00838f",
     success: "#2e7d32",
-    error: "#c62828",
-    warning: "#ff8f00",
-    info: "#0277bd",
-    accent1: "#ad1457",
-    accent2: "#6a1b9a",
-    accent3: "#283593",
-    accent4: "#00695c",
-    background: "#f5f5f5",
   };
 
+  // ── Pagination state ───────────────────────────────────────────────────────
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [searchTerm, setSearchTerm] = useState("");
+
+  // ── Modal state ────────────────────────────────────────────────────────────
   const [discountSummaryOpen, setDiscountSummaryOpen] = useState(false);
   const [selectedStudentForDiscount, setSelectedStudentForDiscount] =
     useState<any>(null);
 
   const [deleteStudent] = useDeleteStudentMutation();
 
-  // Fetch ALL students with a large limit
+  // ── Fetch ALL students ─────────────────────────────────────────────────────
   const {
     data: studentData,
     isLoading,
     refetch,
   } = useGetAllStudentsQuery({
-    limit: 1000, // Get all students
+    limit: 1000,
     page: 1,
     searchTerm: "",
   });
 
-  console.log("Student Data from API:", studentData); // Debug log
-
   const students = studentData?.data || [];
 
-  // Filter ONLY students who have discounts
+  // ── Filter only students who have discounts/waivers ────────────────────────
+  // Pass the FULL filtered list to CraftTable — let the table handle
+  // search, sort, and pagination internally.
   const discountedStudents = useMemo(() => {
-    if (!students.length) return [];
-
-    const discounted = students.filter((student: any) => {
-      // Check if any fee has discount, waiver, or late fee customization
-      const hasDiscount = student.fees?.some(
+    return students.filter((student: any) =>
+      student.fees?.some(
         (fee: any) =>
           fee.discount > 0 ||
           fee.waiver > 0 ||
@@ -94,31 +72,11 @@ const StudentList = () => {
             fee.lateFeeCustomizations.some(
               (c: any) => c.newAmount < c.previousAmount,
             )),
-      );
+      ),
+    );
+  }, [students]);
 
-      if (hasDiscount) {
-        console.log("Found discounted student:", student.name, student.fees); // Debug log
-      }
-
-      return hasDiscount;
-    });
-
-    // Apply search filter
-    if (searchTerm) {
-      return discounted.filter(
-        (student: any) =>
-          student.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          student.studentId?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          student.email?.toLowerCase().includes(searchTerm.toLowerCase()),
-      );
-    }
-
-    return discounted;
-  }, [students, searchTerm]);
-
-  console.log("Discounted Students:", discountedStudents); // Debug log
-
-  // Calculate discount statistics
+  // ── Summary stats (header cards) ──────────────────────────────────────────
   const discountStats = useMemo(() => {
     let totalDiscountAmount = 0;
     let totalWaiverAmount = 0;
@@ -128,8 +86,7 @@ const StudentList = () => {
       student.fees?.forEach((fee: any) => {
         totalDiscountAmount += fee.discount || 0;
         totalWaiverAmount += fee.waiver || 0;
-
-        const lateFeeDiscounts =
+        totalLateFeeDiscount +=
           fee.lateFeeCustomizations?.reduce(
             (acc: number, c: any) =>
               acc +
@@ -138,7 +95,6 @@ const StudentList = () => {
                 : 0),
             0,
           ) || 0;
-        totalLateFeeDiscount += lateFeeDiscounts;
       });
     });
 
@@ -152,21 +108,7 @@ const StudentList = () => {
     };
   }, [discountedStudents]);
 
-  // Paginate discounted students
-  const paginatedStudents = useMemo(() => {
-    const start = page * rowsPerPage;
-    const end = start + rowsPerPage;
-    return discountedStudents.slice(start, end);
-  }, [discountedStudents, page, rowsPerPage]);
-
-  const handleRefresh = () => {
-    refetch();
-  };
-
-  const handleAddStudent = () => {
-    window.location.href = "/dashboard/student/create";
-  };
-
+  // ── Handlers ──────────────────────────────────────────────────────────────
   const handleViewDiscountSummary = (student: any) => {
     setSelectedStudentForDiscount(student);
     setDiscountSummaryOpen(true);
@@ -185,16 +127,12 @@ const StudentList = () => {
       if (result.isConfirmed) {
         try {
           await deleteStudent(id).unwrap();
-          Swal.fire(
-            "Deleted!",
-            "Student has been deleted successfully.",
-            "success",
-          );
+          Swal.fire("Deleted!", "Student deleted successfully.", "success");
           refetch();
         } catch (err: any) {
           Swal.fire({
             title: "Error!",
-            text: err.data?.message || "Failed to delete student",
+            text: err.data?.message || "Failed to delete.",
             icon: "error",
           });
         }
@@ -202,27 +140,14 @@ const StudentList = () => {
     });
   };
 
-  const handleChangePage = (newPage: number) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (newRowsPerPage: number) => {
-    setRowsPerPage(newRowsPerPage);
-    setPage(0);
-  };
-
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-    setPage(0);
-  };
-
-  // Columns for discounted students
+  // ── Columns ────────────────────────────────────────────────────────────────
   const columns: Column[] = [
     {
       id: "studentId",
       label: "ID",
       minWidth: 100,
       sortable: true,
+      filterable: true,
       format: (value: string) => (
         <Chip
           label={value}
@@ -240,6 +165,7 @@ const StudentList = () => {
       label: "Student",
       minWidth: 170,
       sortable: true,
+      filterable: true,
       render: (row: any) => (
         <Box sx={{ display: "flex", alignItems: "center" }}>
           <Avatar src={row.studentPhoto} sx={{ width: 40, height: 40, mr: 2 }}>
@@ -259,8 +185,9 @@ const StudentList = () => {
     {
       id: "className",
       label: "Class/Section",
-      minWidth: 120,
+      minWidth: 130,
       sortable: true,
+      filterable: true,
       render: (row: any) => {
         const className =
           Array.isArray(row.className) && row.className.length > 0
@@ -272,7 +199,8 @@ const StudentList = () => {
             : "";
         return (
           <Typography variant="body2">
-            {className} {sectionName && `- ${sectionName}`}
+            {className}
+            {sectionName && ` - ${sectionName}`}
           </Typography>
         );
       },
@@ -414,7 +342,7 @@ const StudentList = () => {
     },
   ];
 
-  // Row actions
+  // ── Row actions ────────────────────────────────────────────────────────────
   const rowActions: RowAction[] = [
     {
       label: "View",
@@ -424,6 +352,7 @@ const StudentList = () => {
       },
       color: "info",
       tooltip: "View Details",
+      alwaysShow: true,
     },
     {
       label: "Edit",
@@ -433,6 +362,7 @@ const StudentList = () => {
       },
       color: "primary",
       tooltip: "Edit Student",
+      alwaysShow: true,
     },
     {
       label: "Discount Summary",
@@ -452,6 +382,7 @@ const StudentList = () => {
     },
   ];
 
+  // ── Loading ────────────────────────────────────────────────────────────────
   if (isLoading) {
     return (
       <Container
@@ -469,6 +400,7 @@ const StudentList = () => {
     );
   }
 
+  // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <Container maxWidth="xl" sx={{ p: { xs: "4px" } }}>
       <Card
@@ -478,73 +410,43 @@ const StudentList = () => {
           boxShadow: `0 4px 20px 0 ${alpha(theme.palette.grey[500], 0.2)}`,
         }}
       >
-        {/* Search and Action Bar */}
-        <Box
-          sx={{
-            p: 2,
-            background: `linear-gradient(90deg, ${alpha(customColors.secondary, 0.1)} 0%, ${alpha(customColors.accent2, 0.05)} 100%)`,
+        <CraftTable
+          title="Discounted Students"
+          subtitle={`${discountedStudents.length} students received discounts`}
+          emptyStateMessage="No discounted students found. Students with discounts, waivers, or late fee adjustments will appear here."
+          columns={columns}
+          // ✅ Pass the FULL filtered list — CraftTable handles search/sort/pagination
+          data={discountedStudents}
+          loading={isLoading}
+          idField="_id"
+          // ── pagination (client-side) ──────────────────────────────────
+          pagination={true}
+          page={page}
+          rowsPerPage={rowsPerPage}
+          onPageChange={setPage}
+          onRowsPerPageChange={(n) => {
+            setRowsPerPage(n);
+            setPage(0);
           }}
-        >
-          <Grid container spacing={2} alignItems="center">
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                placeholder="Search discounted students..."
-                value={searchTerm}
-                onChange={handleSearch}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Search color="primary" />
-                    </InputAdornment>
-                  ),
-                  sx: { borderRadius: 2 },
-                }}
-                variant="outlined"
-                size="small"
-              />
-            </Grid>
-          </Grid>
-        </Box>
-
-        {/* Students Table */}
-        {discountedStudents.length === 0 ? (
-          <Box sx={{ textAlign: "center", py: 4 }}>
-            <Typography variant="h6" color="text.secondary">
-              No discounted students found
-            </Typography>
-            <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
-              Students with discounts, waivers, or late fee adjustments will
-              appear here.
-            </Typography>
-          </Box>
-        ) : (
-          <CraftTable
-            title="Discounted Students"
-            subtitle={`${discountedStudents.length} students received discounts`}
-            columns={columns}
-            data={paginatedStudents}
-            loading={isLoading}
-            page={page}
-            rowsPerPage={rowsPerPage}
-            // totalCount={discountedStudents.length}
-            onPageChange={handleChangePage}
-            onRowsPerPageChange={handleChangeRowsPerPage}
-            onRefresh={handleRefresh}
-            rowActions={rowActions}
-            selectable={true}
-            searchable={false}
-            sortable={true}
-            pagination={true}
-            emptyStateMessage="No discounted students found."
-            idField="_id"
-            maxHeight="60vh"
-            showRowNumbers={true}
-            rowNumberHeader="#"
-            actionColumnWidth={140}
-            actionMenuLabel="Actions"
-          />
-        )}
+          // ── search / sort / filter (client-side) ─────────────────────
+          searchable={true}
+          sortable={true}
+          serverSideSorting={false}
+          filterable={true}
+          // ── actions ───────────────────────────────────────────────────
+          rowActions={rowActions}
+          selectable={true}
+          onRefresh={refetch}
+          // ── appearance ────────────────────────────────────────────────
+          showToolbar={true}
+          showRowNumbers={true}
+          rowNumberHeader="#"
+          maxHeight="60vh"
+          actionColumnWidth={140}
+          actionMenuLabel="Actions"
+          elevation={2}
+          borderRadius={2}
+        />
       </Card>
 
       {/* Discount Summary Modal */}
@@ -558,4 +460,4 @@ const StudentList = () => {
   );
 };
 
-export default StudentList;
+export default DiscountedStudentList;

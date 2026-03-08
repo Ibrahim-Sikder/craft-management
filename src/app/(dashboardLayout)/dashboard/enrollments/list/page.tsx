@@ -30,51 +30,41 @@ import {
   CircularProgress,
   LinearProgress,
   Typography,
+  useMediaQuery,
+  useTheme,
 } from "@mui/material";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import Swal from "sweetalert2";
 import EnrollmentDetailsModal from "../__components/EnrollmentDetailsModal";
 import FeeCollectionModal from "../__components/FeeCollectionModal";
 import PromotionHistoryModal from "../__components/PromotionHistoryModal";
 import PromotionModal from "../__components/PromotionModal";
 import RetainModal from "../__components/RetainModal";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 const calculateTotalFees = (fees: any[]) => {
   if (!fees || !Array.isArray(fees) || fees.length === 0) {
     return { total: 0, paid: 0, due: 0, discount: 0, waiver: 0 };
   }
-
-  let total = 0;
-  let paid = 0;
-  let due = 0;
-  let discount = 0;
-  let waiver = 0;
-
+  let total = 0,
+    paid = 0,
+    due = 0,
+    discount = 0,
+    waiver = 0;
   fees.forEach((fee: any) => {
-    const amount = Number(fee.amount) || 0;
-    const paidAmount = Number(fee.paidAmount) || 0;
-    const discountAmount = Number(fee.discount) || 0;
-    const waiverAmount = Number(fee.waiver) || 0;
-    const dueAmount = Number(fee.dueAmount) || 0;
-
-    total += amount;
-    paid += paidAmount;
-    due += dueAmount;
-    discount += discountAmount;
-    waiver += waiverAmount;
+    total += Number(fee.amount) || 0;
+    paid += Number(fee.paidAmount) || 0;
+    due += Number(fee.dueAmount) || 0;
+    discount += Number(fee.discount) || 0;
+    waiver += Number(fee.waiver) || 0;
   });
-
   return { total, paid, due, discount, waiver };
 };
 
 const getPaymentStatus = (fees: any[]) => {
-  if (!fees || !Array.isArray(fees) || fees.length === 0) {
-    return "unpaid";
-  }
-
+  if (!fees || !Array.isArray(fees) || fees.length === 0) return "unpaid";
   const { total, paid } = calculateTotalFees(fees);
-
   if (paid >= total) return "paid";
   if (paid > 0) return "partial";
   return "unpaid";
@@ -110,81 +100,47 @@ const getAdmissionTypeColor = (type: string) => {
 
 export default function EnrollmentsPage() {
   const router = useRouter();
+  const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isTablet = useMediaQuery(theme.breakpoints.between("sm", "md"));
   const [selectedEnrollment, setSelectedEnrollment] = useState<any>(null);
   const [selectedStudentForHistory, setSelectedStudentForHistory] =
     useState<any>(null);
-  const [retainModalOpen, setRetainModalOpen] = useState(false);
-
   const [detailDialogOpen, setDetailDialogOpen] = useState(false);
   const [feeCollectionOpen, setFeeCollectionOpen] = useState(false);
   const [promotionModalOpen, setPromotionModalOpen] = useState(false);
   const [promotionHistoryModalOpen, setPromotionHistoryModalOpen] =
     useState(false);
-  const [, setPromotionMenuAnchorEl] = useState<null | HTMLElement>(null);
-  const [, setExportMenuAnchorEl] = useState<null | HTMLElement>(null);
+  const [retainModalOpen, setRetainModalOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(0);
-
-  const [sortColumn, setSortColumn] = useState("studentName");
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
-  const [searchTerm, setSearchTerm] = useState("");
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [totalCount, setTotalCount] = useState(0);
-  const [filters, setFilters] = useState<Record<string, any>>({});
-  const [, setSelectedRows] = useState<any[]>([]);
+  const [rowsPerPage, setRowsPerPage] = useState(isMobile ? 5 : 10);
 
-  const [deleteEnrollment] = useDeleteEnrollmentMutation();
-  const { classOptions } = useAcademicOption();
-
-  const queryParams: any = {
-    page: page + 1,
-    limit: rowsPerPage,
-  };
-
-  if (sortColumn) {
-    queryParams.sort = sortDirection === "desc" ? `-${sortColumn}` : sortColumn;
-  }
-
-  if (searchTerm) {
-    queryParams.searchTerm = searchTerm;
-  }
-
-  if (Object.keys(filters).length > 0) {
-    Object.keys(filters).forEach((key) => {
-      if (filters[key]) {
-        queryParams[key] = filters[key];
-      }
-    });
-  }
+  useEffect(() => {
+    setRowsPerPage(isMobile ? 5 : isTablet ? 8 : 10);
+  }, [isMobile, isTablet]);
 
   const {
     data: enrollmentData,
     isLoading,
     error,
     refetch,
-  } = useGetAllEnrollmentsQuery(queryParams);
+  } = useGetAllEnrollmentsQuery({ limit: 1000, page: 1 });
 
-  useEffect(() => {
-    if (enrollmentData?.data?.meta?.total) {
-      setTotalCount(enrollmentData.data.meta.total);
-    }
-  }, [enrollmentData]);
+  const [deleteEnrollment] = useDeleteEnrollmentMutation();
+  const { classOptions } = useAcademicOption();
 
-  const transformedEnrollments = React.useMemo(() => {
-    if (
-      !enrollmentData ||
-      !enrollmentData.data ||
-      !Array.isArray(enrollmentData.data.data)
-    ) {
+  // Flatten API data → flat rows
+  const tableData = useMemo(() => {
+    if (!enrollmentData?.data || !Array.isArray(enrollmentData.data.data))
       return [];
-    }
 
     return enrollmentData.data.data.map((enrollment: any) => {
       const className = enrollment.className
         ? Array.isArray(enrollment.className)
           ? enrollment.className
               .map((cls: any) =>
-                typeof cls === "object" ? cls.className : cls
+                typeof cls === "object" ? cls.className : cls,
               )
               .join(", ")
           : enrollment.className
@@ -208,20 +164,18 @@ export default function EnrollmentsPage() {
         "N/A";
 
       const { total, paid, due, discount, waiver } = calculateTotalFees(
-        enrollment.fees || []
+        enrollment.fees || [],
       );
-
       const paymentStatus = getPaymentStatus(enrollment.fees || []);
-      const status = enrollment.status || "active";
 
       return {
         id: enrollment._id,
         enrollmentId: enrollment._id,
-        studentId: studentId,
-        studentName: studentName,
+        studentId,
+        studentName,
         studentNameBangla:
           enrollment.nameBangla || enrollment.student?.nameBangla || "",
-        fatherName: fatherName,
+        fatherName,
         fatherNameBangla: enrollment.fatherNameBangla || "",
         motherName:
           enrollment.motherName || enrollment.motherNameBangla || "N/A",
@@ -243,15 +197,15 @@ export default function EnrollmentsPage() {
           ? new Date(enrollment.birthDate).toLocaleDateString()
           : "N/A",
         nationality: enrollment.nationality || "Bangladeshi",
-        className: className,
+        className,
         studentDepartment:
           enrollment.studentDepartment ||
           enrollment.student?.studentDepartment ||
           "N/A",
         studentType:
           enrollment.studentType || enrollment.student?.studentType || "N/A",
-        status: status,
-        paymentStatus: paymentStatus,
+        status: enrollment.status || "active",
+        paymentStatus,
         admissionType: enrollment.admissionType || "admission",
         presentAddress: enrollment.presentAddress || {
           policeStation: "N/A",
@@ -274,137 +228,177 @@ export default function EnrollmentsPage() {
     });
   }, [enrollmentData]);
 
-  const columns: Column[] = [
-    {
-      id: "studentName",
-      label: "Student",
-      minWidth: 220,
-      sortable: true,
-      filterable: true,
-      render: (row: any) => (
-        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-          <Avatar sx={{ width: 40, height: 40, bgcolor: "primary.main" }}>
-            <Person />
-          </Avatar>
-          <Box>
-            <Typography variant="subtitle1" fontWeight="bold">
-              {row.studentName}
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              ID: {row.studentId}
-            </Typography>
-            <Box display="flex" gap={1} mt={0.5}>
-              <Chip
-                label={row.admissionType}
-                size="small"
-                color={getAdmissionTypeColor(row.admissionType)}
-                variant="outlined"
-              />
-              {row.rawData?.promotedFrom && (
+  // Dynamic filter options from data
+  const classFilterOptions = useMemo(() => {
+    const seen = new Set<string>();
+    const opts: { label: string; value: string }[] = [];
+    tableData.forEach((r: any) => {
+      if (r.className && r.className !== "N/A" && !seen.has(r.className)) {
+        seen.add(r.className);
+        opts.push({ label: r.className, value: r.className });
+      }
+    });
+    return opts.sort((a, b) => a.label.localeCompare(b.label));
+  }, [tableData]);
+
+  const totalCount = enrollmentData?.data?.meta?.total ?? tableData.length;
+
+  const stats = useMemo(() => {
+    if (!tableData.length)
+      return {
+        total: 0,
+        active: 0,
+        paid: 0,
+        unpaid: 0,
+        totalFees: 0,
+        totalPaid: 0,
+        totalDue: 0,
+      };
+    return {
+      total: tableData.length,
+      active: tableData.filter((e: any) => e.status === "active").length,
+      paid: tableData.filter((e: any) => e.paymentStatus === "paid").length,
+      unpaid: tableData.filter((e: any) => e.paymentStatus === "unpaid").length,
+      totalFees: tableData.reduce((s: number, e: any) => s + e.totalFees, 0),
+      totalPaid: tableData.reduce((s: number, e: any) => s + e.paidAmount, 0),
+      totalDue: tableData.reduce((s: number, e: any) => s + e.dueAmount, 0),
+    };
+  }, [tableData]);
+
+  // Columns
+  const columns: Column[] = useMemo(() => {
+    const cols: Column[] = [
+      {
+        id: "studentName",
+        label: "Student",
+        minWidth: isMobile ? 160 : 220,
+        sortable: true,
+        filterable: true,
+        render: (row: any) => (
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: { xs: 0.5, sm: 2 },
+            }}
+          >
+            <Avatar
+              sx={{
+                width: { xs: 32, sm: 40 },
+                height: { xs: 32, sm: 40 },
+                bgcolor: "primary.main",
+              }}
+            >
+              <Person />
+            </Avatar>
+            <Box>
+              <Typography
+                variant="subtitle2"
+                fontWeight="bold"
+                sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+              >
+                {row.studentName}
+              </Typography>
+              <Typography
+                variant="body2"
+                color="text.secondary"
+                sx={{ fontSize: { xs: "0.65rem", sm: "0.75rem" } }}
+              >
+                ID: {row.studentId}
+              </Typography>
+              <Box display="flex" gap={0.5} mt={0.5} flexWrap="wrap">
                 <Chip
-                  label="Promoted"
+                  label={row.admissionType}
                   size="small"
-                  color="success"
-                  icon={<ArrowForward fontSize="small" />}
+                  color={getAdmissionTypeColor(row.admissionType) as any}
+                  variant="outlined"
+                  sx={{ height: 18, fontSize: "0.6rem" }}
                 />
-              )}
+                {row.rawData?.promotedFrom && (
+                  <Chip
+                    label="Promoted"
+                    size="small"
+                    color="success"
+                    icon={
+                      <ArrowForward sx={{ fontSize: "0.75rem !important" }} />
+                    }
+                    sx={{ height: 18, fontSize: "0.6rem" }}
+                  />
+                )}
+              </Box>
             </Box>
           </Box>
-        </Box>
-      ),
-    },
-    {
-      id: "className",
-      label: "Class & Department",
-      minWidth: 180,
-      sortable: true,
-      filterable: true,
-      filterOptions:
-        classOptions?.map((opt: any) => ({
-          label: opt.label,
-          value: opt.label,
-        })) || [],
-      render: (row: any) => (
-        <Box>
-          <Typography variant="body2" fontWeight="medium">
-            {row.className}
-          </Typography>
-          <Typography variant="body2" color="text.secondary">
-            {row.studentDepartment} • {row.studentType}
-          </Typography>
-          <Chip
-            label={row.status}
-            size="small"
-            color={getStatusColor(row.status)}
-            sx={{ mt: 0.5 }}
-          />
-        </Box>
-      ),
-    },
-    {
-      id: "mobileNo",
-      label: "Contact",
-      minWidth: 120,
-      sortable: true,
-      filterable: true,
-      render: (row: any) => (
-        <Box>
-          <Typography variant="body2">{row.mobileNo}</Typography>
-          <Typography variant="caption" color="text.secondary">
-            Father: {row.fatherName}
-          </Typography>
-        </Box>
-      ),
-    },
-    {
-      id: "paymentStatus",
-      label: "Payment Status",
-      minWidth: 180,
-      sortable: true,
-      filterable: true,
-      type: "progress",
-      filterOptions: [
-        { label: "Paid", value: "paid" },
-        { label: "Partial", value: "partial" },
-        { label: "Unpaid", value: "unpaid" },
-      ],
-      render: (row: any) => {
-        const percentage =
-          row.totalFees > 0 ? (row.paidAmount / row.totalFees) * 100 : 0;
-        return (
-          <Box sx={{ minWidth: 150 }}>
-            <Box display="flex" justifyContent="space-between" mb={0.5}>
-              <Typography variant="caption">
-                Paid: ৳{row.paidAmount.toLocaleString()}
-              </Typography>
-              <Typography variant="caption">
-                Due: ৳{row.dueAmount.toLocaleString()}
-              </Typography>
-            </Box>
-            <LinearProgress
-              variant="determinate"
-              value={percentage}
-              sx={{
-                height: 8,
-                borderRadius: 4,
-                backgroundColor: "grey.200",
-                "& .MuiLinearProgress-bar": {
-                  backgroundColor:
-                    percentage >= 100
-                      ? "success.main"
-                      : percentage > 0
-                        ? "warning.main"
-                        : "error.main",
-                  borderRadius: 4,
-                },
-              }}
-            />
-            <Box
-              display="flex"
-              justifyContent="space-between"
-              alignItems="center"
-              mt={1}
+        ),
+      },
+      {
+        id: "className",
+        label: "Class & Dept",
+        minWidth: isMobile ? 100 : 180,
+        sortable: true,
+        filterable: true,
+        filterOptions: classFilterOptions,
+        render: (row: any) => (
+          <Box>
+            <Typography
+              variant="body2"
+              fontWeight="medium"
+              sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
             >
+              {row.className}
+            </Typography>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{ fontSize: { xs: "0.65rem", sm: "0.75rem" } }}
+            >
+              {row.studentDepartment} • {row.studentType}
+            </Typography>
+            <Chip
+              label={row.status}
+              size="small"
+              color={getStatusColor(row.status) as any}
+              sx={{ mt: 0.5, height: 20, fontSize: "0.65rem" }}
+            />
+          </Box>
+        ),
+      },
+    ];
+
+    if (!isMobile) {
+      cols.push({
+        id: "mobileNo",
+        label: "Contact",
+        minWidth: isTablet ? 120 : 140,
+        sortable: true,
+        filterable: true,
+        render: (row: any) => (
+          <Box>
+            <Typography variant="body2">{row.mobileNo}</Typography>
+            <Typography variant="caption" color="text.secondary">
+              Father: {row.fatherName}
+            </Typography>
+          </Box>
+        ),
+      });
+    }
+
+    cols.push(
+      {
+        id: "paymentStatus",
+        label: "Payment",
+        minWidth: isMobile ? 100 : 180,
+        sortable: true,
+        filterable: true,
+        filterOptions: [
+          { label: "Paid", value: "paid" },
+          { label: "Partial", value: "partial" },
+          { label: "Unpaid", value: "unpaid" },
+        ],
+        render: (row: any) => {
+          const pct =
+            row.totalFees > 0 ? (row.paidAmount / row.totalFees) * 100 : 0;
+          if (isMobile) {
+            return (
               <Chip
                 label={row.paymentStatus}
                 color={
@@ -416,470 +410,348 @@ export default function EnrollmentsPage() {
                 }
                 size="small"
                 variant="filled"
+                sx={{ fontWeight: 600 }}
               />
-              <Typography variant="caption" fontWeight="bold">
-                {percentage.toFixed(1)}%
-              </Typography>
-            </Box>
-          </Box>
-        );
-      },
-    },
-    {
-      id: "dueAmount",
-      label: "Due Amount",
-      minWidth: 120,
-      align: "right",
-      sortable: true,
-      type: "number",
-      format: (value: number) => (
-        <Typography
-          variant="body1"
-          fontWeight="bold"
-          color={value > 0 ? "error.main" : "success.main"}
-        >
-          ৳{value.toLocaleString()}
-        </Typography>
-      ),
-    },
-    {
-      id: "admissionType",
-      label: "Type",
-      minWidth: 100,
-      sortable: true,
-      filterable: true,
-      filterOptions: [
-        { label: "Admission", value: "admission" },
-        { label: "Promotion", value: "promotion" },
-      ],
-      render: (row: any) => (
-        <Chip
-          label={row.admissionType}
-          size="small"
-          color={getAdmissionTypeColor(row.admissionType)}
-          variant={row.admissionType === "promotion" ? "filled" : "outlined"}
-          icon={
-            row.admissionType === "promotion" ? (
-              <ArrowForward fontSize="small" />
-            ) : undefined
+            );
           }
-        />
-      ),
-    },
-  ];
+          return (
+            <Box sx={{ minWidth: 150 }}>
+              <Box display="flex" justifyContent="space-between" mb={0.5}>
+                <Typography variant="caption">
+                  Paid: ৳{row.paidAmount.toLocaleString()}
+                </Typography>
+                <Typography variant="caption">
+                  Due: ৳{row.dueAmount.toLocaleString()}
+                </Typography>
+              </Box>
+              <LinearProgress
+                variant="determinate"
+                value={pct}
+                sx={{
+                  height: 8,
+                  borderRadius: 4,
+                  backgroundColor: "grey.200",
+                  "& .MuiLinearProgress-bar": {
+                    backgroundColor:
+                      pct >= 100
+                        ? "success.main"
+                        : pct > 0
+                          ? "warning.main"
+                          : "error.main",
+                    borderRadius: 4,
+                  },
+                }}
+              />
+              <Box
+                display="flex"
+                justifyContent="space-between"
+                alignItems="center"
+                mt={1}
+              >
+                <Chip
+                  label={row.paymentStatus}
+                  color={
+                    row.paymentStatus === "paid"
+                      ? "success"
+                      : row.paymentStatus === "partial"
+                        ? "warning"
+                        : "error"
+                  }
+                  size="small"
+                  variant="filled"
+                />
+                <Typography variant="caption" fontWeight="bold">
+                  {pct.toFixed(1)}%
+                </Typography>
+              </Box>
+            </Box>
+          );
+        },
+      },
+      {
+        id: "dueAmount",
+        label: "Due",
+        minWidth: isMobile ? 80 : 120,
+        align: "right",
+        sortable: true,
+        type: "number",
+        format: (value: number) => (
+          <Typography
+            variant="body2"
+            fontWeight="bold"
+            color={value > 0 ? "error.main" : "success.main"}
+            sx={{ fontSize: { xs: "0.75rem", sm: "0.875rem" } }}
+          >
+            ৳{value.toLocaleString()}
+          </Typography>
+        ),
+      },
+      {
+        id: "admissionType",
+        label: "Type",
+        minWidth: 90,
+        sortable: true,
+        filterable: true,
+        filterOptions: [
+          { label: "Admission", value: "admission" },
+          { label: "Promotion", value: "promotion" },
+        ],
+        render: (row: any) => (
+          <Chip
+            label={row.admissionType}
+            size="small"
+            color={getAdmissionTypeColor(row.admissionType) as any}
+            variant={row.admissionType === "promotion" ? "filled" : "outlined"}
+            icon={
+              row.admissionType === "promotion" ? (
+                <ArrowForward fontSize="small" />
+              ) : undefined
+            }
+          />
+        ),
+      },
+    );
 
-  const rowActions: RowAction[] = [
-    {
-      label: "Fee Collect",
-      icon: <TakaIcon fontSize="small" />,
-      onClick: (row) => {
-        setSelectedEnrollment(row);
-        setFeeCollectionOpen(true);
+    return cols;
+  }, [isMobile, isTablet, classFilterOptions]);
+
+  // Row action
+  const rowActions: RowAction[] = useMemo(
+    () => [
+      {
+        label: "View Details",
+        icon: <Visibility fontSize="small" />,
+        onClick: (row) => {
+          setSelectedEnrollment(row);
+          setDetailDialogOpen(true);
+        },
+        tooltip: "View Details",
+        color: "info",
+        inMenu: isMobile,
+        alwaysShow: !isMobile,
       },
-      disabled: (row) => row.dueAmount <= 0,
-    },
-    {
-      label: "View Details",
-      icon: <Visibility fontSize="small" />,
-      onClick: (row) => {
-        setSelectedEnrollment(row);
-        setDetailDialogOpen(true);
+      {
+        label: "Edit",
+        icon: <Edit fontSize="small" />,
+        onClick: (row) => {
+          router.push(`/dashboard/enrollments?id=${row.id}`);
+        },
+        tooltip: "Edit Enrollment",
+        color: "primary",
+        inMenu: isMobile,
+        alwaysShow: !isMobile,
       },
-      tooltip: "View Details",
-    },
-    {
-      label: "Promotion History",
-      icon: <History fontSize="small" />,
-      onClick: (row) => {
-        setSelectedStudentForHistory({
-          id: row.rawData?.student?._id || row.id,
-          name: row.studentName,
-        });
-        setPromotionHistoryModalOpen(true);
+      {
+        label: "Promotion History",
+        icon: <History fontSize="small" />,
+        onClick: (row) => {
+          setSelectedStudentForHistory({
+            id: row.rawData?.student?._id || row.id,
+            name: row.studentName,
+          });
+          setPromotionHistoryModalOpen(true);
+        },
+        tooltip: "View Promotion History",
+        color: "info",
+        inMenu: true,
       },
-      tooltip: "View Promotion History",
-      color: "info",
-    },
-    {
-      label: "Edit",
-      icon: <Edit fontSize="small" />,
-      onClick: (row) => {
-        router.push(`/dashboard/enrollments?id=${row.id}`);
+      {
+        label: "Delete",
+        icon: <Delete fontSize="small" />,
+        onClick: (row) => {
+          Swal.fire({
+            title: "Are you sure?",
+            html: `You are about to delete <strong>${row.studentName}</strong>'s enrollment. This cannot be undone.`,
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            cancelButtonColor: "#3085d6",
+            confirmButtonText: "Yes, delete it!",
+          }).then((result) => {
+            if (result.isConfirmed) {
+              deleteEnrollment(row.id)
+                .unwrap()
+                .then(() => {
+                  Swal.fire({
+                    title: "Deleted!",
+                    icon: "success",
+                    timer: 2000,
+                    showConfirmButton: false,
+                  });
+                  refetch();
+                })
+                .catch((err) => {
+                  Swal.fire({
+                    title: "Error!",
+                    text: err.data?.message || "Failed to delete.",
+                    icon: "error",
+                  });
+                });
+            }
+          });
+        },
+        color: "error",
+        tooltip: "Delete Enrollment",
+        alwaysShow: true,
+        disabled: (row) => row.admissionType === "promotion",
       },
-      tooltip: "Edit Enrollment",
-    },
-    {
-      label: "Delete",
-      icon: <Delete fontSize="small" />,
-      onClick: (row) => {
-        Swal.fire({
-          title: "Are you sure?",
-          html: `You are about to delete <strong>${row.studentName}</strong>'s enrollment record. This action cannot be undone.`,
-          icon: "warning",
-          showCancelButton: true,
-          confirmButtonColor: "#d33",
-          cancelButtonColor: "#3085d6",
-          confirmButtonText: "Yes, delete it!",
-          cancelButtonText: "Cancel",
-        }).then((result) => {
-          if (result.isConfirmed) {
-            deleteEnrollment(row.id)
-              .unwrap()
-              .then(() => {
+    ],
+    [isMobile, router, deleteEnrollment, refetch],
+  );
+
+  // ── Bulk actions ──────────────────────────────────────────────────────────
+  const bulkActions: BulkAction[] = useMemo(
+    () => [
+      {
+        label: "Export Selected",
+        icon: <FileDownload fontSize="small" />,
+        onClick: (selectedRows) => {
+          Swal.fire({
+            title: "Export",
+            text: `Exporting ${selectedRows.length} enrollment(s)...`,
+            icon: "info",
+            timer: 2000,
+            showConfirmButton: false,
+          });
+        },
+      },
+      {
+        label: "Collect Fees",
+        icon: <AttachMoney fontSize="small" />,
+        color: "success",
+        onClick: (selectedRows) => {
+          const hasDue = selectedRows.some((r) => r.dueAmount > 0);
+          if (!hasDue) {
+            Swal.fire({
+              title: "No Due Amount",
+              text: "Selected enrollments have no due amount.",
+              icon: "info",
+            });
+            return;
+          }
+          Swal.fire({
+            title: "Bulk Fee Collection",
+            html: `Collect fees from <strong>${selectedRows.length}</strong> student(s)?`,
+            icon: "info",
+            showCancelButton: true,
+            confirmButtonColor: "#1976d2",
+            confirmButtonText: "Continue",
+          });
+        },
+      },
+      {
+        label: "Delete Selected",
+        icon: <Delete fontSize="small" />,
+        color: "error",
+        onClick: (selectedRows) => {
+          Swal.fire({
+            title: "Are you sure?",
+            html: `Delete <strong>${selectedRows.length}</strong> enrollment(s)? This cannot be undone.`,
+            icon: "warning",
+            showCancelButton: true,
+            confirmButtonColor: "#d33",
+            confirmButtonText: "Yes, delete them!",
+          }).then((result) => {
+            if (result.isConfirmed) {
+              Promise.allSettled(
+                selectedRows.map((r) => deleteEnrollment(r.id).unwrap()),
+              ).then(() => {
                 Swal.fire({
                   title: "Deleted!",
-                  text: "The enrollment has been deleted successfully.",
                   icon: "success",
                   timer: 2000,
                   showConfirmButton: false,
                 });
                 refetch();
-              })
-              .catch((error) => {
-                Swal.fire({
-                  title: "Error!",
-                  text:
-                    error.data?.message ||
-                    "Failed to delete enrollment. Please try again.",
-                  icon: "error",
-                  confirmButtonColor: "#3085d6",
-                });
               });
-          }
-        });
-      },
-      color: "error",
-      tooltip: "Delete Enrollment",
-      disabled: (row) => row.admissionType === "promotion",
-    },
-  ];
-
-  const bulkActions: BulkAction[] = [
-    {
-      label: "Export Selected",
-      icon: <FileDownload fontSize="small" />,
-      onClick: (selectedRows) => {
-        console.log("Export selected rows:", selectedRows);
-        Swal.fire({
-          title: "Export",
-          text: `Exporting ${selectedRows.length} enrollment(s)...`,
-          icon: "info",
-          timer: 2000,
-          showConfirmButton: false,
-        });
-      },
-    },
-    {
-      label: "Collect Fees",
-      icon: <AttachMoney fontSize="small" />,
-      onClick: (selectedRows) => {
-        const hasDueAmount = selectedRows.some((row) => row.dueAmount > 0);
-        if (!hasDueAmount) {
-          Swal.fire({
-            title: "No Due Amount",
-            text: "Selected enrollments have no due amount to collect.",
-            icon: "info",
-            confirmButtonColor: "#3085d6",
+            }
           });
-          return;
-        }
-
-        Swal.fire({
-          title: "Bulk Fee Collection",
-          html: `You are about to collect fees from <strong>${selectedRows.length}</strong> student(s).`,
-          icon: "info",
-          showCancelButton: true,
-          confirmButtonColor: "#1976d2",
-          cancelButtonColor: "#6c757d",
-          confirmButtonText: "Continue",
-          cancelButtonText: "Cancel",
-        }).then((result) => {
-          if (result.isConfirmed) {
-            console.log("Bulk fee collection for:", selectedRows);
-            Swal.fire({
-              title: "Processing...",
-              text: "Please wait while we process the payments.",
-              icon: "info",
-              timer: 2000,
-              showConfirmButton: false,
-            });
-          }
-        });
+        },
       },
-      color: "success",
-    },
-    {
-      label: "Delete Selected",
-      icon: <Delete fontSize="small" />,
-      onClick: (selectedRows) => {
-        Swal.fire({
-          title: "Are you sure?",
-          html: `You are about to delete <strong>${selectedRows.length}</strong> enrollment record(s). This action cannot be undone.`,
-          icon: "warning",
-          showCancelButton: true,
-          confirmButtonColor: "#d33",
-          cancelButtonColor: "#3085d6",
-          confirmButtonText: "Yes, delete them!",
-          cancelButtonText: "Cancel",
-        }).then((result) => {
-          if (result.isConfirmed) {
-            selectedRows.forEach((row) => {
-              deleteEnrollment(row.id).unwrap();
-            });
-            Swal.fire({
-              title: "Deleted!",
-              text: `The ${selectedRows.length} enrollment(s) have been deleted successfully.`,
-              icon: "success",
-              timer: 2000,
-              showConfirmButton: false,
-            });
-            refetch();
-          }
-        });
-      },
-      color: "error",
-    },
-  ];
+    ],
+    [deleteEnrollment, refetch],
+  );
 
-  const handlePromotionMenuClose = () => {
-    setPromotionMenuAnchorEl(null);
-  };
-
-  const handleOpenPromotionModal = () => {
-    setPromotionModalOpen(true);
-    handlePromotionMenuClose();
-  };
-
-  const handleOpenPromotionSummary = () => {
-    handlePromotionMenuClose();
-  };
-
-  const handleOpenRetainModal = () => {
-    setRetainModalOpen(true);
-  };
-
-  const handleRetainSuccess = () => {
-    refetch();
-    Swal.fire({
-      title: "Success!",
-      text: "Students retained successfully!",
-      icon: "success",
-      timer: 2000,
-      showConfirmButton: false,
-    });
-  };
-
-  const handleExportMenuClose = () => {
-    setExportMenuAnchorEl(null);
-  };
-
-  const handleCloseDetails = () => {
-    setDetailDialogOpen(false);
-    setSelectedEnrollment(null);
-    setActiveTab(0);
-  };
-
-  const handleCloseFeeCollection = () => {
-    setFeeCollectionOpen(false);
-    setSelectedEnrollment(null);
-  };
-
-  const handleEditEnrollment = (enrollment: any) => {
-    handleCloseDetails();
-    router.push(`/dashboard/enrollments?id=${enrollment.id}`);
-  };
-
-  const handleCollectFee = (enrollment: any) => {
-    handleCloseDetails();
-    setSelectedEnrollment(enrollment);
-    setFeeCollectionOpen(true);
-  };
-
-  const handleExport = (type: string) => {
-    console.log(`Exporting as ${type}`);
-    Swal.fire({
-      title: "Exporting...",
-      text: `Exporting enrollments as ${type.toUpperCase()}`,
-      icon: "info",
-      timer: 2000,
-      showConfirmButton: false,
-    });
-    handleExportMenuClose();
-  };
-
-  const handlePrint = () => {
-    console.log("Print enrollments");
-    window.print();
-  };
-
-  const handleSortChange = (column: string, direction: "asc" | "desc") => {
-    setSortColumn(column);
-    setSortDirection(direction);
-    setPage(0);
-  };
-
-  const handlePageChange = (newPage: number) => {
-    setPage(newPage);
-  };
-
-  const handleRowsPerPageChange = (newRowsPerPage: number) => {
-    setRowsPerPage(newRowsPerPage);
-    setPage(0);
-  };
-
-  const handleSearchChange = (term: string) => {
-    setSearchTerm(term);
-    setPage(0);
-  };
-
-  const handleFilterChange = (filters: Record<string, any>) => {
-    setFilters(filters);
-    setPage(0);
-  };
-
-  const handleSelectionChange = (selected: any[]) => {
-    setSelectedRows(selected);
-  };
-
-  const handlePromotionSuccess = () => {
-    refetch();
-    Swal.fire({
-      title: "Success!",
-      text: "Students promoted successfully!",
-      icon: "success",
-      timer: 2000,
-      showConfirmButton: false,
-    });
-  };
-
-  const stats = React.useMemo(() => {
-    if (!transformedEnrollments.length) {
-      return {
-        total: 0,
-        active: 0,
-        paid: 0,
-        unpaid: 0,
-        totalFees: 0,
-        totalPaid: 0,
-        totalDue: 0,
-      };
-    }
-
-    const total = transformedEnrollments.length;
-    const active = transformedEnrollments.filter(
-      (e: any) => e.status === "active"
-    ).length;
-    const paid = transformedEnrollments.filter(
-      (e: any) => e.paymentStatus === "paid"
-    ).length;
-    const unpaid = transformedEnrollments.filter(
-      (e: any) => e.paymentStatus === "unpaid"
-    ).length;
-    const totalFees = transformedEnrollments.reduce(
-      (sum: any, e: any) => sum + e.totalFees,
-      0
-    );
-    const totalPaid = transformedEnrollments.reduce(
-      (sum: any, e: any) => sum + e.paidAmount,
-      0
-    );
-    const totalDue = transformedEnrollments.reduce(
-      (sum: any, e: any) => sum + e.dueAmount,
-      0
-    );
-
-    return {
-      total,
-      active,
-      paid,
-      unpaid,
-      totalFees,
-      totalPaid,
-      totalDue,
-    };
-  }, [transformedEnrollments]);
-
+  // Custom toolbar
   const customToolbar = (
-    <Box display="flex" gap={2} alignItems="center" flexWrap="wrap">
+    <Box display="flex" gap={1.5} alignItems="center" flexWrap="wrap">
       <Button
         variant="contained"
         startIcon={<Add />}
         onClick={() => router.push("/dashboard/enrollments")}
+        size="small"
       >
         New Enrollment
       </Button>
-
       <Button
         variant="outlined"
         startIcon={<ArrowForward />}
-        onClick={handleOpenPromotionModal}
+        onClick={() => setPromotionModalOpen(true)}
         color="success"
+        size="small"
       >
-        Promote Students
+        Promote
       </Button>
-
       <Button
         variant="outlined"
         startIcon={<RestartAlt />}
-        onClick={handleOpenRetainModal}
+        onClick={() => setRetainModalOpen(true)}
         color="warning"
+        size="small"
       >
-        Retain Students
+        Retain
       </Button>
-
       <Box flexGrow={1} />
-
       <Button
         variant="outlined"
         startIcon={<Refresh />}
         onClick={() => refetch()}
+        size="small"
       >
         Refresh
       </Button>
     </Box>
   );
 
-  if (isLoading && page === 0) {
-    return (
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-        }}
-      >
-        <CircularProgress />
-      </Box>
-    );
+  if (isLoading) {
+    return <LoadingSpinner />;
   }
 
   return (
-    <Box sx={{ p: 3, backgroundColor: "grey.50", minHeight: "100vh" }}>
-      <Box sx={{ mb: 4 }}>
-        <Typography variant="h4" fontWeight="bold" gutterBottom>
+    <Box
+      sx={{
+        p: { xs: 1, sm: 2, md: 3 },
+        backgroundColor: "grey.50",
+        minHeight: "100vh",
+      }}
+    >
+      {/* Header */}
+      <Box sx={{ mb: 3 }}>
+        <Typography variant="h5" fontWeight="bold" gutterBottom>
           Student Enrollments
         </Typography>
-        <Typography variant="body1" color="text.secondary" gutterBottom>
+        <Typography variant="body2" color="text.secondary">
           Manage and track all student admissions and promotions
         </Typography>
-        <Box display="flex" gap={2} flexWrap="wrap" mt={3}>
+
+        {/* Stats cards */}
+        <Box display="flex" gap={2} flexWrap="wrap" mt={2}>
           <Box
             sx={{
               p: 2,
               bgcolor: "white",
               borderRadius: 2,
               boxShadow: 1,
-              minWidth: 180,
+              minWidth: 160,
             }}
           >
             <Typography variant="caption" color="text.secondary">
               Total Enrollments
             </Typography>
-            <Typography variant="h4" fontWeight="bold">
+            <Typography variant="h5" fontWeight="bold">
               {stats.total}
             </Typography>
-            <Box display="flex" gap={1} mt={1}>
+            <Box display="flex" gap={1} mt={1} flexWrap="wrap">
               <Chip
                 label={`Active: ${stats.active}`}
                 size="small"
@@ -893,14 +765,13 @@ export default function EnrollmentsPage() {
               />
             </Box>
           </Box>
-
           <Box
             sx={{
               p: 2,
               bgcolor: "white",
               borderRadius: 2,
               boxShadow: 1,
-              minWidth: 180,
+              minWidth: 160,
             }}
           >
             <Typography variant="caption" color="text.secondary">
@@ -909,7 +780,7 @@ export default function EnrollmentsPage() {
             <Typography variant="h6" fontWeight="bold">
               ৳{stats.totalFees.toLocaleString()}
             </Typography>
-            <Box display="flex" gap={1} mt={1}>
+            <Box display="flex" gap={1} mt={1} flexWrap="wrap">
               <Chip
                 label={`Paid: ৳${stats.totalPaid.toLocaleString()}`}
                 size="small"
@@ -922,14 +793,13 @@ export default function EnrollmentsPage() {
               />
             </Box>
           </Box>
-
           <Box
             sx={{
               p: 2,
               bgcolor: "white",
               borderRadius: 2,
               boxShadow: 1,
-              minWidth: 180,
+              minWidth: 160,
             }}
           >
             <Typography variant="caption" color="text.secondary">
@@ -949,46 +819,57 @@ export default function EnrollmentsPage() {
         </Box>
       </Box>
 
-      <Table
-        title=""
-        subtitle=""
-        columns={columns}
-        data={transformedEnrollments}
-        loading={isLoading}
-        error={
-          error
-            ? "Error loading enrollment data. Please try again later."
-            : undefined
-        }
-        onRefresh={refetch}
-        onExport={() => handleExport("excel")}
-        onPrint={handlePrint}
-        rowActions={rowActions}
-        bulkActions={bulkActions}
-        selectable={true}
-        searchable={true}
-        filterable={true}
-        sortable={true}
-        pagination={true}
-        emptyStateMessage="No enrollments found"
-        defaultSortColumn={sortColumn}
-        defaultSortDirection={sortDirection}
-        striped={true}
-        showRowNumbers={true}
-        fadeIn={true}
-        elevation={3}
-        borderRadius={2}
-        headerBackgroundColor="#f5f5f5"
-        serverSideSorting={true}
-        onSortChange={handleSortChange}
-        onPageChange={handlePageChange}
-        onRowsPerPageChange={handleRowsPerPageChange}
-        onSearchChange={handleSearchChange}
-        rowCount={totalCount}
-        page={page}
-        rowsPerPage={rowsPerPage}
-        customToolbar={customToolbar}
-      />
+      {/* Table — same props pattern as AdmissionApplicationList */}
+      <Box sx={{ p: { xs: 0, sm: 1 } }}>
+        <Table
+          title="Enrollments"
+          subtitle={`Total ${totalCount} enrollments`}
+          emptyStateMessage="No enrollments found"
+          columns={columns}
+          data={tableData}
+          loading={isLoading}
+          error={
+            error
+              ? "Error loading enrollment data. Please try again."
+              : undefined
+          }
+          idField="id"
+          // ── pagination (client-side)
+          pagination={true}
+          page={page}
+          rowsPerPage={rowsPerPage}
+          onPageChange={setPage}
+          onRowsPerPageChange={(n) => {
+            setRowsPerPage(n);
+            setPage(0);
+          }}
+          // ── search / sort / filter (client-side)
+          searchable={true}
+          sortable={true}
+          serverSideSorting={false}
+          filterable={true}
+          // ── actions
+          rowActions={rowActions}
+          bulkActions={bulkActions}
+          selectable={true}
+          // ── toolbar
+          customToolbar={customToolbar}
+          showToolbar={true}
+          onRefresh={refetch}
+          // ── appearance
+          dense={isMobile}
+          striped={true}
+          hover={true}
+          showRowNumbers={!isMobile}
+          maxHeight="calc(100vh - 200px)"
+          actionColumnWidth={isMobile ? 100 : 140}
+          actionMenuLabel={isMobile ? "" : "Actions"}
+          elevation={2}
+          borderRadius={3}
+        />
+      </Box>
+
+      {/* Modals */}
       <EnrollmentDetailsModal
         open={detailDialogOpen}
         setOpen={handleCloseDetails}
@@ -998,28 +879,24 @@ export default function EnrollmentsPage() {
         onEdit={handleEditEnrollment}
         onCollectFee={handleCollectFee}
       />
-
       <FeeCollectionModal
-        setOpen={handleCloseFeeCollection}
         open={feeCollectionOpen}
+        setOpen={handleCloseFeeCollection}
         onClose={handleCloseFeeCollection}
         enrollment={selectedEnrollment}
       />
-
       <PromotionModal
         open={promotionModalOpen}
         onClose={() => setPromotionModalOpen(false)}
         onSuccess={handlePromotionSuccess}
         classOptions={classOptions}
       />
-
       <RetainModal
         open={retainModalOpen}
         onClose={() => setRetainModalOpen(false)}
         onSuccess={handleRetainSuccess}
         classOptions={classOptions}
       />
-
       <PromotionHistoryModal
         open={promotionHistoryModalOpen}
         onClose={() => setPromotionHistoryModalOpen(false)}
@@ -1028,4 +905,43 @@ export default function EnrollmentsPage() {
       />
     </Box>
   );
+
+  function handleCloseDetails() {
+    setDetailDialogOpen(false);
+    setSelectedEnrollment(null);
+    setActiveTab(0);
+  }
+  function handleCloseFeeCollection() {
+    setFeeCollectionOpen(false);
+    setSelectedEnrollment(null);
+  }
+  function handleEditEnrollment(enrollment: any) {
+    handleCloseDetails();
+    router.push(`/dashboard/enrollments?id=${enrollment.id}`);
+  }
+  function handleCollectFee(enrollment: any) {
+    handleCloseDetails();
+    setSelectedEnrollment(enrollment);
+    setFeeCollectionOpen(true);
+  }
+  function handlePromotionSuccess() {
+    refetch();
+    Swal.fire({
+      title: "Success!",
+      text: "Students promoted successfully!",
+      icon: "success",
+      timer: 2000,
+      showConfirmButton: false,
+    });
+  }
+  function handleRetainSuccess() {
+    refetch();
+    Swal.fire({
+      title: "Success!",
+      text: "Students retained successfully!",
+      icon: "success",
+      timer: 2000,
+      showConfirmButton: false,
+    });
+  }
 }
