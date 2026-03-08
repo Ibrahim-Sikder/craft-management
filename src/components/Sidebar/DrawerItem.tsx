@@ -166,6 +166,7 @@ export const navigationItems: NavigationItem[] = [
     path: "/dashboard/enrollments/list",
     roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
   },
+
   {
     title: "Pending Admissions",
     icon: (
@@ -173,7 +174,27 @@ export const navigationItems: NavigationItem[] = [
         <TableChart />
       </ColorfulIcon>
     ),
-    path: "/dashboard/online-application",
+    path: "/dashboard/online-application/pending",
+    roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+  },
+  {
+    title: "Approved Admissions",
+    icon: (
+      <ColorfulIcon color="#5D4037">
+        <TableChart />
+      </ColorfulIcon>
+    ),
+    path: "/dashboard/online-application/approved",
+    roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+  },
+  {
+    title: "Rejected Admissions",
+    icon: (
+      <ColorfulIcon color="#5D4037">
+        <TableChart />
+      </ColorfulIcon>
+    ),
+    path: "/dashboard/online-application/rejected",
     roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
   },
   {

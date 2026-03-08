@@ -150,17 +150,7 @@ export const subjects = [
   "Other",
 ];
 
-export const departments = [
-  "Science",
-  "Mathematics",
-  "Languages",
-  "Humanities",
-  "Arts",
-  "Physical Education",
-  "Computer Science",
-  "Administration",
-  "Support Staff",
-];
+export const departments = ["hifz", "academic"];
 export const designations = [
   "Principal",
   "Vice Principal",

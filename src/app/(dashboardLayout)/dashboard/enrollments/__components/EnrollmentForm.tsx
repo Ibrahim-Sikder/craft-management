@@ -50,8 +50,6 @@ import {
   Print,
   Assignment,
   FileCopy,
-  Info,
-  Warning,
 } from "@mui/icons-material";
 import {
   Alert,
@@ -64,7 +62,6 @@ import {
   CircularProgress,
   Container,
   Dialog,
-  DialogTitle,
   DialogContent,
   DialogActions,
   FormControlLabel,
@@ -83,7 +80,7 @@ import {
 } from "@mui/material";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useCallback } from "react";
-import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
+import { useFieldArray, useFormContext } from "react-hook-form";
 import toast from "react-hot-toast";
 import PrintModal from "../../student/profile/__components/PrintModal";
 import AddFeeModal from "../../student/profile/__components/AddFeeModal";
@@ -110,6 +107,27 @@ const fadeInSlideUp = {
     "0%": { opacity: 0, transform: "translateY(15px)" },
     "100%": { opacity: 1, transform: "translateY(0)" },
   },
+};
+
+// ─────────────────────────────────────────────────────────────────────────────
+// SMART STEP DETECTION
+// ─────────────────────────────────────────────────────────────────────────────
+const getFirstIncompleteStep = (formData: any): number => {
+  if (
+    !formData.studentName ||
+    !formData.mobileNo ||
+    !formData.studentDepartment
+  )
+    return 0;
+  if (!formData.className || formData.className.length === 0) return 1;
+  if (!formData.fatherName || !formData.fatherMobile || !formData.motherName)
+    return 2;
+  const hasPermanentAddress =
+    formData.permVillage || formData.permDistrict || formData.permPoliceStation;
+  const hasPresentAddress =
+    formData.village || formData.district || formData.policeStation;
+  if (!hasPermanentAddress && !hasPresentAddress) return 3;
+  return 4;
 };
 
 // --- Admission Application Selector Component ---
@@ -235,7 +253,6 @@ const FeeAmountHandler = ({
   const { watch, setValue } = useFormContext();
   const selectedClass = watch(`fees.${feeIndex}.className`);
   const selectedCategory = watch(`fees.${feeIndex}.category`);
-  const selectionMode = watch(`fees.${feeIndex}.selectionMode`) || "admission";
 
   useEffect(() => {
     if (
@@ -261,7 +278,6 @@ const FeeAmountHandler = ({
         ) || [];
 
       let feeItems: any[] = [];
-
       matchingEntries.forEach((entry: any) => {
         if (entry.feeItems && Array.isArray(entry.feeItems)) {
           feeItems = [...feeItems, ...entry.feeItems];
@@ -277,54 +293,26 @@ const FeeAmountHandler = ({
       });
 
       if (feeItems.length > 0) {
-        let itemsToProcess = feeItems;
-        if (selectionMode === "admission") {
-          itemsToProcess = feeItems.filter((item: any) => {
-            const typeLabel =
-              typeof item.feeType === "string"
-                ? item.feeType
-                : item.feeType?.value || "";
-            return typeLabel === "Admission Fee";
-          });
-        }
-
         const formattedItems: any[] = [];
-
-        itemsToProcess.forEach((item: any) => {
+        feeItems.forEach((item: any) => {
           const typeLabel =
             typeof item.feeType === "string"
               ? item.feeType
               : item.feeType?.value || "";
-          const amount = item.amount;
-
-          if (
-            typeLabel.toLowerCase().includes("monthly fee") &&
-            selectionMode !== "admission"
-          ) {
-            formattedItems.push({
-              feeType: { label: "Monthly Fee", value: "Monthly Fee" },
-              amount: amount,
-              advanceAmount: "",
-              isSelected: true,
-              discount: 0,
-              isMonthly: true,
-              discountRangeStart: "",
-              discountRangeEnd: "",
-              discountRangeAmount: 0,
-            });
-          } else {
-            formattedItems.push({
-              feeType:
-                typeof item.feeType === "string"
-                  ? { label: item.feeType, value: item.feeType }
-                  : item.feeType,
-              amount: item.amount,
-              advanceAmount: "",
-              isSelected: true,
-              discount: item.discount || 0,
-              isMonthly: false,
-            });
-          }
+          formattedItems.push({
+            feeType:
+              typeof item.feeType === "string"
+                ? { label: item.feeType, value: item.feeType }
+                : item.feeType,
+            amount: item.amount,
+            advanceAmount: "",
+            isSelected: true,
+            discount: item.discount || 0,
+            isMonthly: typeLabel.toLowerCase().includes("monthly"),
+            discountRangeStart: "",
+            discountRangeEnd: "",
+            discountRangeAmount: 0,
+          });
         });
 
         setValue(`fees.${feeIndex}.feeItems`, formattedItems);
@@ -338,14 +326,7 @@ const FeeAmountHandler = ({
         setValue(`fees.${feeIndex}.feeAmount`, "");
       }
     }
-  }, [
-    selectedClass,
-    selectedCategory,
-    setValue,
-    feeIndex,
-    feeCategoryData,
-    selectionMode,
-  ]);
+  }, [selectedClass, selectedCategory, setValue, feeIndex, feeCategoryData]);
 
   return null;
 };
@@ -355,7 +336,6 @@ const DynamicFeeFields = ({
   classOptions,
   feeCategoryData,
   studentData,
-  selectedMonth,
 }: any) => {
   const theme = useTheme();
   const { control, watch, setValue } = useFormContext();
@@ -364,6 +344,7 @@ const DynamicFeeFields = ({
   const mainClassName = watch("className");
   const selectedStudent = watch("studentIdSelect");
   const [studentAdvanceBalance, setStudentAdvanceBalance] = useState(0);
+  const [selectAllFees, setSelectAllFees] = useState(false);
 
   const getCategoryOptions = () => {
     if (!feeCategoryData?.data?.data) return [];
@@ -447,7 +428,6 @@ const DynamicFeeFields = ({
       className: classNameValue,
       feeItems: [],
       feeAmount: "",
-      selectionMode: "admission",
     });
   };
 
@@ -458,7 +438,6 @@ const DynamicFeeFields = ({
 
   const handleCategoryChange = (index: number, selectedCategory: any) => {
     const feeClassName = watch(`fees.${index}.className`);
-    const selectionMode = watch(`fees.${index}.selectionMode`) || "admission";
 
     if (selectedCategory && selectedCategory.length > 0 && feeClassName) {
       const selectedClassName = Array.isArray(feeClassName)
@@ -483,43 +462,18 @@ const DynamicFeeFields = ({
       });
 
       if (allFeeItems.length > 0) {
-        let itemsToProcess = allFeeItems;
-        if (selectionMode === "admission") {
-          itemsToProcess = allFeeItems.filter((item: any) => {
-            const typeLabel =
-              typeof item.feeType === "string"
-                ? item.feeType
-                : item.feeType?.value || "";
-            return typeLabel === "Admission Fee";
-          });
-        }
-
         const feeItems: any[] = [];
-
-        itemsToProcess.forEach((item: any) => {
+        allFeeItems.forEach((item: any) => {
           const typeLabel =
             typeof item.feeType === "string"
               ? item.feeType
               : item.feeType?.value || "";
-          const amount = item.amount;
 
-          if (
-            typeLabel.toLowerCase().includes("monthly fee") &&
-            selectionMode !== "admission"
-          ) {
-            feeItems.push({
-              feeType: { label: "Monthly Fee", value: "Monthly Fee" },
-              amount: amount,
-              advanceAmount: "",
-              isSelected: true,
-              discount: 0,
-              isMonthly: true,
-              month: selectedMonth,
-              discountRangeStart: "",
-              discountRangeEnd: "",
-              discountRangeAmount: 0,
-            });
-          } else {
+          const isAdmissionFee = typeLabel
+            .toLowerCase()
+            .includes("admission fee");
+
+          if (selectAllFees || isAdmissionFee) {
             feeItems.push({
               feeType:
                 typeof item.feeType === "string"
@@ -529,21 +483,26 @@ const DynamicFeeFields = ({
               advanceAmount: "",
               isSelected: true,
               discount: item.discount || 0,
-              isMonthly: false,
-              month: "Admission",
+              isMonthly: typeLabel.toLowerCase().includes("monthly"),
+              discountRangeStart: "",
+              discountRangeEnd: "",
+              discountRangeAmount: 0,
             });
           }
         });
 
         setValue(`fees.${index}.feeItems`, feeItems);
-        const totalAmount = calculateTotalAmount(feeItems);
+        const totalAmount = feeItems.reduce(
+          (sum: number, item: any) => sum + (item.amount || 0),
+          0,
+        );
         setValue(`fees.${index}.feeAmount`, totalAmount.toString());
 
-        const msg =
-          selectionMode === "admission"
-            ? `Only "Admission Fee" selected.`
-            : `Monthly fee for ${selectedMonth} added.`;
-        toast.success(msg);
+        toast.success(
+          selectAllFees
+            ? `All fees loaded for ${categoryName}`
+            : `Admission fee only loaded for ${categoryName}`,
+        );
       } else {
         setValue(`fees.${index}.feeItems`, []);
         setValue(`fees.${index}.feeAmount`, "");
@@ -554,34 +513,18 @@ const DynamicFeeFields = ({
     }
   };
 
-  const handleSelectionModeChange = (index: number, isChecked: boolean) => {
-    const newMode = isChecked ? "all" : "admission";
-    setValue(`fees.${index}.selectionMode`, newMode);
-    const currentCategory = watch(`fees.${index}.category`);
-    if (currentCategory) handleCategoryChange(index, currentCategory);
-  };
-
   const removeFeeItem = (feeIndex: number, itemIndex: number) => {
     const currentFeeItems = watch(`fees.${feeIndex}.feeItems`) || [];
     const newFeeItems = currentFeeItems.filter(
       (_: any, i: number) => i !== itemIndex,
     );
     setValue(`fees.${feeIndex}.feeItems`, newFeeItems);
-    const newTotal = calculateTotalAmount(newFeeItems);
-    setValue(`fees.${feeIndex}.feeAmount`, newTotal.toString());
-  };
 
-  const handleAdvanceAmountChange = (
-    feeIndex: number,
-    itemIndex: number,
-    value: string,
-  ) => {
-    const feeItems = watch(`fees.${feeIndex}.feeItems`) || [];
-    const updatedItems = [...feeItems];
-    if (updatedItems[itemIndex]) {
-      updatedItems[itemIndex].advanceAmount = value;
-      setValue(`fees.${feeIndex}.feeItems`, updatedItems);
-    }
+    const selectedTotal = newFeeItems
+      .filter((item: any) => item.isSelected)
+      .reduce((sum: number, item: any) => sum + (item.amount || 0), 0);
+
+    setValue(`fees.${feeIndex}.feeAmount`, selectedTotal.toString());
   };
 
   const handleItemFieldChange = (
@@ -595,9 +538,12 @@ const DynamicFeeFields = ({
     if (updatedItems[itemIndex]) {
       updatedItems[itemIndex] = { ...updatedItems[itemIndex], [field]: value };
       setValue(`fees.${feeIndex}.feeItems`, updatedItems);
-      if (field === "amount" || field === "feeType") {
-        const newTotal = calculateTotalAmount(updatedItems);
-        setValue(`fees.${feeIndex}.feeAmount`, newTotal.toString());
+
+      if (field === "amount" || field === "isSelected" || field === "feeType") {
+        const selectedTotal = updatedItems
+          .filter((item: any) => item.isSelected)
+          .reduce((sum: number, item: any) => sum + (item.amount || 0), 0);
+        setValue(`fees.${feeIndex}.feeAmount`, selectedTotal.toString());
       }
     }
   };
@@ -613,22 +559,143 @@ const DynamicFeeFields = ({
       toast.error("Please select start and end month");
       return;
     }
+
+    const startIdx = MONTHS.indexOf(startMonth);
+    const endIdx = MONTHS.indexOf(endMonth);
+
+    if (startIdx === -1 || endIdx === -1) {
+      toast.error("Invalid month selection");
+      return;
+    }
+
+    // Ensure we use the correct range order
+    const actualStart = startIdx <= endIdx ? startMonth : endMonth;
+    const actualEnd = startIdx <= endIdx ? endMonth : startMonth;
+
     setValue(
       `fees.${feeIndex}.feeItems.${itemIndex}.discountRangeStart`,
-      startMonth,
+      actualStart,
     );
     setValue(
       `fees.${feeIndex}.feeItems.${itemIndex}.discountRangeEnd`,
-      endMonth,
+      actualEnd,
     );
     setValue(
       `fees.${feeIndex}.feeItems.${itemIndex}.discountRangeAmount`,
       amount,
     );
+
+    // Don't update the main discount field - keep it as the base discount
+    // The range amount will be applied separately in the backend
+
     toast.success(
-      `Discount range set: ${startMonth} to ${endMonth} (৳${amount}/month)`,
+      `Discount range set: ${actualStart} to ${actualEnd} (৳${amount}/month)`,
     );
   };
+
+  const handleSelectAllForCategory = (feeIndex: number, checked: boolean) => {
+    const feeItems = watch(`fees.${feeIndex}.feeItems`) || [];
+    const updatedItems = feeItems.map((item: any) => ({
+      ...item,
+      isSelected: checked,
+    }));
+
+    setValue(`fees.${feeIndex}.feeItems`, updatedItems);
+
+    const selectedTotal = updatedItems
+      .filter((item: any) => item.isSelected)
+      .reduce((sum: number, item: any) => sum + (item.amount || 0), 0);
+
+    setValue(`fees.${feeIndex}.feeAmount`, selectedTotal.toString());
+
+    toast.success(
+      checked
+        ? "All items selected for this category"
+        : "All items deselected for this category",
+    );
+  };
+
+  useEffect(() => {
+    const fees = watch("fees") || [];
+
+    fees.forEach((fee: any, index: number) => {
+      if (
+        fee.category &&
+        fee.category.length > 0 &&
+        fee.className &&
+        fee.className.length > 0
+      ) {
+        const selectedClassName = Array.isArray(fee.className)
+          ? fee.className[0]?.label || fee.className[0]
+          : fee.className;
+        const categoryName = Array.isArray(fee.category)
+          ? fee.category[0]?.label || fee.category[0]
+          : fee.category;
+
+        const matchingEntries =
+          feeCategoryData?.data?.data?.filter(
+            (item: any) =>
+              item.className === selectedClassName &&
+              item.categoryName === categoryName,
+          ) || [];
+
+        const allFeeItems: any[] = [];
+        matchingEntries.forEach((entry: any) => {
+          if (entry.feeItems && Array.isArray(entry.feeItems))
+            allFeeItems.push(...entry.feeItems);
+          else if (entry.feeType) allFeeItems.push(entry);
+        });
+
+        if (allFeeItems.length > 0) {
+          const feeItems: any[] = [];
+          allFeeItems.forEach((item: any) => {
+            const typeLabel =
+              typeof item.feeType === "string"
+                ? item.feeType
+                : item.feeType?.value || "";
+
+            const isAdmissionFee = typeLabel
+              .toLowerCase()
+              .includes("admission fee");
+
+            if (selectAllFees || isAdmissionFee) {
+              feeItems.push({
+                feeType:
+                  typeof item.feeType === "string"
+                    ? { label: item.feeType, value: item.feeType }
+                    : item.feeType,
+                amount: item.amount,
+                advanceAmount: "",
+                isSelected: true,
+                discount: item.discount || 0,
+                isMonthly: typeLabel.toLowerCase().includes("monthly"),
+                discountRangeStart: "",
+                discountRangeEnd: "",
+                discountRangeAmount: 0,
+              });
+            }
+          });
+
+          setValue(`fees.${index}.feeItems`, feeItems);
+
+          const totalAmount = feeItems.reduce(
+            (sum: number, item: any) => sum + (item.amount || 0),
+            0,
+          );
+
+          setValue(`fees.${index}.feeAmount`, totalAmount.toString());
+        }
+      }
+    });
+
+    if (fees.length > 0) {
+      toast.success(
+        selectAllFees
+          ? "Switched to All Fees mode"
+          : "Switched to Admission Only mode",
+      );
+    }
+  }, [selectAllFees, watch, setValue, feeCategoryData]);
 
   const categoryOptions = getCategoryOptions();
 
@@ -662,33 +729,37 @@ const DynamicFeeFields = ({
           >
             Fee Details
           </Typography>
-          <Typography variant="caption" color="text.secondary">
-            Manage fee categories and discounts for {selectedMonth}
-          </Typography>
         </Box>
-        <Button
-          onClick={addFeeField}
-          size="medium"
-          disabled={!mainClassName || mainClassName.length === 0}
-          sx={{
-            textTransform: "none",
-            fontWeight: "bold",
-            bgcolor:
-              !mainClassName || mainClassName.length === 0
-                ? theme.palette.action.disabled
-                : theme.palette.primary.main,
-            color: "#fff",
-            "&:hover": {
-              bgcolor:
-                !mainClassName || mainClassName.length === 0
-                  ? theme.palette.action.disabled
-                  : theme.palette.primary.dark,
-            },
-          }}
-        >
-          <Add sx={{ fontSize: 18, mr: 0.5 }} /> Add New Category
-        </Button>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
+          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+            <Typography
+              variant="body2"
+              sx={{
+                fontWeight: 500,
+                color: !selectAllFees ? "primary.main" : "text.secondary",
+              }}
+            >
+              Admission Only
+            </Typography>
+            <Switch
+              checked={selectAllFees}
+              onChange={(e) => setSelectAllFees(e.target.checked)}
+              color="info"
+              size="small"
+            />
+            <Typography
+              variant="body2"
+              sx={{
+                fontWeight: 500,
+                color: selectAllFees ? "info.main" : "text.secondary",
+              }}
+            >
+              All Fees
+            </Typography>
+          </Box>
+        </Box>
       </Box>
+
       <CardContent sx={{ p: 3 }}>
         {fields.map((field, index) => {
           const feeClassName = watch(`fees.${index}.className`);
@@ -701,12 +772,14 @@ const DynamicFeeFields = ({
             : feeClassName;
           const classSpecificFeeOptions =
             getFeeTypeOptionsForClass(classNameStr);
-          const selectionMode =
-            watch(`fees.${index}.selectionMode`) || "admission";
 
           const [rangeStart, setRangeStart] = useState("");
           const [rangeEnd, setRangeEnd] = useState("");
           const [rangeAmt, setRangeAmt] = useState(0);
+
+          const allItemsSelected =
+            feeItems.length > 0 &&
+            feeItems.every((item: any) => item.isSelected);
 
           return (
             <Box
@@ -746,6 +819,7 @@ const DynamicFeeFields = ({
                   </IconButton>
                 </Tooltip>
               )}
+
               <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
                 <Box
                   sx={{
@@ -769,12 +843,14 @@ const DynamicFeeFields = ({
                   Fee Category #{index + 1}
                 </Typography>
               </Box>
+
               <FeeAmountHandler
                 feeIndex={index}
                 feeCategoryData={feeCategoryData}
               />
+
               <Grid container spacing={2.5} sx={{ mb: 3 }}>
-                <Grid item xs={12} md={4}>
+                <Grid item xs={12} md={6}>
                   <CraftIntAutoCompleteWithIcon
                     name={`fees.${index}.className`}
                     label="Class"
@@ -789,7 +865,7 @@ const DynamicFeeFields = ({
                     helperText="Auto-filled from Academic Information"
                   />
                 </Grid>
-                <Grid item xs={12} md={4}>
+                <Grid item xs={12} md={6}>
                   <CraftIntAutoCompleteWithIcon
                     name={`fees.${index}.category`}
                     label={
@@ -816,45 +892,8 @@ const DynamicFeeFields = ({
                     }}
                   />
                 </Grid>
-                <Grid item xs={12} md={4}>
-                  <Box
-                    sx={{
-                      height: "100%",
-                      display: "flex",
-                      alignItems: "center",
-                      bgcolor: alpha(theme.palette.background.paper, 0.5),
-                      border: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                      borderRadius: 1,
-                      px: 2,
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <Typography
-                      variant="body2"
-                      color="text.secondary"
-                      sx={{ fontWeight: 500 }}
-                    >
-                      {selectionMode === "all"
-                        ? "Selected All Fee"
-                        : "Selected Admission Fee"}
-                    </Typography>
-                    <FormControlLabel
-                      control={
-                        <Switch
-                          checked={selectionMode === "all"}
-                          onChange={(e) =>
-                            handleSelectionModeChange(index, e.target.checked)
-                          }
-                          color="primary"
-                          disabled={!isClassSelected}
-                        />
-                      }
-                      label=""
-                      sx={{ m: 0 }}
-                    />
-                  </Box>
-                </Grid>
               </Grid>
+
               {feeCategory && feeCategory.length > 0 ? (
                 feeItems.length > 0 ? (
                   <Box sx={{ mb: 3 }}>
@@ -873,25 +912,31 @@ const DynamicFeeFields = ({
                       >
                         📋 Fee Items ({feeItems.length} items)
                       </Typography>
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        onClick={() => {
-                          const newItems = [
-                            ...feeItems,
-                            {
-                              feeType: "",
-                              amount: 0,
-                              advanceAmount: "",
-                              isSelected: true,
-                              discount: 0,
-                            },
-                          ];
-                          setValue(`fees.${index}.feeItems`, newItems);
-                        }}
-                      >
-                        <Add fontSize="small" /> Add Custom Item
-                      </Button>
+                      <Box sx={{ display: "flex", gap: 1 }}>
+                        <Button
+                          size="small"
+                          variant="outlined"
+                          onClick={() => {
+                            const newItems = [
+                              ...feeItems,
+                              {
+                                feeType: "",
+                                amount: 0,
+                                advanceAmount: "",
+                                isSelected: selectAllFees,
+                                discount: 0,
+                                isMonthly: false,
+                                discountRangeStart: "",
+                                discountRangeEnd: "",
+                                discountRangeAmount: 0,
+                              },
+                            ];
+                            setValue(`fees.${index}.feeItems`, newItems);
+                          }}
+                        >
+                          <Add fontSize="small" /> Add Custom Item
+                        </Button>
+                      </Box>
                     </Box>
                     <Paper
                       elevation={0}
@@ -913,7 +958,16 @@ const DynamicFeeFields = ({
                               borderBottom: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
                             }}
                           >
-                            <Grid item xs={4}>
+                            <Grid item xs={1}>
+                              <Typography
+                                variant="caption"
+                                fontWeight="bold"
+                                color="text.secondary"
+                              >
+                                SEL
+                              </Typography>
+                            </Grid>
+                            <Grid item xs={3}>
                               <Typography
                                 variant="caption"
                                 fontWeight="bold"
@@ -946,14 +1000,18 @@ const DynamicFeeFields = ({
                                 fontWeight="bold"
                                 color="text.secondary"
                               >
-                                PAID/ADV.
+                                PAY NOW
                               </Typography>
                             </Grid>
                             <Grid item xs={1}></Grid>
                           </Grid>
                         </Grid>
+
                         {feeItems.map((item: any, itemIndex: number) => {
                           const isMonthly = item.isMonthly;
+                          const hasRangeDiscount =
+                            item.discountRangeStart && item.discountRangeEnd;
+
                           return (
                             <Grid item xs={12} key={itemIndex}>
                               <Grid
@@ -969,52 +1027,112 @@ const DynamicFeeFields = ({
                                   borderRadius: 1,
                                 }}
                               >
-                                <Grid item xs={4}>
-                                  <CraftIntAutoCompleteWithIcon
-                                    freeSolo
-                                    name={`fees.${index}.feeItems.${itemIndex}.feeType`}
-                                    label=""
-                                    options={classSpecificFeeOptions}
+                                <Grid item xs={1}>
+                                  <Checkbox
                                     size="small"
-                                    fullWidth
-                                    placeholder="Select Fee Type"
-                                    multiple={false}
-                                    icon={
-                                      <Description
-                                        color="disabled"
-                                        sx={{ fontSize: 16 }}
-                                      />
-                                    }
-                                    disableClearable={false}
-                                    disabled={!isClassSelected}
-                                    isOptionEqualToValue={(
-                                      option: any,
-                                      value: any,
-                                    ) => {
-                                      if (!option || !value) return false;
-                                      const optVal =
-                                        typeof option === "string"
-                                          ? option
-                                          : option.value;
-                                      const valVal =
-                                        typeof value === "string"
-                                          ? value
-                                          : value.value;
-                                      return optVal === valVal;
-                                    }}
-                                    onKeyDown={(e) => {
-                                      if (e.key === "Enter") e.preventDefault();
-                                    }}
-                                    onChange={(e: any, val: any) => {
+                                    checked={item.isSelected || false}
+                                    onChange={(e) => {
                                       handleItemFieldChange(
                                         index,
                                         itemIndex,
-                                        "feeType",
-                                        val,
+                                        "isSelected",
+                                        e.target.checked,
                                       );
                                     }}
+                                    color="primary"
                                   />
                                 </Grid>
+                                <Grid item xs={3}>
+                                  {isMonthly ? (
+                                    <Box
+                                      sx={{
+                                        display: "flex",
+                                        alignItems: "center",
+                                        gap: 1,
+                                      }}
+                                    >
+                                      <CraftInputWithIcon
+                                        name={`fees.${index}.feeItems.${itemIndex}.feeTypeDisplay`}
+                                        label=""
+                                        fullWidth
+                                        margin="none"
+                                        size="small"
+                                        disabled
+                                        value={
+                                          typeof item.feeType === "string"
+                                            ? item.feeType
+                                            : item.feeType?.label ||
+                                              item.feeType?.value ||
+                                              ""
+                                        }
+                                        InputProps={{
+                                          startAdornment: (
+                                            <InputAdornment position="start">
+                                              <Description
+                                                color="disabled"
+                                                sx={{ fontSize: 16 }}
+                                              />
+                                            </InputAdornment>
+                                          ),
+                                        }}
+                                      />
+                                      <Chip
+                                        label="×12"
+                                        size="small"
+                                        color="info"
+                                        variant="outlined"
+                                        sx={{ fontSize: "0.65rem", height: 20 }}
+                                      />
+                                    </Box>
+                                  ) : (
+                                    <CraftIntAutoCompleteWithIcon
+                                      freeSolo
+                                      name={`fees.${index}.feeItems.${itemIndex}.feeType`}
+                                      label=""
+                                      options={classSpecificFeeOptions}
+                                      size="small"
+                                      fullWidth
+                                      placeholder="Select Fee Type"
+                                      multiple={false}
+                                      icon={
+                                        <Description
+                                          color="disabled"
+                                          sx={{ fontSize: 16 }}
+                                        />
+                                      }
+                                      disableClearable={false}
+                                      disabled={!isClassSelected}
+                                      isOptionEqualToValue={(
+                                        option: any,
+                                        value: any,
+                                      ) => {
+                                        if (!option || !value) return false;
+                                        const optVal =
+                                          typeof option === "string"
+                                            ? option
+                                            : option.value;
+                                        const valVal =
+                                          typeof value === "string"
+                                            ? value
+                                            : value.value;
+                                        return optVal === valVal;
+                                      }}
+                                      onKeyDown={(e) => {
+                                        if (e.key === "Enter")
+                                          e.preventDefault();
+                                      }}
+                                      onChange={(e: any, val: any) => {
+                                        handleItemFieldChange(
+                                          index,
+                                          itemIndex,
+                                          "feeType",
+                                          val,
+                                        );
+                                      }}
+                                    />
+                                  )}
+                                </Grid>
+
                                 <Grid item xs={2.5}>
                                   <CraftInputWithIcon
                                     name={`fees.${index}.feeItems.${itemIndex}.amount`}
@@ -1037,6 +1155,7 @@ const DynamicFeeFields = ({
                                     }}
                                   />
                                 </Grid>
+
                                 <Grid item xs={2.5}>
                                   <CraftInputWithIcon
                                     name={`fees.${index}.feeItems.${itemIndex}.discount`}
@@ -1060,6 +1179,7 @@ const DynamicFeeFields = ({
                                     }}
                                   />
                                 </Grid>
+
                                 <Grid item xs={2}>
                                   <CraftInputWithIcon
                                     name={`fees.${index}.feeItems.${itemIndex}.advanceAmount`}
@@ -1083,6 +1203,7 @@ const DynamicFeeFields = ({
                                     }}
                                   />
                                 </Grid>
+
                                 <Grid
                                   item
                                   xs={1}
@@ -1103,6 +1224,7 @@ const DynamicFeeFields = ({
                                     </IconButton>
                                   </Tooltip>
                                 </Grid>
+
                                 {isMonthly && (
                                   <Grid item xs={12} sx={{ mt: 1 }}>
                                     <Paper
@@ -1122,13 +1244,15 @@ const DynamicFeeFields = ({
                                         fontWeight="bold"
                                         sx={{ mb: 1 }}
                                       >
-                                        Apply Discount to Specific Months:
+                                        Apply Discount to Specific Months (all
+                                        12 months will be updated):
                                       </Typography>
                                       <Box
                                         sx={{
                                           display: "flex",
                                           gap: 1,
                                           alignItems: "center",
+                                          flexWrap: "wrap",
                                         }}
                                       >
                                         <Select
@@ -1200,18 +1324,17 @@ const DynamicFeeFields = ({
                                           Set Range
                                         </Button>
                                       </Box>
-                                      {item.discountRangeStart &&
-                                        item.discountRangeEnd && (
-                                          <Typography
-                                            variant="caption"
-                                            color="success.main"
-                                            sx={{ mt: 1, display: "block" }}
-                                          >
-                                            Active: {item.discountRangeStart} to{" "}
-                                            {item.discountRangeEnd} (-৳
-                                            {item.discountRangeAmount}/mo)
-                                          </Typography>
-                                        )}
+                                      {hasRangeDiscount && (
+                                        <Typography
+                                          variant="caption"
+                                          color="success.main"
+                                          sx={{ mt: 1, display: "block" }}
+                                        >
+                                          Active: {item.discountRangeStart} to{" "}
+                                          {item.discountRangeEnd} (-৳
+                                          {item.discountRangeAmount}/mo)
+                                        </Typography>
+                                      )}
                                     </Paper>
                                   </Grid>
                                 )}
@@ -1219,34 +1342,270 @@ const DynamicFeeFields = ({
                             </Grid>
                           );
                         })}
-                        <Grid item xs={12}>
-                          <Box
-                            sx={{
-                              mt: 2,
-                              pt: 2,
-                              borderTop: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                            }}
-                          >
-                            <Grid container spacing={2}>
-                              <Grid item xs={4}>
-                                <Typography
-                                  variant="body1"
-                                  fontWeight="bold"
-                                  color="primary.main"
-                                >
-                                  TOTAL
-                                </Typography>
+                      </Grid>
+                    </Paper>
+                  </Box>
+                ) : feeItems.length > 0 ? null : (
+                  <Box
+                    sx={{ textAlign: "center", py: 3, color: "text.disabled" }}
+                  >
+                    <Money sx={{ fontSize: 36, mb: 1, opacity: 0.5 }} />
+                    <Typography variant="body2">
+                      No fee items found for this category
+                    </Typography>
+                  </Box>
+                )
+              ) : feeItems.length > 0 ? (
+                <Box sx={{ mb: 3 }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      mb: 2,
+                    }}
+                  >
+                    <Box>
+                      <Typography
+                        variant="subtitle1"
+                        fontWeight="bold"
+                        sx={{ color: "primary.main" }}
+                      >
+                        📋 Fee Items ({feeItems.length} items)
+                      </Typography>
+                      <Typography variant="caption" color="info.main">
+                        Editing existing fees — each monthly item represents all
+                        12 months on save
+                      </Typography>
+                    </Box>
+                    <Box sx={{ display: "flex", gap: 1 }}>
+                      <Button
+                        size="small"
+                        variant="outlined"
+                        onClick={() => {
+                          const newItems = [
+                            ...feeItems,
+                            {
+                              feeType: "",
+                              amount: 0,
+                              advanceAmount: "",
+                              isSelected: selectAllFees,
+                              discount: 0,
+                              isMonthly: false,
+                              discountRangeStart: "",
+                              discountRangeEnd: "",
+                              discountRangeAmount: 0,
+                            },
+                          ];
+                          setValue(`fees.${index}.feeItems`, newItems);
+                        }}
+                      >
+                        <Add fontSize="small" /> Add Custom Item
+                      </Button>
+                    </Box>
+                  </Box>
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      p: 2,
+                      bgcolor: alpha(theme.palette.background.paper, 0.7),
+                      border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                      borderRadius: 1,
+                    }}
+                  >
+                    <Grid container spacing={2}>
+                      <Grid item xs={12}>
+                        <Grid
+                          container
+                          spacing={2}
+                          sx={{
+                            mb: 1,
+                            pb: 1,
+                            borderBottom: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                          }}
+                        >
+                          <Grid item xs={1}>
+                            <Typography
+                              variant="caption"
+                              fontWeight="bold"
+                              color="text.secondary"
+                            >
+                              SEL
+                            </Typography>
+                          </Grid>
+                          <Grid item xs={3}>
+                            <Typography
+                              variant="caption"
+                              fontWeight="bold"
+                              color="text.secondary"
+                            >
+                              FEE TYPE
+                            </Typography>
+                          </Grid>
+                          <Grid item xs={2.5}>
+                            <Typography
+                              variant="caption"
+                              fontWeight="bold"
+                              color="text.secondary"
+                            >
+                              AMOUNT
+                            </Typography>
+                          </Grid>
+                          <Grid item xs={2.5}>
+                            <Typography
+                              variant="caption"
+                              fontWeight="bold"
+                              color="text.secondary"
+                            >
+                              DISCOUNT
+                            </Typography>
+                          </Grid>
+                          <Grid item xs={2}>
+                            <Typography
+                              variant="caption"
+                              fontWeight="bold"
+                              color="text.secondary"
+                            >
+                              PAY NOW
+                            </Typography>
+                          </Grid>
+                          <Grid item xs={1}></Grid>
+                        </Grid>
+                      </Grid>
+
+                      {feeItems.map((item: any, itemIndex: number) => {
+                        const isMonthly = item.isMonthly;
+                        const hasRangeDiscount =
+                          item.discountRangeStart && item.discountRangeEnd;
+
+                        return (
+                          <Grid item xs={12} key={itemIndex}>
+                            <Grid
+                              container
+                              spacing={2}
+                              alignItems="center"
+                              sx={{
+                                mb: 1,
+                                bgcolor: isMonthly
+                                  ? alpha(theme.palette.info.light, 0.15)
+                                  : "transparent",
+                                p: 0.5,
+                                borderRadius: 1,
+                              }}
+                            >
+                              <Grid item xs={1}>
+                                <Checkbox
+                                  size="small"
+                                  checked={item.isSelected || false}
+                                  onChange={(e) => {
+                                    handleItemFieldChange(
+                                      index,
+                                      itemIndex,
+                                      "isSelected",
+                                      e.target.checked,
+                                    );
+                                  }}
+                                  color="primary"
+                                />
                               </Grid>
+                              <Grid item xs={3}>
+                                {isMonthly ? (
+                                  <Box
+                                    sx={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      gap: 1,
+                                    }}
+                                  >
+                                    <CraftInputWithIcon
+                                      name={`fees.${index}.feeItems.${itemIndex}.feeTypeDisplay`}
+                                      label=""
+                                      fullWidth
+                                      margin="none"
+                                      size="small"
+                                      disabled
+                                      value={
+                                        typeof item.feeType === "string"
+                                          ? item.feeType
+                                          : item.feeType?.label ||
+                                            item.feeType?.value ||
+                                            ""
+                                      }
+                                      InputProps={{
+                                        startAdornment: (
+                                          <InputAdornment position="start">
+                                            <Description
+                                              color="disabled"
+                                              sx={{ fontSize: 16 }}
+                                            />
+                                          </InputAdornment>
+                                        ),
+                                      }}
+                                    />
+                                    <Chip
+                                      label="×12"
+                                      size="small"
+                                      color="info"
+                                      variant="outlined"
+                                      sx={{ fontSize: "0.65rem", height: 20 }}
+                                    />
+                                  </Box>
+                                ) : (
+                                  <CraftIntAutoCompleteWithIcon
+                                    freeSolo
+                                    name={`fees.${index}.feeItems.${itemIndex}.feeType`}
+                                    label=""
+                                    options={classSpecificFeeOptions}
+                                    size="small"
+                                    fullWidth
+                                    placeholder="Select Fee Type"
+                                    multiple={false}
+                                    icon={
+                                      <Description
+                                        color="disabled"
+                                        sx={{ fontSize: 16 }}
+                                      />
+                                    }
+                                    disableClearable={false}
+                                    disabled={!isClassSelected}
+                                    isOptionEqualToValue={(
+                                      option: any,
+                                      value: any,
+                                    ) => {
+                                      if (!option || !value) return false;
+                                      const optVal =
+                                        typeof option === "string"
+                                          ? option
+                                          : option.value;
+                                      const valVal =
+                                        typeof value === "string"
+                                          ? value
+                                          : value.value;
+                                      return optVal === valVal;
+                                    }}
+                                    onKeyDown={(e) => {
+                                      if (e.key === "Enter") e.preventDefault();
+                                    }}
+                                    onChange={(e: any, val: any) => {
+                                      handleItemFieldChange(
+                                        index,
+                                        itemIndex,
+                                        "feeType",
+                                        val,
+                                      );
+                                    }}
+                                  />
+                                )}
+                              </Grid>
+
                               <Grid item xs={2.5}>
                                 <CraftInputWithIcon
-                                  name={`fees.${index}.feeAmount`}
+                                  name={`fees.${index}.feeItems.${itemIndex}.amount`}
                                   label=""
                                   fullWidth
                                   margin="none"
                                   size="small"
                                   type="number"
-                                  disabled={true}
-                                  value={feeAmount}
                                   InputProps={{
                                     startAdornment: (
                                       <InputAdornment position="start">
@@ -1258,120 +1617,319 @@ const DynamicFeeFields = ({
                                         </Typography>
                                       </InputAdornment>
                                     ),
-                                    readOnly: true,
-                                  }}
-                                  sx={{
-                                    "& .MuiInputBase-input": {
-                                      backgroundColor: alpha(
-                                        theme.palette.primary.light,
-                                        0.1,
-                                      ),
-                                      fontWeight: "bold",
-                                      fontSize: "1.1rem",
-                                      color: theme.palette.primary.main,
-                                    },
                                   }}
                                 />
                               </Grid>
+
                               <Grid item xs={2.5}>
-                                <Box
-                                  sx={{
-                                    p: 1.5,
-                                    bgcolor: alpha(
-                                      theme.palette.error.light,
-                                      0.1,
+                                <CraftInputWithIcon
+                                  name={`fees.${index}.feeItems.${itemIndex}.discount`}
+                                  label=""
+                                  fullWidth
+                                  margin="none"
+                                  size="small"
+                                  type="number"
+                                  placeholder="0"
+                                  InputProps={{
+                                    startAdornment: (
+                                      <InputAdornment position="start">
+                                        <Discount
+                                          sx={{
+                                            fontSize: 16,
+                                            color: "error.main",
+                                          }}
+                                        />
+                                      </InputAdornment>
                                     ),
-                                    borderRadius: 1,
-                                    border: `1px solid ${alpha(theme.palette.error.main, 0.2)}`,
                                   }}
-                                >
-                                  <Typography
-                                    variant="body2"
-                                    color="error.main"
-                                    align="center"
-                                  >
-                                    Disc: ৳
-                                    {feeItems
-                                      ?.reduce((sum: number, item: any) => {
-                                        let d = parseFloat(item.discount) || 0;
-                                        if (
-                                          item.isMonthly &&
-                                          item.discountRangeStart &&
-                                          item.discountRangeEnd
-                                        ) {
-                                          const sIndex = MONTHS.indexOf(
-                                            item.discountRangeStart,
-                                          );
-                                          const eIndex = MONTHS.indexOf(
-                                            item.discountRangeEnd,
-                                          );
-                                          if (
-                                            sIndex !== -1 &&
-                                            eIndex !== -1 &&
-                                            sIndex <= eIndex
-                                          )
-                                            d =
-                                              (parseFloat(
-                                                item.discountRangeAmount,
-                                              ) || 0) *
-                                              (eIndex - sIndex + 1);
-                                        }
-                                        return sum + d;
-                                      }, 0)
-                                      .toLocaleString()}
-                                  </Typography>
-                                </Box>
+                                />
                               </Grid>
+
                               <Grid item xs={2}>
-                                <Box
-                                  sx={{
-                                    p: 1.5,
-                                    bgcolor: alpha(
-                                      theme.palette.info.light,
+                                <CraftInputWithIcon
+                                  name={`fees.${index}.feeItems.${itemIndex}.advanceAmount`}
+                                  label=""
+                                  fullWidth
+                                  margin="none"
+                                  size="small"
+                                  type="number"
+                                  disabled={!isClassSelected || !item.amount}
+                                  InputProps={{
+                                    startAdornment: (
+                                      <InputAdornment position="start">
+                                        <Typography
+                                          variant="body2"
+                                          color="text.secondary"
+                                        >
+                                          ৳
+                                        </Typography>
+                                      </InputAdornment>
+                                    ),
+                                  }}
+                                />
+                              </Grid>
+
+                              <Grid
+                                item
+                                xs={1}
+                                sx={{
+                                  display: "flex",
+                                  justifyContent: "center",
+                                }}
+                              >
+                                <Tooltip title="Remove this item">
+                                  <IconButton
+                                    size="small"
+                                    onClick={() =>
+                                      removeFeeItem(index, itemIndex)
+                                    }
+                                    sx={{ color: "error.main" }}
+                                  >
+                                    <Delete fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+                              </Grid>
+
+                              {isMonthly && (
+                                <Grid item xs={12} sx={{ mt: 1 }}>
+                                  <Paper
+                                    variant="outlined"
+                                    sx={{
+                                      p: 1.5,
+                                      borderColor: theme.palette.info.main,
+                                      bgcolor: alpha(
+                                        theme.palette.info.light,
+                                        0.1,
+                                      ),
+                                    }}
+                                  >
+                                    <Typography
+                                      variant="caption"
+                                      color="info.main"
+                                      fontWeight="bold"
+                                      sx={{ mb: 1 }}
+                                    >
+                                      Apply Discount to Specific Months (all 12
+                                      months will be updated):
+                                    </Typography>
+                                    <Box
+                                      sx={{
+                                        display: "flex",
+                                        gap: 1,
+                                        alignItems: "center",
+                                        flexWrap: "wrap",
+                                      }}
+                                    >
+                                      <Select
+                                        size="small"
+                                        value={rangeStart}
+                                        onChange={(e) =>
+                                          setRangeStart(e.target.value)
+                                        }
+                                        displayEmpty
+                                        sx={{ minWidth: 100 }}
+                                      >
+                                        <MenuItem value="" disabled>
+                                          From
+                                        </MenuItem>
+                                        {MONTHS.map((m) => (
+                                          <MenuItem key={m} value={m}>
+                                            {m}
+                                          </MenuItem>
+                                        ))}
+                                      </Select>
+                                      <Typography variant="body2">
+                                        to
+                                      </Typography>
+                                      <Select
+                                        size="small"
+                                        value={rangeEnd}
+                                        onChange={(e) =>
+                                          setRangeEnd(e.target.value)
+                                        }
+                                        displayEmpty
+                                        sx={{ minWidth: 100 }}
+                                      >
+                                        <MenuItem value="" disabled>
+                                          To
+                                        </MenuItem>
+                                        {MONTHS.map((m) => (
+                                          <MenuItem key={m} value={m}>
+                                            {m}
+                                          </MenuItem>
+                                        ))}
+                                      </Select>
+                                      <CraftInputWithIcon
+                                        name="rangAmt"
+                                        size="small"
+                                        type="number"
+                                        placeholder="Amt"
+                                        value={rangeAmt || ""}
+                                        onChange={(e) =>
+                                          setRangeAmt(
+                                            parseFloat(e.target.value),
+                                          )
+                                        }
+                                        sx={{ width: 80 }}
+                                      />
+                                      <Button
+                                        size="small"
+                                        variant="contained"
+                                        onClick={() =>
+                                          handleApplyRangeDiscount(
+                                            index,
+                                            itemIndex,
+                                            rangeStart,
+                                            rangeEnd,
+                                            rangeAmt,
+                                          )
+                                        }
+                                        sx={{ fontSize: "0.75rem", py: 0.5 }}
+                                      >
+                                        Set Range
+                                      </Button>
+                                    </Box>
+                                    {hasRangeDiscount && (
+                                      <Typography
+                                        variant="caption"
+                                        color="success.main"
+                                        sx={{ mt: 1, display: "block" }}
+                                      >
+                                        Active: {item.discountRangeStart} to{" "}
+                                        {item.discountRangeEnd} (-৳
+                                        {item.discountRangeAmount}/mo)
+                                      </Typography>
+                                    )}
+                                  </Paper>
+                                </Grid>
+                              )}
+                            </Grid>
+                          </Grid>
+                        );
+                      })}
+
+                      <Grid item xs={12}>
+                        <Box
+                          sx={{
+                            mt: 2,
+                            pt: 2,
+                            borderTop: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                          }}
+                        >
+                          <Grid container spacing={2}>
+                            <Grid item xs={4}>
+                              <Typography
+                                variant="body1"
+                                fontWeight="bold"
+                                color="primary.main"
+                              >
+                                TOTAL (Selected)
+                              </Typography>
+                            </Grid>
+                            <Grid item xs={2.5}>
+                              <CraftInputWithIcon
+                                name={`fees.${index}.feeAmount`}
+                                label=""
+                                fullWidth
+                                margin="none"
+                                size="small"
+                                type="number"
+                                disabled={true}
+                                value={feeAmount}
+                                InputProps={{
+                                  startAdornment: (
+                                    <InputAdornment position="start">
+                                      <Typography
+                                        variant="body2"
+                                        color="text.secondary"
+                                      >
+                                        ৳
+                                      </Typography>
+                                    </InputAdornment>
+                                  ),
+                                  readOnly: true,
+                                }}
+                                sx={{
+                                  "& .MuiInputBase-input": {
+                                    backgroundColor: alpha(
+                                      theme.palette.primary.light,
                                       0.1,
                                     ),
-                                    borderRadius: 1,
-                                    border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`,
-                                  }}
-                                >
-                                  <Typography
-                                    variant="body2"
-                                    color="info.main"
-                                    align="center"
-                                  >
-                                    Paid: ৳
-                                    {feeItems
-                                      ?.reduce(
-                                        (sum: number, item: any) =>
-                                          sum +
-                                          (parseFloat(item.advanceAmount) || 0),
-                                        0,
-                                      )
-                                      .toLocaleString()}
-                                  </Typography>
-                                </Box>
-                              </Grid>
-                              <Grid item xs={1}></Grid>
+                                    fontWeight: "bold",
+                                    fontSize: "1.1rem",
+                                    color: theme.palette.primary.main,
+                                  },
+                                }}
+                              />
                             </Grid>
-                          </Box>
-                        </Grid>
+                            <Grid item xs={2.5}>
+                              <Box
+                                sx={{
+                                  p: 1.5,
+                                  bgcolor: alpha(
+                                    theme.palette.error.light,
+                                    0.1,
+                                  ),
+                                  borderRadius: 1,
+                                  border: `1px solid ${alpha(theme.palette.error.main, 0.2)}`,
+                                }}
+                              >
+                                <Typography
+                                  variant="body2"
+                                  color="error.main"
+                                  align="center"
+                                >
+                                  Disc: ৳
+                                  {feeItems
+                                    ?.filter((item: any) => item.isSelected)
+                                    .reduce(
+                                      (sum: number, item: any) =>
+                                        sum + (parseFloat(item.discount) || 0),
+                                      0,
+                                    )
+                                    .toLocaleString()}
+                                </Typography>
+                              </Box>
+                            </Grid>
+                            <Grid item xs={2}>
+                              <Box
+                                sx={{
+                                  p: 1.5,
+                                  bgcolor: alpha(theme.palette.info.light, 0.1),
+                                  borderRadius: 1,
+                                  border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`,
+                                }}
+                              >
+                                <Typography
+                                  variant="body2"
+                                  color="info.main"
+                                  align="center"
+                                >
+                                  Pay Now: ৳
+                                  {feeItems
+                                    ?.filter((item: any) => item.isSelected)
+                                    .reduce(
+                                      (sum: number, item: any) =>
+                                        sum +
+                                        (parseFloat(item.advanceAmount) || 0),
+                                      0,
+                                    )
+                                    .toLocaleString()}
+                                </Typography>
+                              </Box>
+                            </Grid>
+                            <Grid item xs={1}></Grid>
+                          </Grid>
+                        </Box>
                       </Grid>
-                    </Paper>
-                  </Box>
-                ) : (
-                  <Box
-                    sx={{ textAlign: "center", py: 3, color: "text.disabled" }}
-                  >
-                    <Money sx={{ fontSize: 36, mb: 1, opacity: 0.5 }} />
-                    <Typography variant="body2">
-                      No fee items found for this category
-                    </Typography>
-                  </Box>
-                )
+                    </Grid>
+                  </Paper>
+                </Box>
               ) : null}
             </Box>
           );
         })}
+
         {fields.length === 0 && (
           <Box sx={{ textAlign: "center", py: 4, color: "text.disabled" }}>
             <Payment sx={{ fontSize: 48, mb: 1, opacity: 0.5 }} />
@@ -1436,7 +1994,7 @@ const StudentInformationStep = () => (
           fullWidth
           label={
             <span>
-              Student Name<span style={{ color: "red" }}>*</span>
+              Student Name (English)<span style={{ color: "red" }}>*</span>
             </span>
           }
           name="studentName"
@@ -1928,7 +2486,6 @@ const DocumentCheckbox = ({ name, label }: { name: string; label: string }) => {
   );
 };
 
-// --- ADDRESS & DOCUMENTS STEP WITH SAME AS PERMANENT FUNCTIONALITY ---
 const AddressDocumentsStep = () => {
   const theme = useTheme();
   const { watch, setValue } = useFormContext();
@@ -1943,20 +2500,12 @@ const AddressDocumentsStep = () => {
   ) => {
     const checked = event.target.checked;
     setValue("sameAsPermanent", checked);
-
-    // If checked, copy permanent address to present address
     if (checked) {
-      const permVillage = watch("permVillage");
-      const permPostOffice = watch("permPostOffice");
-      const permPostCode = watch("permPostCode");
-      const permPoliceStation = watch("permPoliceStation");
-      const permDistrict = watch("permDistrict");
-
-      setValue("village", permVillage || "");
-      setValue("postOffice", permPostOffice || "");
-      setValue("postCode", permPostCode || "");
-      setValue("policeStation", permPoliceStation || "");
-      setValue("district", permDistrict || "");
+      setValue("village", watch("permVillage") || "");
+      setValue("postOffice", watch("permPostOffice") || "");
+      setValue("postCode", watch("permPostCode") || "");
+      setValue("policeStation", watch("permPoliceStation") || "");
+      setValue("district", watch("permDistrict") || "");
     }
   };
 
@@ -1973,7 +2522,6 @@ const AddressDocumentsStep = () => {
           </Typography>
         </Grid>
 
-        {/* Permanent Address Section */}
         <Grid item xs={12}>
           <Typography
             variant="subtitle1"
@@ -2059,7 +2607,6 @@ const AddressDocumentsStep = () => {
           />
         </Grid>
 
-        {/* Same as Permanent Switch */}
         <Grid item xs={12}>
           <Box
             sx={{
@@ -2097,7 +2644,6 @@ const AddressDocumentsStep = () => {
           </Box>
         </Grid>
 
-        {/* Present Address Section */}
         <Grid item xs={12} md={4}>
           <CraftInputWithIcon
             size="medium"
@@ -2151,9 +2697,9 @@ const AddressDocumentsStep = () => {
             size="medium"
             margin="none"
             fullWidth
-            label="Thana "
+            label="Thana"
             name="policeStation"
-            placeholder="Thana "
+            placeholder="Thana"
             disabled={sameAsPermanent}
             InputProps={{
               startAdornment: (
@@ -2178,8 +2724,6 @@ const AddressDocumentsStep = () => {
             }}
           />
         </Grid>
-
-        {/* Previous Institution */}
         <Grid item xs={12} md={6}>
           <CraftInputWithIcon
             size="medium"
@@ -2211,7 +2755,6 @@ const AddressDocumentsStep = () => {
           />
         </Grid>
 
-        {/* Documents Section */}
         <Grid item xs={12}>
           <Box
             sx={{
@@ -2244,7 +2787,6 @@ const AddressDocumentsStep = () => {
           </Box>
         </Grid>
 
-        {/* Terms & Conditions */}
         <Grid item xs={12}>
           <Box
             sx={{
@@ -2285,15 +2827,11 @@ const AddressDocumentsStep = () => {
 const FeeStep = ({ classOptions, feeCategoryData, studentData }: any) => {
   const theme = useTheme();
   const { watch, setValue } = useFormContext();
-
   const paymentMethod = watch("paymentMethod") || {
     label: "Cash",
     value: "cash",
   };
   const [paidAmount, setPaidAmount] = useState<string>("0");
-  const [selectedMonth, setSelectedMonth] = useState<string>(
-    new Date().toLocaleString("default", { month: "long" }),
-  );
 
   const paymentOptions = [
     { label: "Cash", value: "cash" },
@@ -2302,17 +2840,15 @@ const FeeStep = ({ classOptions, feeCategoryData, studentData }: any) => {
     { label: "Online", value: "online" },
   ];
 
-  const monthOptions = MONTHS.map((month) => ({ label: month, value: month }));
-
   const calculateTotalFees = () => {
     const fees = watch("fees") || [];
     let total = 0;
     fees.forEach((fee: any) => {
       if (fee.feeItems && Array.isArray(fee.feeItems)) {
         fee.feeItems.forEach((item: any) => {
-          const amt = parseFloat(item.amount) || 0;
-          if (item.isMonthly) total += amt;
-          else total += amt;
+          if (item.isSelected) {
+            total += parseFloat(item.amount) || 0;
+          }
         });
       }
     });
@@ -2321,38 +2857,41 @@ const FeeStep = ({ classOptions, feeCategoryData, studentData }: any) => {
 
   const calculateTotalItemDiscounts = () => {
     const fees = watch("fees") || [];
-    let totalItemDiscount = 0;
+    let total = 0;
     fees.forEach((fee: any) => {
       if (fee.feeItems && Array.isArray(fee.feeItems)) {
         fee.feeItems.forEach((item: any) => {
-          let d = parseFloat(item.discount) || 0;
-          if (
-            item.isMonthly &&
-            item.discountRangeStart &&
-            item.discountRangeEnd
-          ) {
-            const sIndex = MONTHS.indexOf(item.discountRangeStart);
-            const eIndex = MONTHS.indexOf(item.discountRangeEnd);
-            if (sIndex !== -1 && eIndex !== -1 && sIndex <= eIndex) {
-              d =
-                (parseFloat(item.discountRangeAmount) || 0) *
-                (eIndex - sIndex + 1);
-            }
+          if (item.isSelected) {
+            total += parseFloat(item.discount) || 0;
           }
-          totalItemDiscount += d;
         });
       }
     });
-    return totalItemDiscount;
+    return total;
+  };
+
+  const calculateTotalAdvanceAmount = () => {
+    const fees = watch("fees") || [];
+    let total = 0;
+    fees.forEach((fee: any) => {
+      if (fee.feeItems && Array.isArray(fee.feeItems)) {
+        fee.feeItems.forEach((item: any) => {
+          if (item.isSelected) {
+            total += parseFloat(item.advanceAmount) || 0;
+          }
+        });
+      }
+    });
+    return total;
   };
 
   const calculateSummary = () => {
     const totalFees = calculateTotalFees();
     const totalItemDiscounts = calculateTotalItemDiscounts();
+    const totalAdvance = calculateTotalAdvanceAmount();
     const netPayable = totalFees - totalItemDiscounts;
     const paidAmountNum = parseFloat(paidAmount) || 0;
     const dueAmount = Math.max(0, netPayable - paidAmountNum);
-
     return {
       totalFees,
       yearlyTotal: totalFees * 12,
@@ -2360,6 +2899,7 @@ const FeeStep = ({ classOptions, feeCategoryData, studentData }: any) => {
       netPayable,
       paidAmount: paidAmountNum,
       dueAmount,
+      totalAdvance,
     };
   };
 
@@ -2372,8 +2912,7 @@ const FeeStep = ({ classOptions, feeCategoryData, studentData }: any) => {
     setValue("netPayable", summary.netPayable);
     setValue("dueAmount", summary.dueAmount);
     setValue("paidAmount", summary.paidAmount);
-    setValue("selectedMonth", selectedMonth);
-  }, [summary, setValue, selectedMonth]);
+  }, [summary, setValue]);
 
   return (
     <Box sx={{ ...fadeInSlideUp }}>
@@ -2381,7 +2920,6 @@ const FeeStep = ({ classOptions, feeCategoryData, studentData }: any) => {
         classOptions={classOptions}
         feeCategoryData={feeCategoryData}
         studentData={studentData}
-        selectedMonth={selectedMonth}
       />
 
       <Card
@@ -2413,10 +2951,7 @@ const FeeStep = ({ classOptions, feeCategoryData, studentData }: any) => {
                     color="text.primary"
                     fontWeight="bold"
                   >
-                    Monthly Fee Summary
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    Showing fees for {selectedMonth}
+                    Total Fees
                   </Typography>
                 </Box>
                 <Box sx={{ textAlign: "right" }}>
@@ -2426,9 +2961,6 @@ const FeeStep = ({ classOptions, feeCategoryData, studentData }: any) => {
                     fontWeight="800"
                   >
                     ৳{summary.totalFees.toLocaleString()}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    Monthly Total
                   </Typography>
                 </Box>
               </Box>
@@ -2543,7 +3075,7 @@ const FeeStep = ({ classOptions, feeCategoryData, studentData }: any) => {
                       fontWeight="bold"
                       color="success.main"
                     >
-                      Fully Paid for {selectedMonth}
+                      Fully Paid
                     </Typography>
                   </Box>
                 )}
@@ -2565,12 +3097,12 @@ const FeeStep = ({ classOptions, feeCategoryData, studentData }: any) => {
                   color="text.secondary"
                   sx={{ mb: 1, fontWeight: 600 }}
                 >
-                  Summary Breakdown
+                  Summary
                 </Typography>
                 <Grid container spacing={1}>
                   <Grid item xs={6}>
                     <Typography variant="body2" color="text.secondary">
-                      Monthly Fee:
+                      Selected Monthly Fee:
                     </Typography>
                   </Grid>
                   <Grid item xs={6} sx={{ textAlign: "right" }}>
@@ -2657,17 +3189,6 @@ const FeeStep = ({ classOptions, feeCategoryData, studentData }: any) => {
                 </Grid>
               </Box>
             </Grid>
-
-            <Grid item xs={12}>
-              <Alert severity="warning" sx={{ borderRadius: 2 }}>
-                <Typography variant="body2">
-                  <strong>Important:</strong> You are paying for {selectedMonth}
-                  . Upon submission, fees for all 12 months will be generated in
-                  the system. Future months can be paid later as they become
-                  due.
-                </Typography>
-              </Alert>
-            </Grid>
           </Grid>
         </CardContent>
       </Card>
@@ -2675,7 +3196,9 @@ const FeeStep = ({ classOptions, feeCategoryData, studentData }: any) => {
   );
 };
 
-// --- TRANSFORM FUNCTIONS ---
+// ─────────────────────────────────────────────────────────────────────────────
+// TRANSFORM FUNCTIONS
+// ─────────────────────────────────────────────────────────────────────────────
 const transformApplicationToFormData = (
   application: any,
   classOptions: any[],
@@ -2695,8 +3218,7 @@ const transformApplicationToFormData = (
   const formatDate = (dateString: string) => {
     if (!dateString) return null;
     try {
-      const date = new Date(dateString);
-      return date.toISOString().split("T")[0];
+      return new Date(dateString).toISOString().split("T")[0];
     } catch {
       return null;
     }
@@ -2708,8 +3230,9 @@ const transformApplicationToFormData = (
       const matchedClass = classOptions?.find(
         (opt: any) => opt.label === classData || opt.value === classData,
       );
-      if (matchedClass) return [matchedClass];
-      else return [{ label: classData, name: classData, value: classData }];
+      return matchedClass
+        ? [matchedClass]
+        : [{ label: classData, name: classData, value: classData }];
     }
     return [];
   };
@@ -2771,13 +3294,7 @@ const transformApplicationToFormData = (
     photographs: documents.photographs || false,
     termsAccepted: application.termsAccepted || false,
     fees: [
-      {
-        category: [],
-        className: formattedClass,
-        feeItems: [],
-        feeAmount: "",
-        selectionMode: "admission",
-      },
+      { category: [], className: formattedClass, feeItems: [], feeAmount: "" },
     ],
     admissionFee: 0,
     monthlyFee: 0,
@@ -2794,6 +3311,9 @@ const transformApplicationToFormData = (
   };
 };
 
+// ─────────────────────────────────────────────────────────────────────────────
+// FIXED: transformEnrollmentDataToForm with proper discount range preservation
+// ─────────────────────────────────────────────────────────────────────────────
 const transformEnrollmentDataToForm = (
   enrollmentData: any,
   classOptions: any[],
@@ -2852,7 +3372,104 @@ const transformEnrollmentDataToForm = (
     }
   };
 
-  const paymentMethodObj = { label: "Cash", value: "cash" };
+  const MONTH_SET = new Set(MONTHS);
+  const uniqueFeeItemsMap = new Map<string, any>();
+
+  if (data.fees && Array.isArray(data.fees)) {
+    // Group fees by base type
+    const feeGroups = new Map<string, any[]>();
+
+    data.fees.forEach((fee: any) => {
+      let baseFeeType: string = fee.feeType || "";
+      let isMonthlyFee = false;
+      let month = null;
+
+      const dashIdx = baseFeeType.lastIndexOf(" - ");
+      if (dashIdx !== -1) {
+        const possibleMonth = baseFeeType.slice(dashIdx + 3);
+        if (MONTH_SET.has(possibleMonth)) {
+          baseFeeType = baseFeeType.slice(0, dashIdx);
+          isMonthlyFee = true;
+          month = possibleMonth;
+        }
+      }
+
+      if (!feeGroups.has(baseFeeType)) {
+        feeGroups.set(baseFeeType, []);
+      }
+      feeGroups.get(baseFeeType)!.push({
+        ...fee,
+        originalFeeType: fee.feeType,
+        month,
+        isMonthlyFee,
+      });
+    });
+
+    // Process each group to create one consolidated fee item
+    feeGroups.forEach((fees, baseFeeType) => {
+      const firstFee = fees[0];
+      const isMonthlyGroup = fees.some((f) => f.isMonthlyFee);
+
+      let discountRangeStart = "";
+      let discountRangeEnd = "";
+      let discountRangeAmount = 0;
+      let baseDiscount = firstFee.discount || 0;
+
+      if (isMonthlyGroup && fees.length > 1) {
+        // Count occurrences of each discount value
+        const discountCounts: { [key: number]: number } = {};
+        fees.forEach((f) => {
+          const d = f.discount || 0;
+          discountCounts[d] = (discountCounts[d] || 0) + 1;
+        });
+
+        // Find the most common discount (this is the base discount)
+        let maxCount = 0;
+        Object.entries(discountCounts).forEach(([discount, count]) => {
+          if (count > maxCount) {
+            maxCount = count;
+            baseDiscount = parseFloat(discount);
+          }
+        });
+
+        // Find months with different discount (range discount)
+        const rangeMonths: string[] = [];
+        fees.forEach((f) => {
+          if ((f.discount || 0) !== baseDiscount && f.month) {
+            rangeMonths.push(f.month);
+          }
+        });
+
+        if (rangeMonths.length > 0) {
+          // Sort months in calendar order
+          rangeMonths.sort((a, b) => MONTHS.indexOf(a) - MONTHS.indexOf(b));
+          discountRangeStart = rangeMonths[0];
+          discountRangeEnd = rangeMonths[rangeMonths.length - 1];
+
+          // Get the range discount amount from the first range month
+          const rangeMonthFee = fees.find(
+            (f) => f.month === discountRangeStart,
+          );
+          discountRangeAmount = rangeMonthFee?.discount || 0;
+        }
+      }
+
+      uniqueFeeItemsMap.set(baseFeeType, {
+        feeType: { label: baseFeeType, value: baseFeeType },
+        amount: firstFee.amount,
+        advanceAmount: 0,
+        isSelected: true,
+        discount: baseDiscount, // This is the base discount that applies to most months
+        isMonthly: isMonthlyGroup,
+        discountRangeStart,
+        discountRangeEnd,
+        discountRangeAmount,
+      });
+    });
+  }
+
+  const uniqueFeeItems = Array.from(uniqueFeeItemsMap.values());
+  const formattedClass = formatClassForForm(data.className);
 
   return {
     studentId: data.studentId || data.student?.studentId || "",
@@ -2860,7 +3477,7 @@ const transformEnrollmentDataToForm = (
     studentPhoto: data.studentPhoto || data.student?.studentPhoto || "",
     fatherNameBangla: data.fatherNameBangla || data.student?.fatherName || "",
     motherNameBangla: data.motherNameBangla || data.student?.motherName || "",
-    studentName: data.name || data.student?.name || "",
+    studentName: data.studentName || data.student?.name || "",
     mobileNo: data.mobileNo || data.student?.mobile || "",
     session: data.session || new Date().getFullYear().toString(),
     category:
@@ -2868,10 +3485,11 @@ const transformEnrollmentDataToForm = (
       data.student?.studentType?.toLowerCase() ||
       "residential",
     dateOfBirth: formatDate(data.birthDate || data.student?.birthDate),
-    nidBirth: data.nidBirth || data.student?.birthRegistrationNo || "",
+    nidBirth:
+      data.birthRegistrationNo || data.student?.birthRegistrationNo || "",
     bloodGroup: data.bloodGroup || data.student?.bloodGroup || "",
     nationality: data.nationality || "Bangladeshi",
-    className: formatClassForForm(data.className),
+    className: formattedClass,
     studentDepartment: data.studentDepartment || "hifz",
     rollNumber: data.roll || data.student?.studentClassRoll || "",
     section: data.section || data.student?.section?.[0] || "",
@@ -2915,17 +3533,26 @@ const transformEnrollmentDataToForm = (
     markSheet: data.documents?.markSheet || false,
     photographs: data.documents?.photographs || false,
     termsAccepted: data.termsAccepted || false,
-    fees: [],
+    fees: [
+      {
+        category: [],
+        className: formattedClass,
+        feeItems: uniqueFeeItems,
+        feeAmount: uniqueFeeItems
+          .reduce((sum, item) => sum + item.amount, 0)
+          .toString(),
+      },
+    ],
     admissionFee: data.admissionFee || data.student?.admissionFee || 0,
     monthlyFee: data.monthlyFee || data.student?.monthlyFee || 0,
     discountAmount: data.discountAmount || 0,
-    paymentMethod: paymentMethodObj,
+    paymentMethod: { label: "Cash", value: "cash" },
     studentIdSelect: null,
     studentNameSelect: null,
     totalAmount: data.totalAmount || 0,
     totalDiscount: data.totalDiscount || 0,
     netPayable: data.netPayable || 0,
-    paidAmount: data.paidAmount || 0,
+    paidAmount: 0,
     dueAmount: data.dueAmount || 0,
     advanceBalance: data.advanceBalance || 0,
   };
@@ -2947,6 +3574,7 @@ const EnrollmentForm = () => {
   const [openPaymentModal, setOpenPaymentModal] = useState(false);
   const [enrolledStudentData, setEnrolledStudentData] = useState<any>(null);
   const [isApplicationLoading, setIsApplicationLoading] = useState(false);
+  console.log("for data sent print", enrolledStudentData);
 
   const { classOptions, feeCategoryData } = useAcademicOption();
   const [createEnrollment] = useCreateEnrollmentMutation();
@@ -2954,7 +3582,6 @@ const EnrollmentForm = () => {
   const { data: singleEnrollment, isLoading: enrollmentLoading } =
     useGetSingleEnrollmentQuery(id ? { id } : undefined, { skip: !id });
 
-  // Fetch admission application if applicationId is provided
   const { data: admissionApplications, isLoading: admissionsLoading } =
     useGetAllAdmissionApplicationsQuery(
       applicationId ? { applicationId, limit: 1 } : { skip: true },
@@ -2980,9 +3607,7 @@ const EnrollmentForm = () => {
     { label: "Fee Info", icon: <Payment /> },
   ];
 
-  // Load data based on id or applicationId
   useEffect(() => {
-    // Case 1: Edit existing enrollment (has id)
     if (id && singleEnrollment && classOptions.length > 0 && feeCategoryData) {
       const transformedData = transformEnrollmentDataToForm(
         singleEnrollment,
@@ -2994,24 +3619,15 @@ const EnrollmentForm = () => {
           transformedData.paymentMethod = { label: "Cash", value: "cash" };
         setDefaultValues(transformedData);
         setFormKey((prev) => prev + 1);
+        setActiveStep(0);
       }
-    }
-    // Case 2: New enrollment from application (has applicationId)
-    else if (
+    } else if (
       applicationId &&
       admissionApplications?.data &&
       admissionApplications.data.length > 0
     ) {
       setIsApplicationLoading(true);
       const application = admissionApplications.data[0];
-
-      // Check if application is approved
-      if (application.status !== "approved") {
-        toast.error("Only approved applications can be enrolled");
-        setTimeout(() => router.push("/dashboard/enrollments/list"), 2000);
-        return;
-      }
-
       const formData = transformApplicationToFormData(
         application,
         classOptions,
@@ -3019,17 +3635,16 @@ const EnrollmentForm = () => {
       if (formData) {
         setDefaultValues(formData);
         setFormKey((prev) => prev + 1);
-        const studentName = formData.studentNameBangla || formData.studentName;
         toast.success(
           `Application ${application.applicationId} loaded successfully`,
         );
+        const targetStep = getFirstIncompleteStep(formData);
+        setTimeout(() => setActiveStep(targetStep), 300);
       } else {
         toast.error("Failed to load application data");
       }
       setIsApplicationLoading(false);
-    }
-    // Case 3: New empty form
-    else if (!id && !applicationId) {
+    } else if (!id && !applicationId) {
       setDefaultValues({
         studentId: "",
         studentNameBangla: "",
@@ -3084,15 +3699,7 @@ const EnrollmentForm = () => {
         markSheet: false,
         photographs: false,
         termsAccepted: false,
-        fees: [
-          {
-            category: [],
-            className: [],
-            feeItems: [],
-            feeAmount: "",
-            selectionMode: "admission",
-          },
-        ],
+        fees: [{ category: [], className: [], feeItems: [], feeAmount: "" }],
         admissionFee: 0,
         monthlyFee: 0,
         discountAmount: 0,
@@ -3107,6 +3714,7 @@ const EnrollmentForm = () => {
         advanceBalance: 0,
       });
       setFormKey((prev) => prev + 1);
+      setActiveStep(0);
     }
   }, [
     id,
@@ -3130,7 +3738,8 @@ const EnrollmentForm = () => {
         setFormKey((prev) => prev + 1);
         const studentName = formData.studentNameBangla || formData.studentName;
         toast.success(`Application data loaded for ${studentName}`);
-        setTimeout(() => setActiveStep(1), 500);
+        const targetStep = getFirstIncompleteStep(formData);
+        setTimeout(() => setActiveStep(targetStep), 300);
       } else toast.error("Failed to load application data");
     },
     [classOptions],
@@ -3177,13 +3786,18 @@ const EnrollmentForm = () => {
         setSubmitting(false);
         return;
       }
+      if (
+        !submitData.fees ||
+        !submitData.fees.some((f: any) => f.feeItems && f.feeItems.length > 0)
+      ) {
+        toast.error("Please add at least one fee category with items");
+        setSubmitting(false);
+        return;
+      }
 
-      const classNameArray =
-        submitData.className && submitData.className.length > 0
-          ? submitData.className
-              .map((cls: any) => cls.value || cls)
-              .filter(Boolean)
-          : [];
+      const classNameArray = submitData.className
+        .map((cls: any) => cls.value || cls)
+        .filter(Boolean);
 
       if (!classNameArray.length) {
         toast.error("Class selection is required");
@@ -3193,114 +3807,82 @@ const EnrollmentForm = () => {
 
       const paymentMethodValue =
         typeof submitData.paymentMethod === "object"
-          ? submitData.paymentMethod.value
+          ? submitData.paymentMethod?.value || "cash"
           : submitData.paymentMethod || "cash";
 
-      const calculateTotalFees = (fees: any[]) => {
-        let total = 0;
-        fees.forEach((fee: any) => {
-          if (fee.feeItems && Array.isArray(fee.feeItems)) {
-            fee.feeItems.forEach((item: any) => {
-              const amt = parseFloat(item.amount) || 0;
-              if (item.isMonthly) total += amt;
-              else total += amt;
-            });
+      const studentPhotoValue =
+        typeof submitData.studentPhoto === "string" &&
+        submitData.studentPhoto.startsWith("data:")
+          ? ""
+          : submitData.studentPhoto || "";
+
+      const fees: any[] = [];
+
+      if (submitData.fees && Array.isArray(submitData.fees)) {
+        submitData.fees.forEach((fee: any) => {
+          if (
+            fee.feeItems &&
+            Array.isArray(fee.feeItems) &&
+            fee.feeItems.length > 0
+          ) {
+            const processedFeeItems = fee.feeItems
+              .filter((item: any) => {
+                const feeTypeStr =
+                  typeof item.feeType === "object"
+                    ? item.feeType?.label || item.feeType?.value || ""
+                    : item.feeType || "";
+                const isSelected = item.isSelected !== false;
+                return feeTypeStr.trim() !== "" && isSelected;
+              })
+              .map((item: any) => {
+                const feeTypeStr =
+                  typeof item.feeType === "object"
+                    ? item.feeType?.label || item.feeType?.value || ""
+                    : item.feeType || "";
+
+                return {
+                  feeType: feeTypeStr,
+                  amount: parseFloat(String(item.amount)) || 0,
+                  discount: parseFloat(String(item.discount)) || 0,
+                  advanceAmount: parseFloat(String(item.advanceAmount)) || 0,
+                  isMonthly: Boolean(item.isMonthly),
+                  discountRangeStart: item.discountRangeStart || "",
+                  discountRangeEnd: item.discountRangeEnd || "",
+                  discountRangeAmount:
+                    parseFloat(String(item.discountRangeAmount)) || 0,
+                  isSelected: true,
+                };
+              });
+
+            if (processedFeeItems.length > 0) {
+              fees.push({
+                category:
+                  fee.category && fee.category.length > 0
+                    ? fee.category[0]?.label || fee.category[0] || ""
+                    : "",
+                className:
+                  fee.className && fee.className.length > 0
+                    ? fee.className[0]?.label || fee.className[0] || ""
+                    : "",
+                feeItems: processedFeeItems,
+              });
+            }
           }
         });
-        return total;
-      };
+      }
 
-      const calculateTotalDiscounts = (fees: any[]) => {
-        let total = 0;
-        fees.forEach((fee: any) => {
-          if (fee.feeItems && Array.isArray(fee.feeItems)) {
-            fee.feeItems.forEach((item: any) => {
-              let d = parseFloat(item.discount) || 0;
-              if (
-                item.isMonthly &&
-                item.discountRangeStart &&
-                item.discountRangeEnd
-              ) {
-                const sIndex = MONTHS.indexOf(item.discountRangeStart);
-                const eIndex = MONTHS.indexOf(item.discountRangeEnd);
-                if (sIndex !== -1 && eIndex !== -1 && sIndex <= eIndex) {
-                  d =
-                    (parseFloat(item.discountRangeAmount) || 0) *
-                    (eIndex - sIndex + 1);
-                }
-              }
-              total += d;
-            });
-          }
-        });
-        return total;
-      };
-
-      const totalFees = calculateTotalFees(submitData.fees || []);
-      const totalDiscounts = calculateTotalDiscounts(submitData.fees || []);
-      const yearlyTotal = totalFees * 12;
-      const paidAmount = parseFloat(submitData.paidAmount) || 0;
-      const dueAmount = Math.max(0, yearlyTotal - totalDiscounts - paidAmount);
-
-      let paymentStatus = "pending";
-      if (dueAmount <= 0) paymentStatus = "paid";
-      else if (paidAmount > 0) paymentStatus = "partial";
-
-      // Transform fees for backend (only one month's configuration)
-      const transformedFees = Array.isArray(submitData.fees)
-        ? submitData.fees
-            .filter(
-              (fee: any) =>
-                fee.category &&
-                fee.category.length > 0 &&
-                fee.className &&
-                fee.className.length > 0 &&
-                fee.feeItems &&
-                fee.feeItems.length > 0,
-            )
-            .flatMap((fee: any) => {
-              const className =
-                fee.className[0]?.label || fee.className[0] || "";
-              const categoryName =
-                fee.category[0]?.label || fee.category[0] || "";
-
-              return fee.feeItems
-                .filter((item: any) => item.isSelected !== false)
-                .map((item: any) => {
-                  const fType =
-                    typeof item.feeType === "string"
-                      ? item.feeType
-                      : item.feeType?.value;
-                  return {
-                    feeType: fType || "",
-                    amount: parseFloat(item.amount) || 0,
-                    className: className,
-                    category: categoryName,
-                    advanceAmount: parseFloat(item.advanceAmount) || 0,
-                    discount: parseFloat(item.discount) || 0,
-                    isMonthly: item.isMonthly || false,
-                    discountRangeStart: item.discountRangeStart || "",
-                    discountRangeEnd: item.discountRangeEnd || "",
-                    discountRangeAmount:
-                      parseFloat(item.discountRangeAmount) || 0,
-                    month:
-                      item.month ||
-                      (item.isMonthly ? submitData.selectedMonth : "Admission"),
-                  };
-                });
-            })
-        : [];
-
-      if (transformedFees.length === 0) {
-        toast.error("At least one valid fee item is required");
+      if (fees.length === 0) {
+        toast.error("Please configure fee items before submitting");
         setSubmitting(false);
         return;
       }
 
+      const totalPaidAmount = parseFloat(String(submitData.paidAmount)) || 0;
+
       const finalSubmitData: any = {
         studentName: submitData.studentName || "",
         nameBangla: submitData.studentNameBangla || "",
-        studentPhoto: submitData.studentPhoto || "",
+        studentPhoto: studentPhotoValue,
         mobileNo: submitData.mobileNo || "",
         rollNumber: submitData.rollNumber || "",
         birthDate: submitData.dateOfBirth
@@ -3311,8 +3893,8 @@ const EnrollmentForm = () => {
         nationality: submitData.nationality || "Bangladeshi",
         className: classNameArray,
         section: submitData.section || "",
-        roll: submitData.roll || submitData.rollNumber || "",
-        session: submitData.session || new Date().getFullYear().toString(),
+        roll: submitData.rollNumber || "",
+        session: submitData.session || String(new Date().getFullYear()),
         group: submitData.group || "",
         category: submitData.category || "Residential",
         studentDepartment: submitData.studentDepartment || "hifz",
@@ -3359,38 +3941,34 @@ const EnrollmentForm = () => {
           markSheet: Boolean(submitData.markSheet),
           photographs: Boolean(submitData.photographs),
         },
-        fees: transformedFees,
+        fees,
         termsAccepted: Boolean(submitData.termsAccepted),
-        admissionFee: Number(submitData.admissionFee) || 0,
-        monthlyFee: Number(submitData.monthlyFee) || 0,
-        discountAmount: Number(submitData.discountAmount) || 0,
-        advanceBalance: submitData.advanceBalance || 0,
-        paymentStatus: paymentStatus,
-        totalAmount: yearlyTotal,
-        monthlyAmount: totalFees,
-        totalDiscount: totalDiscounts,
-        netPayable: yearlyTotal - totalDiscounts,
-        paidAmount: paidAmount,
-        dueAmount: dueAmount,
+        advanceBalance: Number(submitData.advanceBalance) || 0,
+        paidAmount: totalPaidAmount,
         paymentMethod: paymentMethodValue,
-        selectedMonth: submitData.selectedMonth,
         collectedBy: "Admin",
       };
 
       let res;
-      if (id)
+      if (id) {
         res = await updateEnrollment({ id, data: finalSubmitData }).unwrap();
-      else res = await createEnrollment(finalSubmitData).unwrap();
+      } else {
+        res = await createEnrollment(finalSubmitData).unwrap();
+      }
 
       if (res?.success) {
         toast.success(res?.message || "Student enrolled successfully");
         setEnrolledStudentData(res.data);
         setOpenSuccessModal(true);
-      } else throw new Error(res?.message || "Failed to enroll student");
+      } else {
+        throw new Error(res?.message || "Failed to enroll student");
+      }
     } catch (err: any) {
       console.error("Submission error:", err);
       let errorMessage = "Failed to enroll student!";
       if (err?.data?.message) errorMessage = err.data.message;
+      else if (err?.data?.errorSources?.[0]?.message)
+        errorMessage = err.data.errorSources[0].message;
       else if (err?.message) errorMessage = err.message;
       toast.error(errorMessage);
     } finally {
@@ -3400,18 +3978,18 @@ const EnrollmentForm = () => {
 
   const handleNext = (e: React.MouseEvent) => {
     e.preventDefault();
-    setActiveStep((prevActiveStep) => prevActiveStep + 1);
-    const contentWrapper = document.getElementById("form-content-wrapper");
-    if (contentWrapper)
-      contentWrapper.scrollIntoView({ behavior: "smooth", block: "start" });
+    setActiveStep((prev) => prev + 1);
+    document
+      .getElementById("form-content-wrapper")
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   const handleBack = (e: React.MouseEvent) => {
     e.preventDefault();
-    setActiveStep((prevActiveStep) => prevActiveStep - 1);
-    const contentWrapper = document.getElementById("form-content-wrapper");
-    if (contentWrapper)
-      contentWrapper.scrollIntoView({ behavior: "smooth", block: "start" });
+    setActiveStep((prev) => prev - 1);
+    document
+      .getElementById("form-content-wrapper")
+      ?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
   if (
@@ -3497,10 +4075,7 @@ const EnrollmentForm = () => {
                 >
                   Student Enrollment
                 </Typography>
-                <Typography
-                  variant="subtitle2"
-                  color="text.secondary"
-                ></Typography>
+                <Typography variant="subtitle2" color="text.secondary" />
               </Box>
             </Box>
           </Paper>
@@ -3538,6 +4113,7 @@ const EnrollmentForm = () => {
                 {activeStep + 1} OF {steps.length}
               </Typography>
             </Box>
+
             <CardContent sx={{ p: 4 }} id="form-content-wrapper">
               <Box minHeight={400}>
                 {activeStep === 0 && <StudentInformationStep />}
@@ -3585,6 +4161,7 @@ const EnrollmentForm = () => {
             >
               Back
             </Button>
+
             {activeStep === steps.length - 1 ? (
               <Button
                 type="submit"
@@ -3729,14 +4306,14 @@ const EnrollmentForm = () => {
           open={openPrintModal}
           setOpen={setOpenPrintModal}
           receipt={enrolledStudentData?.data?.receipt}
-          previousPayments={enrolledStudentData?.receipt?.fees || []}
-          student={enrolledStudentData?.student || enrolledStudentData}
+          student={enrolledStudentData?.data?.student || enrolledStudentData}
         />
         <AddFeeModal
           open={openAddFeeModal}
           setOpen={setOpenAddFeeModal}
-          student={studentDataForAddFeeModal?.data}
+          student={studentDataForAddFeeModal}
         />
+
         <PaymentModal
           open={openPaymentModal}
           onClose={() => setOpenPaymentModal(false)}
