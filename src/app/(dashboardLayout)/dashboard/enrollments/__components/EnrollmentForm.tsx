@@ -729,9 +729,6 @@ const DynamicFeeFields = ({
           >
             Fee Details
           </Typography>
-          <Typography variant="caption" color="text.secondary">
-            Manage fee categories and discounts
-          </Typography>
         </Box>
         <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -760,28 +757,6 @@ const DynamicFeeFields = ({
               All Fees
             </Typography>
           </Box>
-          <Button
-            onClick={addFeeField}
-            size="medium"
-            disabled={!mainClassName || mainClassName.length === 0}
-            sx={{
-              textTransform: "none",
-              fontWeight: "bold",
-              bgcolor:
-                !mainClassName || mainClassName.length === 0
-                  ? theme.palette.action.disabled
-                  : theme.palette.primary.main,
-              color: "#fff",
-              "&:hover": {
-                bgcolor:
-                  !mainClassName || mainClassName.length === 0
-                    ? theme.palette.action.disabled
-                    : theme.palette.primary.dark,
-              },
-            }}
-          >
-            <Add sx={{ fontSize: 18, mr: 0.5 }} /> Add New Category
-          </Button>
         </Box>
       </Box>
 
@@ -938,23 +913,6 @@ const DynamicFeeFields = ({
                         📋 Fee Items ({feeItems.length} items)
                       </Typography>
                       <Box sx={{ display: "flex", gap: 1 }}>
-                        <FormControlLabel
-                          control={
-                            <Switch
-                              size="small"
-                              checked={allItemsSelected}
-                              onChange={(e) =>
-                                handleSelectAllForCategory(
-                                  index,
-                                  e.target.checked,
-                                )
-                              }
-                              color="primary"
-                            />
-                          }
-                          label="Select All"
-                          labelPlacement="start"
-                        />
                         <Button
                           size="small"
                           variant="outlined"
@@ -1384,125 +1342,6 @@ const DynamicFeeFields = ({
                             </Grid>
                           );
                         })}
-
-                        <Grid item xs={12}>
-                          <Box
-                            sx={{
-                              mt: 2,
-                              pt: 2,
-                              borderTop: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                            }}
-                          >
-                            <Grid container spacing={2}>
-                              <Grid item xs={4}>
-                                <Typography
-                                  variant="body1"
-                                  fontWeight="bold"
-                                  color="primary.main"
-                                >
-                                  TOTAL (Selected)
-                                </Typography>
-                              </Grid>
-                              <Grid item xs={2.5}>
-                                <CraftInputWithIcon
-                                  name={`fees.${index}.feeAmount`}
-                                  label=""
-                                  fullWidth
-                                  margin="none"
-                                  size="small"
-                                  type="number"
-                                  disabled={true}
-                                  value={feeAmount}
-                                  InputProps={{
-                                    startAdornment: (
-                                      <InputAdornment position="start">
-                                        <Typography
-                                          variant="body2"
-                                          color="text.secondary"
-                                        >
-                                          ৳
-                                        </Typography>
-                                      </InputAdornment>
-                                    ),
-                                    readOnly: true,
-                                  }}
-                                  sx={{
-                                    "& .MuiInputBase-input": {
-                                      backgroundColor: alpha(
-                                        theme.palette.primary.light,
-                                        0.1,
-                                      ),
-                                      fontWeight: "bold",
-                                      fontSize: "1.1rem",
-                                      color: theme.palette.primary.main,
-                                    },
-                                  }}
-                                />
-                              </Grid>
-                              <Grid item xs={2.5}>
-                                <Box
-                                  sx={{
-                                    p: 1.5,
-                                    bgcolor: alpha(
-                                      theme.palette.error.light,
-                                      0.1,
-                                    ),
-                                    borderRadius: 1,
-                                    border: `1px solid ${alpha(theme.palette.error.main, 0.2)}`,
-                                  }}
-                                >
-                                  <Typography
-                                    variant="body2"
-                                    color="error.main"
-                                    align="center"
-                                  >
-                                    Disc: ৳
-                                    {feeItems
-                                      ?.filter((item: any) => item.isSelected)
-                                      .reduce(
-                                        (sum: number, item: any) =>
-                                          sum +
-                                          (parseFloat(item.discount) || 0),
-                                        0,
-                                      )
-                                      .toLocaleString()}
-                                  </Typography>
-                                </Box>
-                              </Grid>
-                              <Grid item xs={2}>
-                                <Box
-                                  sx={{
-                                    p: 1.5,
-                                    bgcolor: alpha(
-                                      theme.palette.info.light,
-                                      0.1,
-                                    ),
-                                    borderRadius: 1,
-                                    border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`,
-                                  }}
-                                >
-                                  <Typography
-                                    variant="body2"
-                                    color="info.main"
-                                    align="center"
-                                  >
-                                    Pay Now: ৳
-                                    {feeItems
-                                      ?.filter((item: any) => item.isSelected)
-                                      .reduce(
-                                        (sum: number, item: any) =>
-                                          sum +
-                                          (parseFloat(item.advanceAmount) || 0),
-                                        0,
-                                      )
-                                      .toLocaleString()}
-                                  </Typography>
-                                </Box>
-                              </Grid>
-                              <Grid item xs={1}></Grid>
-                            </Grid>
-                          </Box>
-                        </Grid>
                       </Grid>
                     </Paper>
                   </Box>
@@ -1540,23 +1379,6 @@ const DynamicFeeFields = ({
                       </Typography>
                     </Box>
                     <Box sx={{ display: "flex", gap: 1 }}>
-                      <FormControlLabel
-                        control={
-                          <Switch
-                            size="small"
-                            checked={allItemsSelected}
-                            onChange={(e) =>
-                              handleSelectAllForCategory(
-                                index,
-                                e.target.checked,
-                              )
-                            }
-                            color="primary"
-                          />
-                        }
-                        label="Select All"
-                        labelPlacement="start"
-                      />
                       <Button
                         size="small"
                         variant="outlined"
@@ -3129,10 +2951,7 @@ const FeeStep = ({ classOptions, feeCategoryData, studentData }: any) => {
                     color="text.primary"
                     fontWeight="bold"
                   >
-                    Monthly Fee Summary
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    Showing selected fees only
+                    Total Fees
                   </Typography>
                 </Box>
                 <Box sx={{ textAlign: "right" }}>
@@ -3142,9 +2961,6 @@ const FeeStep = ({ classOptions, feeCategoryData, studentData }: any) => {
                     fontWeight="800"
                   >
                     ৳{summary.totalFees.toLocaleString()}
-                  </Typography>
-                  <Typography variant="caption" color="text.secondary">
-                    Selected Monthly Total
                   </Typography>
                 </Box>
               </Box>
@@ -3281,7 +3097,7 @@ const FeeStep = ({ classOptions, feeCategoryData, studentData }: any) => {
                   color="text.secondary"
                   sx={{ mb: 1, fontWeight: 600 }}
                 >
-                  Summary Breakdown
+                  Summary
                 </Typography>
                 <Grid container spacing={1}>
                   <Grid item xs={6}>
@@ -3372,17 +3188,6 @@ const FeeStep = ({ classOptions, feeCategoryData, studentData }: any) => {
                   </Grid>
                 </Grid>
               </Box>
-            </Grid>
-
-            <Grid item xs={12}>
-              <Alert severity="info" sx={{ borderRadius: 2 }}>
-                <Typography variant="body2">
-                  <strong>Note:</strong> You are paying for selected fees only.
-                  Use the "Admission Only/All Fees" switch at the top to control
-                  default selection. All 12 months will be generated in the
-                  system.
-                </Typography>
-              </Alert>
             </Grid>
           </Grid>
         </CardContent>
@@ -3769,6 +3574,7 @@ const EnrollmentForm = () => {
   const [openPaymentModal, setOpenPaymentModal] = useState(false);
   const [enrolledStudentData, setEnrolledStudentData] = useState<any>(null);
   const [isApplicationLoading, setIsApplicationLoading] = useState(false);
+  console.log("for data sent print", enrolledStudentData);
 
   const { classOptions, feeCategoryData } = useAcademicOption();
   const [createEnrollment] = useCreateEnrollmentMutation();
@@ -4499,15 +4305,15 @@ const EnrollmentForm = () => {
         <PrintModal
           open={openPrintModal}
           setOpen={setOpenPrintModal}
-          receipt={enrolledStudentData?.receipt}
-          previousPayments={enrolledStudentData?.receipt?.fees || []}
-          student={enrolledStudentData?.student || enrolledStudentData}
+          receipt={enrolledStudentData?.data?.receipt}
+          student={enrolledStudentData?.data?.student || enrolledStudentData}
         />
         <AddFeeModal
           open={openAddFeeModal}
           setOpen={setOpenAddFeeModal}
           student={studentDataForAddFeeModal}
         />
+
         <PaymentModal
           open={openPaymentModal}
           onClose={() => setOpenPaymentModal(false)}
