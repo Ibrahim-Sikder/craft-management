@@ -1,19 +1,23 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { IGenericErrorResponse } from "@/types";
 import axios from "axios";
 
-const instance = axios.create();
-instance.defaults.headers.post["Content-Type"] = "application/json";
-instance.defaults.headers["Accept"] = "application/json";
-instance.defaults.timeout = 60000;
-
-// Important: This allows cookies to be sent and received
-instance.defaults.withCredentials = true;
+const instance = axios.create({
+  baseURL: process.env.NEXT_PUBLIC_BASE_API_URL,
+  withCredentials: true, // THIS IS CRUCIAL
+  timeout: 60000,
+  headers: {
+    "Content-Type": "application/json",
+    Accept: "application/json",
+  },
+});
 
 // Add a request interceptor
 instance.interceptors.request.use(
   function (config) {
-    // No need to manually add token - cookies are sent automatically
+    // Log the request for debugging
+    console.log("Making request to:", config.url);
     return config;
   },
   function (error) {
@@ -24,13 +28,25 @@ instance.interceptors.request.use(
 // Add a response interceptor
 instance.interceptors.response.use(
   function (response) {
+    console.log("Response received:", response.status);
+
+    // Check if cookies are being set
+    const cookies = response.headers["set-cookie"];
+    if (cookies) {
+      console.log("Cookies set:", cookies);
+    }
+
     const responseObject: any = {
-      data: response?.data,
+      data: response?.data || response?.data,
       meta: response?.data?.meta,
+      success: response?.data?.success,
+      message: response?.data?.message,
     };
     return responseObject;
   },
   async function (error) {
+    console.error("Response error:", error.response?.status);
+
     const originalRequest = error.config;
 
     // Handle 401 errors (token expired)
@@ -38,16 +54,21 @@ instance.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        // The refresh token cookie is sent automatically
-        // You might want to call a refresh token endpoint here
-        // The browser will send the refreshToken cookie automatically
-        return instance(originalRequest);
-      } catch (refreshError) {
+        // Try to refresh token
+        const response = await axios.post(
+          `${process.env.NEXT_PUBLIC_BASE_API_URL}/auth/refresh-token`,
+          {},
+          { withCredentials: true },
+        );
+
+        if (response.data.success) {
+          return instance(originalRequest);
+        }
+      } catch (refreshError: any) {
         // Redirect to login if refresh fails
         if (typeof window !== "undefined") {
-          window.location.href = "/login";
+          window.location.href = "/";
         }
-        return Promise.reject(refreshError);
       }
     }
 

@@ -21,31 +21,14 @@ const loginSchema = z.object({
   credential: z
     .string({
       required_error: "Please enter your email, phone or student ID",
-      invalid_type_error: "Please enter a valid credential",
     })
     .min(1, "Credential is required"),
   password: z
     .string({
       required_error: "Please enter your password",
-      invalid_type_error: "Please enter a valid password",
     })
     .min(6, "Password must be at least 6 characters long"),
 });
-
-interface LoginResponse {
-  data: {
-    accessToken: string;
-    refreshToken: string;
-    user: {
-      userId: string;
-      email: string;
-      name: string;
-      role: string;
-    };
-  };
-  message: string;
-  success: boolean;
-}
 
 const LoginDashboard = () => {
   const [login, { isLoading }] = useLoginMutation();
@@ -53,18 +36,24 @@ const LoginDashboard = () => {
 
   const handleSubmit = async (data: FieldValues) => {
     try {
-      const res = (await login(data).unwrap()) as LoginResponse;
-      console.log("response console ", res);
+      console.log("Login attempt with:", data);
+
+      const res = await login(data).unwrap();
+      console.log("Login response:", res);
 
       if (res?.success) {
         toast.success(res.message || "Login Successful!");
+
+        // Don't check for cookies with js-cookie - just redirect
+        // The browser will automatically include cookies in subsequent requests
         router.push("/dashboard");
       } else {
         toast.error("Invalid response from server");
       }
     } catch (err: any) {
+      console.error("Login error:", err);
       const errorMessage =
-        err?.data?.message || err?.error || "An error occurred during login.";
+        err?.data?.message || err?.message || "An error occurred during login.";
       toast.error(errorMessage);
     }
   };
@@ -101,13 +90,12 @@ const LoginDashboard = () => {
           </div>
 
           <div className="space-y-3">
-            {/* Credential Field (can be email, phone, or student ID) */}
             <div>
               <label
                 htmlFor="credential"
                 className="block text-sm font-medium text-gray-700"
               >
-                আইডি / ইমেইল / ফোন নম্বর
+                আইডি / ইমেইল
               </label>
               <CraftInput
                 type="text"
@@ -118,7 +106,6 @@ const LoginDashboard = () => {
               />
             </div>
 
-            {/* Password Field */}
             <div>
               <label
                 htmlFor="password"
@@ -135,7 +122,6 @@ const LoginDashboard = () => {
               />
             </div>
 
-            {/* Forgot Password Link */}
             <div className="flex justify-end">
               <Link
                 href="#"
