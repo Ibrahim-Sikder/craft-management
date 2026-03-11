@@ -42,7 +42,9 @@ import { getUserInfo } from "@/services/acttion";
 const DRAWER_WIDTH = 280;
 const COLLAPSED_DRAWER_WIDTH = 75;
 
-const CustomSidebar: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const CustomSidebar: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const router = useRouter();
   const pathname = usePathname();
   const [open, setOpen] = useState(true);
@@ -85,7 +87,7 @@ const CustomSidebar: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
   // ✅ Full logout system
   const handleLogout = () => {
-    Cookies.remove("craft-token", { path: "/" });
+    Cookies.remove("accessToken", { path: "/" });
     document.cookie.split(";").forEach((c) => {
       document.cookie = c
         .replace(/^ +/, "")
@@ -135,9 +137,9 @@ const CustomSidebar: React.FC<{ children: React.ReactNode }> = ({ children }) =>
               sx={{ overflow: "hidden", whiteSpace: "nowrap" }}
             />
           )}
-          {item.children && (isMobile || open) && (
-            openItems[item.title] ? <ExpandLess /> : <ExpandMore />
-          )}
+          {item.children &&
+            (isMobile || open) &&
+            (openItems[item.title] ? <ExpandLess /> : <ExpandMore />)}
         </ListItem>
         {item.children && (
           <Collapse in={openItems[item.title]} timeout="auto" unmountOnExit>
@@ -151,7 +153,7 @@ const CustomSidebar: React.FC<{ children: React.ReactNode }> = ({ children }) =>
 
   const roleBasedItems = userRole
     ? navigationItems.filter((item) =>
-        item.roles ? item.roles.includes(userRole) : true
+        item.roles ? item.roles.includes(userRole) : true,
       )
     : [];
 
@@ -264,15 +266,15 @@ const CustomSidebar: React.FC<{ children: React.ReactNode }> = ({ children }) =>
           width: isMobile
             ? "100%"
             : open
-            ? DRAWER_WIDTH
-            : COLLAPSED_DRAWER_WIDTH,
+              ? DRAWER_WIDTH
+              : COLLAPSED_DRAWER_WIDTH,
           flexShrink: 0,
           [`& .MuiDrawer-paper`]: {
             width: isMobile
               ? "100%"
               : open
-              ? DRAWER_WIDTH
-              : COLLAPSED_DRAWER_WIDTH,
+                ? DRAWER_WIDTH
+                : COLLAPSED_DRAWER_WIDTH,
             transition: "width 0.3s ease-in-out",
             overflowX: "hidden",
           },

@@ -25,10 +25,7 @@ export const useReceiptActions = ({
   setShowCraftReceipt,
   studentName,
 }: UseReceiptActionsProps) => {
-  // টেস্ট ডিলিট ফাংশন
   const handleDeleteReceipt = (receipt: any) => {
-    console.log("Deleting receipt:", receipt.receiptNo);
-    // এখানে আপনার ডিলিট API কল যোগ করুন
     setSnackbar({
       open: true,
       message: `Receipt ${receipt.receiptNo} marked for deletion`,
@@ -36,9 +33,7 @@ export const useReceiptActions = ({
     });
   };
 
-  // টেস্ট বাল্ক ডিলিট ফাংশন
   const handleBulkDelete = (selectedRows: any[]) => {
-    console.log("Bulk deleting receipts:", selectedRows);
     setSnackbar({
       open: true,
       message: `${selectedRows.length} receipts marked for deletion`,
@@ -73,7 +68,6 @@ export const useReceiptActions = ({
 
   // রিসিট ইমেইল করার ফাংশন (টেস্ট)
   const handleEmailReceipt = (receipt: any) => {
-    console.log("Emailing receipt:", receipt.receiptNo);
     setSnackbar({
       open: true,
       message: `Receipt ${receipt.receiptNo} emailed successfully`,
@@ -83,7 +77,6 @@ export const useReceiptActions = ({
 
   // টেস্ট এডিট ফাংশন
   const handleEditReceipt = (receipt: any) => {
-    console.log("Editing receipt:", receipt.receiptNo);
     setSnackbar({
       open: true,
       message: `Edit mode for receipt ${receipt.receiptNo}`,
@@ -115,7 +108,6 @@ export const useReceiptActions = ({
 
   // টেস্ট এক্সপোর্ট ফাংশন
   const handleExportData = () => {
-    console.log("Exporting data:");
     setSnackbar({
       open: true,
       message: "Data exported successfully",

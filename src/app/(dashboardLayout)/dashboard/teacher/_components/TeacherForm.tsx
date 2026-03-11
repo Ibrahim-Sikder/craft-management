@@ -117,7 +117,7 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
     {
       skip: !id,
       refetchOnMountOrArgChange: true,
-    }
+    },
   );
 
   useEffect(() => {
@@ -355,7 +355,7 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
       };
       if (id) {
         const res = await updateTeacher({ id, data: submissionData }).unwrap();
-        console.log("responsive", res);
+
         if (res.success) {
           setSuccess(true);
           setSnackbar({
@@ -369,7 +369,7 @@ export default function TeacherForm({ id }: TeacherFormProps = {}) {
         }
       } else {
         const res = await createTeacher(submissionData).unwrap();
-        console.log(res);
+
         if (res.success) {
           setSuccess(true);
           setSnackbar({

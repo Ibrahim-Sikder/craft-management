@@ -1,10 +1,10 @@
 /* eslint-disable react/jsx-key */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
-"use client"
+"use client";
 
-import type React from "react"
-import { useState } from "react"
+import type React from "react";
+import { useState } from "react";
 import {
   Box,
   Container,
@@ -27,7 +27,7 @@ import {
   CardContent,
   Avatar,
   Chip,
-} from "@mui/material"
+} from "@mui/material";
 
 import {
   Add as AddIcon,
@@ -36,14 +36,17 @@ import {
   Delete as DeleteIcon,
   Refresh as RefreshIcon,
   School,
-} from "@mui/icons-material"
+} from "@mui/icons-material";
 
-import Link from "next/link"
-import { useDeleteClassMutation, useGetAllClassesQuery } from "@/redux/api/classApi"
-import { theme } from "@/lib/Theme/Theme"
-import Loader from "@/app/loading"
-import { motion } from "framer-motion"
-import { DepartmentChip, StyledCard } from "@/style/customeStyle"
+import Link from "next/link";
+import {
+  useDeleteClassMutation,
+  useGetAllClassesQuery,
+} from "@/redux/api/classApi";
+import { theme } from "@/lib/Theme/Theme";
+import Loader from "@/app/loading";
+import { motion } from "framer-motion";
+import { DepartmentChip, StyledCard } from "@/style/customeStyle";
 
 const departmentColors: Record<string, string> = {
   Languages: "#3a7bd5",
@@ -55,16 +58,15 @@ const departmentColors: Record<string, string> = {
   Art: "#c471ed",
   Music: "#12c2e9",
   "Not Specified": "#888888",
-}
-
+};
 
 export default function ClassesListPage() {
-  const [page, setPage] = useState(0)
-  const [rowsPerPage, setRowsPerPage] = useState(10)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedClass, setSelectedClass] = useState<any | null>(null)
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [deleteClass] = useDeleteClassMutation()
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedClass, setSelectedClass] = useState<any | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleteClass] = useDeleteClassMutation();
   const {
     data: classData,
     isLoading,
@@ -73,42 +75,46 @@ export default function ClassesListPage() {
     limit: rowsPerPage,
     page: page + 1,
     searchTerm: searchTerm,
-  })
+  });
 
   const handleRefresh = () => {
-    refetch()
-  }
+    refetch();
+  };
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value)
-    setPage(0)
-  }
-
-
+    setSearchTerm(event.target.value);
+    setPage(0);
+  };
 
   const handleDeleteConfirm = async () => {
     if (selectedClass?._id) {
       try {
-        await deleteClass(selectedClass._id).unwrap()
-        refetch()
+        await deleteClass(selectedClass._id).unwrap();
+        refetch();
       } catch (error) {
-        console.error("Error deleting class:", error)
+        console.error("Error deleting class:", error);
       }
     }
-    setDeleteDialogOpen(false)
-    setSelectedClass(null)
-  }
+    setDeleteDialogOpen(false);
+    setSelectedClass(null);
+  };
 
   const handleDeleteCancel = () => {
-    setDeleteDialogOpen(false)
-  }
+    setDeleteDialogOpen(false);
+  };
 
-  const classes = classData?.data?.classes || []
-  console.log("classes data ", classes)
+  const classes = classData?.data?.classes || [];
 
   return (
     <>
-      <Box sx={{ flexGrow: 1, bgcolor: "background.default", minHeight: "100vh", borderRadius: 2 }}>
+      <Box
+        sx={{
+          flexGrow: 1,
+          bgcolor: "background.default",
+          minHeight: "100vh",
+          borderRadius: 2,
+        }}
+      >
         <Container maxWidth="xl" sx={{ mt: 0, mb: 8, borderRadius: 2 }}>
           <Fade in={true} timeout={800}>
             <Box>
@@ -123,7 +129,11 @@ export default function ClassesListPage() {
                   paddingTop: 2,
                 }}
               >
-                <Typography variant="h4" component="h1" sx={{ fontWeight: 700, color: "text.primary" }}>
+                <Typography
+                  variant="h4"
+                  component="h1"
+                  sx={{ fontWeight: 700, color: "text.primary" }}
+                >
                   Classes
                 </Typography>
                 <Box sx={{ display: "flex", gap: 2 }}>
@@ -151,7 +161,9 @@ export default function ClassesListPage() {
                 </Box>
               </Box>
               <Paper elevation={0} sx={{ mb: 4, overflow: "hidden" }}>
-                <Box sx={{ p: 3, borderBottom: "1px solid rgba(0, 0, 0, 0.06)" }}>
+                <Box
+                  sx={{ p: 3, borderBottom: "1px solid rgba(0, 0, 0, 0.06)" }}
+                >
                   <Grid container spacing={2} alignItems="center">
                     <Grid item xs={12} md={6}>
                       <TextField
@@ -185,7 +197,14 @@ export default function ClassesListPage() {
                   <>
                     <Grid container spacing={3}>
                       {classes.map((classItem: any, index: any) => (
-                        <Grid item xs={12} sm={6} md={4} lg={3} key={classItem.id}>
+                        <Grid
+                          item
+                          xs={12}
+                          sm={6}
+                          md={4}
+                          lg={3}
+                          key={classItem.id}
+                        >
                           <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
@@ -197,7 +216,9 @@ export default function ClassesListPage() {
                                   component="div"
                                   sx={{
                                     height: 100,
-                                    backgroundColor: departmentColors[classItem.className] || departmentColors["Not Specified"],
+                                    backgroundColor:
+                                      departmentColors[classItem.className] ||
+                                      departmentColors["Not Specified"],
                                     position: "relative",
                                   }}
                                 />
@@ -212,7 +233,11 @@ export default function ClassesListPage() {
                                 >
                                   <Avatar
                                     src={classItem.className}
-                                    sx={{ width: 80, height: 80, border: "4px solid white" }}
+                                    sx={{
+                                      width: 80,
+                                      height: 80,
+                                      border: "4px solid white",
+                                    }}
                                   >
                                     {classItem.className.charAt(0)}
                                   </Avatar>
@@ -220,12 +245,20 @@ export default function ClassesListPage() {
                               </Box>
                               <CardContent sx={{ pt: 5, pb: 2 }}>
                                 <Box sx={{ textAlign: "center", mb: 2 }}>
-                                  <Typography variant="h6" fontWeight={600} gutterBottom>
+                                  <Typography
+                                    variant="h6"
+                                    fontWeight={600}
+                                    gutterBottom
+                                  >
                                     {classItem.className}
                                   </Typography>
 
                                   {classItem.sections.map((section: any) => (
-                                    <Typography variant="body2" color="text.secondary" gutterBottom>
+                                    <Typography
+                                      variant="body2"
+                                      color="text.secondary"
+                                      gutterBottom
+                                    >
                                       Section: {section?.name ?? "No Section"}
                                     </Typography>
                                   ))}
@@ -235,7 +268,10 @@ export default function ClassesListPage() {
                                       label={classItem.className}
                                       size="small"
                                       sx={{
-                                        bgcolor: alpha(theme.palette.secondary.main, 0.08),
+                                        bgcolor: alpha(
+                                          theme.palette.secondary.main,
+                                          0.08,
+                                        ),
                                         color: theme.palette.secondary.main,
                                         fontWeight: 500,
                                         borderRadius: 1,
@@ -249,41 +285,83 @@ export default function ClassesListPage() {
                                       label={classItem.className}
                                       size="small"
                                       sx={{
-                                        backgroundColor: alpha(departmentColors[classItem.name] || departmentColors["Not Specified"], 0.1),
-                                        color: departmentColors[classItem.name] || departmentColors["Not Specified"],
+                                        backgroundColor: alpha(
+                                          departmentColors[classItem.name] ||
+                                            departmentColors["Not Specified"],
+                                          0.1,
+                                        ),
+                                        color:
+                                          departmentColors[classItem.name] ||
+                                          departmentColors["Not Specified"],
                                       }}
                                     />
                                   </div>
                                 </Box>
                                 <Box sx={{ mb: 2 }}>
-                                  <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                                    <School fontSize="small" sx={{ color: "text.secondary", mr: 1 }} />
-                                    <Typography variant="body2" color="text.secondary">
+                                  <Box
+                                    sx={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      mb: 1,
+                                    }}
+                                  >
+                                    <School
+                                      fontSize="small"
+                                      sx={{ color: "text.secondary", mr: 1 }}
+                                    />
+                                    <Typography
+                                      variant="body2"
+                                      color="text.secondary"
+                                    >
                                       Total Student: {classItem.className}
                                     </Typography>
                                   </Box>
-                                  <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                                    <School fontSize="small" sx={{ color: "text.secondary", mr: 1 }} />
-                                    <Typography variant="body2" color="text.secondary">
+                                  <Box
+                                    sx={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      mb: 1,
+                                    }}
+                                  >
+                                    <School
+                                      fontSize="small"
+                                      sx={{ color: "text.secondary", mr: 1 }}
+                                    />
+                                    <Typography
+                                      variant="body2"
+                                      color="text.secondary"
+                                    >
                                       Total Subjects: {classItem.className}
                                     </Typography>
                                   </Box>
-                                  <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                                    <School fontSize="small" sx={{ color: "text.secondary", mr: 1 }} />
-                                    <Typography variant="body2" color="text.secondary">
+                                  <Box
+                                    sx={{
+                                      display: "flex",
+                                      alignItems: "center",
+                                      mb: 1,
+                                    }}
+                                  >
+                                    <School
+                                      fontSize="small"
+                                      sx={{ color: "text.secondary", mr: 1 }}
+                                    />
+                                    <Typography
+                                      variant="body2"
+                                      color="text.secondary"
+                                    >
                                       Total Teacher: {classItem.className}
                                     </Typography>
                                   </Box>
                                 </Box>
                               </CardContent>
-                              <Box sx={{
-                                position: "absolute",
-                                top: 8,
-                                right: 8,
-                                zIndex: 1,
-                              }}>
-
-
+                              <Box
+                                sx={{
+                                  position: "absolute",
+                                  top: 8,
+                                  right: 8,
+                                  zIndex: 1,
+                                }}
+                              >
                                 <Tooltip title="Edit Class">
                                   <IconButton
                                     component={Link}
@@ -291,10 +369,16 @@ export default function ClassesListPage() {
                                     size="small"
                                     sx={{
                                       color: "warning.main",
-                                      bgcolor: alpha(theme.palette.warning.main, 0.1),
+                                      bgcolor: alpha(
+                                        theme.palette.warning.main,
+                                        0.1,
+                                      ),
                                       mr: 1,
                                       "&:hover": {
-                                        bgcolor: alpha(theme.palette.warning.main, 0.2),
+                                        bgcolor: alpha(
+                                          theme.palette.warning.main,
+                                          0.2,
+                                        ),
                                       },
                                     }}
                                   >
@@ -305,14 +389,20 @@ export default function ClassesListPage() {
                                   <IconButton
                                     size="small"
                                     onClick={(e) => {
-                                      setSelectedClass(classItem)
-                                      setDeleteDialogOpen(true)
+                                      setSelectedClass(classItem);
+                                      setDeleteDialogOpen(true);
                                     }}
                                     sx={{
                                       color: "error.main",
-                                      bgcolor: alpha(theme.palette.error.main, 0.1),
+                                      bgcolor: alpha(
+                                        theme.palette.error.main,
+                                        0.1,
+                                      ),
                                       "&:hover": {
-                                        bgcolor: alpha(theme.palette.error.main, 0.2),
+                                        bgcolor: alpha(
+                                          theme.palette.error.main,
+                                          0.2,
+                                        ),
                                       },
                                     }}
                                   >
@@ -351,8 +441,8 @@ export default function ClassesListPage() {
         </DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete the class &#34;{selectedClass?.className}&#34;? This action cannot be
-            undone.
+            Are you sure you want to delete the class &#34;
+            {selectedClass?.className}&#34;? This action cannot be undone.
           </DialogContentText>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3 }}>
@@ -364,11 +454,16 @@ export default function ClassesListPage() {
           >
             Cancel
           </Button>
-          <Button onClick={handleDeleteConfirm} variant="contained" color="error" sx={{ ml: 2 }}>
+          <Button
+            onClick={handleDeleteConfirm}
+            variant="contained"
+            color="error"
+            sx={{ ml: 2 }}
+          >
             Delete
           </Button>
         </DialogActions>
       </Dialog>
     </>
-  )
+  );
 }

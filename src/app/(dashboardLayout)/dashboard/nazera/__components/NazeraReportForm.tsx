@@ -45,7 +45,7 @@ function NazeraReportForm({ studentName, reportDate, month, id }: any) {
     try {
       const weeklyTotals = calculateWeeklyTotals(formData);
       const formattedData = formatReportData(formData, weeklyTotals, month, id);
-      console.log("formate data", formattedData);
+
       let res;
       if (id) {
         res = await updateNazeraReport({ id, data: formattedData }).unwrap();

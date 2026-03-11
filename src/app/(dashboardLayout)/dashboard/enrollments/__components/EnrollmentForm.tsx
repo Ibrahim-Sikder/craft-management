@@ -3574,7 +3574,6 @@ const EnrollmentForm = () => {
   const [openPaymentModal, setOpenPaymentModal] = useState(false);
   const [enrolledStudentData, setEnrolledStudentData] = useState<any>(null);
   const [isApplicationLoading, setIsApplicationLoading] = useState(false);
-  console.log("for data sent print", enrolledStudentData);
 
   const { classOptions, feeCategoryData } = useAcademicOption();
   const [createEnrollment] = useCreateEnrollmentMutation();

@@ -91,8 +91,6 @@ export default function EditAdmissionApplication() {
   // Handle submit
   const handleSubmit = async (formData: any) => {
     try {
-      console.log("Form submitted:", formData);
-
       // Transform data to match Mongoose Schema structure exactly
       const apiData = {
         // Root level fields from Schema

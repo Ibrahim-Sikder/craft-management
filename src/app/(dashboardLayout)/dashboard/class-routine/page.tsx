@@ -1,9 +1,9 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable react/no-unescaped-entities */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-"use client"
+"use client";
 
-import { useState, useMemo } from "react"
+import { useState, useMemo } from "react";
 import {
   Box,
   Container,
@@ -43,7 +43,7 @@ import {
   DialogContent,
   DialogContentText,
   DialogTitle,
-} from "@mui/material"
+} from "@mui/material";
 import {
   Schedule as ScheduleIcon,
   Search as SearchIcon,
@@ -56,17 +56,17 @@ import {
   Refresh as RefreshIcon,
   Today as TodayIcon,
   Event as EventIcon,
-} from "@mui/icons-material"
-import { format, addDays, startOfWeek } from "date-fns"
+} from "@mui/icons-material";
+import { format, addDays, startOfWeek } from "date-fns";
 
 const ClassRoutinePage = () => {
-  const theme = useTheme()
-  const [selectedClass, setSelectedClass] = useState("all")
-  const [selectedDay, setSelectedDay] = useState(0) 
-  const [searchTerm, setSearchTerm] = useState("")
-  const [viewMode, setViewMode] = useState("weekly") 
-  const [selectedWeek, setSelectedWeek] = useState(new Date())
-  const [openModal, setOpenModal] = useState(false)
+  const theme = useTheme();
+  const [selectedClass, setSelectedClass] = useState("all");
+  const [selectedDay, setSelectedDay] = useState(0);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [viewMode, setViewMode] = useState("weekly");
+  const [selectedWeek, setSelectedWeek] = useState(new Date());
+  const [openModal, setOpenModal] = useState(false);
 
   // Mock data
   const classes = [
@@ -75,7 +75,7 @@ const ClassRoutinePage = () => {
     { id: "8", name: "Class 8", students: 48 },
     { id: "9", name: "Class 9", students: 40 },
     { id: "10", name: "Class 10", students: 38 },
-  ]
+  ];
 
   const timeSlots = [
     { id: 1, start: "08:00", end: "08:45", period: "1st Period" },
@@ -85,12 +85,25 @@ const ClassRoutinePage = () => {
     { id: 5, start: "10:30", end: "11:15", period: "4th Period" },
     { id: 6, start: "11:15", end: "12:00", period: "5th Period" },
     { id: 7, start: "12:00", end: "12:45", period: "6th Period" },
-    { id: 8, start: "12:45", end: "13:30", period: "Lunch Break", isBreak: true },
+    {
+      id: 8,
+      start: "12:45",
+      end: "13:30",
+      period: "Lunch Break",
+      isBreak: true,
+    },
     { id: 9, start: "13:30", end: "14:15", period: "7th Period" },
     { id: 10, start: "14:15", end: "15:00", period: "8th Period" },
-  ]
+  ];
 
-  const weekDays = ["Saturday", "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday"]
+  const weekDays = [
+    "Saturday",
+    "Sunday",
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+  ];
 
   const subjects = [
     { id: "math", name: "Mathematics", color: "#2196F3", icon: "📊" },
@@ -101,87 +114,253 @@ const ClassRoutinePage = () => {
     { id: "religion", name: "Religion", color: "#795548", icon: "🕌" },
     { id: "ict", name: "ICT", color: "#607D8B", icon: "💻" },
     { id: "pe", name: "Physical Education", color: "#8BC34A", icon: "⚽" },
-  ]
+  ];
 
   const teachers = [
-    { id: "t1", name: "Mrs. Rahman", avatar: "/placeholder.svg?height=40&width=40", subjects: ["math"] },
-    { id: "t2", name: "Mr. Hassan", avatar: "/placeholder.svg?height=40&width=40", subjects: ["english"] },
-    { id: "t3", name: "Ms. Fatima", avatar: "/placeholder.svg?height=40&width=40", subjects: ["bangla"] },
-    { id: "t4", name: "Dr. Ahmed", avatar: "/placeholder.svg?height=40&width=40", subjects: ["science"] },
-    { id: "t5", name: "Mr. Ali", avatar: "/placeholder.svg?height=40&width=40", subjects: ["social"] },
-    { id: "t6", name: "Imam Saheb", avatar: "/placeholder.svg?height=40&width=40", subjects: ["religion"] },
-    { id: "t7", name: "Ms. Khan", avatar: "/placeholder.svg?height=40&width=40", subjects: ["ict"] },
-    { id: "t8", name: "Coach Rahman", avatar: "/placeholder.svg?height=40&width=40", subjects: ["pe"] },
-  ]
+    {
+      id: "t1",
+      name: "Mrs. Rahman",
+      avatar: "/placeholder.svg?height=40&width=40",
+      subjects: ["math"],
+    },
+    {
+      id: "t2",
+      name: "Mr. Hassan",
+      avatar: "/placeholder.svg?height=40&width=40",
+      subjects: ["english"],
+    },
+    {
+      id: "t3",
+      name: "Ms. Fatima",
+      avatar: "/placeholder.svg?height=40&width=40",
+      subjects: ["bangla"],
+    },
+    {
+      id: "t4",
+      name: "Dr. Ahmed",
+      avatar: "/placeholder.svg?height=40&width=40",
+      subjects: ["science"],
+    },
+    {
+      id: "t5",
+      name: "Mr. Ali",
+      avatar: "/placeholder.svg?height=40&width=40",
+      subjects: ["social"],
+    },
+    {
+      id: "t6",
+      name: "Imam Saheb",
+      avatar: "/placeholder.svg?height=40&width=40",
+      subjects: ["religion"],
+    },
+    {
+      id: "t7",
+      name: "Ms. Khan",
+      avatar: "/placeholder.svg?height=40&width=40",
+      subjects: ["ict"],
+    },
+    {
+      id: "t8",
+      name: "Coach Rahman",
+      avatar: "/placeholder.svg?height=40&width=40",
+      subjects: ["pe"],
+    },
+  ];
 
   // Mock routine data
   const routineData = [
     // Saturday
-    { day: 0, period: 1, class: "6", subject: "math", teacher: "t1", room: "101" },
-    { day: 0, period: 2, class: "6", subject: "english", teacher: "t2", room: "102" },
-    { day: 0, period: 3, class: "6", subject: "bangla", teacher: "t3", room: "103" },
-    { day: 0, period: 5, class: "6", subject: "science", teacher: "t4", room: "Lab-1" },
-    { day: 0, period: 6, class: "6", subject: "social", teacher: "t5", room: "104" },
-    { day: 0, period: 7, class: "6", subject: "religion", teacher: "t6", room: "105" },
-    { day: 0, period: 9, class: "6", subject: "ict", teacher: "t7", room: "Computer Lab" },
-    { day: 0, period: 10, class: "6", subject: "pe", teacher: "t8", room: "Playground" },
+    {
+      day: 0,
+      period: 1,
+      class: "6",
+      subject: "math",
+      teacher: "t1",
+      room: "101",
+    },
+    {
+      day: 0,
+      period: 2,
+      class: "6",
+      subject: "english",
+      teacher: "t2",
+      room: "102",
+    },
+    {
+      day: 0,
+      period: 3,
+      class: "6",
+      subject: "bangla",
+      teacher: "t3",
+      room: "103",
+    },
+    {
+      day: 0,
+      period: 5,
+      class: "6",
+      subject: "science",
+      teacher: "t4",
+      room: "Lab-1",
+    },
+    {
+      day: 0,
+      period: 6,
+      class: "6",
+      subject: "social",
+      teacher: "t5",
+      room: "104",
+    },
+    {
+      day: 0,
+      period: 7,
+      class: "6",
+      subject: "religion",
+      teacher: "t6",
+      room: "105",
+    },
+    {
+      day: 0,
+      period: 9,
+      class: "6",
+      subject: "ict",
+      teacher: "t7",
+      room: "Computer Lab",
+    },
+    {
+      day: 0,
+      period: 10,
+      class: "6",
+      subject: "pe",
+      teacher: "t8",
+      room: "Playground",
+    },
 
     // Sunday
-    { day: 1, period: 1, class: "6", subject: "english", teacher: "t2", room: "102" },
-    { day: 1, period: 2, class: "6", subject: "math", teacher: "t1", room: "101" },
-    { day: 1, period: 3, class: "6", subject: "science", teacher: "t4", room: "Lab-1" },
-    { day: 1, period: 5, class: "6", subject: "bangla", teacher: "t3", room: "103" },
-    { day: 1, period: 6, class: "6", subject: "social", teacher: "t5", room: "104" },
-    { day: 1, period: 7, class: "6", subject: "math", teacher: "t1", room: "101" },
-    { day: 1, period: 9, class: "6", subject: "religion", teacher: "t6", room: "105" },
-    { day: 1, period: 10, class: "6", subject: "pe", teacher: "t8", room: "Playground" },
+    {
+      day: 1,
+      period: 1,
+      class: "6",
+      subject: "english",
+      teacher: "t2",
+      room: "102",
+    },
+    {
+      day: 1,
+      period: 2,
+      class: "6",
+      subject: "math",
+      teacher: "t1",
+      room: "101",
+    },
+    {
+      day: 1,
+      period: 3,
+      class: "6",
+      subject: "science",
+      teacher: "t4",
+      room: "Lab-1",
+    },
+    {
+      day: 1,
+      period: 5,
+      class: "6",
+      subject: "bangla",
+      teacher: "t3",
+      room: "103",
+    },
+    {
+      day: 1,
+      period: 6,
+      class: "6",
+      subject: "social",
+      teacher: "t5",
+      room: "104",
+    },
+    {
+      day: 1,
+      period: 7,
+      class: "6",
+      subject: "math",
+      teacher: "t1",
+      room: "101",
+    },
+    {
+      day: 1,
+      period: 9,
+      class: "6",
+      subject: "religion",
+      teacher: "t6",
+      room: "105",
+    },
+    {
+      day: 1,
+      period: 10,
+      class: "6",
+      subject: "pe",
+      teacher: "t8",
+      room: "Playground",
+    },
 
     // Add more days and classes...
-  ]
+  ];
 
   const getSubjectInfo = (subjectId: string) => {
-    return subjects.find((s) => s.id === subjectId) || subjects[0]
-  }
+    return subjects.find((s) => s.id === subjectId) || subjects[0];
+  };
 
   const getTeacherInfo = (teacherId: string) => {
-    return teachers.find((t) => t.id === teacherId) || teachers[0]
-  }
+    return teachers.find((t) => t.id === teacherId) || teachers[0];
+  };
 
   const getClassRoutine = (classId: string, day: number) => {
-    return routineData.filter((r) => r.class === classId && r.day === day)
-  }
+    return routineData.filter((r) => r.class === classId && r.day === day);
+  };
 
   const filteredClasses = useMemo(() => {
-    if (selectedClass === "all") return classes
-    return classes.filter((c) => c.id === selectedClass)
-  }, [selectedClass])
+    if (selectedClass === "all") return classes;
+    return classes.filter((c) => c.id === selectedClass);
+  }, [selectedClass]);
 
   const getCurrentDaySchedule = () => {
-    const today = new Date().getDay()
-    const dayIndex = today === 0 ? 6 : today - 1 // Convert Sunday=0 to Saturday=0
-    return getClassRoutine(selectedClass === "all" ? "6" : selectedClass, dayIndex)
-  }
+    const today = new Date().getDay();
+    const dayIndex = today === 0 ? 6 : today - 1; // Convert Sunday=0 to Saturday=0
+    return getClassRoutine(
+      selectedClass === "all" ? "6" : selectedClass,
+      dayIndex,
+    );
+  };
 
   const handleOpenModal = () => {
-    setOpenModal(true)
-  }
+    setOpenModal(true);
+  };
 
   const handleCloseModal = () => {
-    setOpenModal(false)
-  }
+    setOpenModal(false);
+  };
 
   return (
     <Container maxWidth="xl" sx={{ py: 4 }}>
       {/* Add New Class Schedule Modal */}
-      <Dialog open={openModal} onClose={handleCloseModal} fullWidth maxWidth="md">
+      <Dialog
+        open={openModal}
+        onClose={handleCloseModal}
+        fullWidth
+        maxWidth="md"
+      >
         <DialogTitle>Add New Class Schedule</DialogTitle>
         <DialogContent>
-          <DialogContentText>Please fill in the details for the new class schedule.</DialogContentText>
+          <DialogContentText>
+            Please fill in the details for the new class schedule.
+          </DialogContentText>
           <Grid container spacing={3} mt={1}>
             <Grid item xs={12} md={6}>
               <FormControl fullWidth>
                 <InputLabel>Select Class</InputLabel>
-                <Select value={selectedClass} label="Select Class" onChange={(e) => setSelectedClass(e.target.value)}>
+                <Select
+                  value={selectedClass}
+                  label="Select Class"
+                  onChange={(e) => setSelectedClass(e.target.value)}
+                >
                   {classes.map((cls) => (
                     <MenuItem key={cls.id} value={cls.id}>
                       {cls.name}
@@ -193,7 +372,7 @@ const ClassRoutinePage = () => {
             <Grid item xs={12} md={6}>
               <FormControl fullWidth>
                 <InputLabel>Select Subject</InputLabel>
-                <Select value="" label="Select Subject" onChange={(e) => console.log(e.target.value)}>
+                <Select value="" label="Select Subject">
                   {subjects.map((subject) => (
                     <MenuItem key={subject.id} value={subject.id}>
                       {subject.name}
@@ -205,7 +384,11 @@ const ClassRoutinePage = () => {
             <Grid item xs={12} md={6}>
               <FormControl fullWidth>
                 <InputLabel>Select Teacher</InputLabel>
-                <Select value="" label="Select Teacher" onChange={(e) => console.log(e.target.value)}>
+                <Select
+                  value=""
+                  label="Select Teacher"
+                  onChange={(e) => console.log(e.target.value)}
+                >
                   {teachers.map((teacher) => (
                     <MenuItem key={teacher.id} value={teacher.id}>
                       {teacher.name}
@@ -217,7 +400,11 @@ const ClassRoutinePage = () => {
             <Grid item xs={12} md={6}>
               <FormControl fullWidth>
                 <InputLabel>Select Time Slot</InputLabel>
-                <Select value="" label="Select Time Slot" onChange={(e) => console.log(e.target.value)}>
+                <Select
+                  value=""
+                  label="Select Time Slot"
+                  onChange={(e) => console.log(e.target.value)}
+                >
                   {timeSlots.map((slot) => (
                     <MenuItem key={slot.id} value={slot.id}>
                       {slot.period} ({slot.start} - {slot.end})
@@ -242,7 +429,14 @@ const ClassRoutinePage = () => {
       {/* Header Section */}
       <Box sx={{ mb: 4 }}>
         <Fade in timeout={800}>
-          <Box sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", mb: 3 }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              mb: 3,
+            }}
+          >
             <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
               <Box
                 sx={{
@@ -274,10 +468,18 @@ const ClassRoutinePage = () => {
               </Box>
             </Box>
             <Box sx={{ display: "flex", gap: 2 }}>
-              <Button variant="outlined" startIcon={<RefreshIcon />} sx={{ borderRadius: 2 }}>
+              <Button
+                variant="outlined"
+                startIcon={<RefreshIcon />}
+                sx={{ borderRadius: 2 }}
+              >
                 Refresh
               </Button>
-              <Button variant="outlined" startIcon={<PrintIcon />} sx={{ borderRadius: 2 }}>
+              <Button
+                variant="outlined"
+                startIcon={<PrintIcon />}
+                sx={{ borderRadius: 2 }}
+              >
                 Print
               </Button>
               <Zoom in timeout={1000}>
@@ -305,9 +507,24 @@ const ClassRoutinePage = () => {
         <Slide in direction="up" timeout={1000}>
           <Grid container spacing={3} sx={{ mb: 4 }}>
             {[
-              { label: "Total Classes", value: classes.length, color: "primary", icon: <ClassIcon /> },
-              { label: "Total Teachers", value: teachers.length, color: "secondary", icon: <PersonIcon /> },
-              { label: "Subjects", value: subjects.length, color: "success", icon: <BookIcon /> },
+              {
+                label: "Total Classes",
+                value: classes.length,
+                color: "primary",
+                icon: <ClassIcon />,
+              },
+              {
+                label: "Total Teachers",
+                value: teachers.length,
+                color: "secondary",
+                icon: <PersonIcon />,
+              },
+              {
+                label: "Subjects",
+                value: subjects.length,
+                color: "success",
+                icon: <BookIcon />,
+              },
               {
                 label: "Time Slots",
                 value: timeSlots.filter((t) => !t.isBreak).length,
@@ -316,7 +533,10 @@ const ClassRoutinePage = () => {
               },
             ].map((stat, index) => {
               // Only allow palette keys that are known to have a 'main' property
-              const paletteColor = theme.palette[stat.color as "primary" | "secondary" | "success" | "info"];
+              const paletteColor =
+                theme.palette[
+                  stat.color as "primary" | "secondary" | "success" | "info"
+                ];
               return (
                 <Grid item xs={6} md={3} key={index}>
                   <Card
@@ -344,10 +564,18 @@ const ClassRoutinePage = () => {
                         {stat.icon}
                       </Box>
                       <Box>
-                        <Typography variant="h5" fontWeight={700} color={paletteColor.main}>
+                        <Typography
+                          variant="h5"
+                          fontWeight={700}
+                          color={paletteColor.main}
+                        >
                           {stat.value}
                         </Typography>
-                        <Typography variant="body2" color="text.secondary" fontWeight={600}>
+                        <Typography
+                          variant="body2"
+                          color="text.secondary"
+                          fontWeight={600}
+                        >
                           {stat.label}
                         </Typography>
                       </Box>
@@ -421,7 +649,12 @@ const ClassRoutinePage = () => {
                 />
               </Grid>
               <Grid item xs={12} md={2}>
-                <Button fullWidth variant="contained" startIcon={<TodayIcon />} sx={{ height: 56, borderRadius: 2 }}>
+                <Button
+                  fullWidth
+                  variant="contained"
+                  startIcon={<TodayIcon />}
+                  sx={{ height: 56, borderRadius: 2 }}
+                >
                   Today's Schedule
                 </Button>
               </Grid>
@@ -441,9 +674,14 @@ const ClassRoutinePage = () => {
               border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
             }}
           >
-            <Box sx={{ p: 3, bgcolor: alpha(theme.palette.primary.main, 0.05) }}>
+            <Box
+              sx={{ p: 3, bgcolor: alpha(theme.palette.primary.main, 0.05) }}
+            >
               <Typography variant="h6" fontWeight={700}>
-                Weekly Schedule - {selectedClass === "all" ? "All Classes" : `Class ${selectedClass}`}
+                Weekly Schedule -{" "}
+                {selectedClass === "all"
+                  ? "All Classes"
+                  : `Class ${selectedClass}`}
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 {format(selectedWeek, "MMMM yyyy")}
@@ -453,16 +691,33 @@ const ClassRoutinePage = () => {
             <TableContainer>
               <Table sx={{ minWidth: 800 }}>
                 <TableHead>
-                  <TableRow sx={{ bgcolor: alpha(theme.palette.primary.main, 0.05) }}>
-                    <TableCell sx={{ fontWeight: 700, minWidth: 120 }}>Time</TableCell>
+                  <TableRow
+                    sx={{ bgcolor: alpha(theme.palette.primary.main, 0.05) }}
+                  >
+                    <TableCell sx={{ fontWeight: 700, minWidth: 120 }}>
+                      Time
+                    </TableCell>
                     {weekDays.map((day, index) => (
-                      <TableCell key={index} align="center" sx={{ fontWeight: 700, minWidth: 150 }}>
-                        <Box sx={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                      <TableCell
+                        key={index}
+                        align="center"
+                        sx={{ fontWeight: 700, minWidth: 150 }}
+                      >
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexDirection: "column",
+                            alignItems: "center",
+                          }}
+                        >
                           <Typography variant="subtitle2" fontWeight={700}>
                             {day}
                           </Typography>
                           <Typography variant="caption" color="text.secondary">
-                            {format(addDays(startOfWeek(selectedWeek), index), "MMM dd")}
+                            {format(
+                              addDays(startOfWeek(selectedWeek), index),
+                              "MMM dd",
+                            )}
                           </Typography>
                         </Box>
                       </TableCell>
@@ -471,8 +726,19 @@ const ClassRoutinePage = () => {
                 </TableHead>
                 <TableBody>
                   {timeSlots.map((slot) => (
-                    <TableRow key={slot.id} sx={{ "&:hover": { bgcolor: alpha(theme.palette.primary.main, 0.02) } }}>
-                      <TableCell sx={{ borderRight: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
+                    <TableRow
+                      key={slot.id}
+                      sx={{
+                        "&:hover": {
+                          bgcolor: alpha(theme.palette.primary.main, 0.02),
+                        },
+                      }}
+                    >
+                      <TableCell
+                        sx={{
+                          borderRight: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                        }}
+                      >
                         <Box>
                           <Typography variant="body2" fontWeight={600}>
                             {slot.period}
@@ -496,8 +762,13 @@ const ClassRoutinePage = () => {
                             />
                           ) : (
                             (() => {
-                              const classData = getClassRoutine(selectedClass === "all" ? "6" : selectedClass, dayIndex)
-                              const periodData = classData.find((c) => c.period === slot.id)
+                              const classData = getClassRoutine(
+                                selectedClass === "all" ? "6" : selectedClass,
+                                dayIndex,
+                              );
+                              const periodData = classData.find(
+                                (c) => c.period === slot.id,
+                              );
 
                               if (!periodData) {
                                 return (
@@ -511,19 +782,31 @@ const ClassRoutinePage = () => {
                                       border: `2px dashed ${alpha(theme.palette.divider, 0.3)}`,
                                       cursor: "pointer",
                                       "&:hover": {
-                                        bgcolor: alpha(theme.palette.primary.main, 0.05),
+                                        bgcolor: alpha(
+                                          theme.palette.primary.main,
+                                          0.05,
+                                        ),
                                         borderColor: theme.palette.primary.main,
                                       },
                                       transition: "all 0.2s ease",
                                     }}
                                   >
-                                    <AddIcon sx={{ color: "text.secondary", fontSize: 20 }} />
+                                    <AddIcon
+                                      sx={{
+                                        color: "text.secondary",
+                                        fontSize: 20,
+                                      }}
+                                    />
                                   </Box>
-                                )
+                                );
                               }
 
-                              const subject = getSubjectInfo(periodData.subject)
-                              const teacher = getTeacherInfo(periodData.teacher)
+                              const subject = getSubjectInfo(
+                                periodData.subject,
+                              );
+                              const teacher = getTeacherInfo(
+                                periodData.teacher,
+                              );
 
                               return (
                                 <Card
@@ -540,7 +823,9 @@ const ClassRoutinePage = () => {
                                     transition: "all 0.2s ease",
                                   }}
                                 >
-                                  <CardContent sx={{ p: 1.5, "&:last-child": { pb: 1.5 } }}>
+                                  <CardContent
+                                    sx={{ p: 1.5, "&:last-child": { pb: 1.5 } }}
+                                  >
                                     <Box sx={{ textAlign: "center" }}>
                                       <Typography
                                         variant="caption"
@@ -567,7 +852,11 @@ const ClassRoutinePage = () => {
                                       <Typography
                                         variant="caption"
                                         color="text.secondary"
-                                        sx={{ fontSize: "0.65rem", display: "block", mb: 0.5 }}
+                                        sx={{
+                                          fontSize: "0.65rem",
+                                          display: "block",
+                                          mb: 0.5,
+                                        }}
                                       >
                                         {teacher.name}
                                       </Typography>
@@ -585,7 +874,7 @@ const ClassRoutinePage = () => {
                                     </Box>
                                   </CardContent>
                                 </Card>
-                              )
+                              );
                             })()
                           )}
                         </TableCell>
@@ -616,7 +905,12 @@ const ClassRoutinePage = () => {
             zIndex: 1000,
           }}
         >
-          <Box sx={{ p: 2, borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}` }}>
+          <Box
+            sx={{
+              p: 2,
+              borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+            }}
+          >
             <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1 }}>
               <TodayIcon color="primary" />
               <Typography variant="h6" fontWeight={700}>
@@ -630,9 +924,9 @@ const ClassRoutinePage = () => {
 
           <List sx={{ p: 0 }}>
             {getCurrentDaySchedule().map((item, index) => {
-              const subject = getSubjectInfo(item.subject)
-              const teacher = getTeacherInfo(item.teacher)
-              const timeSlot = timeSlots.find((t) => t.id === item.period)
+              const subject = getSubjectInfo(item.subject);
+              const teacher = getTeacherInfo(item.teacher);
+              const timeSlot = timeSlots.find((t) => t.id === item.period);
 
               return (
                 <ListItem
@@ -653,7 +947,9 @@ const ClassRoutinePage = () => {
                         height: 40,
                       }}
                     >
-                      <Typography sx={{ fontSize: "1.2em" }}>{subject.icon}</Typography>
+                      <Typography sx={{ fontSize: "1.2em" }}>
+                        {subject.icon}
+                      </Typography>
                     </Avatar>
                   </ListItemAvatar>
                   <ListItemText
@@ -668,7 +964,11 @@ const ClassRoutinePage = () => {
                           {teacher.name} • Room {item.room}
                         </Typography>
                         <br />
-                        <Typography variant="caption" color="primary.main" fontWeight={600}>
+                        <Typography
+                          variant="caption"
+                          color="primary.main"
+                          fontWeight={600}
+                        >
                           {timeSlot?.start} - {timeSlot?.end}
                         </Typography>
                       </Box>
@@ -686,13 +986,15 @@ const ClassRoutinePage = () => {
                     />
                   </ListItemSecondaryAction>
                 </ListItem>
-              )
+              );
             })}
           </List>
 
           {getCurrentDaySchedule().length === 0 && (
             <Box sx={{ p: 4, textAlign: "center" }}>
-              <EventIcon sx={{ fontSize: 48, color: "text.secondary", mb: 2 }} />
+              <EventIcon
+                sx={{ fontSize: 48, color: "text.secondary", mb: 2 }}
+              />
               <Typography variant="body2" color="text.secondary">
                 No classes scheduled for today
               </Typography>
@@ -701,7 +1003,7 @@ const ClassRoutinePage = () => {
         </Paper>
       </Slide>
     </Container>
-  )
-}
+  );
+};
 
-export default ClassRoutinePage
+export default ClassRoutinePage;

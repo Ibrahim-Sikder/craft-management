@@ -9,7 +9,6 @@ import { useReactToPrint } from "react-to-print";
 
 const PrintModal = ({ open, setOpen, receipt }: any) => {
   const componentRef = useRef<HTMLDivElement | null>(null);
-  console.log("receipt data this in print modal ", receipt);
 
   const handlePrint = useReactToPrint({
     contentRef: componentRef,

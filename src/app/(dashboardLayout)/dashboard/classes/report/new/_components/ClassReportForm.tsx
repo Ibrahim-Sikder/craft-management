@@ -129,7 +129,7 @@ export default function ClassReportForm({ id }: any) {
     },
     {
       skip: id && isEditMode,
-    }
+    },
   );
 
   const [createClassReport, { isLoading: isSubmitting }] =
@@ -157,7 +157,7 @@ export default function ClassReportForm({ id }: any) {
             className: student?.className,
             section: student?.section || "",
           };
-        }
+        },
       );
 
       setReportStudents(studentsFromReport);
@@ -174,7 +174,7 @@ export default function ClassReportForm({ id }: any) {
           attendance: studentEval.attendance,
           parentSignature: studentEval.parentSignature,
           comments: studentEval.comments || "",
-        })
+        }),
       );
       setStudentEvaluations(evaluations);
     } else if (students.length > 0 && studentEvaluations.length === 0) {
@@ -226,13 +226,13 @@ export default function ClassReportForm({ id }: any) {
 
     // Find the correct option objects for autocomplete fields
     const classObj = classOptions.find(
-      (opt: any) => opt.label === report.classes
+      (opt: any) => opt.label === report.classes,
     );
     const subjectObj = subjectOptions.find(
-      (opt: any) => opt.label === report.subjects
+      (opt: any) => opt.label === report.subjects,
     );
     const teacherObj = teacherOptions.find(
-      (opt: any) => opt.label === report.teachers
+      (opt: any) => opt.label === report.teachers,
     );
 
     return {
@@ -245,24 +245,24 @@ export default function ClassReportForm({ id }: any) {
   }, [singleClassReport, classOptions, subjectOptions, teacherOptions]);
 
   const handleLessonEvaluationTaskChange = (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const checked = event.target.checked;
     setLessonEvaluationTask(checked);
     toast.success(
       checked
         ? "পাঠ মূল্যায়ন অক্ষম করা হয়েছে!"
-        : "পাঠ মূল্যায়ন সক্ষম করা হয়েছে!"
+        : "পাঠ মূল্যায়ন সক্ষম করা হয়েছে!",
     );
   };
 
   const handleHandwrittenTaskChange = (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const checked = event.target.checked;
     setHandwrittenTask(checked);
     toast.success(
-      checked ? "হাতের লিখা অক্ষম করা হয়েছে!" : "হাতের লিখা সক্ষম করা হয়েছে!"
+      checked ? "হাতের লিখা অক্ষম করা হয়েছে!" : "হাতের লিখা সক্ষম করা হয়েছে!",
     );
   };
 
@@ -272,7 +272,7 @@ export default function ClassReportForm({ id }: any) {
 
     if (typeof data === "string") {
       const match = options.find(
-        (opt: any) => opt.label === data || opt.value === data
+        (opt: any) => opt.label === data || opt.value === data,
       );
       return match ? match.label : data;
     }
@@ -298,7 +298,7 @@ export default function ClassReportForm({ id }: any) {
       // Enhanced mobile detection
       const isMobile =
         /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-          navigator.userAgent
+          navigator.userAgent,
         ) ||
         window.innerWidth <= 768 ||
         "ontouchstart" in window;
@@ -306,7 +306,7 @@ export default function ClassReportForm({ id }: any) {
       // Check network connectivity
       if (!navigator.onLine) {
         throw new Error(
-          "No internet connection. Please check your network and try again."
+          "No internet connection. Please check your network and try again.",
         );
       }
 
@@ -321,7 +321,7 @@ export default function ClassReportForm({ id }: any) {
             if (typeof data.classes === "string") {
               const match = classOptions.find(
                 (opt: any) =>
-                  opt.label === data.classes || opt.value === data.classes
+                  opt.label === data.classes || opt.value === data.classes,
               );
               if (match) {
                 data.classes = match;
@@ -345,7 +345,7 @@ export default function ClassReportForm({ id }: any) {
             if (typeof data.subjects === "string") {
               const match = subjectOptions.find(
                 (opt: any) =>
-                  opt.label === data.subjects || opt.value === data.subjects
+                  opt.label === data.subjects || opt.value === data.subjects,
               );
               if (match) {
                 data.subjects = match;
@@ -369,7 +369,7 @@ export default function ClassReportForm({ id }: any) {
             if (typeof data.teachers === "string") {
               const match = teacherOptions.find(
                 (opt: any) =>
-                  opt.label === data.teachers || opt.value === data.teachers
+                  opt.label === data.teachers || opt.value === data.teachers,
               );
               if (match) {
                 data.teachers = match;
@@ -388,8 +388,6 @@ export default function ClassReportForm({ id }: any) {
               };
             }
           }
-
-          console.log("Mobile processed data:", data);
         } catch (error) {
           console.error("Mobile data processing error:", error);
           throw new Error("Mobile data processing failed. Please try again.");
@@ -453,7 +451,7 @@ export default function ClassReportForm({ id }: any) {
         handwrittenTask: handwrittenTask,
         studentEvaluations: students.map((student: any) => {
           const existingEval = studentEvaluations.find(
-            (evaluation) => evaluation.studentId === student._id
+            (evaluation) => evaluation.studentId === student._id,
           );
 
           if (noTaskForClass) {
@@ -513,8 +511,6 @@ export default function ClassReportForm({ id }: any) {
         todayLesson: todayLessonId,
         homeTask: homeTaskId,
       };
-
-      console.log("Formatted data for submission:", formattedData);
 
       let response: any = null;
       let apiError: any = null;
@@ -589,23 +585,16 @@ export default function ClassReportForm({ id }: any) {
       // Log additional debug info for mobile
       const isMobile =
         /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-          navigator.userAgent
+          navigator.userAgent,
         );
       if (isMobile) {
-        console.log("Mobile error debug:", {
-          error,
-          formData: data,
-          studentEvaluations: studentEvaluations.length,
-          networkStatus: navigator.onLine ? "online" : "offline",
-          userAgent: navigator.userAgent,
-        });
       }
       toast.error(errorMessage);
 
       // Additional mobile-specific error handling
       if (!navigator.onLine) {
         toast.error(
-          "নেটওয়ার্ক সমস্যা। অনুগ্রহ করে আপনার ইন্টারনেট সংযোগ পরীক্ষা করুন।"
+          "নেটওয়ার্ক সমস্যা। অনুগ্রহ করে আপনার ইন্টারনেট সংযোগ পরীক্ষা করুন।",
         );
       }
     } finally {
@@ -634,7 +623,7 @@ export default function ClassReportForm({ id }: any) {
   const handleLessonEvaluationChange = (studentId: string, value: string) => {
     const updatedEvaluations = [...studentEvaluations];
     const index = updatedEvaluations.findIndex(
-      (evaluation) => evaluation.studentId === studentId
+      (evaluation) => evaluation.studentId === studentId,
     );
 
     if (index !== -1) {
@@ -659,7 +648,7 @@ export default function ClassReportForm({ id }: any) {
   const handleHandwritingChange = (studentId: string, value: string) => {
     const updatedEvaluations = [...studentEvaluations];
     const index = updatedEvaluations.findIndex(
-      (evaluation) => evaluation.studentId === studentId
+      (evaluation) => evaluation.studentId === studentId,
     );
 
     if (index !== -1) {
@@ -684,7 +673,7 @@ export default function ClassReportForm({ id }: any) {
   const handleAttendanceChange = (studentId: string, value: string) => {
     const updatedEvaluations = [...studentEvaluations];
     const index = updatedEvaluations.findIndex(
-      (evaluation) => evaluation.studentId === studentId
+      (evaluation) => evaluation.studentId === studentId,
     );
 
     if (index !== -1) {
@@ -709,7 +698,7 @@ export default function ClassReportForm({ id }: any) {
   const handleParentSignatureChange = (studentId: string, checked: boolean) => {
     const updatedEvaluations = [...studentEvaluations];
     const index = updatedEvaluations.findIndex(
-      (evaluation) => evaluation.studentId === studentId
+      (evaluation) => evaluation.studentId === studentId,
     );
 
     if (index !== -1) {
@@ -734,7 +723,7 @@ export default function ClassReportForm({ id }: any) {
   const handleCommentsChange = (studentId: string, value: string) => {
     const updatedEvaluations = [...studentEvaluations];
     const index = updatedEvaluations.findIndex(
-      (evaluation) => evaluation.studentId === studentId
+      (evaluation) => evaluation.studentId === studentId,
     );
 
     if (index !== -1) {
@@ -778,7 +767,7 @@ export default function ClassReportForm({ id }: any) {
 
   const getStudentEvaluation = (studentId: string) => {
     const evaluation = studentEvaluations.find(
-      (evaluation) => evaluation.studentId === studentId
+      (evaluation) => evaluation.studentId === studentId,
     );
 
     if (!evaluation) {
@@ -861,14 +850,14 @@ export default function ClassReportForm({ id }: any) {
     toast.success(
       checked
         ? "আজ কোন কাজ/হোমওয়ার্ক নেই!"
-        : "কাজ/হোমওয়ার্ক স্ট্যাটাস আপডেট করা হয়েছে"
+        : "কাজ/হোমওয়ার্ক স্ট্যাটাস আপডেট করা হয়েছে",
     );
   };
 
   useEffect(() => {
     const isMobile =
       /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera|Realme Mini/i.test(
-        navigator.userAgent
+        navigator.userAgent,
       );
 
     if (isMobile) {
@@ -877,7 +866,7 @@ export default function ClassReportForm({ id }: any) {
       if (viewport) {
         viewport.setAttribute(
           "content",
-          "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+          "width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no",
         );
       }
 
@@ -901,7 +890,7 @@ export default function ClassReportForm({ id }: any) {
         if (viewport) {
           viewport.setAttribute(
             "content",
-            "width=device-width, initial-scale=1.0"
+            "width=device-width, initial-scale=1.0",
           );
         }
       };
@@ -1287,7 +1276,7 @@ export default function ClassReportForm({ id }: any) {
                                 {students.length > 0 ? (
                                   students.map((student: any) => {
                                     const evaluation = getStudentEvaluation(
-                                      student._id
+                                      student._id,
                                     );
                                     const isAbsent =
                                       evaluation.attendance !== "উপস্থিত";
@@ -1331,7 +1320,7 @@ export default function ClassReportForm({ id }: any) {
                                                 student._id,
                                                 e.target.checked
                                                   ? "উপস্থিত"
-                                                  : "অনুপস্থিত"
+                                                  : "অনুপস্থিত",
                                               )
                                             }
                                           />
@@ -1366,7 +1355,7 @@ export default function ClassReportForm({ id }: any) {
                                               onChange={(e) =>
                                                 handleLessonEvaluationChange(
                                                   student._id,
-                                                  e.target.value
+                                                  e.target.value,
                                                 )
                                               }
                                             >
@@ -1413,7 +1402,7 @@ export default function ClassReportForm({ id }: any) {
                                               onChange={(e) =>
                                                 handleHandwritingChange(
                                                   student._id,
-                                                  e.target.value
+                                                  e.target.value,
                                                 )
                                               }
                                             >
@@ -1439,7 +1428,7 @@ export default function ClassReportForm({ id }: any) {
                                             onChange={(e) =>
                                               handleParentSignatureChange(
                                                 student._id,
-                                                e.target.checked
+                                                e.target.checked,
                                               )
                                             }
                                             disabled={
@@ -1461,7 +1450,7 @@ export default function ClassReportForm({ id }: any) {
                                             onChange={(e) =>
                                               handleCommentsChange(
                                                 student._id,
-                                                e.target.value
+                                                e.target.value,
                                               )
                                             }
                                             disabled={

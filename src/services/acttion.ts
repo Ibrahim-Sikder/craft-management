@@ -1,20 +1,20 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-'use server';
+"use server";
 
-import { cookies } from 'next/headers';
-import { jwtDecode } from 'jwt-decode';
+import { cookies } from "next/headers";
+import { jwtDecode } from "jwt-decode";
 
 interface JwtPayload {
-  role: 'admin' | 'teacher' | 'student';
+  role: "admin" | "teacher" | "student";
   id: string;
   email: string;
-  [key: string]: any; 
+  [key: string]: any;
 }
 
 export const getUserInfo = async (): Promise<JwtPayload | null> => {
   try {
     const cookieStore = cookies();
-    const token = (await cookieStore).get('craft-token')?.value;
+    const token = (await cookieStore).get("accessToken")?.value;
 
     if (!token) return null;
 
@@ -22,7 +22,7 @@ export const getUserInfo = async (): Promise<JwtPayload | null> => {
 
     return decoded;
   } catch (error) {
-    console.error('Failed to decode token:', error);
+    console.error("Failed to decode token:", error);
     return null;
   }
 };

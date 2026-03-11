@@ -426,9 +426,6 @@ export default function AdmissionApplicationList({
           id: row._id,
           data: { status: newStatus },
         }).unwrap();
-        console.log("API Response:", updatedResult);
-
-        console.log("Status updated successfully:", updatedResult);
 
         // Show success message
         await Swal.fire({

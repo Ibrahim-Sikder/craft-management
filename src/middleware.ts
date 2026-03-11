@@ -18,7 +18,7 @@ type Role = keyof typeof roleBasedPrivateRoutes;
 
 export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  const accessToken = request.cookies.get("craft-token")?.value ?? null;
+  const accessToken = request.cookies.get("accessToken")?.value ?? null;
   if (!accessToken) {
     if (AuthRoutes.includes(pathname)) {
       return NextResponse.next();
