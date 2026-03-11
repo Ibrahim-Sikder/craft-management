@@ -24,7 +24,7 @@ export const axiosBaseQuery =
       const result = await instance({
         url: baseUrl + url,
         method,
-        data, // This should match what the backend expects
+        data,
         params,
         headers: {
           "Content-type": contentType || "application/json",

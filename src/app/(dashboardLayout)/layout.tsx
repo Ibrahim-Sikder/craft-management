@@ -85,7 +85,7 @@ const CustomSidebar: React.FC<{ children: React.ReactNode }> = ({
     }
   };
 
-  // ✅ Full logout system
+  // Full logout system
   const handleLogout = () => {
     Cookies.remove("accessToken", { path: "/" });
     document.cookie.split(";").forEach((c) => {
@@ -97,7 +97,7 @@ const CustomSidebar: React.FC<{ children: React.ReactNode }> = ({
     router.push("/");
   };
 
-  // ✅ Profile menu
+  // Profile menu
   const handleProfileMenuOpen = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
