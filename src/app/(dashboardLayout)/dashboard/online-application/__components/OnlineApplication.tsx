@@ -43,7 +43,7 @@ import { AdmissionDetailModal } from "./AdmissionDetailModal";
 import { TAdmissionStatus } from "@/interface/admission";
 import { formatDate, formatShortDate } from "@/utils/formateDate";
 import { AdmissionApplicationListProps, ApplicationRow } from "@/types/apply";
-import { generatePDFFromData } from "./PdfGeneratore";
+import { generatePDFFromData } from "@/utils/pdfGenerator";
 
 // ─── Helper: Map API application to form-data structure expected by PDF ─────
 const mapApplicationToFormData = (app: any): Record<string, any> => {
