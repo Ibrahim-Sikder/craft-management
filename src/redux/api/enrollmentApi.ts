@@ -3,12 +3,20 @@ import { baseApi } from "./baseApi";
 export const enrollmentApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     createEnrollment: build.mutation({
-      query: (data) => ({
-        url: "/enrollments",
-        method: "POST",
-        data,
-      }),
-      invalidatesTags: ["enrollment"],
+      query: ({ data, applicationId }) => {
+        // Create URL with query params if applicationId exists
+        let url = "/enrollments";
+        if (applicationId) {
+          url += `?applicationId=${applicationId}`;
+        }
+
+        return {
+          url: url,
+          method: "POST",
+          data,
+        };
+      },
+      invalidatesTags: ["enrollment", "admissionApplication"],
     }),
 
     getAllEnrollments: build.query({

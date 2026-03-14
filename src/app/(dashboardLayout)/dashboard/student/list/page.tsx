@@ -89,8 +89,6 @@ const StudentList = () => {
     searchTerm: searchTerm,
   });
 
-  console.log("student ", studentData);
-
   // Fetch class and section data separately
   const { data: classData } = useGetAllClassesQuery({});
   const { data: sectionData } = useGetAllSectionsQuery({});
@@ -181,10 +179,7 @@ const StudentList = () => {
     refetch();
   };
 
-  const handleExport = () => {
-    // Implement export functionality
-    console.log("Exporting data...");
-  };
+  const handleExport = () => {};
 
   const handlePrint = () => {
     // Implement print functionality

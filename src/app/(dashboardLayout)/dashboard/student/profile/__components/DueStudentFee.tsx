@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import FeeAdjustmentModal from "@/components/FeeAdjustmentModal";
 import CraftTable, { Column, RowAction } from "@/components/Table";
@@ -39,7 +40,6 @@ const DueStudentFee = ({
   onView,
   onDelete,
   onPay,
-  onAddFee,
   student,
   refetch,
 }: StudentFeeProps) => {
@@ -110,7 +110,6 @@ const DueStudentFee = ({
   };
 
   const handlePaymentSuccess = (paymentData: any) => {
-    console.log("Payment successful:", paymentData);
     if (onPay) {
       onPay(paymentData);
     }
@@ -172,14 +171,6 @@ const DueStudentFee = ({
 
   const handleCloseAddFeeModal = () => {
     setAddFeeModalOpen(false);
-  };
-
-  const handleAddFee = (feeData: any) => {
-    console.log("Adding new fee:", feeData);
-    if (onAddFee) {
-      onAddFee(feeData);
-    }
-    if (refetch) refetch();
   };
 
   // Calculate summary statistics for unpaid fees only
@@ -648,9 +639,7 @@ const DueStudentFee = ({
         showRowNumbers={true}
         rowNumberHeader="#"
         onRefresh={refetch}
-        onExport={() => {
-          console.log("Exporting fee data...");
-        }}
+        onExport={() => {}}
         onAdd={handleAddFeeClick}
         customToolbar={
           <Box sx={{ display: "flex", gap: 1 }}>
@@ -675,7 +664,6 @@ const DueStudentFee = ({
             label: "Apply Bulk Discount",
             icon: <Discount fontSize="small" />,
             onClick: (selectedRows) => {
-              console.log("Applying bulk discount to:", selectedRows);
               alert(
                 `Applying discount to ${selectedRows.length} selected fees`,
               );
@@ -685,10 +673,6 @@ const DueStudentFee = ({
             label: "Apply Bulk Late Fee Customization",
             icon: <WarningIcon fontSize="small" />,
             onClick: (selectedRows) => {
-              console.log(
-                "Applying bulk late fee customization to:",
-                selectedRows,
-              );
               alert(
                 `Bulk late fee customization for ${selectedRows.length} fees - Coming soon!`,
               );
@@ -697,16 +681,12 @@ const DueStudentFee = ({
           {
             label: "Export Selected",
             icon: <Download fontSize="small" />,
-            onClick: (selectedRows) => {
-              console.log("Exporting selected:", selectedRows);
-            },
+            onClick: (selectedRows) => {},
           },
           {
             label: "Delete Selected",
             icon: <Delete fontSize="small" />,
-            onClick: (selectedRows) => {
-              console.log("Deleting selected:", selectedRows);
-            },
+            onClick: (selectedRows) => {},
             color: "error",
           },
         ]}
@@ -735,7 +715,6 @@ const DueStudentFee = ({
         fee={selectedFee}
         onApplyAdjustment={handleAdjustmentSuccess}
       />
-
 
       {/* Late Fee Customization Modal */}
       <LateFeeCustomizationModal

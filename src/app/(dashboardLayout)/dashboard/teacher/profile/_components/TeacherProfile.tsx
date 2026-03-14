@@ -1,9 +1,9 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState } from "react"
+import { useState } from "react";
 import {
   Box,
   Container,
@@ -23,7 +23,7 @@ import {
   Divider,
   Fade,
   useMediaQuery,
-} from "@mui/material"
+} from "@mui/material";
 import {
   School,
   Schedule,
@@ -45,22 +45,21 @@ import {
   Download,
   QueryStats,
   Description,
-} from "@mui/icons-material"
-import TeacherOverview from "../_components/TeacherOverview"
-import ClassStudent from "../_components/ClassStudent"
-import TeacherPerformance from "../_components/TeacherPerformance"
-import TeacherSchedule from "../_components/TeacherSchedule"
-import AssignmentGrading from "../_components/AssignmentGrading"
-import CommunicationTab from "../_components/CommunicationTab"
-import TeacherResource from "../_components/TeacherResource"
-import TeacherAchivement from "../_components/TeacherAchivement"
-import TeacherAttendance from "../_components/TeacherAttendance"
-import ReportGenerator from "../_components/ReportGenerator"
-import StudentAnalytics from "../_components/StudentAnalytics"
-import ProfileSetting from "../_components/ProfileSetting"
-import { useGetSingleTeacherQuery } from "@/redux/api/teacherApi"
-import { formatDate } from "@/utils/formateDate"
-
+} from "@mui/icons-material";
+import TeacherOverview from "../_components/TeacherOverview";
+import ClassStudent from "../_components/ClassStudent";
+import TeacherPerformance from "../_components/TeacherPerformance";
+import TeacherSchedule from "../_components/TeacherSchedule";
+import AssignmentGrading from "../_components/AssignmentGrading";
+import CommunicationTab from "../_components/CommunicationTab";
+import TeacherResource from "../_components/TeacherResource";
+import TeacherAchivement from "../_components/TeacherAchivement";
+import TeacherAttendance from "../_components/TeacherAttendance";
+import ReportGenerator from "../_components/ReportGenerator";
+import StudentAnalytics from "../_components/StudentAnalytics";
+import ProfileSetting from "../_components/ProfileSetting";
+import { useGetSingleTeacherQuery } from "@/redux/api/teacherApi";
+import { formatDate } from "@/utils/formateDate";
 
 export const teacherData = {
   id: "T12345",
@@ -70,9 +69,21 @@ export const teacherData = {
   department: "Mathematics",
   joinDate: "August 15, 2018",
   education: [
-    { degree: "Ph.D. in Mathematics", institution: "Stanford University", year: "2015" },
-    { degree: "M.Sc. in Applied Mathematics", institution: "MIT", year: "2012" },
-    { degree: "B.Sc. in Mathematics", institution: "Harvard University", year: "2010" },
+    {
+      degree: "Ph.D. in Mathematics",
+      institution: "Stanford University",
+      year: "2015",
+    },
+    {
+      degree: "M.Sc. in Applied Mathematics",
+      institution: "MIT",
+      year: "2012",
+    },
+    {
+      degree: "B.Sc. in Mathematics",
+      institution: "Harvard University",
+      year: "2010",
+    },
   ],
   contact: {
     email: "sarah.johnson@schoolerp.edu",
@@ -86,11 +97,29 @@ export const teacherData = {
     researchGate: "researchgate.net/profile/Sarah_Johnson",
   },
   bio: "Dr. Sarah Johnson is an award-winning mathematics educator with over 10 years of teaching experience. She specializes in advanced calculus and statistics, with research interests in mathematical modeling and educational technology. Dr. Johnson is passionate about making complex mathematical concepts accessible to students of all learning styles.",
-  expertise: ["Calculus", "Statistics", "Algebra", "Mathematical Modeling", "Educational Technology"],
+  expertise: [
+    "Calculus",
+    "Statistics",
+    "Algebra",
+    "Mathematical Modeling",
+    "Educational Technology",
+  ],
   achievements: [
-    { title: "Teacher of the Year", year: "2022", issuer: "National Education Association" },
-    { title: "Excellence in STEM Education Award", year: "2021", issuer: "State Department of Education" },
-    { title: "Best Research Paper", year: "2020", issuer: "International Conference on Mathematics Education" },
+    {
+      title: "Teacher of the Year",
+      year: "2022",
+      issuer: "National Education Association",
+    },
+    {
+      title: "Excellence in STEM Education Award",
+      year: "2021",
+      issuer: "State Department of Education",
+    },
+    {
+      title: "Best Research Paper",
+      year: "2020",
+      issuer: "International Conference on Mathematics Education",
+    },
   ],
   certifications: [
     {
@@ -98,10 +127,18 @@ export const teacherData = {
       issuer: "National Board for Professional Teaching Standards",
       year: "2019",
     },
-    { name: "Educational Technology Integration", issuer: "EdTech Institute", year: "2020" },
+    {
+      name: "Educational Technology Integration",
+      issuer: "EdTech Institute",
+      year: "2020",
+    },
   ],
   publications: [
-    { title: "Innovative Approaches to Teaching Calculus", journal: "Journal of Mathematics Education", year: "2021" },
+    {
+      title: "Innovative Approaches to Teaching Calculus",
+      journal: "Journal of Mathematics Education",
+      year: "2021",
+    },
     {
       title: "Technology Integration in Mathematics Classrooms",
       journal: "Educational Technology Review",
@@ -135,7 +172,12 @@ export const teacherData = {
     },
   ],
   upcomingEvents: [
-    { title: "Parent-Teacher Conference", date: "October 15, 2023", time: "4:00 PM - 7:00 PM", location: "Main Hall" },
+    {
+      title: "Parent-Teacher Conference",
+      date: "October 15, 2023",
+      time: "4:00 PM - 7:00 PM",
+      location: "Main Hall",
+    },
     {
       title: "Mathematics Department Meeting",
       date: "October 10, 2023",
@@ -157,31 +199,75 @@ export const teacherData = {
     researchContribution: 90,
   },
   pendingTasks: [
-    { title: "Grade Calculus Mid-term Exams", deadline: "October 8, 2023", priority: "High" },
-    { title: "Submit Q3 Curriculum Plan", deadline: "October 12, 2023", priority: "Medium" },
-    { title: "Review Textbook Selections for Next Year", deadline: "October 20, 2023", priority: "Low" },
+    {
+      title: "Grade Calculus Mid-term Exams",
+      deadline: "October 8, 2023",
+      priority: "High",
+    },
+    {
+      title: "Submit Q3 Curriculum Plan",
+      deadline: "October 12, 2023",
+      priority: "Medium",
+    },
+    {
+      title: "Review Textbook Selections for Next Year",
+      deadline: "October 20, 2023",
+      priority: "Low",
+    },
   ],
   recentAnnouncements: [
     {
       title: "School Closure - Staff Development Day",
       date: "October 18, 2023",
-      content: "The school will be closed for students on October 18 for staff professional development.",
+      content:
+        "The school will be closed for students on October 18 for staff professional development.",
     },
     {
       title: "New Grading Software Implementation",
       date: "October 5, 2023",
-      content: "Training sessions for the new grading software will be held next week. Please sign up for a slot.",
+      content:
+        "Training sessions for the new grading software will be held next week. Please sign up for a slot.",
     },
   ],
   resources: [
-    { title: "Calculus Lecture Notes", type: "PDF", size: "2.4 MB", lastUpdated: "September 28, 2023" },
-    { title: "Statistics Problem Set Solutions", type: "PDF", size: "1.8 MB", lastUpdated: "September 25, 2023" },
-    { title: "Linear Algebra Visualization Tools", type: "Software", size: "15 MB", lastUpdated: "September 20, 2023" },
+    {
+      title: "Calculus Lecture Notes",
+      type: "PDF",
+      size: "2.4 MB",
+      lastUpdated: "September 28, 2023",
+    },
+    {
+      title: "Statistics Problem Set Solutions",
+      type: "PDF",
+      size: "1.8 MB",
+      lastUpdated: "September 25, 2023",
+    },
+    {
+      title: "Linear Algebra Visualization Tools",
+      type: "Software",
+      size: "15 MB",
+      lastUpdated: "September 20, 2023",
+    },
   ],
   studentPerformance: [
-    { class: "Advanced Calculus", averageGrade: 87, passingRate: 95, topPerformer: "Alex Chen" },
-    { class: "Statistics & Probability", averageGrade: 84, passingRate: 92, topPerformer: "Maya Patel" },
-    { class: "Linear Algebra", averageGrade: 82, passingRate: 90, topPerformer: "James Wilson" },
+    {
+      class: "Advanced Calculus",
+      averageGrade: 87,
+      passingRate: 95,
+      topPerformer: "Alex Chen",
+    },
+    {
+      class: "Statistics & Probability",
+      averageGrade: 84,
+      passingRate: 92,
+      topPerformer: "Maya Patel",
+    },
+    {
+      class: "Linear Algebra",
+      averageGrade: 82,
+      passingRate: 90,
+      topPerformer: "James Wilson",
+    },
   ],
   attendanceRecord: {
     present: 45,
@@ -195,70 +281,129 @@ export const teacherData = {
       day: "Monday",
       periods: [
         { time: "9:00 AM - 10:30 AM", class: "Advanced Calculus", room: "305" },
-        { time: "11:00 AM - 12:30 PM", class: "Office Hours", room: "Faculty Office" },
+        {
+          time: "11:00 AM - 12:30 PM",
+          class: "Office Hours",
+          room: "Faculty Office",
+        },
         { time: "1:00 PM - 2:30 PM", class: "Linear Algebra", room: "301" },
       ],
     },
     {
       day: "Tuesday",
       periods: [
-        { time: "9:00 AM - 10:30 AM", class: "Department Planning", room: "Conference Room" },
-        { time: "11:00 AM - 12:30 PM", class: "Statistics & Probability", room: "308" },
-        { time: "1:00 PM - 2:30 PM", class: "Research Time", room: "Faculty Office" },
+        {
+          time: "9:00 AM - 10:30 AM",
+          class: "Department Planning",
+          room: "Conference Room",
+        },
+        {
+          time: "11:00 AM - 12:30 PM",
+          class: "Statistics & Probability",
+          room: "308",
+        },
+        {
+          time: "1:00 PM - 2:30 PM",
+          class: "Research Time",
+          room: "Faculty Office",
+        },
       ],
     },
     {
       day: "Wednesday",
       periods: [
         { time: "9:00 AM - 10:30 AM", class: "Advanced Calculus", room: "305" },
-        { time: "11:00 AM - 12:30 PM", class: "Student Mentoring", room: "Faculty Office" },
+        {
+          time: "11:00 AM - 12:30 PM",
+          class: "Student Mentoring",
+          room: "Faculty Office",
+        },
         { time: "1:00 PM - 2:30 PM", class: "Linear Algebra", room: "301" },
       ],
     },
     {
       day: "Thursday",
       periods: [
-        { time: "9:00 AM - 10:30 AM", class: "Professional Development", room: "Faculty Lounge" },
-        { time: "11:00 AM - 12:30 PM", class: "Statistics & Probability", room: "308" },
-        { time: "1:00 PM - 2:30 PM", class: "Math Club Supervision", room: "305" },
+        {
+          time: "9:00 AM - 10:30 AM",
+          class: "Professional Development",
+          room: "Faculty Lounge",
+        },
+        {
+          time: "11:00 AM - 12:30 PM",
+          class: "Statistics & Probability",
+          room: "308",
+        },
+        {
+          time: "1:00 PM - 2:30 PM",
+          class: "Math Club Supervision",
+          room: "305",
+        },
       ],
     },
     {
       day: "Friday",
       periods: [
         { time: "9:00 AM - 10:30 AM", class: "Advanced Calculus", room: "305" },
-        { time: "11:00 AM - 12:30 PM", class: "Faculty Meeting", room: "Conference Room" },
-        { time: "1:00 PM - 2:30 PM", class: "Office Hours", room: "Faculty Office" },
+        {
+          time: "11:00 AM - 12:30 PM",
+          class: "Faculty Meeting",
+          room: "Conference Room",
+        },
+        {
+          time: "1:00 PM - 2:30 PM",
+          class: "Office Hours",
+          room: "Faculty Office",
+        },
       ],
     },
   ],
   pendingGrading: [
-    { assignment: "Calculus Mid-term Exam", class: "Advanced Calculus", dueDate: "October 8, 2023", submissions: 24 },
+    {
+      assignment: "Calculus Mid-term Exam",
+      class: "Advanced Calculus",
+      dueDate: "October 8, 2023",
+      submissions: 24,
+    },
     {
       assignment: "Statistics Problem Set 3",
       class: "Statistics & Probability",
       dueDate: "October 10, 2023",
       submissions: 26,
     },
-    { assignment: "Linear Algebra Quiz 2", class: "Linear Algebra", dueDate: "October 12, 2023", submissions: 22 },
+    {
+      assignment: "Linear Algebra Quiz 2",
+      class: "Linear Algebra",
+      dueDate: "October 12, 2023",
+      submissions: 22,
+    },
   ],
   recentMessages: [
-    { from: "Principal Williams", subject: "Upcoming Accreditation Visit", date: "October 3, 2023", read: true },
+    {
+      from: "Principal Williams",
+      subject: "Upcoming Accreditation Visit",
+      date: "October 3, 2023",
+      read: true,
+    },
     {
       from: "Alex Chen (Student)",
       subject: "Question about Calculus Assignment",
       date: "October 3, 2023",
       read: false,
     },
-    { from: "Dr. Robert Lee (Colleague)", subject: "STEM Fair Planning", date: "October 2, 2023", read: true },
+    {
+      from: "Dr. Robert Lee (Colleague)",
+      subject: "STEM Fair Planning",
+      date: "October 2, 2023",
+      read: true,
+    },
   ],
-}
-
+};
 
 interface TabPanelProps {
-  children?: React.ReactNode
-  value: number
-  index: number
+  children?: React.ReactNode;
+  value: number;
+  index: number;
 }
 interface PageProps {
   params: {
@@ -266,10 +411,8 @@ interface PageProps {
   };
 }
 
-
-
 function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props
+  const { children, value, index, ...other } = props;
 
   return (
     <div
@@ -285,29 +428,29 @@ function TabPanel(props: TabPanelProps) {
         </Fade>
       )}
     </div>
-  )
+  );
 }
 
 export default function TeacherProfile({ params }: PageProps) {
-  const { id } = params
+  const { id } = params;
 
-  const { data: singleTeacher } = useGetSingleTeacherQuery({ id })
-  console.log('profile teacher data this ', singleTeacher)
-  const theme = useTheme()
-  const [tabValue, setTabValue] = useState(0)
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"))
-  const isSmall = useMediaQuery(theme.breakpoints.down("sm"))
+  const { data: singleTeacher } = useGetSingleTeacherQuery({ id });
+
+  const theme = useTheme();
+  const [tabValue, setTabValue] = useState(0);
+  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const isSmall = useMediaQuery(theme.breakpoints.down("sm"));
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue)
-  }
+    setTabValue(newValue);
+  };
 
   const getTabProps = (index: number) => {
     return {
       id: `teacher-tab-${index}`,
       "aria-controls": `teacher-tabpanel-${index}`,
-    }
-  }
+    };
+  };
 
   return (
     <Container maxWidth="xl" sx={{ mt: 4, mb: 4 }}>
@@ -330,7 +473,8 @@ export default function TeacherProfile({ params }: PageProps) {
             left: 0,
             width: "100%",
             height: "100%",
-            background: "radial-gradient(circle at top right, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%)",
+            background:
+              "radial-gradient(circle at top right, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%)",
             zIndex: 0,
           },
         }}
@@ -338,13 +482,25 @@ export default function TeacherProfile({ params }: PageProps) {
         <Box sx={{ position: "relative", zIndex: 1 }}>
           <Grid container spacing={3} alignItems="center">
             <Grid item xs={12} sm="auto">
-              <Box sx={{ display: "flex", justifyContent: { xs: "center", sm: "flex-start" } }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: { xs: "center", sm: "flex-start" },
+                }}
+              >
                 <Badge
                   overlap="circular"
                   anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
                   badgeContent={
                     <Tooltip title="Verified Teacher">
-                      <CheckCircle sx={{ color: "#4caf50", bgcolor: "white", borderRadius: "50%", fontSize: 28 }} />
+                      <CheckCircle
+                        sx={{
+                          color: "#4caf50",
+                          bgcolor: "white",
+                          borderRadius: "50%",
+                          fontSize: 28,
+                        }}
+                      />
                     </Tooltip>
                   }
                 >
@@ -366,7 +522,9 @@ export default function TeacherProfile({ params }: PageProps) {
               </Box>
             </Grid>
             <Grid item xs={12} sm>
-              <Box sx={{ ml: { sm: 2 }, textAlign: { xs: "center", sm: "left" } }}>
+              <Box
+                sx={{ ml: { sm: 2 }, textAlign: { xs: "center", sm: "left" } }}
+              >
                 <Typography
                   variant="h4"
                   fontWeight="bold"
@@ -495,7 +653,11 @@ export default function TeacherProfile({ params }: PageProps) {
                   </Typography>
                 </Box>
               </Grid>
-              <Divider orientation="vertical" flexItem sx={{ borderColor: "rgba(255,255,255,0.2)" }} />
+              <Divider
+                orientation="vertical"
+                flexItem
+                sx={{ borderColor: "rgba(255,255,255,0.2)" }}
+              />
               <Grid item xs>
                 <Box sx={{ textAlign: "center" }}>
                   <Typography variant="h6" sx={{ fontWeight: "bold" }}>
@@ -506,7 +668,11 @@ export default function TeacherProfile({ params }: PageProps) {
                   </Typography>
                 </Box>
               </Grid>
-              <Divider orientation="vertical" flexItem sx={{ borderColor: "rgba(255,255,255,0.2)" }} />
+              <Divider
+                orientation="vertical"
+                flexItem
+                sx={{ borderColor: "rgba(255,255,255,0.2)" }}
+              />
               <Grid item xs>
                 <Box sx={{ textAlign: "center" }}>
                   <Typography variant="h6" sx={{ fontWeight: "bold" }}>
@@ -517,7 +683,11 @@ export default function TeacherProfile({ params }: PageProps) {
                   </Typography>
                 </Box>
               </Grid>
-              <Divider orientation="vertical" flexItem sx={{ borderColor: "rgba(255,255,255,0.2)" }} />
+              <Divider
+                orientation="vertical"
+                flexItem
+                sx={{ borderColor: "rgba(255,255,255,0.2)" }}
+              />
               <Grid item xs>
                 <Box sx={{ textAlign: "center" }}>
                   <Typography variant="h6" sx={{ fontWeight: "bold" }}>
@@ -528,7 +698,11 @@ export default function TeacherProfile({ params }: PageProps) {
                   </Typography>
                 </Box>
               </Grid>
-              <Divider orientation="vertical" flexItem sx={{ borderColor: "rgba(255,255,255,0.2)" }} />
+              <Divider
+                orientation="vertical"
+                flexItem
+                sx={{ borderColor: "rgba(255,255,255,0.2)" }}
+              />
               <Grid item xs>
                 <Box sx={{ textAlign: "center" }}>
                   <Typography variant="h6" sx={{ fontWeight: "bold" }}>
@@ -560,7 +734,8 @@ export default function TeacherProfile({ params }: PageProps) {
         <Notifications sx={{ color: theme.palette.warning.main, mr: 2 }} />
         <Box sx={{ flex: 1 }}>
           <Typography variant="body1" fontWeight="medium">
-            3 pending assignments to grade • Parent-Teacher Conference on October 15
+            3 pending assignments to grade • Parent-Teacher Conference on
+            October 15
           </Typography>
         </Box>
         <IconButton size="small" sx={{ ml: 1 }}>
@@ -614,18 +789,78 @@ export default function TeacherProfile({ params }: PageProps) {
             },
           }}
         >
-          <Tab icon={<Info />} label={isSmall ? "" : "Overview"} iconPosition="start" {...getTabProps(0)} />
-          <Tab icon={<Class />} label={isSmall ? "" : "Classes & Students"} iconPosition="start" {...getTabProps(1)} />
-          <Tab icon={<Assessment />} label={isSmall ? "" : "Performance"} iconPosition="start" {...getTabProps(2)} />
-          <Tab icon={<Schedule />} label={isSmall ? "" : "Schedule"} iconPosition="start" {...getTabProps(3)} />
-          <Tab icon={<Assignment />} label={isSmall ? "" : "Assignments"} iconPosition="start" {...getTabProps(4)} />
-          <Tab icon={<People />} label={isSmall ? "" : "Communication"} iconPosition="start" {...getTabProps(5)} />
-          <Tab icon={<MenuBook />} label={isSmall ? "" : "Resources"} iconPosition="start" {...getTabProps(6)} />
-          <Tab icon={<EmojiEvents />} label={isSmall ? "" : "Achievements"} iconPosition="start" {...getTabProps(7)} />
-          <Tab icon={<CalendarMonth />} label={isSmall ? "" : "Attendance"} iconPosition="start" {...getTabProps(8)} />
-          <Tab icon={<Description />} label={isSmall ? "" : "Reports"} iconPosition="start" {...getTabProps(9)} />
-          <Tab icon={<QueryStats />} label={isSmall ? "" : "Analytics"} iconPosition="start" {...getTabProps(10)} />
-          <Tab icon={<Settings />} label={isSmall ? "" : "Settings"} iconPosition="start" {...getTabProps(11)} />
+          <Tab
+            icon={<Info />}
+            label={isSmall ? "" : "Overview"}
+            iconPosition="start"
+            {...getTabProps(0)}
+          />
+          <Tab
+            icon={<Class />}
+            label={isSmall ? "" : "Classes & Students"}
+            iconPosition="start"
+            {...getTabProps(1)}
+          />
+          <Tab
+            icon={<Assessment />}
+            label={isSmall ? "" : "Performance"}
+            iconPosition="start"
+            {...getTabProps(2)}
+          />
+          <Tab
+            icon={<Schedule />}
+            label={isSmall ? "" : "Schedule"}
+            iconPosition="start"
+            {...getTabProps(3)}
+          />
+          <Tab
+            icon={<Assignment />}
+            label={isSmall ? "" : "Assignments"}
+            iconPosition="start"
+            {...getTabProps(4)}
+          />
+          <Tab
+            icon={<People />}
+            label={isSmall ? "" : "Communication"}
+            iconPosition="start"
+            {...getTabProps(5)}
+          />
+          <Tab
+            icon={<MenuBook />}
+            label={isSmall ? "" : "Resources"}
+            iconPosition="start"
+            {...getTabProps(6)}
+          />
+          <Tab
+            icon={<EmojiEvents />}
+            label={isSmall ? "" : "Achievements"}
+            iconPosition="start"
+            {...getTabProps(7)}
+          />
+          <Tab
+            icon={<CalendarMonth />}
+            label={isSmall ? "" : "Attendance"}
+            iconPosition="start"
+            {...getTabProps(8)}
+          />
+          <Tab
+            icon={<Description />}
+            label={isSmall ? "" : "Reports"}
+            iconPosition="start"
+            {...getTabProps(9)}
+          />
+          <Tab
+            icon={<QueryStats />}
+            label={isSmall ? "" : "Analytics"}
+            iconPosition="start"
+            {...getTabProps(10)}
+          />
+          <Tab
+            icon={<Settings />}
+            label={isSmall ? "" : "Settings"}
+            iconPosition="start"
+            {...getTabProps(11)}
+          />
         </Tabs>
       </Box>
 
@@ -678,6 +913,5 @@ export default function TeacherProfile({ params }: PageProps) {
         <ProfileSetting />
       </TabPanel>
     </Container>
-  )
+  );
 }
-

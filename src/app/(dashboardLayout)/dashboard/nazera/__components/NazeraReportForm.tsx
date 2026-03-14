@@ -16,7 +16,7 @@ import { useAcademicOption } from "@/hooks/useAcademicOption";
 import CraftForm from "@/components/Forms/Form";
 import { ReportHeader } from "@/components/common/ReportHeader";
 import ReportTableRow from "@/components/tables/Daily/ReportTableRow";
-import { tableStyle } from "@/style/customeStyle";
+import { tableStyle } from "@/style/customStyle";
 import { SubmitButton } from "@/components/common/SubmitButton";
 import ReportTableBody from "@/components/tables/Daily/ReportTableBody";
 import toast from "react-hot-toast";
@@ -45,7 +45,7 @@ function NazeraReportForm({ studentName, reportDate, month, id }: any) {
     try {
       const weeklyTotals = calculateWeeklyTotals(formData);
       const formattedData = formatReportData(formData, weeklyTotals, month, id);
-      console.log("formate data", formattedData);
+
       let res;
       if (id) {
         res = await updateNazeraReport({ id, data: formattedData }).unwrap();

@@ -17,7 +17,7 @@ import {
   StatusChip,
   StyledBadge,
   StyledCard,
-} from "@/style/customeStyle";
+} from "@/style/customStyle";
 import {
   Add as AddIcon,
   ArrowDownward as ArrowDownwardIcon,
@@ -160,7 +160,7 @@ export default function TeacherList() {
               ? ("Active" as TeacherStatus)
               : ("Inactive" as TeacherStatus);
           const experience = calculateExperience(
-            teacher.joiningDate || teacher.professionalInfo?.joiningDate
+            teacher.joiningDate || teacher.professionalInfo?.joiningDate,
           );
 
           return {
@@ -181,7 +181,7 @@ export default function TeacherList() {
             joinDate: new Date(
               teacher.joiningDate ||
                 teacher.professionalInfo?.joiningDate ||
-                teacher.createdAt
+                teacher.createdAt,
             ).toLocaleDateString(),
             qualifications:
               teacher.designation ||
@@ -189,7 +189,7 @@ export default function TeacherList() {
               "Teacher",
             teacherId: teacher.teacherId || "",
           };
-        }
+        },
       );
 
       setTeachers(formattedTeachers);
@@ -201,14 +201,14 @@ export default function TeacherList() {
     const joinDate = new Date(joiningDate);
     const now = new Date();
     const yearsDiff = Math.floor(
-      (now.getTime() - joinDate.getTime()) / (365 * 24 * 60 * 60 * 1000)
+      (now.getTime() - joinDate.getTime()) / (365 * 24 * 60 * 60 * 1000),
     );
     return yearsDiff >= 0 ? yearsDiff : 0;
   };
 
   const handleTeacherMenuOpen = (
     event: React.MouseEvent<HTMLElement>,
-    teacher: Teacher
+    teacher: Teacher,
   ) => {
     setTeacherMenuAnchorEl(event.currentTarget);
     setSelectedTeacher(teacher);
@@ -314,7 +314,7 @@ export default function TeacherList() {
             teacher.teacherId
               .toLowerCase()
               .includes(searchQuery.toLowerCase()))) &&
-        (filterDepartment === "all" || teacher.department === filterDepartment)
+        (filterDepartment === "all" || teacher.department === filterDepartment),
     )
     .sort((a, b) => {
       let comparison = 0;
@@ -700,7 +700,7 @@ export default function TeacherList() {
                                 backgroundColor: alpha(
                                   departmentColors[teacher.department] ||
                                     departmentColors["Not Specified"],
-                                  0.1
+                                  0.1,
                                 ),
                                 color:
                                   departmentColors[teacher.department] ||

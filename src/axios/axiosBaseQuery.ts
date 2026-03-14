@@ -5,7 +5,7 @@ import { instance } from "./axiosInstance";
 
 export const axiosBaseQuery =
   (
-    { baseUrl }: { baseUrl: string } = { baseUrl: "" }
+    { baseUrl }: { baseUrl: string } = { baseUrl: "" },
   ): BaseQueryFn<
     {
       url: string;
@@ -24,7 +24,7 @@ export const axiosBaseQuery =
       const result = await instance({
         url: baseUrl + url,
         method,
-        data, // This should match what the backend expects
+        data,
         params,
         headers: {
           "Content-type": contentType || "application/json",

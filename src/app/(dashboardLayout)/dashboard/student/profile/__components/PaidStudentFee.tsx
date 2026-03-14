@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import FeeAdjustmentModal from "@/components/FeeAdjustmentModal";
 import CraftTable, { Column, RowAction } from "@/components/Table";
@@ -56,7 +57,6 @@ const PaidStudentFee = ({
 
   // Filter only paid fees (status = "paid")
   useEffect(() => {
-
     const paidFees = studentFees?.filter((fee) => fee?.status === "paid") || [];
     setFilteredFees(paidFees);
 
@@ -90,7 +90,6 @@ const PaidStudentFee = ({
   };
 
   const handlePaymentSuccess = (paymentData: any) => {
-    console.log("Payment successful:", paymentData);
     if (onPay) {
       onPay(paymentData);
     }
@@ -153,7 +152,6 @@ const PaidStudentFee = ({
   const handleCloseAddFeeModal = () => {
     setAddFeeModalOpen(false);
   };
-
 
   // Calculate summary statistics for paid fees only
   const calculateSummary = () => {
@@ -538,10 +536,7 @@ const PaidStudentFee = ({
     {
       label: "View Payment History",
       icon: <History fontSize="small" />,
-      onClick: (row) => {
-        console.log("View payment history for:", row);
-        // You can implement payment history modal here
-      },
+      onClick: (row) => {},
       color: "info",
       tooltip: "View payment history",
       inMenu: true,
@@ -607,16 +602,12 @@ const PaidStudentFee = ({
         showRowNumbers={true}
         rowNumberHeader="#"
         onRefresh={refetch}
-        onExport={() => {
-          console.log("Exporting paid fee data...");
-        }}
         onAdd={handleAddFeeClick}
         bulkActions={[
           {
             label: "Download Receipts",
             icon: <Download fontSize="small" />,
             onClick: (selectedRows) => {
-              console.log("Downloading receipts for:", selectedRows);
               alert(
                 `Downloading receipts for ${selectedRows.length} selected fees`,
               );
@@ -625,16 +616,12 @@ const PaidStudentFee = ({
           {
             label: "Export Selected",
             icon: <Download fontSize="small" />,
-            onClick: (selectedRows) => {
-              console.log("Exporting selected:", selectedRows);
-            },
+            onClick: (selectedRows) => {},
           },
           {
             label: "Delete Selected",
             icon: <Delete fontSize="small" />,
-            onClick: (selectedRows) => {
-              console.log("Deleting selected:", selectedRows);
-            },
+            onClick: (selectedRows) => {},
             color: "error",
           },
         ]}
@@ -652,7 +639,6 @@ const PaidStudentFee = ({
       <AddFeeModal
         open={addFeeModalOpen}
         setOpen={handleCloseAddFeeModal}
-
         student={student}
       />
 

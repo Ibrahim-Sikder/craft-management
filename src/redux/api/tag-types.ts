@@ -42,6 +42,9 @@ export const tagTypesList = [
   "Receipts",
   "Receipt",
   "admission-applications",
+  "admissionApplication",
+  "lateFees",
+  "lateFeeConfig",
 ] as const;
 
 export type TagType = (typeof tagTypesList)[number];

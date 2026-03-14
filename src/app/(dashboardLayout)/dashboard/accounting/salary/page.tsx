@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-"use client"
+"use client";
 
-import { useState } from "react"
+import { useState } from "react";
 import {
   Box,
   CardContent,
@@ -18,23 +18,22 @@ import {
   Container,
   CircularProgress,
   IconButton,
-} from "@mui/material"
+} from "@mui/material";
+import { Add, Edit, Delete } from "@mui/icons-material";
+import { GlassCard, GradientButton } from "@/style/customStyle";
+import AddSalaryModal from "./__components/AddSalaryModal";
 import {
-  Add,
-  Edit,
-  Delete,
-} from "@mui/icons-material"
-import { GlassCard, GradientButton } from "@/style/customeStyle"
-import AddSalaryModal from "./__components/AddSalaryModal"
-import { useDeleteSalaryMutation, useGetAllSalariesQuery } from "@/redux/api/salaryApi"
-import Swal from "sweetalert2"
+  useDeleteSalaryMutation,
+  useGetAllSalariesQuery,
+} from "@/redux/api/salaryApi";
+import Swal from "sweetalert2";
 
 export default function SalaryManagement() {
-  const [addSalaryModalOpen, setAddSalaryModalOpen] = useState(false)
-  const [editingSalaryId, setEditingSalaryId] = useState<string | null>(null)
-  const { data, isLoading, refetch } = useGetAllSalariesQuery({})
-  const allSalaries = data?.data?.salaries || []
-  const [deleteSalary] = useDeleteSalaryMutation()
+  const [addSalaryModalOpen, setAddSalaryModalOpen] = useState(false);
+  const [editingSalaryId, setEditingSalaryId] = useState<string | null>(null);
+  const { data, isLoading, refetch } = useGetAllSalariesQuery({});
+  const allSalaries = data?.data?.salaries || [];
+  const [deleteSalary] = useDeleteSalaryMutation();
 
   const handleDeleteSalary = async (id: string) => {
     try {
@@ -46,37 +45,37 @@ export default function SalaryManagement() {
         confirmButtonColor: "#3085d6",
         cancelButtonColor: "#d33",
         confirmButtonText: "Yes, delete it!",
-        cancelButtonText: "Cancel"
-      })
+        cancelButtonText: "Cancel",
+      });
 
       if (result.isConfirmed) {
-        await deleteSalary(id).unwrap()
+        await deleteSalary(id).unwrap();
         Swal.fire({
           title: "Deleted!",
           text: `Salary has been deleted successfully.`,
-          icon: "success"
-        })
-        refetch()
+          icon: "success",
+        });
+        refetch();
       }
     } catch (err: any) {
       Swal.fire({
         title: "Error!",
         text: err.data?.message || "Failed to delete salary",
-        icon: "error"
-      })
+        icon: "error",
+      });
     }
-  }
+  };
 
   const handleEditSalary = (id: string) => {
-    setEditingSalaryId(id)
-    setAddSalaryModalOpen(true)
-  }
+    setEditingSalaryId(id);
+    setAddSalaryModalOpen(true);
+  };
 
   const handleCloseModal = () => {
-    setAddSalaryModalOpen(false)
-    setEditingSalaryId(null)
-    refetch()
-  }
+    setAddSalaryModalOpen(false);
+    setEditingSalaryId(null);
+    refetch();
+  };
 
   const getStatusChip = (status: string) => {
     switch (status) {
@@ -92,7 +91,7 @@ export default function SalaryManagement() {
               fontSize: "12px",
             }}
           />
-        )
+        );
       case "Pending":
         return (
           <Chip
@@ -105,7 +104,7 @@ export default function SalaryManagement() {
               fontSize: "12px",
             }}
           />
-        )
+        );
       case "Processing":
         return (
           <Chip
@@ -118,23 +117,31 @@ export default function SalaryManagement() {
               fontSize: "12px",
             }}
           />
-        )
+        );
       default:
-        return <Chip label={status} />
+        return <Chip label={status} />;
     }
-  }
+  };
 
   return (
     <Box
       sx={{
         minHeight: "100vh",
-        background: "linear-gradient(135deg, #f3e5f5 0%, #ffffff 50%, #fce4ec 100%)",
+        background:
+          "linear-gradient(135deg, #f3e5f5 0%, #ffffff 50%, #fce4ec 100%)",
         py: 4,
       }}
     >
       <Container maxWidth="xl">
         {/* Header */}
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 6 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 6,
+          }}
+        >
           <Box>
             <Typography
               variant="h3"
@@ -159,10 +166,10 @@ export default function SalaryManagement() {
               bgcolor="linear-gradient(135deg, #9c27b0 0%, #7b1fa2 100%)"
               startIcon={<Add />}
               onClick={() => {
-                setEditingSalaryId(null)
-                setAddSalaryModalOpen(true)
+                setEditingSalaryId(null);
+                setAddSalaryModalOpen(true);
               }}
-              sx={{ color: '#fff' }}
+              sx={{ color: "#fff" }}
             >
               Add Salary
             </GradientButton>
@@ -190,32 +197,50 @@ export default function SalaryManagement() {
               <Table>
                 <TableHead>
                   <TableRow sx={{ bgcolor: "#f8f9fa" }}>
-                    <TableCell sx={{ fontWeight: 700, fontSize: "1rem" }}>Employee Info (কর্মচারীর তথ্য)</TableCell>
-                    <TableCell sx={{ fontWeight: 700, fontSize: "1rem" }}>Basic Salary (মূল বেতন)</TableCell>
-                    <TableCell sx={{ fontWeight: 700, fontSize: "1rem" }}>Allowances (ভাতা)</TableCell>
-                    <TableCell sx={{ fontWeight: 700, fontSize: "1rem" }}>Deductions (কর্তন)</TableCell>
-                    <TableCell sx={{ fontWeight: 700, fontSize: "1rem" }}>Net Salary (নিট বেতন)</TableCell>
-                    <TableCell sx={{ fontWeight: 700, fontSize: "1rem" }}>Status</TableCell>
-                    <TableCell sx={{ fontWeight: 700, fontSize: "1rem" }}>Actions</TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: "1rem" }}>
+                      Employee Info (কর্মচারীর তথ্য)
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: "1rem" }}>
+                      Basic Salary (মূল বেতন)
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: "1rem" }}>
+                      Allowances (ভাতা)
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: "1rem" }}>
+                      Deductions (কর্তন)
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: "1rem" }}>
+                      Net Salary (নিট বেতন)
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: "1rem" }}>
+                      Status
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: "1rem" }}>
+                      Actions
+                    </TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {isLoading ? (
                     <TableRow>
-                      <TableCell colSpan={7} sx={{ textAlign: "center", py: 4 }}>
+                      <TableCell
+                        colSpan={7}
+                        sx={{ textAlign: "center", py: 4 }}
+                      >
                         <CircularProgress />
                       </TableCell>
                     </TableRow>
                   ) : data?.data?.salaries?.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={7} sx={{ textAlign: "center", py: 4 }}>
+                      <TableCell
+                        colSpan={7}
+                        sx={{ textAlign: "center", py: 4 }}
+                      >
                         No salary records found
                       </TableCell>
                     </TableRow>
                   ) : (
                     allSalaries?.map((employee: any) => {
-
-
                       return (
                         <TableRow
                           key={employee._id}
@@ -227,26 +252,40 @@ export default function SalaryManagement() {
                           }}
                         >
                           <TableCell>
-                            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                            <Box
+                              sx={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 2,
+                              }}
+                            >
                               <Avatar sx={{ bgcolor: "#9c27b0" }}>
-                                {employee.employee?.charAt(0) || 'U'}
+                                {employee.employee?.charAt(0) || "U"}
                               </Avatar>
                               <Box>
-                                <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                                  {employee.employee || 'Unknown'}
+                                <Typography
+                                  variant="body1"
+                                  sx={{ fontWeight: 600 }}
+                                >
+                                  {employee.employee || "Unknown"}
                                 </Typography>
-                               
                               </Box>
                             </Box>
                           </TableCell>
-                          <TableCell>৳ {employee.basicSalary?.toLocaleString() || 0}</TableCell>
                           <TableCell>
-                            <Typography sx={{ color: "#4CAF50", fontWeight: 600 }}>
+                            ৳ {employee.basicSalary?.toLocaleString() || 0}
+                          </TableCell>
+                          <TableCell>
+                            <Typography
+                              sx={{ color: "#4CAF50", fontWeight: 600 }}
+                            >
                               ৳
                             </Typography>
                           </TableCell>
                           <TableCell>
-                            <Typography sx={{ color: "#f44336", fontWeight: 600 }}>
+                            <Typography
+                              sx={{ color: "#f44336", fontWeight: 600 }}
+                            >
                               ৳
                             </Typography>
                           </TableCell>
@@ -264,7 +303,9 @@ export default function SalaryManagement() {
                                 onClick={() => handleEditSalary(employee._id)}
                                 sx={{
                                   color: "#1976d2",
-                                  '&:hover': { backgroundColor: 'rgba(25, 118, 210, 0.1)' }
+                                  "&:hover": {
+                                    backgroundColor: "rgba(25, 118, 210, 0.1)",
+                                  },
                                 }}
                               >
                                 <Edit />
@@ -273,7 +314,9 @@ export default function SalaryManagement() {
                                 onClick={() => handleDeleteSalary(employee._id)}
                                 sx={{
                                   color: "#d32f2f",
-                                  '&:hover': { backgroundColor: 'rgba(211, 47, 47, 0.1)' }
+                                  "&:hover": {
+                                    backgroundColor: "rgba(211, 47, 47, 0.1)",
+                                  },
                                 }}
                               >
                                 <Delete />
@@ -281,7 +324,7 @@ export default function SalaryManagement() {
                             </Box>
                           </TableCell>
                         </TableRow>
-                      )
+                      );
                     })
                   )}
                 </TableBody>
@@ -298,5 +341,5 @@ export default function SalaryManagement() {
         />
       </Container>
     </Box>
-  )
+  );
 }

@@ -1,28 +1,32 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-'use server';
+"use server";
 
-import { cookies } from 'next/headers';
-import { jwtDecode } from 'jwt-decode';
+import { cookies } from "next/headers";
 
-interface JwtPayload {
-  role: 'admin' | 'teacher' | 'student';
-  id: string;
-  email: string;
-  [key: string]: any; 
-}
-
-export const getUserInfo = async (): Promise<JwtPayload | null> => {
+export const getUserInfo = async () => {
   try {
     const cookieStore = cookies();
-    const token = (await cookieStore).get('craft-token')?.value;
+    const token = cookieStore.get("accessToken")?.value;
 
     if (!token) return null;
 
-    const decoded = jwtDecode<JwtPayload>(token);
+    // Call your backend API
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_BASE_API_URL}/auth/me`,
+      {
+        headers: {
+          Cookie: `accessToken=${token}`,
+        },
+        cache: "no-store",
+      },
+    );
 
-    return decoded;
+    if (!response.ok) return null;
+
+    const result = await response.json();
+    console.log("result chckddddddd", result);
+    return result.data;
   } catch (error) {
-    console.error('Failed to decode token:', error);
+    console.error("Failed to get user info:", error);
     return null;
   }
 };

@@ -162,7 +162,7 @@ export default function ClassReportList() {
     },
     {
       refetchOnMountOrArgChange: true,
-    }
+    },
   );
 
   useEffect(() => {
@@ -212,7 +212,7 @@ export default function ClassReportList() {
 
     if (range.startDate && range.endDate) {
       toast.success(
-        `Date range applied: ${format(range.startDate, "dd MMM yyyy")} - ${format(range.endDate, "dd MMM yyyy")}`
+        `Date range applied: ${format(range.startDate, "dd MMM yyyy")} - ${format(range.endDate, "dd MMM yyyy")}`,
       );
     }
 
@@ -246,9 +246,8 @@ export default function ClassReportList() {
 
   const handleChangePage = (
     event: React.ChangeEvent<unknown>,
-    newPage: number
+    newPage: number,
   ) => {
-    console.log("Changing to page:", newPage);
     setPage(newPage);
   };
 
@@ -259,7 +258,7 @@ export default function ClassReportList() {
 
   const handleFilterChange = (
     filterName: keyof Filters,
-    value: string | boolean
+    value: string | boolean,
   ) => {
     setFilters((prev) => ({
       ...prev,
@@ -271,7 +270,7 @@ export default function ClassReportList() {
 
   // NEW: Handle comments filter toggle
   const handleCommentsFilterToggle = (
-    event: React.ChangeEvent<HTMLInputElement>
+    event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const isChecked = event.target.checked;
     setFilters((prev) => ({
@@ -282,7 +281,7 @@ export default function ClassReportList() {
 
     if (isChecked) {
       toast.success(
-        `Showing only records with comments (${commentsStats.totalComments} total)`
+        `Showing only records with comments (${commentsStats.totalComments} total)`,
       );
     } else {
       toast.success("Comments filter cleared - showing all records");
@@ -299,7 +298,7 @@ export default function ClassReportList() {
 
   const handleDeleteClick = (
     event: React.MouseEvent<HTMLButtonElement>,
-    report: any
+    report: any,
   ) => {
     event.stopPropagation();
     setSelectedReport(report);
@@ -348,7 +347,7 @@ export default function ClassReportList() {
   const handleOpenDetailsModal = (
     e: React.MouseEvent,
     report: any,
-    evaluation: any
+    evaluation: any,
   ) => {
     e.stopPropagation();
     setSelectedReportDetails({
@@ -409,7 +408,7 @@ export default function ClassReportList() {
       selectedDateRange.startDate || selectedDateRange.endDate
         ? `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(
             theme.palette.secondary.main,
-            0.05
+            0.05,
           )} 100%)`
         : "background.paper",
     border:
@@ -704,7 +703,7 @@ export default function ClassReportList() {
                             onChange={(e: SelectChangeEvent) =>
                               handleFilterChange(
                                 "lessonEvaluation",
-                                e.target.value
+                                e.target.value,
                               )
                             }
                           >
@@ -932,7 +931,7 @@ export default function ClassReportList() {
                             sx={{
                               backgroundColor: alpha(
                                 theme.palette.primary.main,
-                                0.05
+                                0.05,
                               ),
                               "& th": {
                                 fontWeight: 600,
@@ -1036,13 +1035,13 @@ export default function ClassReportList() {
                                             bgcolor: isExpanded
                                               ? alpha(
                                                   theme.palette.primary.main,
-                                                  0.05
+                                                  0.05,
                                                 )
                                               : "inherit",
                                             "&:hover": {
                                               bgcolor: alpha(
                                                 theme.palette.primary.main,
-                                                0.05
+                                                0.05,
                                               ),
                                             },
                                             borderBottom: `1px solid ${alpha(theme.palette.divider, 0.7)}`,
@@ -1053,13 +1052,13 @@ export default function ClassReportList() {
                                             ...(hasComment && {
                                               background: `linear-gradient(90deg, ${alpha(
                                                 theme.palette.warning.light,
-                                                0.08
+                                                0.08,
                                               )} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
                                               borderLeft: `3px solid ${theme.palette.warning.main}`,
                                               "&:hover": {
                                                 background: `linear-gradient(90deg, ${alpha(
                                                   theme.palette.warning.light,
-                                                  0.12
+                                                  0.12,
                                                 )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
                                               },
                                             }),
@@ -1068,12 +1067,12 @@ export default function ClassReportList() {
                                               pointerEvents: "none",
                                               bgcolor: alpha(
                                                 theme.palette.grey[300],
-                                                0.4
+                                                0.4,
                                               ),
                                               "&:hover": {
                                                 bgcolor: alpha(
                                                   theme.palette.grey[300],
-                                                  0.4
+                                                  0.4,
                                                 ),
                                               },
                                             }),
@@ -1107,7 +1106,7 @@ export default function ClassReportList() {
                                                 display: "inline-flex",
                                                 bgcolor: alpha(
                                                   theme.palette.primary.main,
-                                                  0.08
+                                                  0.08,
                                                 ),
                                                 color:
                                                   theme.palette.primary.main,
@@ -1128,7 +1127,7 @@ export default function ClassReportList() {
                                               sx={{
                                                 bgcolor: alpha(
                                                   theme.palette.secondary.main,
-                                                  0.08
+                                                  0.08,
                                                 ),
                                                 color:
                                                   theme.palette.secondary.main,
@@ -1153,7 +1152,7 @@ export default function ClassReportList() {
                                                 display: "inline-flex",
                                                 bgcolor: alpha(
                                                   theme.palette.info.main,
-                                                  0.08
+                                                  0.08,
                                                 ),
                                                 color: theme.palette.info.main,
                                                 px: 1.5,
@@ -1197,12 +1196,12 @@ export default function ClassReportList() {
                                                     ? alpha(
                                                         theme.palette.success
                                                           .main,
-                                                        0.1
+                                                        0.1,
                                                       )
                                                     : alpha(
                                                         theme.palette.error
                                                           .main,
-                                                        0.1
+                                                        0.1,
                                                       ),
                                               }}
                                             />
@@ -1313,7 +1312,7 @@ export default function ClassReportList() {
                                                   alignItems: "center",
                                                   bgcolor: alpha(
                                                     theme.palette.warning.main,
-                                                    0.08
+                                                    0.08,
                                                   ),
                                                   color:
                                                     theme.palette.warning.main,
@@ -1375,7 +1374,7 @@ export default function ClassReportList() {
                                                         handleOpenDetailsModal(
                                                           e,
                                                           report,
-                                                          evaluation
+                                                          evaluation,
                                                         )
                                                       }
                                                     >
@@ -1392,21 +1391,21 @@ export default function ClassReportList() {
                                                         bgcolor: alpha(
                                                           theme.palette.warning
                                                             .main,
-                                                          0.1
+                                                          0.1,
                                                         ),
                                                         mr: 1,
                                                         "&:hover": {
                                                           bgcolor: alpha(
                                                             theme.palette
                                                               .warning.main,
-                                                            0.2
+                                                            0.2,
                                                           ),
                                                           transform:
                                                             "translateY(-2px)",
                                                           boxShadow: `0 4px 8px ${alpha(
                                                             theme.palette
                                                               .warning.main,
-                                                            0.2
+                                                            0.2,
                                                           )}`,
                                                         },
                                                         transition: "all 0.2s",
@@ -1427,13 +1426,13 @@ export default function ClassReportList() {
                                                     color: "error.main",
                                                     bgcolor: alpha(
                                                       theme.palette.error.main,
-                                                      0.1
+                                                      0.1,
                                                     ),
                                                     "&:hover": {
                                                       bgcolor: alpha(
                                                         theme.palette.error
                                                           .main,
-                                                        0.2
+                                                        0.2,
                                                       ),
                                                       transform:
                                                         "translateY(-2px)",
@@ -1452,7 +1451,7 @@ export default function ClassReportList() {
                                           </TableCell>
                                         </TableRow>
                                       );
-                                    }
+                                    },
                                   )}
                                 </React.Fragment>
                               );
@@ -1471,7 +1470,7 @@ export default function ClassReportList() {
                                     borderRadius: 2,
                                     bgcolor: alpha(
                                       theme.palette.primary.main,
-                                      0.03
+                                      0.03,
                                     ),
                                     border: `1px dashed ${alpha(theme.palette.primary.main, 0.2)}`,
                                   }}
@@ -1483,7 +1482,7 @@ export default function ClassReportList() {
                                           fontSize: 64,
                                           color: alpha(
                                             theme.palette.warning.main,
-                                            0.3
+                                            0.3,
                                           ),
                                           mb: 2,
                                         }}
@@ -1519,7 +1518,7 @@ export default function ClassReportList() {
                                           fontSize: 64,
                                           color: alpha(
                                             theme.palette.primary.main,
-                                            0.3
+                                            0.3,
                                           ),
                                           mb: 2,
                                         }}
@@ -1607,7 +1606,7 @@ export default function ClassReportList() {
                             "&:hover": {
                               bgcolor: alpha(
                                 theme.palette.secondary.main,
-                                0.08
+                                0.08,
                               ),
                               transform: "translateY(-1px)",
                               boxShadow: `0 2px 8px ${alpha(theme.palette.secondary.main, 0.15)}`,

@@ -11,53 +11,53 @@ import {
   Grid,
   Button,
   LinearProgress,
-} from "@mui/material"
+} from "@mui/material";
 import {
   AccountBalanceWallet as AccountBalanceWalletIcon,
   Cancel as CancelIcon,
   Save as SaveIcon,
-} from "@mui/icons-material"
-import CraftForm from "@/components/Forms/Form"
-import CraftSelect from "@/components/Forms/Select"
-import CraftInput from "@/components/Forms/Input"
-import CraftDatePicker from "@/components/Forms/DatePicker"
-import { FieldValues, useFormContext } from "react-hook-form"
+} from "@mui/icons-material";
+import CraftForm from "@/components/Forms/Form";
+import CraftSelect from "@/components/Forms/Select";
+import CraftInput from "@/components/Forms/Input";
+import CraftDatePicker from "@/components/Forms/DatePicker";
+import { FieldValues, useFormContext } from "react-hook-form";
 import {
   useCreateInvestmentMutation,
   useUpdateInvestmentMutation,
   useGetSingleInvestmentQuery,
-} from "@/redux/api/investmentApi"
-import toast from "react-hot-toast"
-import { useEffect, useRef } from "react"
+} from "@/redux/api/investmentApi";
+import toast from "react-hot-toast";
+import { useEffect, useRef } from "react";
 
 interface InvestmentFormProps {
-  open: boolean
-  onClose: () => void
-  investmentId?: string
-  refetch: () => void
+  open: boolean;
+  onClose: () => void;
+  investmentId?: string;
+  refetch: () => void;
 }
 
 const InvestmentCategoryDependentFields = () => {
-  const { watch, setValue } = useFormContext()
-  const investmentCategory = watch("investmentCategory")
-  const isInitialMount = useRef(true)
+  const { watch, setValue } = useFormContext();
+  const investmentCategory = watch("investmentCategory");
+  const isInitialMount = useRef(true);
 
   useEffect(() => {
     if (isInitialMount.current) {
-      isInitialMount.current = false
-      return
+      isInitialMount.current = false;
+      return;
     }
 
     if (investmentCategory === "outgoing") {
-      setValue("investorName", "")
-      setValue("investorContact", "")
-      setValue("incomingType", "")
-      setValue("returnPolicy", "")
+      setValue("investorName", "");
+      setValue("investorContact", "");
+      setValue("incomingType", "");
+      setValue("returnPolicy", "");
     } else if (investmentCategory === "incoming") {
-      setValue("investmentTo", "")
-      setValue("investmentType", "")
+      setValue("investmentTo", "");
+      setValue("investmentType", "");
     }
-  }, [investmentCategory, setValue])
+  }, [investmentCategory, setValue]);
 
   if (investmentCategory === "outgoing") {
     return (
@@ -67,7 +67,6 @@ const InvestmentCategoryDependentFields = () => {
             fullWidth
             name="investmentTo"
             label="Investment To (Company/Person)"
-            
           />
         </Grid>
         <Grid item xs={12} md={6}>
@@ -76,30 +75,23 @@ const InvestmentCategoryDependentFields = () => {
             label="Investment Type"
             name="investmentType"
             items={["fixed_deposit", "share", "bond", "others"]}
-            
           />
         </Grid>
       </>
-    )
+    );
   }
 
   if (investmentCategory === "incoming") {
     return (
       <>
         <Grid item xs={12} md={6}>
-          <CraftInput
-            fullWidth
-            name="investorName"
-            label="Investor Name"
-            
-          />
+          <CraftInput fullWidth name="investorName" label="Investor Name" />
         </Grid>
         <Grid item xs={12} md={6}>
           <CraftInput
             fullWidth
             name="investorContact"
             label="Investor Contact"
-            
           />
         </Grid>
         <Grid item xs={12} md={6}>
@@ -108,7 +100,6 @@ const InvestmentCategoryDependentFields = () => {
             label="Incoming Type"
             name="incomingType"
             items={["donation_fund", "share", "partnership", "others"]}
-            
           />
         </Grid>
         <Grid item xs={12} md={6}>
@@ -121,58 +112,64 @@ const InvestmentCategoryDependentFields = () => {
           />
         </Grid>
       </>
-    )
+    );
   }
 
-  return null
-}
+  return null;
+};
 
-const InvestmentForm = ({ investmentId, open, onClose, refetch }: InvestmentFormProps) => {
-  const [createInvestment] = useCreateInvestmentMutation()
-  const [updateInvestment] = useUpdateInvestmentMutation()
+const InvestmentForm = ({
+  investmentId,
+  open,
+  onClose,
+  refetch,
+}: InvestmentFormProps) => {
+  const [createInvestment] = useCreateInvestmentMutation();
+  const [updateInvestment] = useUpdateInvestmentMutation();
   const { data: singleInvestment, isLoading } = useGetSingleInvestmentQuery(
     investmentId!,
-    { skip: !investmentId }
-  )
+    { skip: !investmentId },
+  );
 
-const handleSubmit = async (data: FieldValues) => {
-  try {
-    let res
+  const handleSubmit = async (data: FieldValues) => {
+    try {
+      let res;
 
-    const submitData = {
-      ...data,
-      investmentAmount: Number(data.investmentAmount),
-      returnRate: data.returnRate ? Number(data.returnRate) : undefined,
+      const submitData = {
+        ...data,
+        investmentAmount: Number(data.investmentAmount),
+        returnRate: data.returnRate ? Number(data.returnRate) : undefined,
+      };
+
+      if (investmentId) {
+        res = await updateInvestment({
+          id: investmentId,
+          data: submitData,
+        }).unwrap();
+      } else {
+        res = await createInvestment(submitData).unwrap();
+      }
+
+      if (res?.success) {
+        toast.success(
+          res?.message ||
+            (investmentId
+              ? "Investment updated successfully!"
+              : "Investment added successfully!"),
+        );
+        refetch();
+        onClose();
+      } else {
+        toast.error(res?.message || "Operation failed!");
+      }
+    } catch (error: any) {
+      console.error("Failed to submit Investment:", error);
+
+      toast.error(
+        error?.data?.message || error?.message || "Something went wrong!",
+      );
     }
-
-    if (investmentId) {
-      res = await updateInvestment({ id: investmentId, data: submitData }).unwrap()
-    } else {
-      res = await createInvestment(submitData).unwrap()
-    }
-
-    if (res?.success) {
-      toast.success(
-        res?.message ||
-          (investmentId ? "Investment updated successfully!" : "Investment added successfully!")
-      )
-      refetch()
-      onClose()
-    } else {
-      toast.error(res?.message || "Operation failed!")
-      console.log(res)
-    }
-  } catch (error: any) {
-    console.error("Failed to submit Investment:", error)
-
-    toast.error(
-      error?.data?.message ||
-      error?.message ||
-      "Something went wrong!"
-    )
-  }
-}
-
+  };
 
   const defaultValues = {
     investmentCategory: singleInvestment?.data?.investmentCategory || "",
@@ -187,13 +184,20 @@ const handleSubmit = async (data: FieldValues) => {
     maturityDate: singleInvestment?.data?.maturityDate || "",
     returnRate: singleInvestment?.data?.returnRate || "",
     status: singleInvestment?.data?.status || "active",
-  }
+  };
 
   return (
     <>
       {isLoading && investmentId ? (
-        <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh' }}>
-          <LinearProgress sx={{ width: '100%' }} />
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "center",
+            alignItems: "center",
+            height: "100vh",
+          }}
+        >
+          <LinearProgress sx={{ width: "100%" }} />
         </Box>
       ) : (
         <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
@@ -215,8 +219,17 @@ const handleSubmit = async (data: FieldValues) => {
 
             <DialogContent sx={{ p: 4 }}>
               <Box sx={{ mb: 4 }}>
-                <Paper sx={{ p: 3, borderRadius: 3, boxShadow: "0 4px 20px rgba(0,0,0,0.08)" }}>
-                  <Typography variant="h6" sx={{ fontWeight: 600, mb: 3, color: "#1F2937" }}>
+                <Paper
+                  sx={{
+                    p: 3,
+                    borderRadius: 3,
+                    boxShadow: "0 4px 20px rgba(0,0,0,0.08)",
+                  }}
+                >
+                  <Typography
+                    variant="h6"
+                    sx={{ fontWeight: 600, mb: 3, color: "#1F2937" }}
+                  >
                     Investment Details
                   </Typography>
                   <Grid container spacing={3}>
@@ -226,7 +239,6 @@ const handleSubmit = async (data: FieldValues) => {
                         label="Investment Category"
                         name="investmentCategory"
                         items={["outgoing", "incoming"]}
-       
                       />
                     </Grid>
 
@@ -238,7 +250,6 @@ const handleSubmit = async (data: FieldValues) => {
                         name="investmentAmount"
                         label="Investment Amount"
                         type="number"
-                        
                       />
                     </Grid>
                     <Grid item xs={12} md={6}>
@@ -254,7 +265,6 @@ const handleSubmit = async (data: FieldValues) => {
                         fullWidth
                         name="investmentDate"
                         label="Investment Date"
-                        
                       />
                     </Grid>
                     <Grid item xs={12} md={6}>
@@ -307,7 +317,7 @@ const handleSubmit = async (data: FieldValues) => {
         </Dialog>
       )}
     </>
-  )
-}
+  );
+};
 
-export default InvestmentForm
+export default InvestmentForm;

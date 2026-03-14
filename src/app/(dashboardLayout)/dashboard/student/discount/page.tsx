@@ -27,6 +27,7 @@ import {
 import Swal from "sweetalert2";
 import CraftTable, { Column, RowAction } from "@/components/Table";
 import DiscountSummaryModal from "../list/__components/DiscountSummaryModal";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 const DiscountedStudentList = () => {
   const theme = useTheme();
@@ -35,18 +36,15 @@ const DiscountedStudentList = () => {
     success: "#2e7d32",
   };
 
-  // ── Pagination state ───────────────────────────────────────────────────────
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
-  // ── Modal state ────────────────────────────────────────────────────────────
   const [discountSummaryOpen, setDiscountSummaryOpen] = useState(false);
   const [selectedStudentForDiscount, setSelectedStudentForDiscount] =
     useState<any>(null);
 
   const [deleteStudent] = useDeleteStudentMutation();
 
-  // ── Fetch ALL students ─────────────────────────────────────────────────────
   const {
     data: studentData,
     isLoading,
@@ -59,7 +57,7 @@ const DiscountedStudentList = () => {
 
   const students = studentData?.data || [];
 
-  // ── Filter only students who have discounts/waivers ────────────────────────
+  // ─Filter only students who have discounts/waivers
   // Pass the FULL filtered list to CraftTable — let the table handle
   // search, sort, and pagination internally.
   const discountedStudents = useMemo(() => {
@@ -76,7 +74,7 @@ const DiscountedStudentList = () => {
     );
   }, [students]);
 
-  // ── Summary stats (header cards) ──────────────────────────────────────────
+  // Summary stats
   const discountStats = useMemo(() => {
     let totalDiscountAmount = 0;
     let totalWaiverAmount = 0;
@@ -108,7 +106,7 @@ const DiscountedStudentList = () => {
     };
   }, [discountedStudents]);
 
-  // ── Handlers ──────────────────────────────────────────────────────────────
+  // Handlers
   const handleViewDiscountSummary = (student: any) => {
     setSelectedStudentForDiscount(student);
     setDiscountSummaryOpen(true);
@@ -140,7 +138,7 @@ const DiscountedStudentList = () => {
     });
   };
 
-  // ── Columns ────────────────────────────────────────────────────────────────
+  //Columns
   const columns: Column[] = [
     {
       id: "studentId",
@@ -174,9 +172,6 @@ const DiscountedStudentList = () => {
           <Box>
             <Typography variant="body2" sx={{ fontWeight: "medium" }}>
               {row.name}
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              {row.email}
             </Typography>
           </Box>
         </Box>
@@ -342,7 +337,7 @@ const DiscountedStudentList = () => {
     },
   ];
 
-  // ── Row actions ────────────────────────────────────────────────────────────
+  //  Row actions
   const rowActions: RowAction[] = [
     {
       label: "View",
@@ -354,16 +349,7 @@ const DiscountedStudentList = () => {
       tooltip: "View Details",
       alwaysShow: true,
     },
-    {
-      label: "Edit",
-      icon: <Edit fontSize="small" />,
-      onClick: (row: any) => {
-        window.location.href = `/dashboard/student/update/${row._id}`;
-      },
-      color: "primary",
-      tooltip: "Edit Student",
-      alwaysShow: true,
-    },
+
     {
       label: "Discount Summary",
       icon: <DiscountIcon fontSize="small" />,
@@ -372,35 +358,20 @@ const DiscountedStudentList = () => {
       tooltip: "View Discount Details",
       inMenu: true,
     },
-    {
-      label: "Delete",
-      icon: <Delete fontSize="small" />,
-      onClick: (row: any) => handleDelete(row._id),
-      color: "error",
-      tooltip: "Delete Student",
-      inMenu: true,
-    },
+    // {
+    //   label: "Delete",
+    //   icon: <Delete fontSize="small" />,
+    //   onClick: (row: any) => handleDelete(row._id),
+    //   color: "error",
+    //   tooltip: "Delete Student",
+    //   inMenu: true,
+    // },
   ];
 
-  // ── Loading ────────────────────────────────────────────────────────────────
   if (isLoading) {
-    return (
-      <Container
-        maxWidth="xl"
-        sx={{
-          p: { xs: "4px" },
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "50vh",
-        }}
-      >
-        <CircularProgress />
-      </Container>
-    );
+    return <LoadingSpinner />;
   }
 
-  // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <Container maxWidth="xl" sx={{ p: { xs: "4px" } }}>
       <Card
@@ -415,11 +386,9 @@ const DiscountedStudentList = () => {
           subtitle={`${discountedStudents.length} students received discounts`}
           emptyStateMessage="No discounted students found. Students with discounts, waivers, or late fee adjustments will appear here."
           columns={columns}
-          // ✅ Pass the FULL filtered list — CraftTable handles search/sort/pagination
           data={discountedStudents}
           loading={isLoading}
           idField="_id"
-          // ── pagination (client-side) ──────────────────────────────────
           pagination={true}
           page={page}
           rowsPerPage={rowsPerPage}
@@ -428,16 +397,13 @@ const DiscountedStudentList = () => {
             setRowsPerPage(n);
             setPage(0);
           }}
-          // ── search / sort / filter (client-side) ─────────────────────
           searchable={true}
           sortable={true}
           serverSideSorting={false}
           filterable={true}
-          // ── actions ───────────────────────────────────────────────────
           rowActions={rowActions}
           selectable={true}
           onRefresh={refetch}
-          // ── appearance ────────────────────────────────────────────────
           showToolbar={true}
           showRowNumbers={true}
           rowNumberHeader="#"
@@ -449,7 +415,6 @@ const DiscountedStudentList = () => {
         />
       </Card>
 
-      {/* Discount Summary Modal */}
       <DiscountSummaryModal
         open={discountSummaryOpen}
         onClose={() => setDiscountSummaryOpen(false)}

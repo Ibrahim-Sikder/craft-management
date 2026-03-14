@@ -1,45 +1,64 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // components/AddReturnDialog.tsx
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, Grid } from "@mui/material"
-import { Cancel as CancelIcon, Save as SaveIcon, TrendingUp as TrendingUpIcon } from "@mui/icons-material"
-import CraftForm from "@/components/Forms/Form"
-import CraftSelect from "@/components/Forms/Select"
-import CraftInput from "@/components/Forms/Input"
-import CraftDatePicker from "@/components/Forms/DatePicker"
-import { FieldValues } from "react-hook-form"
-import { useAddInvestmentReturnMutation } from "@/redux/api/investmentApi"
-import toast from "react-hot-toast"
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Typography,
+  Grid,
+} from "@mui/material";
+import {
+  Cancel as CancelIcon,
+  Save as SaveIcon,
+  TrendingUp as TrendingUpIcon,
+} from "@mui/icons-material";
+import CraftForm from "@/components/Forms/Form";
+import CraftSelect from "@/components/Forms/Select";
+import CraftInput from "@/components/Forms/Input";
+import CraftDatePicker from "@/components/Forms/DatePicker";
+import { FieldValues } from "react-hook-form";
+import { useAddInvestmentReturnMutation } from "@/redux/api/investmentApi";
+import toast from "react-hot-toast";
 
 interface AddReturnDialogProps {
-  open: boolean
-  onClose: () => void
-  investmentId: string
-  refetch: () => void
+  open: boolean;
+  onClose: () => void;
+  investmentId: string;
+  refetch: () => void;
 }
 
-const AddReturnDialog = ({ open, onClose, investmentId, refetch }: AddReturnDialogProps) => {
-  const [addReturn] = useAddInvestmentReturnMutation()
+const AddReturnDialog = ({
+  open,
+  onClose,
+  investmentId,
+  refetch,
+}: AddReturnDialogProps) => {
+  const [addReturn] = useAddInvestmentReturnMutation();
 
   const handleSubmit = async (data: FieldValues) => {
-    console.log('raw data', data)
     const submitData = {
       ...data,
-      amount: Number(data.amount)
-    }
+      amount: Number(data.amount),
+    };
     try {
-      const res = await addReturn({ id: investmentId, data: submitData }).unwrap()
+      const res = await addReturn({
+        id: investmentId,
+        data: submitData,
+      }).unwrap();
 
       if (res.success) {
-        toast.success("Return added successfully!")
-        refetch()
-        onClose()
+        toast.success("Return added successfully!");
+        refetch();
+        onClose();
       } else {
-        toast.error(res.message || "Failed to add return")
+        toast.error(res.message || "Failed to add return");
       }
     } catch (error: any) {
-      toast.error(error.data?.message || "Something went wrong!")
+      toast.error(error.data?.message || "Something went wrong!");
     }
-  }
+  };
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
@@ -76,8 +95,7 @@ const AddReturnDialog = ({ open, onClose, investmentId, refetch }: AddReturnDial
                 fullWidth
                 name="type"
                 label="Return Type"
-                items={['interest', 'principal', 'dividend', 'capital_gain'
-                ]}
+                items={["interest", "principal", "dividend", "capital_gain"]}
                 required
               />
             </Grid>
@@ -131,7 +149,7 @@ const AddReturnDialog = ({ open, onClose, investmentId, refetch }: AddReturnDial
         </DialogActions>
       </CraftForm>
     </Dialog>
-  )
-}
+  );
+};
 
-export default AddReturnDialog
+export default AddReturnDialog;

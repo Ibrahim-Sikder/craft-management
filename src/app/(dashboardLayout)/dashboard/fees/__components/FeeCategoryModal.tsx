@@ -29,7 +29,7 @@ import {
   useGetSingleFeeCategoryQuery,
   useUpdateFeeCategoryMutation,
 } from "@/redux/api/feeCategoryApi";
-import { buttonStyle, inputStyle } from "@/style/customeStyle";
+import { buttonStyle, inputStyle } from "@/style/customStyle";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { FieldValues } from "react-hook-form";
@@ -171,7 +171,7 @@ export default function FeeCategoryModal({ open, setOpen, id }: any) {
   const getSingleClassValue = () => {
     if (id && singleFee?.data) {
       const classOption = classOptions.find(
-        (option: any) => option.label === singleFee.data.className
+        (option: any) => option.label === singleFee.data.className,
       );
       return classOption ? [classOption] : [];
     }
@@ -262,7 +262,8 @@ export default function FeeCategoryModal({ open, setOpen, id }: any) {
     if (hasDuplicates) return;
 
     // Get category name
-    const categoryName = data.category[0]?.title || normalizeFeeType(data.category);
+    const categoryName =
+      data.category[0]?.title || normalizeFeeType(data.category);
 
     // Prepare fee items data
     const feeItemsData = validFeeItems.map((item: any) => ({
@@ -304,9 +305,10 @@ export default function FeeCategoryModal({ open, setOpen, id }: any) {
 
         const res = await createFeeCategory(feeCategoriesData).unwrap();
         if (res?.success) {
-          const message = classNames.length > 1
-            ? `${classNames.length} fee categories created successfully!`
-            : "Fee category created successfully!";
+          const message =
+            classNames.length > 1
+              ? `${classNames.length} fee categories created successfully!`
+              : "Fee category created successfully!";
           toast.success(message);
           setOpen(false);
         }
@@ -362,9 +364,15 @@ export default function FeeCategoryModal({ open, setOpen, id }: any) {
                   label={
                     <span>
                       Class{!id && "es"} <span style={{ color: "red" }}>*</span>
-                      {!id && <Typography variant="caption" color="text.secondary" sx={{ ml: 1 }}>
-                        (Select multiple for multiple classes)
-                      </Typography>}
+                      {!id && (
+                        <Typography
+                          variant="caption"
+                          color="text.secondary"
+                          sx={{ ml: 1 }}
+                        >
+                          (Select multiple for multiple classes)
+                        </Typography>
+                      )}
                     </span>
                   }
                   placeholder={id ? "Select Class" : "Select Classes"}
@@ -444,11 +452,7 @@ export default function FeeCategoryModal({ open, setOpen, id }: any) {
                 sx={buttonStyle}
                 disabled={totalLoading}
               >
-                {totalLoading
-                  ? "Saving..."
-                  : id
-                    ? "Update"
-                    : "Save"}
+                {totalLoading ? "Saving..." : id ? "Update" : "Save"}
               </Button>
             </Box>
           </Box>

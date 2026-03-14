@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-"use client"
+"use client";
 
-import type React from "react"
+import type React from "react";
 
-import { useState, useEffect } from "react"
+import { useState, useEffect } from "react";
 import {
   Box,
   Container,
@@ -31,7 +31,7 @@ import {
   useTheme,
   alpha,
   CircularProgress,
-} from "@mui/material"
+} from "@mui/material";
 import {
   Search as SearchIcon,
   ViewModule as GridViewIcon,
@@ -58,47 +58,50 @@ import {
   SupervisorAccount as SupervisorIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-} from "@mui/icons-material"
-import { styled } from "@mui/material/styles"
-import { motion } from "framer-motion"
-import { useDeleteStaffMutation, useGetAllStaffQuery } from "@/redux/api/staffApi"
-import Swal from "sweetalert2"
+} from "@mui/icons-material";
+import { styled } from "@mui/material/styles";
+import { motion } from "framer-motion";
+import {
+  useDeleteStaffMutation,
+  useGetAllStaffQuery,
+} from "@/redux/api/staffApi";
+import Swal from "sweetalert2";
 
 // Define types
-type StaffStatus = "active" | "on leave" | "inactive"
+type StaffStatus = "active" | "on leave" | "inactive";
 
 interface StaffMember {
-  id: number | string
-  name: string
-  avatar: string
-  department: string
-  role: string
-  status: StaffStatus
-  email: string
-  phone: string
-  location: string
-  experience: number
-  rating: string
-  performance: number
-  attendance: number
-  joinDate: string
-  skills: string[]
-  certifications: string | null
-  supervisor: string
-  contractType: string
-  nextReview: string
-  birthdate: string
-  staffId?: string
+  id: number | string;
+  name: string;
+  avatar: string;
+  department: string;
+  role: string;
+  status: StaffStatus;
+  email: string;
+  phone: string;
+  location: string;
+  experience: number;
+  rating: string;
+  performance: number;
+  attendance: number;
+  joinDate: string;
+  skills: string[];
+  certifications: string | null;
+  supervisor: string;
+  contractType: string;
+  nextReview: string;
+  birthdate: string;
+  staffId?: string;
 }
 
 interface DepartmentStats {
-  department: string
-  color: string
-  total: number
-  active: number
-  onLeave: number
-  inactive: number
-  avgPerformance: number
+  department: string;
+  color: string;
+  total: number;
+  active: number;
+  onLeave: number;
+  inactive: number;
+  avgPerformance: number;
 }
 
 // Styled components
@@ -112,7 +115,7 @@ const StyledCard = styled(Card)(({ theme }) => ({
     transform: "translateY(-8px)",
     boxShadow: "0 16px 70px rgba(0, 0, 0, 0.2)",
   },
-}))
+}));
 
 const GradientHeader = styled(Box)(({ theme }) => ({
   background: "linear-gradient(90deg, #00b09b 0%, #96c93d 100%)",
@@ -128,10 +131,11 @@ const GradientHeader = styled(Box)(({ theme }) => ({
     left: 0,
     width: "100%",
     height: "100%",
-    background: 'url("/placeholder.svg?height=200&width=1000") center/cover no-repeat',
+    background:
+      'url("/placeholder.svg?height=200&width=1000") center/cover no-repeat',
     opacity: 0.1,
   },
-}))
+}));
 
 const StyledBadge = styled(Badge)(({ theme }) => ({
   "& .MuiBadge-badge": {
@@ -160,29 +164,31 @@ const StyledBadge = styled(Badge)(({ theme }) => ({
       opacity: 0,
     },
   },
-}))
+}));
 
-const StatusChip = styled(Chip)<{ status: StaffStatus }>(({ theme, status }) => ({
-  backgroundColor:
-    status === "active"
-      ? alpha(theme.palette.success.main, 0.1)
-      : status === "on leave"
-        ? alpha(theme.palette.warning.main, 0.1)
-        : alpha(theme.palette.error.main, 0.1),
-  color:
-    status === "active"
-      ? theme.palette.success.dark
-      : status === "on leave"
-        ? theme.palette.warning.dark
-        : theme.palette.error.dark,
-  fontWeight: 600,
-  borderRadius: 8,
-}))
+const StatusChip = styled(Chip)<{ status: StaffStatus }>(
+  ({ theme, status }) => ({
+    backgroundColor:
+      status === "active"
+        ? alpha(theme.palette.success.main, 0.1)
+        : status === "on leave"
+          ? alpha(theme.palette.warning.main, 0.1)
+          : alpha(theme.palette.error.main, 0.1),
+    color:
+      status === "active"
+        ? theme.palette.success.dark
+        : status === "on leave"
+          ? theme.palette.warning.dark
+          : theme.palette.error.dark,
+    fontWeight: 600,
+    borderRadius: 8,
+  }),
+);
 
 const DepartmentChip = styled(Chip)(({ theme }) => ({
   fontWeight: 500,
   borderRadius: 8,
-}))
+}));
 
 // const DepartmentChip = styled(Chip)<{ color: string }>(({ theme, color }) => ({
 //   backgroundColor: alpha(color, 0.1),
@@ -204,36 +210,48 @@ const SearchField = styled(TextField)(({ theme }) => ({
       boxShadow: "0 8px 32px rgba(0, 0, 0, 0.16)",
     },
   },
-}))
+}));
 
-const ViewToggleButton = styled(Button)<{ active: boolean }>(({ theme, active }) => ({
-  backgroundColor: active ? alpha(theme.palette.primary.main, 0.1) : "transparent",
-  color: active ? theme.palette.primary.main : theme.palette.text.secondary,
-  fontWeight: active ? 600 : 400,
-  "&:hover": {
-    backgroundColor: active ? alpha(theme.palette.primary.main, 0.2) : alpha(theme.palette.action.hover, 0.1),
-  },
-}))
+const ViewToggleButton = styled(Button)<{ active: boolean }>(
+  ({ theme, active }) => ({
+    backgroundColor: active
+      ? alpha(theme.palette.primary.main, 0.1)
+      : "transparent",
+    color: active ? theme.palette.primary.main : theme.palette.text.secondary,
+    fontWeight: active ? 600 : 400,
+    "&:hover": {
+      backgroundColor: active
+        ? alpha(theme.palette.primary.main, 0.2)
+        : alpha(theme.palette.action.hover, 0.1),
+    },
+  }),
+);
 
-const PerformanceIndicator = styled(Box)<{ value: number }>(({ theme, value }) => ({
-  position: "relative",
-  height: 4,
-  width: "100%",
-  backgroundColor: alpha(theme.palette.grey[300], 0.5),
-  borderRadius: 2,
-  overflow: "hidden",
-  "&::after": {
-    content: '""',
-    position: "absolute",
-    top: 0,
-    left: 0,
-    height: "100%",
-    width: `${value}%`,
-    backgroundColor:
-      value > 80 ? theme.palette.success.main : value > 50 ? theme.palette.warning.main : theme.palette.error.main,
+const PerformanceIndicator = styled(Box)<{ value: number }>(
+  ({ theme, value }) => ({
+    position: "relative",
+    height: 4,
+    width: "100%",
+    backgroundColor: alpha(theme.palette.grey[300], 0.5),
     borderRadius: 2,
-  },
-}))
+    overflow: "hidden",
+    "&::after": {
+      content: '""',
+      position: "absolute",
+      top: 0,
+      left: 0,
+      height: "100%",
+      width: `${value}%`,
+      backgroundColor:
+        value > 80
+          ? theme.palette.success.main
+          : value > 50
+            ? theme.palette.warning.main
+            : theme.palette.error.main,
+      borderRadius: 2,
+    },
+  }),
+);
 
 const StatsCard = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(2),
@@ -242,16 +260,24 @@ const StatsCard = styled(Paper)(({ theme }) => ({
   display: "flex",
   flexDirection: "column",
   height: "100%",
-}))
+}));
 
 const CircularProgressWithLabel = ({
   value,
   size = 60,
   thickness = 5,
-}: { value: number; size?: number; thickness?: number }) => {
-  const theme = useTheme()
+}: {
+  value: number;
+  size?: number;
+  thickness?: number;
+}) => {
+  const theme = useTheme();
   const color =
-    value > 80 ? theme.palette.success.main : value > 50 ? theme.palette.warning.main : theme.palette.error.main
+    value > 80
+      ? theme.palette.success.main
+      : value > 50
+        ? theme.palette.warning.main
+        : theme.palette.error.main;
 
   return (
     <Box sx={{ position: "relative", display: "inline-flex" }}>
@@ -284,8 +310,8 @@ const CircularProgressWithLabel = ({
         </Typography>
       </Box>
     </Box>
-  )
-}
+  );
+};
 
 // Mock data
 const departmentColors: Record<string, string> = {
@@ -300,24 +326,26 @@ const departmentColors: Record<string, string> = {
   Science: "#00b09b", // Added Science department
   Arts: "#6a11cb", // Added Arts department
   Commerce: "#fc4a1a", // Added Commerce department
-}
+};
 
 export default function StaffDashboard() {
-  const theme = useTheme()
-  const [staff, setStaff] = useState<StaffMember[]>([])
-  const [loading, setLoading] = useState(true)
-  const [viewMode, setViewMode] = useState<"grid" | "list" | "kanban">("grid")
-  const [searchQuery, setSearchQuery] = useState("")
-  const [tabValue, setTabValue] = useState(0)
-  const [sortBy, setSortBy] = useState<"name" | "department" | "role" | "experience" | "rating" | "performance">("name")
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc")
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
-  const [filterDepartment, setFilterDepartment] = useState("all")
+  const theme = useTheme();
+  const [staff, setStaff] = useState<StaffMember[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [viewMode, setViewMode] = useState<"grid" | "list" | "kanban">("grid");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [tabValue, setTabValue] = useState(0);
+  const [sortBy, setSortBy] = useState<
+    "name" | "department" | "role" | "experience" | "rating" | "performance"
+  >("name");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [filterDepartment, setFilterDepartment] = useState("all");
   // Update the state variables to handle pagination and search
-  const [page, setPage] = useState(0)
-  const [rowsPerPage, setRowsPerPage] = useState(10)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [deleteStaff] = useDeleteStaffMutation()
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [deleteStaff] = useDeleteStaffMutation();
   const {
     data: staffData,
     isLoading,
@@ -326,22 +354,28 @@ export default function StaffDashboard() {
     limit: rowsPerPage,
     page: page + 1,
     searchTerm: searchTerm,
-  })
+  });
 
-  const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null)
-  const [selectedStaff, setSelectedStaff] = useState<StaffMember | null>(null)
+  const [menuAnchorEl, setMenuAnchorEl] = useState<null | HTMLElement>(null);
+  const [selectedStaff, setSelectedStaff] = useState<StaffMember | null>(null);
 
   useEffect(() => {
     if (staffData?.data?.staffs) {
-      console.log("Setting staff from API data:", staffData.data.staffs)
       setStaff(
         staffData.data.staffs.map((staff: any) => ({
           id: staff._id,
           name: staff.name || "Unknown",
-          avatar: staff.staffPhoto || `/placeholder.svg?height=200&width=200&text=${staff.name?.charAt(0) || "U"}`,
+          avatar:
+            staff.staffPhoto ||
+            `/placeholder.svg?height=200&width=200&text=${staff.name?.charAt(0) || "U"}`,
           department: staff.department || "Not Assigned",
           role: staff.designation || "Staff",
-          status: staff.status === "Active" ? "active" : staff.status === "On Leave" ? "on leave" : "inactive",
+          status:
+            staff.status === "Active"
+              ? "active"
+              : staff.status === "On Leave"
+                ? "on leave"
+                : "inactive",
           email: staff.email || "",
           phone: staff.phone || "",
           location: staff.currentAddress?.district || "Not Available",
@@ -349,48 +383,57 @@ export default function StaffDashboard() {
           rating: "4.5",
           performance: 85,
           attendance: 90,
-          joinDate: staff.joiningDate ? new Date(staff.joiningDate).toLocaleDateString() : "Not Available",
-          skills: staff.certifications?.map((cert: any) => cert.certificateName) || [],
-          certifications: staff.certifications?.length > 0 ? staff.certifications[0].certificateName : null,
+          joinDate: staff.joiningDate
+            ? new Date(staff.joiningDate).toLocaleDateString()
+            : "Not Available",
+          skills:
+            staff.certifications?.map((cert: any) => cert.certificateName) ||
+            [],
+          certifications:
+            staff.certifications?.length > 0
+              ? staff.certifications[0].certificateName
+              : null,
           supervisor: "Principal",
           contractType: staff.staffType || "Full-time",
           nextReview: new Date().toLocaleDateString(),
-          birthdate: staff.dateOfBirth ? new Date(staff.dateOfBirth).toLocaleDateString() : "Not Available",
+          birthdate: staff.dateOfBirth
+            ? new Date(staff.dateOfBirth).toLocaleDateString()
+            : "Not Available",
           staffId: staff.staffId,
         })),
-      )
-      setLoading(false)
+      );
+      setLoading(false);
     }
-  }, [staffData])
+  }, [staffData]);
 
   const handleSortClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget)
-  }
+    setAnchorEl(event.currentTarget);
+  };
 
   const handleSortClose = () => {
-    setAnchorEl(null)
-  }
+    setAnchorEl(null);
+  };
 
   const handleSortChange = (field: typeof sortBy) => {
     if (sortBy === field) {
-      setSortDirection(sortDirection === "asc" ? "desc" : "asc")
+      setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
-      setSortBy(field)
-      setSortDirection("asc")
+      setSortBy(field);
+      setSortDirection("asc");
     }
-    handleSortClose()
-  }
+    handleSortClose();
+  };
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue)
+    setTabValue(newValue);
 
     if (newValue === 0) {
-      setFilterDepartment("all")
+      setFilterDepartment("all");
     } else {
-      const department = Object.keys(departmentColors)[newValue - 1]
-      setFilterDepartment(department)
+      const department = Object.keys(departmentColors)[newValue - 1];
+      setFilterDepartment(department);
     }
-  }
+  };
 
   const filteredStaff = staff
     .filter(
@@ -403,24 +446,24 @@ export default function StaffDashboard() {
         (filterDepartment === "all" || person.department === filterDepartment),
     )
     .sort((a, b) => {
-      let comparison = 0
+      let comparison = 0;
 
       if (sortBy === "name") {
-        comparison = a.name.localeCompare(b.name)
+        comparison = a.name.localeCompare(b.name);
       } else if (sortBy === "department") {
-        comparison = a.department.localeCompare(b.department)
+        comparison = a.department.localeCompare(b.department);
       } else if (sortBy === "role") {
-        comparison = a.role.localeCompare(b.role)
+        comparison = a.role.localeCompare(b.role);
       } else if (sortBy === "experience") {
-        comparison = a.experience - b.experience
+        comparison = a.experience - b.experience;
       } else if (sortBy === "rating") {
-        comparison = Number.parseFloat(a.rating) - Number.parseFloat(b.rating)
+        comparison = Number.parseFloat(a.rating) - Number.parseFloat(b.rating);
       } else if (sortBy === "performance") {
-        comparison = a.performance - b.performance
+        comparison = a.performance - b.performance;
       }
 
-      return sortDirection === "asc" ? comparison : -comparison
-    })
+      return sortDirection === "asc" ? comparison : -comparison;
+    });
 
   const handleDelete = async (id: string) => {
     setTimeout(() => {
@@ -435,109 +478,142 @@ export default function StaffDashboard() {
       }).then(async (result) => {
         if (result.isConfirmed) {
           try {
-            await deleteStaff(id).unwrap()
+            await deleteStaff(id).unwrap();
 
             Swal.fire({
               title: "Deleted!",
               text: `student has been deleted successfully.`,
               icon: "success",
-            })
+            });
 
-            refetch()
+            refetch();
           } catch (err: any) {
             Swal.fire({
               title: "Error!",
               text: err.data?.message || "Failed to delete student",
               icon: "error",
-            })
+            });
           }
         }
-      })
-    }, 100)
-  }
+      });
+    }, 100);
+  };
   const handleRefresh = () => {
-    setLoading(true)
+    setLoading(true);
     refetch()
       .then(() => {
-        setLoading(false)
+        setLoading(false);
       })
       .catch((error) => {
-        console.error("Error refreshing data:", error)
-        setLoading(false)
-      })
-  }
+        console.error("Error refreshing data:", error);
+        setLoading(false);
+      });
+  };
 
-  const handleMenuOpen = (event: React.MouseEvent<HTMLElement>, staff: StaffMember) => {
-    event.stopPropagation()
-    setSelectedStaff(staff)
-    setMenuAnchorEl(event.currentTarget)
-  }
+  const handleMenuOpen = (
+    event: React.MouseEvent<HTMLElement>,
+    staff: StaffMember,
+  ) => {
+    event.stopPropagation();
+    setSelectedStaff(staff);
+    setMenuAnchorEl(event.currentTarget);
+  };
 
   const handleMenuClose = () => {
-    setMenuAnchorEl(null)
-  }
+    setMenuAnchorEl(null);
+  };
 
   const handleViewStaff = (staff: StaffMember) => {
-    window.location.href = `/dashboard/staff/profile?id=${staff.id}`
-    handleMenuClose()
-  }
+    window.location.href = `/dashboard/staff/profile?id=${staff.id}`;
+    handleMenuClose();
+  };
 
   const handleEditStaff = (staff: StaffMember) => {
-    window.location.href = `/dashboard/staff/update/${staff.id}`
-    handleMenuClose()
-  }
+    window.location.href = `/dashboard/staff/update/${staff.id}`;
+    handleMenuClose();
+  };
 
   const handleDeleteStaffItem = () => {
     if (selectedStaff) {
-      handleDelete(selectedStaff.id.toString())
+      handleDelete(selectedStaff.id.toString());
     }
-    handleMenuClose()
-  }
+    handleMenuClose();
+  };
 
   // Calculate department statistics
-  const departmentStats: DepartmentStats[] = Object.keys(departmentColors).map((dept) => {
-    const deptStaff = staff.filter((s) => s.department === dept)
-    const activeCount = deptStaff.filter((s) => s.status === "active").length
-    const onLeaveCount = deptStaff.filter((s) => s.status === "on leave").length
-    const inactiveCount = deptStaff.filter((s) => s.status === "inactive").length
-    const avgPerformance = deptStaff.reduce((sum, s) => sum + s.performance, 0) / (deptStaff.length || 1)
+  const departmentStats: DepartmentStats[] = Object.keys(departmentColors).map(
+    (dept) => {
+      const deptStaff = staff.filter((s) => s.department === dept);
+      const activeCount = deptStaff.filter((s) => s.status === "active").length;
+      const onLeaveCount = deptStaff.filter(
+        (s) => s.status === "on leave",
+      ).length;
+      const inactiveCount = deptStaff.filter(
+        (s) => s.status === "inactive",
+      ).length;
+      const avgPerformance =
+        deptStaff.reduce((sum, s) => sum + s.performance, 0) /
+        (deptStaff.length || 1);
 
-    return {
-      department: dept,
-      color: departmentColors[dept],
-      total: deptStaff.length,
-      active: activeCount,
-      onLeave: onLeaveCount,
-      inactive: inactiveCount,
-      avgPerformance,
-    }
-  })
+      return {
+        department: dept,
+        color: departmentColors[dept],
+        total: deptStaff.length,
+        active: activeCount,
+        onLeave: onLeaveCount,
+        inactive: inactiveCount,
+        avgPerformance,
+      };
+    },
+  );
 
   // Calculate overall statistics
-  const totalStaff = staff.length
-  const activeStaff = staff.filter((s) => s.status === "active").length
-  const onLeaveStaff = staff.filter((s) => s.status === "on leave").length
-  const inactiveStaff = staff.filter((s) => s.status === "inactive").length
-  const avgPerformance = staff.reduce((sum, s) => sum + s.performance, 0) / (totalStaff || 1)
-  const avgAttendance = staff.reduce((sum, s) => sum + s.attendance, 0) / (totalStaff || 1)
+  const totalStaff = staff.length;
+  const activeStaff = staff.filter((s) => s.status === "active").length;
+  const onLeaveStaff = staff.filter((s) => s.status === "on leave").length;
+  const inactiveStaff = staff.filter((s) => s.status === "inactive").length;
+  const avgPerformance =
+    staff.reduce((sum, s) => sum + s.performance, 0) / (totalStaff || 1);
+  const avgAttendance =
+    staff.reduce((sum, s) => sum + s.attendance, 0) / (totalStaff || 1);
 
   return (
     <Box sx={{ minHeight: "100vh", backgroundColor: "#f8fafc" }}>
       <GradientHeader>
-        <Container maxWidth="xl" sx={{p:{xs:"4px"}}}>
+        <Container maxWidth="xl" sx={{ p: { xs: "4px" } }}>
           <Grid container spacing={3} alignItems="center">
             <Grid item xs={12} md={6}>
-              <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}>
-                <Typography variant="h3" fontWeight={700} color="white" gutterBottom>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.5 }}
+              >
+                <Typography
+                  variant="h3"
+                  fontWeight={700}
+                  color="white"
+                  gutterBottom
+                >
                   Staff Management
                 </Typography>
-                <Typography variant="h6" fontWeight={400} color="white" sx={{ opacity: 0.8 }}>
+                <Typography
+                  variant="h6"
+                  fontWeight={400}
+                  color="white"
+                  sx={{ opacity: 0.8 }}
+                >
                   Manage your non-teaching staff with our powerful dashboard
                 </Typography>
               </motion.div>
             </Grid>
             <Grid item xs={12} md={6}>
-              <Box sx={{ display: "flex", justifyContent: { xs: "flex-start", md: "flex-end" }, gap: 2 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: { xs: "flex-start", md: "flex-end" },
+                  gap: 2,
+                }}
+              >
                 <motion.div
                   initial={{ opacity: 0, scale: 0.9 }}
                   animate={{ opacity: 1, scale: 1 }}
@@ -578,7 +654,7 @@ export default function StaffDashboard() {
         </Container>
       </GradientHeader>
 
-      <Container maxWidth="xl" sx={{p:{xs:"4px"}}}>
+      <Container maxWidth="xl" sx={{ p: { xs: "4px" } }}>
         {/* Stats Overview */}
         <Grid container spacing={3} sx={{ mb: 4 }}>
           <Grid item xs={12} md={3}>
@@ -588,11 +664,23 @@ export default function StaffDashboard() {
               transition={{ duration: 0.4, delay: 0.1 }}
             >
               <StatsCard>
-                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 2 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "flex-start",
+                    mb: 2,
+                  }}
+                >
                   <Typography variant="h6" fontWeight={600}>
                     Total Staff
                   </Typography>
-                  <Avatar sx={{ bgcolor: alpha(theme.palette.primary.main, 0.1), color: theme.palette.primary.main }}>
+                  <Avatar
+                    sx={{
+                      bgcolor: alpha(theme.palette.primary.main, 0.1),
+                      color: theme.palette.primary.main,
+                    }}
+                  >
                     <PersonIcon />
                   </Avatar>
                 </Box>
@@ -641,11 +729,23 @@ export default function StaffDashboard() {
               transition={{ duration: 0.4, delay: 0.2 }}
             >
               <StatsCard>
-                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 2 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "flex-start",
+                    mb: 2,
+                  }}
+                >
                   <Typography variant="h6" fontWeight={600}>
                     Performance
                   </Typography>
-                  <Avatar sx={{ bgcolor: alpha(theme.palette.success.main, 0.1), color: theme.palette.success.main }}>
+                  <Avatar
+                    sx={{
+                      bgcolor: alpha(theme.palette.success.main, 0.1),
+                      color: theme.palette.success.main,
+                    }}
+                  >
                     <StarIcon />
                   </Avatar>
                 </Box>
@@ -670,11 +770,23 @@ export default function StaffDashboard() {
               transition={{ duration: 0.4, delay: 0.3 }}
             >
               <StatsCard>
-                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 2 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "flex-start",
+                    mb: 2,
+                  }}
+                >
                   <Typography variant="h6" fontWeight={600}>
                     Attendance
                   </Typography>
-                  <Avatar sx={{ bgcolor: alpha(theme.palette.warning.main, 0.1), color: theme.palette.warning.main }}>
+                  <Avatar
+                    sx={{
+                      bgcolor: alpha(theme.palette.warning.main, 0.1),
+                      color: theme.palette.warning.main,
+                    }}
+                  >
                     <EventIcon />
                   </Avatar>
                 </Box>
@@ -699,11 +811,23 @@ export default function StaffDashboard() {
               transition={{ duration: 0.4, delay: 0.4 }}
             >
               <StatsCard>
-                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 2 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "flex-start",
+                    mb: 2,
+                  }}
+                >
                   <Typography variant="h6" fontWeight={600}>
                     Departments
                   </Typography>
-                  <Avatar sx={{ bgcolor: alpha(theme.palette.info.main, 0.1), color: theme.palette.info.main }}>
+                  <Avatar
+                    sx={{
+                      bgcolor: alpha(theme.palette.info.main, 0.1),
+                      color: theme.palette.info.main,
+                    }}
+                  >
                     <BusinessIcon />
                   </Avatar>
                 </Box>
@@ -751,8 +875,8 @@ export default function StaffDashboard() {
                     placeholder="Search staff by name, role, email, or department..."
                     value={searchQuery}
                     onChange={(e) => {
-                      setSearchQuery(e.target.value)
-                      setSearchTerm(e.target.value)
+                      setSearchQuery(e.target.value);
+                      setSearchTerm(e.target.value);
                     }}
                     InputProps={{
                       startAdornment: (
@@ -764,7 +888,13 @@ export default function StaffDashboard() {
                   />
                 </Grid>
                 <Grid item xs={12} md={6}>
-                  <Box sx={{ display: "flex", justifyContent: { xs: "flex-start", md: "flex-end" }, gap: 1 }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: { xs: "flex-start", md: "flex-end" },
+                      gap: 1,
+                    }}
+                  >
                     <ViewToggleButton
                       startIcon={<GridViewIcon />}
                       active={viewMode === "grid"}
@@ -791,10 +921,19 @@ export default function StaffDashboard() {
                         <SortIcon />
                       </IconButton>
                     </Tooltip>
-                    <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={handleSortClose}>
+                    <Menu
+                      anchorEl={anchorEl}
+                      open={Boolean(anchorEl)}
+                      onClose={handleSortClose}
+                    >
                       <MenuItem onClick={() => handleSortChange("name")}>
                         <Box
-                          sx={{ display: "flex", alignItems: "center", width: "100%", justifyContent: "space-between" }}
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            width: "100%",
+                            justifyContent: "space-between",
+                          }}
                         >
                           <Typography>Name</Typography>
                           {sortBy === "name" &&
@@ -807,7 +946,12 @@ export default function StaffDashboard() {
                       </MenuItem>
                       <MenuItem onClick={() => handleSortChange("department")}>
                         <Box
-                          sx={{ display: "flex", alignItems: "center", width: "100%", justifyContent: "space-between" }}
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            width: "100%",
+                            justifyContent: "space-between",
+                          }}
                         >
                           <Typography>Department</Typography>
                           {sortBy === "department" &&
@@ -820,7 +964,12 @@ export default function StaffDashboard() {
                       </MenuItem>
                       <MenuItem onClick={() => handleSortChange("role")}>
                         <Box
-                          sx={{ display: "flex", alignItems: "center", width: "100%", justifyContent: "space-between" }}
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            width: "100%",
+                            justifyContent: "space-between",
+                          }}
                         >
                           <Typography>Role</Typography>
                           {sortBy === "role" &&
@@ -833,7 +982,12 @@ export default function StaffDashboard() {
                       </MenuItem>
                       <MenuItem onClick={() => handleSortChange("experience")}>
                         <Box
-                          sx={{ display: "flex", alignItems: "center", width: "100%", justifyContent: "space-between" }}
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            width: "100%",
+                            justifyContent: "space-between",
+                          }}
                         >
                           <Typography>Experience</Typography>
                           {sortBy === "experience" &&
@@ -846,7 +1000,12 @@ export default function StaffDashboard() {
                       </MenuItem>
                       <MenuItem onClick={() => handleSortChange("performance")}>
                         <Box
-                          sx={{ display: "flex", alignItems: "center", width: "100%", justifyContent: "space-between" }}
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            width: "100%",
+                            justifyContent: "space-between",
+                          }}
                         >
                           <Typography>Performance</Typography>
                           {sortBy === "performance" &&
@@ -899,7 +1058,9 @@ export default function StaffDashboard() {
                   <Tab
                     key={dept}
                     label={
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <Box
+                        sx={{ display: "flex", alignItems: "center", gap: 1 }}
+                      >
                         <Box
                           sx={{
                             width: 10,
@@ -931,7 +1092,8 @@ export default function StaffDashboard() {
                           component="div"
                           sx={{
                             height: 100,
-                            backgroundColor: departmentColors[person.department] || "#00b09b",
+                            backgroundColor:
+                              departmentColors[person.department] || "#00b09b",
                             position: "relative",
                           }}
                         />
@@ -947,22 +1109,47 @@ export default function StaffDashboard() {
                           {person.status === "active" ? (
                             <StyledBadge
                               overlap="circular"
-                              anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+                              anchorOrigin={{
+                                vertical: "bottom",
+                                horizontal: "right",
+                              }}
                               variant="dot"
                             >
-                              <Avatar src={person.avatar} sx={{ width: 80, height: 80, border: "4px solid white" }} />
+                              <Avatar
+                                src={person.avatar}
+                                sx={{
+                                  width: 80,
+                                  height: 80,
+                                  border: "4px solid white",
+                                }}
+                              />
                             </StyledBadge>
                           ) : (
-                            <Avatar src={person.avatar} sx={{ width: 80, height: 80, border: "4px solid white" }} />
+                            <Avatar
+                              src={person.avatar}
+                              sx={{
+                                width: 80,
+                                height: 80,
+                                border: "4px solid white",
+                              }}
+                            />
                           )}
                         </Box>
                       </Box>
                       <CardContent sx={{ pt: 5, pb: 2 }}>
                         <Box sx={{ textAlign: "center", mb: 2 }}>
-                          <Typography variant="h6" fontWeight={600} gutterBottom>
+                          <Typography
+                            variant="h6"
+                            fontWeight={600}
+                            gutterBottom
+                          >
                             {person.name}
                           </Typography>
-                          <Typography variant="body2" color="text.secondary" gutterBottom>
+                          <Typography
+                            variant="body2"
+                            color="text.secondary"
+                            gutterBottom
+                          >
                             {person.role}
                           </Typography>
 
@@ -970,27 +1157,54 @@ export default function StaffDashboard() {
                             label={person.department}
                             size="small"
                             sx={{
-                              backgroundColor: alpha(departmentColors[person.department] || "#00b09b", 0.1),
-                              color: departmentColors[person.department] || "#00b09b",
+                              backgroundColor: alpha(
+                                departmentColors[person.department] ||
+                                  "#00b09b",
+                                0.1,
+                              ),
+                              color:
+                                departmentColors[person.department] ||
+                                "#00b09b",
                             }}
                           />
                         </Box>
 
                         <Box sx={{ mb: 2 }}>
-                          <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                            <LocationIcon fontSize="small" sx={{ color: "text.secondary", mr: 1 }} />
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              mb: 1,
+                            }}
+                          >
+                            <LocationIcon
+                              fontSize="small"
+                              sx={{ color: "text.secondary", mr: 1 }}
+                            />
                             <Typography variant="body2" color="text.secondary">
                               {person.location}
                             </Typography>
                           </Box>
-                          <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                            <WorkIcon fontSize="small" sx={{ color: "text.secondary", mr: 1 }} />
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              mb: 1,
+                            }}
+                          >
+                            <WorkIcon
+                              fontSize="small"
+                              sx={{ color: "text.secondary", mr: 1 }}
+                            />
                             <Typography variant="body2" color="text.secondary">
                               {person.experience} years experience
                             </Typography>
                           </Box>
                           <Box sx={{ display: "flex", alignItems: "center" }}>
-                            <CalendarIcon fontSize="small" sx={{ color: "text.secondary", mr: 1 }} />
+                            <CalendarIcon
+                              fontSize="small"
+                              sx={{ color: "text.secondary", mr: 1 }}
+                            />
                             <Typography variant="body2" color="text.secondary">
                               Joined: {person.joinDate}
                             </Typography>
@@ -998,10 +1212,20 @@ export default function StaffDashboard() {
                         </Box>
 
                         <Box sx={{ mb: 2 }}>
-                          <Typography variant="body2" fontWeight={500} gutterBottom>
+                          <Typography
+                            variant="body2"
+                            fontWeight={500}
+                            gutterBottom
+                          >
                             Performance
                           </Typography>
-                          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 1,
+                            }}
+                          >
                             <PerformanceIndicator value={person.performance} />
                             <Typography variant="body2" fontWeight={600}>
                               {person.performance}%
@@ -1009,7 +1233,14 @@ export default function StaffDashboard() {
                           </Box>
                         </Box>
 
-                        <Box sx={{ display: "flex", flexWrap: "wrap", gap: 0.5, mb: 2 }}>
+                        <Box
+                          sx={{
+                            display: "flex",
+                            flexWrap: "wrap",
+                            gap: 0.5,
+                            mb: 2,
+                          }}
+                        >
                           {person.skills.map((skill) => (
                             <Chip
                               key={skill}
@@ -1025,9 +1256,14 @@ export default function StaffDashboard() {
                         </Box>
                       </CardContent>
                       <Divider />
-                      <CardActions sx={{ justifyContent: "space-between", px: 2 }}>
+                      <CardActions
+                        sx={{ justifyContent: "space-between", px: 2 }}
+                      >
                         <Box sx={{ display: "flex", alignItems: "center" }}>
-                          <SupervisorIcon fontSize="small" sx={{ color: "text.secondary", mr: 0.5 }} />
+                          <SupervisorIcon
+                            fontSize="small"
+                            sx={{ color: "text.secondary", mr: 0.5 }}
+                          />
                           <Typography variant="body2" color="text.secondary">
                             {person.supervisor}
                           </Typography>
@@ -1073,21 +1309,33 @@ export default function StaffDashboard() {
         </Grid>
       </Container>
       {/* Staff Action Menu */}
-      <Menu sx={{ zIndex: 1300 }} anchorEl={menuAnchorEl} open={Boolean(menuAnchorEl)} onClose={handleMenuClose}>
-        <MenuItem onClick={() => selectedStaff && handleViewStaff(selectedStaff)}>
+      <Menu
+        sx={{ zIndex: 1300 }}
+        anchorEl={menuAnchorEl}
+        open={Boolean(menuAnchorEl)}
+        onClose={handleMenuClose}
+      >
+        <MenuItem
+          onClick={() => selectedStaff && handleViewStaff(selectedStaff)}
+        >
           <PersonIcon fontSize="small" sx={{ mr: 1 }} />
           View Profile
         </MenuItem>
-        <MenuItem onClick={() => selectedStaff && handleEditStaff(selectedStaff)}>
+        <MenuItem
+          onClick={() => selectedStaff && handleEditStaff(selectedStaff)}
+        >
           <EditIcon fontSize="small" sx={{ mr: 1 }} />
           Edit
         </MenuItem>
         <Divider />
-        <MenuItem onClick={handleDeleteStaffItem} sx={{ color: theme.palette.error.main }}>
+        <MenuItem
+          onClick={handleDeleteStaffItem}
+          sx={{ color: theme.palette.error.main }}
+        >
           <DeleteIcon fontSize="small" sx={{ mr: 1 }} />
           Delete
         </MenuItem>
       </Menu>
     </Box>
-  )
+  );
 }

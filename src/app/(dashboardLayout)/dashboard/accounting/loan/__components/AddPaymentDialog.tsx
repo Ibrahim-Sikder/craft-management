@@ -1,50 +1,69 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 // components/AddPaymentDialog.tsx
-import { Dialog, DialogTitle, DialogContent, DialogActions, Button, Typography, Grid, Box, Alert } from "@mui/material"
-import CraftForm from "@/components/Forms/Form"
-import CraftSelect from "@/components/Forms/Select"
-import CraftInput from "@/components/Forms/Input"
-import CraftDatePicker from "@/components/Forms/DatePicker"
-import { FieldValues } from "react-hook-form"
-import { useAddRepaymentMutation, useGetSingleLoanQuery } from "@/redux/api/loanApi"
-import toast from "react-hot-toast"
-import { GridSaveAltIcon } from "@mui/x-data-grid"
-import { Cancel, AccountBalanceWallet, Warning } from "@mui/icons-material"
-import { useEffect, useState } from "react"
+import {
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Button,
+  Typography,
+  Grid,
+  Box,
+  Alert,
+} from "@mui/material";
+import CraftForm from "@/components/Forms/Form";
+import CraftSelect from "@/components/Forms/Select";
+import CraftInput from "@/components/Forms/Input";
+import CraftDatePicker from "@/components/Forms/DatePicker";
+import { FieldValues } from "react-hook-form";
+import {
+  useAddRepaymentMutation,
+  useGetSingleLoanQuery,
+} from "@/redux/api/loanApi";
+import toast from "react-hot-toast";
+import { GridSaveAltIcon } from "@mui/x-data-grid";
+import { Cancel, AccountBalanceWallet, Warning } from "@mui/icons-material";
+import { useEffect, useState } from "react";
 
 interface AddPaymentDialogProps {
-  open: boolean
-  onClose: () => void
-  loanId: string
-  refetch: () => void
+  open: boolean;
+  onClose: () => void;
+  loanId: string;
+  refetch: () => void;
 }
 
-const AddPaymentDialog = ({ open, onClose, loanId, refetch }: AddPaymentDialogProps) => {
-  const [addRepayment] = useAddRepaymentMutation()
-  const { data: loanData, refetch: refetchLoan } = useGetSingleLoanQuery(loanId, { skip: !loanId || !open })
-  const [remainingBalance, setRemainingBalance] = useState(0)
-  const [paymentType, setPaymentType] = useState("principal")
+const AddPaymentDialog = ({
+  open,
+  onClose,
+  loanId,
+  refetch,
+}: AddPaymentDialogProps) => {
+  const [addRepayment] = useAddRepaymentMutation();
+  const { data: loanData, refetch: refetchLoan } = useGetSingleLoanQuery(
+    loanId,
+    { skip: !loanId || !open },
+  );
+  const [remainingBalance, setRemainingBalance] = useState(0);
+  const [paymentType, setPaymentType] = useState("principal");
 
   useEffect(() => {
     if (loanData?.data) {
-      setRemainingBalance(loanData.data.remainingBalance)
+      setRemainingBalance(loanData.data.remainingBalance);
     }
-  }, [loanData])
+  }, [loanData]);
 
   useEffect(() => {
     if (open) {
-      refetchLoan()
+      refetchLoan();
     }
-  }, [open, refetchLoan])
+  }, [open, refetchLoan]);
 
   const handleSubmit = async (data: FieldValues) => {
-    console.log('raw data', data)
     const submitData = {
       ...data,
       amount: Number(data.amount),
     };
-    console.log(submitData)
 
     try {
       const res = await addRepayment({ id: loanId, data: submitData }).unwrap();
@@ -54,7 +73,9 @@ const AddPaymentDialog = ({ open, onClose, loanId, refetch }: AddPaymentDialogPr
         refetch();
         onClose();
       } else {
-        toast.error(res.message || "Repayment amount exceeds remaining balance");
+        toast.error(
+          res.message || "Repayment amount exceeds remaining balance",
+        );
       }
     } catch (error: any) {
       console.error("Error in repayment:", error);
@@ -68,15 +89,13 @@ const AddPaymentDialog = ({ open, onClose, loanId, refetch }: AddPaymentDialogPr
     }
   };
 
-
-
   const handleTypeChange = (value: string) => {
-    setPaymentType(value)
-  }
+    setPaymentType(value);
+  };
 
   // const exceedsBalance = paymentType === "principal" && paymentAmount > remainingBalance
-  const exceedsBalance = remainingBalance
-  console.log(exceedsBalance)
+  const exceedsBalance = remainingBalance;
+
   return (
     <Dialog open={open} onClose={onClose} maxWidth="sm" fullWidth>
       <CraftForm onSubmit={handleSubmit}>
@@ -106,14 +125,20 @@ const AddPaymentDialog = ({ open, onClose, loanId, refetch }: AddPaymentDialogPr
               border: "1px solid #BBF7D0",
               display: "flex",
               alignItems: "center",
-              justifyContent: "space-between"
+              justifyContent: "space-between",
             }}
           >
             <Box>
-              <Typography variant="body2" sx={{ color: "#065F46", fontWeight: 500 }}>
+              <Typography
+                variant="body2"
+                sx={{ color: "#065F46", fontWeight: 500 }}
+              >
                 Remaining Balance
               </Typography>
-              <Typography variant="h5" sx={{ color: "#065F46", fontWeight: 700 }}>
+              <Typography
+                variant="h5"
+                sx={{ color: "#065F46", fontWeight: 700 }}
+              >
                 ৳{remainingBalance.toLocaleString()}
               </Typography>
             </Box>
@@ -121,12 +146,9 @@ const AddPaymentDialog = ({ open, onClose, loanId, refetch }: AddPaymentDialogPr
           </Box>
 
           {exceedsBalance && (
-            <Alert
-              severity="error"
-              sx={{ mb: 3 }}
-              icon={<Warning />}
-            >
-              Payment amount exceeds remaining balance! Please enter a lower amount.
+            <Alert severity="error" sx={{ mb: 3 }} icon={<Warning />}>
+              Payment amount exceeds remaining balance! Please enter a lower
+              amount.
             </Alert>
           )}
 
@@ -139,9 +161,9 @@ const AddPaymentDialog = ({ open, onClose, loanId, refetch }: AddPaymentDialogPr
                 type="number"
                 required
 
-              // inputProps={{
-              //   max: paymentType === "principal" ? remainingBalance : undefined
-              // }}
+                // inputProps={{
+                //   max: paymentType === "principal" ? remainingBalance : undefined
+                // }}
               />
             </Grid>
 
@@ -150,7 +172,7 @@ const AddPaymentDialog = ({ open, onClose, loanId, refetch }: AddPaymentDialogPr
                 fullWidth
                 name="type"
                 label="Payment Type"
-                items={['principal', 'interest', 'extra']}
+                items={["principal", "interest", "extra"]}
                 required
                 onChange={handleTypeChange}
               />
@@ -197,15 +219,15 @@ const AddPaymentDialog = ({ open, onClose, loanId, refetch }: AddPaymentDialogPr
             variant="contained"
             // disabled={exceedsBalance}
             sx={{
-              bgcolor:  "#10B981",
+              bgcolor: "#10B981",
               "&:hover": {
-                bgcolor: exceedsBalance ? "#9CA3AF" : "#059669"
+                bgcolor: exceedsBalance ? "#9CA3AF" : "#059669",
               },
               fontWeight: 600,
               "&.Mui-disabled": {
                 bgcolor: "#E5E7EB",
-                color: "#9CA3AF"
-              }
+                color: "#9CA3AF",
+              },
             }}
           >
             Add Payment
@@ -213,7 +235,7 @@ const AddPaymentDialog = ({ open, onClose, loanId, refetch }: AddPaymentDialogPr
         </DialogActions>
       </CraftForm>
     </Dialog>
-  )
-}
+  );
+};
 
-export default AddPaymentDialog
+export default AddPaymentDialog;

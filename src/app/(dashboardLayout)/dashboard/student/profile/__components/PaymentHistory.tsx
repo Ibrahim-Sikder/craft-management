@@ -7,7 +7,7 @@ import {
   CardContent,
   Chip,
   Typography,
-  useTheme
+  useTheme,
 } from "@mui/material";
 import { useEffect, useState } from "react";
 import ReceiptViewer, { ReceiptData } from "./ReceiptViewer";
@@ -62,11 +62,11 @@ const PaymentHistory = ({ singleStudent }: any) => {
     }
   }, [payments]);
 
-  const handlePrintReceipt = () => { };
+  const handlePrintReceipt = () => {};
 
-  const handleDownloadReceipt = () => { };
+  const handleDownloadReceipt = () => {};
 
-  const handleViewDetails = () => { };
+  const handleViewDetails = () => {};
 
   const handleCloseReceiptViewer = () => {
     setReceiptViewerOpen(false);
@@ -78,19 +78,19 @@ const PaymentHistory = ({ singleStudent }: any) => {
     totalPayments: processedPayments.length,
     totalAmount: processedPayments.reduce(
       (sum, payment) => sum + (payment.amountPaid || 0),
-      0
+      0,
     ),
     completedPayments: processedPayments.filter(
-      (payment) => payment.status === "completed" || payment.status === "paid"
+      (payment) => payment.status === "completed" || payment.status === "paid",
     ).length,
     partialPayments: processedPayments.filter(
-      (payment) => payment.status === "partial"
+      (payment) => payment.status === "partial",
     ).length,
     pendingPayments: processedPayments.filter(
-      (payment) => payment.status === "pending"
+      (payment) => payment.status === "pending",
     ).length,
     unpaidPayments: processedPayments.filter(
-      (payment) => payment.status === "unpaid"
+      (payment) => payment.status === "unpaid",
     ).length,
   };
 
@@ -221,10 +221,7 @@ const PaymentHistory = ({ singleStudent }: any) => {
     },
   ];
 
-
-  const handlePrint = () => {
-    console.log("Print all payments");
-  };
+  const handlePrint = () => {};
 
   const handleRefresh = () => {
     setIsLoading(true);
@@ -233,9 +230,7 @@ const PaymentHistory = ({ singleStudent }: any) => {
     }, 1000);
   };
 
-  const handleAddPayment = () => {
-    console.log("Add new payment");
-  };
+  const handleAddPayment = () => {};
 
   return (
     <Box>
@@ -342,7 +337,6 @@ const PaymentHistory = ({ singleStudent }: any) => {
         onRefresh={handleRefresh}
         onPrint={handlePrint}
         onAdd={handleAddPayment}
-
       />
 
       {selectedReceiptData && (

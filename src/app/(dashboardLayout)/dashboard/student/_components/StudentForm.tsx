@@ -72,9 +72,8 @@ const StudentForm = ({ id }: StudentFormProps) => {
     {
       skip: !id,
       refetchOnMountOrArgChange: true,
-    }
+    },
   );
-  console.log("single student", data);
 
   const router = useRouter();
 
@@ -89,7 +88,6 @@ const StudentForm = ({ id }: StudentFormProps) => {
   useEffect(() => {
     if (data?.data) {
       const studentData = data.data;
-      console.log("Student data for mapping:", studentData);
 
       setFormData({
         sameAsPermanent: studentData.sameAsPermanent || false,
@@ -172,8 +170,6 @@ const StudentForm = ({ id }: StudentFormProps) => {
         additionalNote: studentData.additionalNote || "",
         previousDues: studentData.previousDues || 0,
       };
-
-      console.log("Form default values:", formDefaultValues);
       setDefaultValues(formDefaultValues);
     }
   }, [data]);
@@ -343,8 +339,6 @@ const StudentForm = ({ id }: StudentFormProps) => {
       additionalNote: data.additionalNote || "",
     };
 
-    console.log("Submission data:", submissionData);
-
     try {
       if (id) {
         const res = await updateStudent({
@@ -369,7 +363,7 @@ const StudentForm = ({ id }: StudentFormProps) => {
     } catch (error: any) {
       console.error("Submission error:", error);
       toast.error(
-        error.data?.message || "An error occurred while submitting the form"
+        error.data?.message || "An error occurred while submitting the form",
       );
     }
   };

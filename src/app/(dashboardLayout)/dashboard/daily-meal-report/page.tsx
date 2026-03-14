@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-"use client"
-import { useState, useEffect, useMemo, useCallback } from "react"
-import type React from "react"
+"use client";
+import { useState, useEffect, useMemo, useCallback } from "react";
+import type React from "react";
 
 import {
   Paper,
@@ -40,7 +40,7 @@ import {
   Snackbar,
   InputAdornment,
   CircularProgress,
-} from "@mui/material"
+} from "@mui/material";
 import {
   CalendarMonth,
   Print,
@@ -66,105 +66,109 @@ import {
   Edit,
   Delete,
   Warning,
-} from "@mui/icons-material"
-import type { SelectChangeEvent } from "@mui/material/Select"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
+} from "@mui/icons-material";
+import type { SelectChangeEvent } from "@mui/material/Select";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   useGetAllMealReportsQuery,
   useUpdateMealReportMutation,
   useDeleteMealReportMutation,
-} from "@/redux/api/mealReport"
+} from "@/redux/api/mealReport";
 
 // Define types for our data
 interface MealParticipant {
   personId: {
-    _id: string
-    name: string
-    displayId?: string
-    studentId?: string
-    teacherId?: string
-    designation?: string
-    className?: string
-    section?: string
+    _id: string;
+    name: string;
+    displayId?: string;
+    studentId?: string;
+    teacherId?: string;
+    designation?: string;
+    className?: string;
+    section?: string;
     professionalInfo?: {
-      designation?: string
-      department?: string
-      staffType?: string
-    }
-  }
-  mealTypes: string[]
-  mealCount: number
-  _id: string
+      designation?: string;
+      department?: string;
+      staffType?: string;
+    };
+  };
+  mealTypes: string[];
+  mealCount: number;
+  _id: string;
 }
 
 interface MealReport {
-  _id: string
-  date: string
-  students: MealParticipant[]
-  teachers: MealParticipant[]
-  createdAt: string
-  updatedAt: string
+  _id: string;
+  date: string;
+  students: MealParticipant[];
+  teachers: MealParticipant[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 interface MealReportResponse {
-  success: boolean
-  message: string
+  success: boolean;
+  message: string;
   data: {
-    mealReports: MealReport[]
+    mealReports: MealReport[];
     meta: {
-      page: number
-      limit: number
-      total: number
-      totalPage: number
-    }
-  }
+      page: number;
+      limit: number;
+      total: number;
+      totalPage: number;
+    };
+  };
 }
 
 // Generate days of month
 const getDaysInMonth = (month: number, year: number) => {
-  return new Array(new Date(year, month, 0).getDate()).fill(null).map((_, i) => i + 1)
-}
+  return new Array(new Date(year, month, 0).getDate())
+    .fill(null)
+    .map((_, i) => i + 1);
+};
 
 // Helper function to format date to YYYY-MM-DD
 const formatDate = (date: Date): string => {
-  const year = date.getFullYear()
-  const month = String(date.getMonth() + 1).padStart(2, "0")
-  const day = String(date.getDate()).padStart(2, "0")
-  return `${year}-${month}-${day}`
-}
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+};
 
 // Helper function to get date from day of month
 const getDateFromDay = (day: number, month: number, year: number): string => {
-  const date = new Date(year, month - 1, day)
-  return formatDate(date)
-}
+  const date = new Date(year, month - 1, day);
+  return formatDate(date);
+};
 
 export default function MealReport() {
-  const router = useRouter()
-  const [month, setMonth] = useState<number>(new Date().getMonth() + 1) // Current month
-  const [year, setYear] = useState<number>(new Date().getFullYear()) // Current year
-  const [page, setPage] = useState(0)
-  const [rowsPerPage, setRowsPerPage] = useState(50)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [filteredPersons, setFilteredPersons] = useState<any[]>([])
-  const [combinedPersons, setCombinedPersons] = useState<any[]>([])
-  const [mealData, setMealData] = useState<Record<string, Record<number, { eaten: boolean; type: string[] }>>>({})
-  const [loading, setLoading] = useState(true)
-  const [reportIdMap, setReportIdMap] = useState<Record<number, string>>({}) // Map day to report ID
+  const router = useRouter();
+  const [month, setMonth] = useState<number>(new Date().getMonth() + 1); // Current month
+  const [year, setYear] = useState<number>(new Date().getFullYear()); // Current year
+  const [page, setPage] = useState(0);
+  const [rowsPerPage, setRowsPerPage] = useState(50);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredPersons, setFilteredPersons] = useState<any[]>([]);
+  const [combinedPersons, setCombinedPersons] = useState<any[]>([]);
+  const [mealData, setMealData] = useState<
+    Record<string, Record<number, { eaten: boolean; type: string[] }>>
+  >({});
+  const [loading, setLoading] = useState(true);
+  const [reportIdMap, setReportIdMap] = useState<Record<number, string>>({}); // Map day to report ID
 
   // Modal states
-  const [modalOpen, setModalOpen] = useState(false)
-  const [selectedPerson, setSelectedPerson] = useState<string | null>(null)
-  const [selectedDay, setSelectedDay] = useState<number | null>(null)
-  const [tempMealTypes, setTempMealTypes] = useState<string[]>([])
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedPerson, setSelectedPerson] = useState<string | null>(null);
+  const [selectedDay, setSelectedDay] = useState<number | null>(null);
+  const [tempMealTypes, setTempMealTypes] = useState<string[]>([]);
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
     severity: "success" as "success" | "error",
-  })
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [reportToDelete, setReportToDelete] = useState<string | null>(null)
+  });
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [reportToDelete, setReportToDelete] = useState<string | null>(null);
 
   // Fetch meal report data
   const {
@@ -175,33 +179,38 @@ export default function MealReport() {
     limit: rowsPerPage,
     page: page + 1,
     searchTerm: searchTerm,
-  })
+  });
 
   // Update and delete mutations
-  const [updateMealReport, { isLoading: isUpdating }] = useUpdateMealReportMutation()
-  const [deleteMealReport, { isLoading: isDeleting }] = useDeleteMealReportMutation()
+  const [updateMealReport, { isLoading: isUpdating }] =
+    useUpdateMealReportMutation();
+  const [deleteMealReport, { isLoading: isDeleting }] =
+    useDeleteMealReportMutation();
 
   // Memoize days to prevent unnecessary recalculations
-  const days = useMemo(() => getDaysInMonth(month, year), [month, year])
+  const days = useMemo(() => getDaysInMonth(month, year), [month, year]);
 
   // Process meal report data
   useEffect(() => {
     if (mealReportResponse?.data?.mealReports) {
       // Extract all unique persons (students and teachers)
-      const allPersons: any[] = []
-      const mealDataMap: Record<string, Record<number, { eaten: boolean; type: string[] }>> = {}
-      const dayToReportIdMap: Record<number, string> = {}
+      const allPersons: any[] = [];
+      const mealDataMap: Record<
+        string,
+        Record<number, { eaten: boolean; type: string[] }>
+      > = {};
+      const dayToReportIdMap: Record<number, string> = {};
 
       // Process each meal report
       mealReportResponse.data.mealReports.forEach((report: MealReport) => {
-        const reportDate = new Date(report.date)
-        const reportDay = reportDate.getDate()
-        const reportMonth = reportDate.getMonth() + 1
-        const reportYear = reportDate.getFullYear()
+        const reportDate = new Date(report.date);
+        const reportDay = reportDate.getDate();
+        const reportMonth = reportDate.getMonth() + 1;
+        const reportYear = reportDate.getFullYear();
 
         // Store report ID for each day
         if (reportMonth === month && reportYear === year) {
-          dayToReportIdMap[reportDay] = report._id
+          dayToReportIdMap[reportDay] = report._id;
         }
 
         // Only process reports for the selected month and year
@@ -209,236 +218,256 @@ export default function MealReport() {
           // Process students
           if (report.students && Array.isArray(report.students)) {
             report.students.forEach((student) => {
-              if (!student.personId || typeof student.personId !== "object") return
+              if (!student.personId || typeof student.personId !== "object")
+                return;
 
-              const personId = student.personId._id
+              const personId = student.personId._id;
               const personData = {
                 id: personId,
                 name: student.personId.name || "Unknown",
-                displayId: student.personId.studentId || student.personId.displayId || "N/A",
+                displayId:
+                  student.personId.studentId ||
+                  student.personId.displayId ||
+                  "N/A",
                 type: "student",
                 designation:
-                  `${student.personId.className || ""} ${student.personId.section || ""}`.trim() || "Student",
+                  `${student.personId.className || ""} ${student.personId.section || ""}`.trim() ||
+                  "Student",
                 avatar: "/assets/images/avatar-placeholder.png",
-              }
+              };
 
               // Add person if not already in the list
               if (!allPersons.some((p) => p.id === personId)) {
-                allPersons.push(personData)
+                allPersons.push(personData);
               }
 
               // Initialize meal data for this person if not exists
               if (!mealDataMap[personId]) {
-                mealDataMap[personId] = {}
+                mealDataMap[personId] = {};
               }
 
               // Map meal types from backend format to UI format
               const uiMealTypes = student.mealTypes.map((type) => {
                 switch (type) {
                   case "BREAKFAST":
-                    return "breakfast"
+                    return "breakfast";
                   case "LUNCH":
-                    return "lunch"
+                    return "lunch";
                   case "DINNER":
-                    return "dinner"
+                    return "dinner";
                   default:
-                    return type.toLowerCase()
+                    return type.toLowerCase();
                 }
-              })
+              });
 
               // Set meal data for this day
               mealDataMap[personId][reportDay] = {
                 eaten: student.mealCount > 0,
                 type: uiMealTypes,
-              }
-            })
+              };
+            });
           }
 
           // Process teachers
           if (report.teachers && Array.isArray(report.teachers)) {
             report.teachers.forEach((teacher) => {
-              if (!teacher.personId || typeof teacher.personId !== "object") return
+              if (!teacher.personId || typeof teacher.personId !== "object")
+                return;
 
-              const personId = teacher.personId._id
-              const designation = teacher.personId.professionalInfo?.designation || "Teacher"
+              const personId = teacher.personId._id;
+              const designation =
+                teacher.personId.professionalInfo?.designation || "Teacher";
 
               const personData = {
                 id: personId,
                 name: teacher.personId.name || "Unknown",
-                displayId: teacher.personId.teacherId || teacher.personId.displayId || "N/A",
+                displayId:
+                  teacher.personId.teacherId ||
+                  teacher.personId.displayId ||
+                  "N/A",
                 type: "teacher",
                 designation: designation,
                 avatar: "/assets/images/avatar-placeholder.png",
-              }
+              };
 
               // Add person if not already in the list
               if (!allPersons.some((p) => p.id === personId)) {
-                allPersons.push(personData)
+                allPersons.push(personData);
               }
 
               // Initialize meal data for this person if not exists
               if (!mealDataMap[personId]) {
-                mealDataMap[personId] = {}
+                mealDataMap[personId] = {};
               }
 
               // Map meal types from backend format to UI format
               const uiMealTypes = teacher.mealTypes.map((type) => {
                 switch (type) {
                   case "BREAKFAST":
-                    return "breakfast"
+                    return "breakfast";
                   case "LUNCH":
-                    return "lunch"
+                    return "lunch";
                   case "DINNER":
-                    return "dinner"
+                    return "dinner";
                   default:
-                    return type.toLowerCase()
+                    return type.toLowerCase();
                 }
-              })
+              });
 
               // Set meal data for this day
               mealDataMap[personId][reportDay] = {
                 eaten: teacher.mealCount > 0,
                 type: uiMealTypes,
-              }
-            })
+              };
+            });
           }
         }
-      })
+      });
 
       // Initialize empty meal data for days without reports
       allPersons.forEach((person) => {
         if (!mealDataMap[person.id]) {
-          mealDataMap[person.id] = {}
+          mealDataMap[person.id] = {};
         }
 
         days.forEach((day) => {
           if (!mealDataMap[person.id][day]) {
-            mealDataMap[person.id][day] = { eaten: false, type: [] }
+            mealDataMap[person.id][day] = { eaten: false, type: [] };
           }
-        })
-      })
+        });
+      });
 
-      setCombinedPersons(allPersons)
-      setFilteredPersons(allPersons)
-      setMealData(mealDataMap)
-      setReportIdMap(dayToReportIdMap)
-      setLoading(false)
+      setCombinedPersons(allPersons);
+      setFilteredPersons(allPersons);
+      setMealData(mealDataMap);
+      setReportIdMap(dayToReportIdMap);
+      setLoading(false);
     }
-  }, [mealReportResponse, month, year, days])
+  }, [mealReportResponse, month, year, days]);
 
   // Handle search - memoized to prevent unnecessary re-renders
   useEffect(() => {
     if (combinedPersons.length > 0 && searchTerm) {
-      const lowercaseSearch = searchTerm.toLowerCase()
+      const lowercaseSearch = searchTerm.toLowerCase();
       const filtered = combinedPersons.filter(
         (person) =>
           person.name.toLowerCase().includes(lowercaseSearch) ||
           person.displayId.toLowerCase().includes(lowercaseSearch) ||
           person.designation.toLowerCase().includes(lowercaseSearch),
-      )
-      setFilteredPersons(filtered)
+      );
+      setFilteredPersons(filtered);
     } else if (combinedPersons.length > 0) {
-      setFilteredPersons(combinedPersons)
+      setFilteredPersons(combinedPersons);
     }
-  }, [searchTerm, combinedPersons])
+  }, [searchTerm, combinedPersons]);
 
   // Memoized calculation functions to improve performance
   const calculateTotalMeals = useCallback(
     (personId: string) => {
-      if (!mealData[personId]) return 0
-      return days.reduce((total, day) => total + (mealData[personId][day]?.eaten ? 1 : 0), 0)
+      if (!mealData[personId]) return 0;
+      return days.reduce(
+        (total, day) => total + (mealData[personId][day]?.eaten ? 1 : 0),
+        0,
+      );
     },
     [mealData, days],
-  )
+  );
 
   const calculateDailyTotal = useCallback(
     (day: number) => {
-      return Object.keys(mealData).reduce((total, personId) => total + (mealData[personId][day]?.eaten ? 1 : 0), 0)
+      return Object.keys(mealData).reduce(
+        (total, personId) => total + (mealData[personId][day]?.eaten ? 1 : 0),
+        0,
+      );
     },
     [mealData],
-  )
+  );
 
   const calculateGrandTotal = useCallback(() => {
-    return Object.keys(mealData).reduce((total, personId) => total + calculateTotalMeals(personId), 0)
-  }, [mealData, calculateTotalMeals])
+    return Object.keys(mealData).reduce(
+      (total, personId) => total + calculateTotalMeals(personId),
+      0,
+    );
+  }, [mealData, calculateTotalMeals]);
 
   // Memoize meal type statistics to prevent recalculation on every render
   const mealStats = useMemo(() => {
-    let breakfast = 0
-    let lunch = 0
-    let dinner = 0
+    let breakfast = 0;
+    let lunch = 0;
+    let dinner = 0;
 
     Object.keys(mealData).forEach((personId) => {
       days.forEach((day) => {
-        const mealInfo = mealData[personId][day]
+        const mealInfo = mealData[personId][day];
         if (mealInfo?.eaten) {
-          if (mealInfo.type.includes("breakfast")) breakfast++
-          if (mealInfo.type.includes("lunch")) lunch++
-          if (mealInfo.type.includes("dinner")) dinner++
+          if (mealInfo.type.includes("breakfast")) breakfast++;
+          if (mealInfo.type.includes("lunch")) lunch++;
+          if (mealInfo.type.includes("dinner")) dinner++;
         }
-      })
-    })
+      });
+    });
 
-    return { breakfast, lunch, dinner }
-  }, [mealData, days])
+    return { breakfast, lunch, dinner };
+  }, [mealData, days]);
 
   // Open meal update modal - memoized to prevent unnecessary re-renders
   const openMealModal = useCallback(
     (personId: string, day: number) => {
-      setSelectedPerson(personId)
-      setSelectedDay(day)
-      setTempMealTypes(mealData[personId]?.[day]?.type || [])
-      setModalOpen(true)
+      setSelectedPerson(personId);
+      setSelectedDay(day);
+      setTempMealTypes(mealData[personId]?.[day]?.type || []);
+      setModalOpen(true);
     },
     [mealData],
-  )
+  );
 
   // Handle meal type checkbox change - memoized to prevent unnecessary re-renders
   const handleMealTypeChange = useCallback((mealType: string) => {
     setTempMealTypes((prev) => {
       if (prev.includes(mealType)) {
-        return prev.filter((type) => type !== mealType)
+        return prev.filter((type) => type !== mealType);
       } else {
-        return [...prev, mealType]
+        return [...prev, mealType];
       }
-    })
-  }, [])
+    });
+  }, []);
 
   // Save meal updates - memoized to prevent unnecessary re-renders
   const saveMealUpdates = useCallback(async () => {
     if (selectedPerson !== null && selectedDay !== null) {
       try {
-        const reportId = reportIdMap[selectedDay]
+        const reportId = reportIdMap[selectedDay];
 
         if (!reportId) {
           setSnackbar({
             open: true,
-            message: "No report found for this day. Please create a new report first.",
+            message:
+              "No report found for this day. Please create a new report first.",
             severity: "error",
-          })
-          setModalOpen(false)
-          return
+          });
+          setModalOpen(false);
+          return;
         }
 
         // Find the selected person in the original data
-        const person = combinedPersons.find((p) => p.id === selectedPerson)
+        const person = combinedPersons.find((p) => p.id === selectedPerson);
         if (!person) {
-          throw new Error("Person not found")
+          throw new Error("Person not found");
         }
 
         // Convert UI meal types to backend format
         const backendMealTypes = tempMealTypes.map((type) => {
           switch (type) {
             case "breakfast":
-              return "BREAKFAST"
+              return "BREAKFAST";
             case "lunch":
-              return "LUNCH"
+              return "LUNCH";
             case "dinner":
-              return "DINNER"
+              return "DINNER";
             default:
-              return type.toUpperCase()
+              return type.toUpperCase();
           }
-        })
+        });
 
         // Ensure at least one meal type is selected
         if (backendMealTypes.length === 0) {
@@ -446,12 +475,12 @@ export default function MealReport() {
             open: true,
             message: "At least one meal type is required",
             severity: "error",
-          })
-          return
+          });
+          return;
         }
 
         // Get the date for the selected day
-        const selectedDate = getDateFromDay(selectedDay, month, year)
+        const selectedDate = getDateFromDay(selectedDay, month, year);
 
         // Prepare update data
         const updateData = {
@@ -468,15 +497,14 @@ export default function MealReport() {
               },
             ],
           },
-        }
-        console.log(updateData)
+        };
 
         // Call the update API
-        const result = await updateMealReport(updateData).unwrap()
-        console.log(result)
+        const result = await updateMealReport(updateData).unwrap();
+
         // Validate the API response
         if (!result || !result.success) {
-          throw new Error(result?.message || "Failed to update meal")
+          throw new Error(result?.message || "Failed to update meal");
         }
 
         // Update local state with the selected meal types
@@ -489,85 +517,98 @@ export default function MealReport() {
               type: tempMealTypes,
             },
           },
-        }))
+        }));
 
-        setModalOpen(false)
+        setModalOpen(false);
         setSnackbar({
           open: true,
           message: "Meal updated successfully!",
           severity: "success",
-        })
+        });
 
         // Refresh data
-        refetch()
+        refetch();
       } catch (error) {
-        console.error("Error updating meal:", error)
+        console.error("Error updating meal:", error);
         setSnackbar({
           open: true,
-          message: error instanceof Error ? error.message : "Failed to update meal. Please try again.",
+          message:
+            error instanceof Error
+              ? error.message
+              : "Failed to update meal. Please try again.",
           severity: "error",
-        })
+        });
       }
     }
-  }, [selectedPerson, selectedDay, reportIdMap, combinedPersons, tempMealTypes, updateMealReport, refetch, month, year])
+  }, [
+    selectedPerson,
+    selectedDay,
+    reportIdMap,
+    combinedPersons,
+    tempMealTypes,
+    updateMealReport,
+    refetch,
+    month,
+    year,
+  ]);
 
   // Open delete confirmation dialog - memoized to prevent unnecessary re-renders
   const openDeleteDialog = useCallback((reportId: string) => {
-    setReportToDelete(reportId)
-    setDeleteDialogOpen(true)
-  }, [])
+    setReportToDelete(reportId);
+    setDeleteDialogOpen(true);
+  }, []);
 
   // Handle delete meal report - memoized to prevent unnecessary re-renders
   const handleDeleteReport = useCallback(async () => {
     if (reportToDelete) {
       try {
-        await deleteMealReport(reportToDelete).unwrap()
+        await deleteMealReport(reportToDelete).unwrap();
 
         setSnackbar({
           open: true,
           message: "Meal report deleted successfully!",
           severity: "success",
-        })
+        });
 
         // Refresh data
-        refetch()
+        refetch();
       } catch (error) {
-        console.error("Error deleting meal report:", error)
+        console.error("Error deleting meal report:", error);
         setSnackbar({
           open: true,
           message: "Failed to delete meal report. Please try again.",
           severity: "error",
-        })
+        });
       } finally {
-        setDeleteDialogOpen(false)
-        setReportToDelete(null)
+        setDeleteDialogOpen(false);
+        setReportToDelete(null);
       }
     }
-  }, [reportToDelete, deleteMealReport, refetch])
+  }, [reportToDelete, deleteMealReport, refetch]);
 
   // Toggle meal status (now opens the modal) - memoized to prevent unnecessary re-renders
   const toggleMeal = useCallback(
     (personId: string, day: number) => {
-      openMealModal(personId, day)
+      openMealModal(personId, day);
     },
     [openMealModal],
-  )
+  );
 
   // Navigate to update page - memoized to prevent unnecessary re-renders
   const navigateToUpdate = useCallback(
     (reportId: string) => {
-      router.push(`/dashboard/daily-meal-report/update/${reportId}`)
+      router.push(`/dashboard/daily-meal-report/update/${reportId}`);
     },
     [router],
-  )
+  );
 
   // Render meal type indicators - memoized to prevent unnecessary re-renders
   const renderMealTypeIndicator = useCallback(
     (personId: string, day: number) => {
-      const mealInfo = mealData[personId]?.[day]
+      const mealInfo = mealData[personId]?.[day];
 
       if (!mealInfo || !mealInfo.eaten) {
-        return <Cancel sx={{ color: "#f44336", fontSize: 18 }} />
+        return <Cancel sx={{ color: "#f44336", fontSize: 18 }} />;
       }
 
       return (
@@ -580,7 +621,13 @@ export default function MealReport() {
             </div>
           }
         >
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+          <div
+            style={{
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+            }}
+          >
             <CheckCircle sx={{ color: "#4caf50", fontSize: 18 }} />
             {mealInfo.type.length > 0 && (
               <Typography variant="caption" sx={{ fontSize: "0.6rem" }}>
@@ -589,82 +636,89 @@ export default function MealReport() {
             )}
           </div>
         </Tooltip>
-      )
+      );
     },
     [mealData],
-  )
+  );
 
   // Handle month change - memoized to prevent unnecessary re-renders
   const handleMonthChange = useCallback((event: SelectChangeEvent<number>) => {
-    setMonth(Number(event.target.value))
-    setLoading(true)
-  }, [])
+    setMonth(Number(event.target.value));
+    setLoading(true);
+  }, []);
 
   // Get month name - memoized to prevent unnecessary re-renders
   const getMonthName = useCallback((monthNumber: number) => {
-    const date = new Date()
-    date.setMonth(monthNumber - 1)
-    return date.toLocaleString("en-US", { month: "long" })
-  }, [])
+    const date = new Date();
+    date.setMonth(monthNumber - 1);
+    return date.toLocaleString("en-US", { month: "long" });
+  }, []);
 
   // Navigate to previous month - memoized to prevent unnecessary re-renders
   const prevMonth = useCallback(() => {
     if (month === 1) {
-      setMonth(12)
-      setYear(year - 1)
+      setMonth(12);
+      setYear(year - 1);
     } else {
-      setMonth(month - 1)
+      setMonth(month - 1);
     }
-    setLoading(true)
-  }, [month, year])
+    setLoading(true);
+  }, [month, year]);
 
   // Navigate to next month - memoized to prevent unnecessary re-renders
   const nextMonth = useCallback(() => {
     if (month === 12) {
-      setMonth(1)
-      setYear(year + 1)
+      setMonth(1);
+      setYear(year + 1);
     } else {
-      setMonth(month + 1)
+      setMonth(month + 1);
     }
-    setLoading(true)
-  }, [month, year])
+    setLoading(true);
+  }, [month, year]);
 
   // Get person name by ID - memoized to prevent unnecessary re-renders
   const getPersonName = useCallback(
     (id: string) => {
-      const person = combinedPersons.find((p) => p.id === id)
-      return person ? person.name : ""
+      const person = combinedPersons.find((p) => p.id === id);
+      return person ? person.name : "";
     },
     [combinedPersons],
-  )
+  );
 
   // Handle snackbar close - memoized to prevent unnecessary re-renders
   const handleCloseSnackbar = useCallback(() => {
     setSnackbar((prev) => ({
       ...prev,
       open: false,
-    }))
-  }, [])
+    }));
+  }, []);
 
   // Get person type icon - memoized to prevent unnecessary re-renders
   const getPersonTypeIcon = useCallback((type: string) => {
-    return type === "student" ? <School fontSize="small" /> : <Person fontSize="small" />
-  }, [])
+    return type === "student" ? (
+      <School fontSize="small" />
+    ) : (
+      <Person fontSize="small" />
+    );
+  }, []);
 
   // Get person type color - memoized to prevent unnecessary re-renders
   const getPersonTypeColor = useCallback((type: string) => {
-    return type === "student" ? "#e3f2fd" : "#e8f5e9"
-  }, [])
+    return type === "student" ? "#e3f2fd" : "#e8f5e9";
+  }, []);
 
   // Get person type text color - memoized to prevent unnecessary re-renders
   const getPersonTypeTextColor = useCallback((type: string) => {
-    return type === "student" ? "#1976d2" : "#2e7d32"
-  }, [])
+    return type === "student" ? "#1976d2" : "#2e7d32";
+  }, []);
 
   // Handle search input change - memoized to prevent unnecessary re-renders
-  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value)
-  }, [])
+  const handleSearchChange = useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setSearchTerm(e.target.value);
+    },
+    [],
+  );
 
   return (
     <Box
@@ -686,7 +740,7 @@ export default function MealReport() {
           boxShadow: "0 4px 20px rgba(63, 81, 181, 0.4)",
         }}
       >
-        <Container maxWidth="xl" sx={{p:{xs:"4px"}}}>
+        <Container maxWidth="xl" sx={{ p: { xs: "4px" } }}>
           <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
             <Restaurant sx={{ fontSize: 40, mr: 2 }} />
             <Typography variant="h4" component="h1" sx={{ fontWeight: 700 }}>
@@ -694,12 +748,13 @@ export default function MealReport() {
             </Typography>
           </Box>
           <Typography variant="body1" sx={{ opacity: 0.9, maxWidth: 700 }}>
-            Track and manage daily meals for all residents. Click on any cell to update meal information.
+            Track and manage daily meals for all residents. Click on any cell to
+            update meal information.
           </Typography>
         </Container>
       </Box>
 
-      <Container maxWidth="xl" sx={{p:{xs:"4px"}}}>
+      <Container maxWidth="xl" sx={{ p: { xs: "4px" } }}>
         <Box sx={{ mb: 3 }}>
           <Link href="/dashboard" passHref>
             <Button
@@ -731,7 +786,9 @@ export default function MealReport() {
             <Grid container spacing={3} alignItems="center">
               <Grid item xs={12} md={6}>
                 <Box sx={{ display: "flex", alignItems: "center" }}>
-                  <CalendarMonth sx={{ color: "#3f51b5", mr: 2, fontSize: 28 }} />
+                  <CalendarMonth
+                    sx={{ color: "#3f51b5", mr: 2, fontSize: 28 }}
+                  />
                   <Box>
                     <Typography variant="h6" sx={{ fontWeight: 600 }}>
                       Select Month & Year
@@ -752,7 +809,10 @@ export default function MealReport() {
                   <IconButton
                     color="primary"
                     onClick={prevMonth}
-                    sx={{ bgcolor: "rgba(63, 81, 181, 0.1)", "&:hover": { bgcolor: "rgba(63, 81, 181, 0.2)" } }}
+                    sx={{
+                      bgcolor: "rgba(63, 81, 181, 0.1)",
+                      "&:hover": { bgcolor: "rgba(63, 81, 181, 0.2)" },
+                    }}
                   >
                     <NavigateBefore />
                   </IconButton>
@@ -760,7 +820,10 @@ export default function MealReport() {
                   <FormControl
                     variant="outlined"
                     size="small"
-                    sx={{ minWidth: 150, "& .MuiOutlinedInput-root": { borderRadius: 2 } }}
+                    sx={{
+                      minWidth: 150,
+                      "& .MuiOutlinedInput-root": { borderRadius: 2 },
+                    }}
                   >
                     <InputLabel id="month-select-label">Month</InputLabel>
                     <Select
@@ -796,7 +859,10 @@ export default function MealReport() {
                   <IconButton
                     color="primary"
                     onClick={nextMonth}
-                    sx={{ bgcolor: "rgba(63, 81, 181, 0.1)", "&:hover": { bgcolor: "rgba(63, 81, 181, 0.2)" } }}
+                    sx={{
+                      bgcolor: "rgba(63, 81, 181, 0.1)",
+                      "&:hover": { bgcolor: "rgba(63, 81, 181, 0.2)" },
+                    }}
                   >
                     <NavigateNext />
                   </IconButton>
@@ -1002,13 +1068,25 @@ export default function MealReport() {
                   justifyContent={{ xs: "center", md: "flex-end" }}
                   sx={{ width: "100%" }}
                 >
-                  <Button variant="outlined" startIcon={<FilterList />} sx={{ borderRadius: 100, px: 3 }}>
+                  <Button
+                    variant="outlined"
+                    startIcon={<FilterList />}
+                    sx={{ borderRadius: 100, px: 3 }}
+                  >
                     Filter
                   </Button>
-                  <Button variant="outlined" startIcon={<Print />} sx={{ borderRadius: 100, px: 3 }}>
+                  <Button
+                    variant="outlined"
+                    startIcon={<Print />}
+                    sx={{ borderRadius: 100, px: 3 }}
+                  >
                     Print
                   </Button>
-                  <Button variant="outlined" startIcon={<FileDownload />} sx={{ borderRadius: 100, px: 3 }}>
+                  <Button
+                    variant="outlined"
+                    startIcon={<FileDownload />}
+                    sx={{ borderRadius: 100, px: 3 }}
+                  >
                     Export
                   </Button>
                   <Button
@@ -1019,7 +1097,8 @@ export default function MealReport() {
                     sx={{
                       borderRadius: 100,
                       px: 3,
-                      background: "linear-gradient(135deg, #3f51b5 0%, #2196f3 100%)",
+                      background:
+                        "linear-gradient(135deg, #3f51b5 0%, #2196f3 100%)",
                       boxShadow: "0 4px 10px rgba(63, 81, 181, 0.3)",
                     }}
                   >
@@ -1046,13 +1125,17 @@ export default function MealReport() {
         >
           <Help sx={{ color: "#2e7d32", mt: 0.5 }} />
           <Box>
-            <Typography variant="subtitle1" sx={{ color: "#2e7d32", fontWeight: 600 }}>
+            <Typography
+              variant="subtitle1"
+              sx={{ color: "#2e7d32", fontWeight: 600 }}
+            >
               Quick Help
             </Typography>
             <Typography variant="body2" sx={{ color: "#1b5e20" }}>
-              Click on any cell in the table to update meal information. You can specify which meals (breakfast, lunch,
-              dinner) were taken by each resident. Use the edit icon to navigate to the full edit page, or the delete
-              icon to remove a report.
+              Click on any cell in the table to update meal information. You can
+              specify which meals (breakfast, lunch, dinner) were taken by each
+              resident. Use the edit icon to navigate to the full edit page, or
+              the delete icon to remove a report.
             </Typography>
           </Box>
         </Paper>
@@ -1069,7 +1152,14 @@ export default function MealReport() {
             }}
           >
             <CardContent sx={{ p: 3 }}>
-              <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  mb: 3,
+                }}
+              >
                 <Typography variant="h6" sx={{ fontWeight: 600 }}>
                   Meal Reports
                 </Typography>
@@ -1080,100 +1170,133 @@ export default function MealReport() {
                 />
               </Box>
 
-              <TableContainer sx={{
-            overflowX: "auto",  
-            WebkitOverflowScrolling: "touch",  
-            maxWidth: "100vw"  
-          }}>
+              <TableContainer
+                sx={{
+                  overflowX: "auto",
+                  WebkitOverflowScrolling: "touch",
+                  maxWidth: "100vw",
+                }}
+              >
                 <Table>
                   <TableHead>
                     <TableRow>
                       <TableCell sx={{ fontWeight: "bold" }}>SL</TableCell>
                       <TableCell sx={{ fontWeight: "bold" }}>Date</TableCell>
-                      <TableCell sx={{ fontWeight: "bold" }}>Students</TableCell>
-                      <TableCell sx={{ fontWeight: "bold" }}>Teachers</TableCell>
-                      <TableCell sx={{ fontWeight: "bold" }}>Total Meals</TableCell>
-                      <TableCell sx={{ fontWeight: "bold" }}>Created At</TableCell>
-                      <TableCell sx={{ fontWeight: "bold" }} align="center">Actions</TableCell>
+                      <TableCell sx={{ fontWeight: "bold" }}>
+                        Students
+                      </TableCell>
+                      <TableCell sx={{ fontWeight: "bold" }}>
+                        Teachers
+                      </TableCell>
+                      <TableCell sx={{ fontWeight: "bold" }}>
+                        Total Meals
+                      </TableCell>
+                      <TableCell sx={{ fontWeight: "bold" }}>
+                        Created At
+                      </TableCell>
+                      <TableCell sx={{ fontWeight: "bold" }} align="center">
+                        Actions
+                      </TableCell>
                     </TableRow>
                   </TableHead>
                   <TableBody>
-                    {mealReportResponse.data.mealReports.map((report: any, index: number) => {
-                      const reportDate = new Date(report.date);
-                      const formattedDate = reportDate.toLocaleDateString();
-                      const totalStudents = report.students.length;
-                      const totalTeachers = report.teachers.length;
-                      const totalMeals = report.students.reduce((sum: any, student: any) => sum + student.mealCount, 0) +
-                        report.teachers.reduce((sum: any, teacher: any) => sum + teacher.mealCount, 0);
+                    {mealReportResponse.data.mealReports.map(
+                      (report: any, index: number) => {
+                        const reportDate = new Date(report.date);
+                        const formattedDate = reportDate.toLocaleDateString();
+                        const totalStudents = report.students.length;
+                        const totalTeachers = report.teachers.length;
+                        const totalMeals =
+                          report.students.reduce(
+                            (sum: any, student: any) => sum + student.mealCount,
+                            0,
+                          ) +
+                          report.teachers.reduce(
+                            (sum: any, teacher: any) => sum + teacher.mealCount,
+                            0,
+                          );
 
-                      return (
-                        <TableRow
-                          key={report._id}
-                          sx={{
-                            "&:nth-of-type(odd)": { bgcolor: "rgba(63, 81, 181, 0.05)" },
-                            "&:hover": { bgcolor: "rgba(63, 81, 181, 0.1)" },
-                          }}
-                        >
-                          <TableCell>{index + 1}</TableCell>
-                          <TableCell>{formattedDate}</TableCell>
-                          <TableCell>
-                            <Chip
-                              icon={<School fontSize="small" />}
-                              label={totalStudents}
-                              size="small"
-                              sx={{ bgcolor: "#e3f2fd", color: "#1976d2" }}
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Chip
-                              icon={<Person fontSize="small" />}
-                              label={totalTeachers}
-                              size="small"
-                              sx={{ bgcolor: "#e8f5e9", color: "#2e7d32" }}
-                            />
-                          </TableCell>
-                          <TableCell>
-                            <Chip
-                              icon={<Restaurant fontSize="small" />}
-                              label={totalMeals}
-                              size="small"
-                              color="primary"
-                            />
-                          </TableCell>
-                          <TableCell>{new Date(report.createdAt).toLocaleString()}</TableCell>
-                          <TableCell align="center">
-                            <Stack direction="row" spacing={1} justifyContent="center">
-                              <Tooltip title="Edit Meal Report">
-                                <IconButton
-                                  onClick={() => navigateToUpdate(report._id)}
-                                  size="small"
-                                  color="primary"
-                                  sx={{
-                                    bgcolor: "rgba(33, 150, 243, 0.1)",
-                                    "&:hover": { bgcolor: "rgba(33, 150, 243, 0.2)" },
-                                  }}
-                                >
-                                  <Edit fontSize="small" />
-                                </IconButton>
-                              </Tooltip>
-                              <Tooltip title="Delete Meal Report">
-                                <IconButton
-                                  size="small"
-                                  color="error"
-                                  onClick={() => openDeleteDialog(report._id)}
-                                  sx={{
-                                    bgcolor: "rgba(244, 67, 54, 0.1)",
-                                    "&:hover": { bgcolor: "rgba(244, 67, 54, 0.2)" },
-                                  }}
-                                >
-                                  <Delete fontSize="small" />
-                                </IconButton>
-                              </Tooltip>
-                            </Stack>
-                          </TableCell>
-                        </TableRow>
-                      );
-                    })}
+                        return (
+                          <TableRow
+                            key={report._id}
+                            sx={{
+                              "&:nth-of-type(odd)": {
+                                bgcolor: "rgba(63, 81, 181, 0.05)",
+                              },
+                              "&:hover": { bgcolor: "rgba(63, 81, 181, 0.1)" },
+                            }}
+                          >
+                            <TableCell>{index + 1}</TableCell>
+                            <TableCell>{formattedDate}</TableCell>
+                            <TableCell>
+                              <Chip
+                                icon={<School fontSize="small" />}
+                                label={totalStudents}
+                                size="small"
+                                sx={{ bgcolor: "#e3f2fd", color: "#1976d2" }}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Chip
+                                icon={<Person fontSize="small" />}
+                                label={totalTeachers}
+                                size="small"
+                                sx={{ bgcolor: "#e8f5e9", color: "#2e7d32" }}
+                              />
+                            </TableCell>
+                            <TableCell>
+                              <Chip
+                                icon={<Restaurant fontSize="small" />}
+                                label={totalMeals}
+                                size="small"
+                                color="primary"
+                              />
+                            </TableCell>
+                            <TableCell>
+                              {new Date(report.createdAt).toLocaleString()}
+                            </TableCell>
+                            <TableCell align="center">
+                              <Stack
+                                direction="row"
+                                spacing={1}
+                                justifyContent="center"
+                              >
+                                <Tooltip title="Edit Meal Report">
+                                  <IconButton
+                                    onClick={() => navigateToUpdate(report._id)}
+                                    size="small"
+                                    color="primary"
+                                    sx={{
+                                      bgcolor: "rgba(33, 150, 243, 0.1)",
+                                      "&:hover": {
+                                        bgcolor: "rgba(33, 150, 243, 0.2)",
+                                      },
+                                    }}
+                                  >
+                                    <Edit fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+                                <Tooltip title="Delete Meal Report">
+                                  <IconButton
+                                    size="small"
+                                    color="error"
+                                    onClick={() => openDeleteDialog(report._id)}
+                                    sx={{
+                                      bgcolor: "rgba(244, 67, 54, 0.1)",
+                                      "&:hover": {
+                                        bgcolor: "rgba(244, 67, 54, 0.2)",
+                                      },
+                                    }}
+                                  >
+                                    <Delete fontSize="small" />
+                                  </IconButton>
+                                </Tooltip>
+                              </Stack>
+                            </TableCell>
+                          </TableRow>
+                        );
+                      },
+                    )}
                   </TableBody>
                 </Table>
               </TableContainer>
@@ -1301,18 +1424,31 @@ export default function MealReport() {
                       <TableRow
                         key={person.id}
                         sx={{
-
-                          "&:nth-of-type(odd)": { bgcolor: "rgba(63, 81, 181, 0.05)" },
+                          "&:nth-of-type(odd)": {
+                            bgcolor: "rgba(63, 81, 181, 0.05)",
+                          },
                           "&:hover": { bgcolor: "rgba(63, 81, 181, 0.1)" },
                           transition: "background-color 0.2s",
                         }}
                       >
-                        <TableCell sx={{ padding: "8px 5px" }}>{index + 1}</TableCell>
+                        <TableCell sx={{ padding: "8px 5px" }}>
+                          {index + 1}
+                        </TableCell>
                         <TableCell sx={{ padding: "8px 8px" }}>
-                          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 1,
+                            }}
+                          >
                             <Avatar
                               src={person.avatar}
-                              sx={{ width: 28, height: 28, display: { xs: "none", md: "flex" } }}
+                              sx={{
+                                width: 28,
+                                height: 28,
+                                display: { xs: "none", md: "flex" },
+                              }}
                             />
                             <Typography variant="body2" fontWeight="medium">
                               {person.name}
@@ -1353,12 +1489,17 @@ export default function MealReport() {
                             color="primary"
                             sx={{
                               fontWeight: "bold",
-                              background: "linear-gradient(135deg, #3f51b5 0%, #2196f3 100%)",
+                              background:
+                                "linear-gradient(135deg, #3f51b5 0%, #2196f3 100%)",
                             }}
                           />
                         </TableCell>
                         <TableCell align="center" sx={{ padding: "8px 8px" }}>
-                          <Stack direction="row" spacing={1} justifyContent="center">
+                          <Stack
+                            direction="row"
+                            spacing={1}
+                            justifyContent="center"
+                          >
                             {/* Edit Button */}
                             {Object.keys(reportIdMap).length > 0 && (
                               <Tooltip title="Edit Report">
@@ -1369,7 +1510,9 @@ export default function MealReport() {
                                   color="primary"
                                   sx={{
                                     bgcolor: "rgba(33, 150, 243, 0.1)",
-                                    "&:hover": { bgcolor: "rgba(33, 150, 243, 0.2)" },
+                                    "&:hover": {
+                                      bgcolor: "rgba(33, 150, 243, 0.2)",
+                                    },
                                   }}
                                 >
                                   <Edit fontSize="small" />
@@ -1385,22 +1528,31 @@ export default function MealReport() {
                                   color="error"
                                   onClick={() => {
                                     // Get the first available report ID for this person
-                                    const reportDay = Object.keys(reportIdMap).find(
-                                      (day) => mealData[person.id]?.[Number(day)]?.eaten,
-                                    )
+                                    const reportDay = Object.keys(
+                                      reportIdMap,
+                                    ).find(
+                                      (day) =>
+                                        mealData[person.id]?.[Number(day)]
+                                          ?.eaten,
+                                    );
                                     if (reportDay) {
-                                      openDeleteDialog(reportIdMap[Number(reportDay)])
+                                      openDeleteDialog(
+                                        reportIdMap[Number(reportDay)],
+                                      );
                                     } else {
                                       setSnackbar({
                                         open: true,
-                                        message: "No report found for this person",
+                                        message:
+                                          "No report found for this person",
                                         severity: "error",
-                                      })
+                                      });
                                     }
                                   }}
                                   sx={{
                                     bgcolor: "rgba(244, 67, 54, 0.1)",
-                                    "&:hover": { bgcolor: "rgba(244, 67, 54, 0.2)" },
+                                    "&:hover": {
+                                      bgcolor: "rgba(244, 67, 54, 0.2)",
+                                    },
                                   }}
                                 >
                                   <Delete fontSize="small" />
@@ -1419,11 +1571,18 @@ export default function MealReport() {
                         transition: "background-color 0.2s",
                       }}
                     >
-                      <TableCell colSpan={3} sx={{ fontWeight: "bold", padding: "12px 8px" }}>
+                      <TableCell
+                        colSpan={3}
+                        sx={{ fontWeight: "bold", padding: "12px 8px" }}
+                      >
                         Daily Total
                       </TableCell>
                       {days.map((day) => (
-                        <TableCell key={day} align="center" sx={{ fontWeight: "bold", padding: "12px 3px" }}>
+                        <TableCell
+                          key={day}
+                          align="center"
+                          sx={{ fontWeight: "bold", padding: "12px 3px" }}
+                        >
                           <Chip
                             label={calculateDailyTotal(day)}
                             size="small"
@@ -1435,13 +1594,17 @@ export default function MealReport() {
                           />
                         </TableCell>
                       ))}
-                      <TableCell align="center" sx={{ fontWeight: "bold", padding: "12px 8px" }}>
+                      <TableCell
+                        align="center"
+                        sx={{ fontWeight: "bold", padding: "12px 8px" }}
+                      >
                         <Chip
                           label={calculateGrandTotal()}
                           color="primary"
                           sx={{
                             fontWeight: "bold",
-                            background: "linear-gradient(135deg, #3f51b5 0%, #2196f3 100%)",
+                            background:
+                              "linear-gradient(135deg, #3f51b5 0%, #2196f3 100%)",
                             boxShadow: "0 2px 5px rgba(63, 81, 181, 0.3)",
                             px: 1,
                           }}
@@ -1503,7 +1666,15 @@ export default function MealReport() {
               </Grid>
               <Grid item xs={6} sm={4} md={2}>
                 <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                  <Typography variant="caption" sx={{ bgcolor: "#3f51b5", color: "white", px: 1, borderRadius: 1 }}>
+                  <Typography
+                    variant="caption"
+                    sx={{
+                      bgcolor: "#3f51b5",
+                      color: "white",
+                      px: 1,
+                      borderRadius: 1,
+                    }}
+                  >
                     3
                   </Typography>
                   <Typography variant="body2">Number of meals</Typography>
@@ -1546,13 +1717,22 @@ export default function MealReport() {
                 </Typography>
               )}
             </Box>
-            <IconButton edge="end" color="inherit" onClick={() => setModalOpen(false)} aria-label="close">
+            <IconButton
+              edge="end"
+              color="inherit"
+              onClick={() => setModalOpen(false)}
+              aria-label="close"
+            >
               <Close />
             </IconButton>
           </DialogTitle>
           <DialogContent dividers sx={{ p: 3 }}>
             <FormGroup>
-              <Typography variant="subtitle1" gutterBottom sx={{ fontWeight: 600, mb: 2 }}>
+              <Typography
+                variant="subtitle1"
+                gutterBottom
+                sx={{ fontWeight: 600, mb: 2 }}
+              >
                 Select meals taken:
               </Typography>
 
@@ -1564,8 +1744,12 @@ export default function MealReport() {
                       p: 2,
                       mb: 2,
                       borderRadius: 2,
-                      borderColor: tempMealTypes.includes("breakfast") ? "#ff9800" : "rgba(0,0,0,0.12)",
-                      bgcolor: tempMealTypes.includes("breakfast") ? "rgba(255, 152, 0, 0.1)" : "transparent",
+                      borderColor: tempMealTypes.includes("breakfast")
+                        ? "#ff9800"
+                        : "rgba(0,0,0,0.12)",
+                      bgcolor: tempMealTypes.includes("breakfast")
+                        ? "rgba(255, 152, 0, 0.1)"
+                        : "transparent",
                       transition: "all 0.2s",
                       "&:hover": {
                         borderColor: "#ff9800",
@@ -1579,7 +1763,9 @@ export default function MealReport() {
                           checked={tempMealTypes.includes("breakfast")}
                           onChange={() => handleMealTypeChange("breakfast")}
                           icon={<FreeBreakfast color="disabled" />}
-                          checkedIcon={<FreeBreakfast sx={{ color: "#ff9800" }} />}
+                          checkedIcon={
+                            <FreeBreakfast sx={{ color: "#ff9800" }} />
+                          }
                         />
                       }
                       label={
@@ -1602,8 +1788,12 @@ export default function MealReport() {
                       p: 2,
                       mb: 2,
                       borderRadius: 2,
-                      borderColor: tempMealTypes.includes("lunch") ? "#2196f3" : "rgba(0,0,0,0.12)",
-                      bgcolor: tempMealTypes.includes("lunch") ? "rgba(33, 150, 243, 0.1)" : "transparent",
+                      borderColor: tempMealTypes.includes("lunch")
+                        ? "#2196f3"
+                        : "rgba(0,0,0,0.12)",
+                      bgcolor: tempMealTypes.includes("lunch")
+                        ? "rgba(33, 150, 243, 0.1)"
+                        : "transparent",
                       transition: "all 0.2s",
                       "&:hover": {
                         borderColor: "#2196f3",
@@ -1640,8 +1830,12 @@ export default function MealReport() {
                       p: 2,
                       mb: 2,
                       borderRadius: 2,
-                      borderColor: tempMealTypes.includes("dinner") ? "#9c27b0" : "rgba(0,0,0,0.12)",
-                      bgcolor: tempMealTypes.includes("dinner") ? "rgba(156, 39, 176, 0.1)" : "transparent",
+                      borderColor: tempMealTypes.includes("dinner")
+                        ? "#9c27b0"
+                        : "rgba(0,0,0,0.12)",
+                      bgcolor: tempMealTypes.includes("dinner")
+                        ? "rgba(156, 39, 176, 0.1)"
+                        : "transparent",
                       transition: "all 0.2s",
                       "&:hover": {
                         borderColor: "#9c27b0",
@@ -1655,7 +1849,9 @@ export default function MealReport() {
                           checked={tempMealTypes.includes("dinner")}
                           onChange={() => handleMealTypeChange("dinner")}
                           icon={<DinnerDining color="disabled" />}
-                          checkedIcon={<DinnerDining sx={{ color: "#9c27b0" }} />}
+                          checkedIcon={
+                            <DinnerDining sx={{ color: "#9c27b0" }} />
+                          }
                         />
                       }
                       label={
@@ -1685,12 +1881,17 @@ export default function MealReport() {
                   <Settings fontSize="small" color="action" />
                   <Typography variant="subtitle2">Meal Summary</Typography>
                 </Box>
-                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{ mt: 1 }}
+                >
                   Total meals selected: <strong>{tempMealTypes.length}</strong>
                 </Typography>
                 {tempMealTypes.length === 0 && (
                   <Alert severity="warning" sx={{ mt: 1 }}>
-                    Selecting no meals will mark the person as absent for this day.
+                    Selecting no meals will mark the person as absent for this
+                    day.
                   </Alert>
                 )}
               </Box>
@@ -1758,17 +1959,27 @@ export default function MealReport() {
                 Confirm Delete
               </Typography>
             </Box>
-            <IconButton edge="end" color="inherit" onClick={() => setDeleteDialogOpen(false)} aria-label="close">
+            <IconButton
+              edge="end"
+              color="inherit"
+              onClick={() => setDeleteDialogOpen(false)}
+              aria-label="close"
+            >
               <Close />
             </IconButton>
           </DialogTitle>
           <DialogContent sx={{ p: 3, mt: 2 }}>
             <Typography variant="body1">
-              Are you sure you want to delete this meal report? This action cannot be undone.
+              Are you sure you want to delete this meal report? This action
+              cannot be undone.
             </Typography>
           </DialogContent>
           <DialogActions sx={{ p: 2, bgcolor: "#f9f9f9" }}>
-            <Button onClick={() => setDeleteDialogOpen(false)} variant="outlined" sx={{ borderRadius: 100, px: 3 }}>
+            <Button
+              onClick={() => setDeleteDialogOpen(false)}
+              variant="outlined"
+              sx={{ borderRadius: 100, px: 3 }}
+            >
               Cancel
             </Button>
             <Button
@@ -1802,12 +2013,20 @@ export default function MealReport() {
         </Box>
 
         {/* Snackbar for notifications */}
-        <Snackbar open={snackbar.open} autoHideDuration={6000} onClose={handleCloseSnackbar}>
-          <Alert onClose={handleCloseSnackbar} severity={snackbar.severity} sx={{ width: "100%" }}>
+        <Snackbar
+          open={snackbar.open}
+          autoHideDuration={6000}
+          onClose={handleCloseSnackbar}
+        >
+          <Alert
+            onClose={handleCloseSnackbar}
+            severity={snackbar.severity}
+            sx={{ width: "100%" }}
+          >
             {snackbar.message}
           </Alert>
         </Snackbar>
       </Container>
     </Box>
-  )
+  );
 }

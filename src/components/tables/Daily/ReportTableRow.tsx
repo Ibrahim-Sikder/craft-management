@@ -1,8 +1,7 @@
-
-import { reportCellStyle } from '@/style/customeStyle';
-import { TableCell, TableRow } from '@mui/material';
-import React from 'react';
-import { Subheader } from './Subheader';
+import { reportCellStyle } from "@/style/customStyle";
+import { TableCell, TableRow } from "@mui/material";
+import React from "react";
+import { Subheader } from "./Subheader";
 
 interface ReportTableRowProps {
   col1Label: React.ReactNode;
@@ -15,27 +14,28 @@ const ReportTableRow: React.FC<ReportTableRowProps> = ({
   col2Label,
   col3Label,
 }) => {
-
   return (
     <>
       {/* Header Row */}
       <TableRow
         sx={{
-          background: 'linear-gradient(90deg, #1a237e 0%, #3949ab 100%)',
-          color: 'white',
-          "@media print": { bgcolor: "#f5f5f5", color: 'black' }
+          background: "linear-gradient(90deg, #1a237e 0%, #3949ab 100%)",
+          color: "white",
+          "@media print": { bgcolor: "#f5f5f5", color: "black" },
         }}
       >
-        <TableCell sx={{
-          fontWeight: 600,
-          textAlign: "center",
-          minWidth: 80,
-          color: 'inherit',
-          borderLeft: '1px solid rgba(255,255,255,0.2)',
-          '&:first-of-type': {
-            borderLeft: 'none'
-          }
-        }}>
+        <TableCell
+          sx={{
+            fontWeight: 600,
+            textAlign: "center",
+            minWidth: 80,
+            color: "inherit",
+            borderLeft: "1px solid rgba(255,255,255,0.2)",
+            "&:first-of-type": {
+              borderLeft: "none",
+            },
+          }}
+        >
           Day <br /> (বার)
         </TableCell>
 
@@ -44,8 +44,8 @@ const ReportTableRow: React.FC<ReportTableRowProps> = ({
           colSpan={4}
           sx={{
             ...reportCellStyle,
-            color: 'inherit',
-            borderLeft: '1px solid rgba(255,255,255,0.2)'
+            color: "inherit",
+            borderLeft: "1px solid rgba(255,255,255,0.2)",
           }}
         >
           {col1Label}
@@ -54,8 +54,8 @@ const ReportTableRow: React.FC<ReportTableRowProps> = ({
           colSpan={4}
           sx={{
             ...reportCellStyle,
-            color: 'inherit',
-            borderLeft: '1px solid rgba(255,255,255,0.2)'
+            color: "inherit",
+            borderLeft: "1px solid rgba(255,255,255,0.2)",
           }}
         >
           {col2Label}
@@ -64,8 +64,8 @@ const ReportTableRow: React.FC<ReportTableRowProps> = ({
           colSpan={4}
           sx={{
             ...reportCellStyle,
-            color: 'inherit',
-            borderLeft: '1px solid rgba(255,255,255,0.2)'
+            color: "inherit",
+            borderLeft: "1px solid rgba(255,255,255,0.2)",
           }}
         >
           {col3Label}
@@ -75,17 +75,17 @@ const ReportTableRow: React.FC<ReportTableRowProps> = ({
         <TableCell
           sx={{
             ...reportCellStyle,
-            color: 'inherit',
-            borderLeft: '1px solid rgba(255,255,255,0.2)'
+            color: "inherit",
+            borderLeft: "1px solid rgba(255,255,255,0.2)",
           }}
         >
-          দোয়া / মাসআলা / হাদিস 
+          দোয়া / মাসআলা / হাদিস
         </TableCell>
         <TableCell
           sx={{
             ...reportCellStyle,
-            color: 'inherit',
-            borderLeft: '1px solid rgba(255,255,255,0.2)'
+            color: "inherit",
+            borderLeft: "1px solid rgba(255,255,255,0.2)",
           }}
         >
           মাশক্ব
@@ -93,8 +93,8 @@ const ReportTableRow: React.FC<ReportTableRowProps> = ({
         <TableCell
           sx={{
             ...reportCellStyle,
-            color: 'inherit',
-            borderLeft: '1px solid rgba(255,255,255,0.2)'
+            color: "inherit",
+            borderLeft: "1px solid rgba(255,255,255,0.2)",
           }}
         >
           তাজভীদ শিক্ষা
@@ -102,8 +102,8 @@ const ReportTableRow: React.FC<ReportTableRowProps> = ({
         <TableCell
           sx={{
             ...reportCellStyle,
-            color: 'inherit',
-            borderLeft: '1px solid rgba(255,255,255,0.2)'
+            color: "inherit",
+            borderLeft: "1px solid rgba(255,255,255,0.2)",
           }}
         >
           Thursday Weekly Revision
@@ -112,8 +112,7 @@ const ReportTableRow: React.FC<ReportTableRowProps> = ({
       </TableRow>
 
       {/* Sub Header Row */}
-     <Subheader/>
-
+      <Subheader />
     </>
   );
 };

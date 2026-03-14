@@ -19,7 +19,10 @@ import {
   useUpdateEnrollmentMutation,
 } from "@/redux/api/enrollmentApi";
 import { useGetAllStudentsQuery } from "@/redux/api/studentApi";
-import { useGetAllAdmissionApplicationsQuery } from "@/redux/api/admissionApplication";
+import {
+  useGetAllAdmissionApplicationsQuery,
+  useGetSingleAdmissionApplicationQuery,
+} from "@/redux/api/admissionApplication";
 import {
   AccessTime,
   AccountCircle,
@@ -3559,7 +3562,7 @@ const transformEnrollmentDataToForm = (
 };
 
 // --- MAIN COMPONENT ---
-const EnrollmentForm = () => {
+const EnrollmentForm = ({ applicationId, admissionApplications }: any) => {
   const theme = useTheme();
   const limit = 200;
   const [page] = useState(0);
@@ -3567,26 +3570,18 @@ const EnrollmentForm = () => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
-  const applicationId = searchParams.get("applicationId");
   const [openSuccessModal, setOpenSuccessModal] = useState(false);
   const [openPrintModal, setOpenPrintModal] = useState(false);
   const [openAddFeeModal, setOpenAddFeeModal] = useState(false);
   const [openPaymentModal, setOpenPaymentModal] = useState(false);
   const [enrolledStudentData, setEnrolledStudentData] = useState<any>(null);
   const [isApplicationLoading, setIsApplicationLoading] = useState(false);
-  console.log("for data sent print", enrolledStudentData);
 
   const { classOptions, feeCategoryData } = useAcademicOption();
   const [createEnrollment] = useCreateEnrollmentMutation();
   const [updateEnrollment] = useUpdateEnrollmentMutation();
   const { data: singleEnrollment, isLoading: enrollmentLoading } =
     useGetSingleEnrollmentQuery(id ? { id } : undefined, { skip: !id });
-
-  const { data: admissionApplications, isLoading: admissionsLoading } =
-    useGetAllAdmissionApplicationsQuery(
-      applicationId ? { applicationId, limit: 1 } : { skip: true },
-      { skip: !applicationId },
-    );
 
   const { data: studentData } = useGetAllStudentsQuery({
     limit,
@@ -3953,7 +3948,10 @@ const EnrollmentForm = () => {
       if (id) {
         res = await updateEnrollment({ id, data: finalSubmitData }).unwrap();
       } else {
-        res = await createEnrollment(finalSubmitData).unwrap();
+        res = await createEnrollment({
+          data: finalSubmitData,
+          applicationId: applicationId,
+        }).unwrap();
       }
 
       if (res?.success) {
@@ -3992,13 +3990,13 @@ const EnrollmentForm = () => {
       ?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
 
-  if (
-    (id && enrollmentLoading) ||
-    (applicationId && admissionsLoading) ||
-    !defaultValues ||
-    isApplicationLoading
-  )
-    return <LoadingState />;
+  // if (
+  //   (id && enrollmentLoading) ||
+  //   (applicationId && admissionsLoading) ||
+  //   !defaultValues ||
+  //   isApplicationLoading
+  // )
+  //   return <LoadingState />;
 
   const getClassLabel = (clsData: any) => {
     if (!clsData) return "";
@@ -4057,7 +4055,11 @@ const EnrollmentForm = () => {
               justifyContent: "space-between",
             }}
           >
-            <Box display="flex" alignItems="center">
+            <Box
+              display="flex"
+              alignItems="center"
+              sx={{ width: "100%", flex: 1 }}
+            >
               <Avatar
                 sx={{
                   bgcolor: theme.palette.primary.main,
@@ -4068,14 +4070,29 @@ const EnrollmentForm = () => {
               >
                 <School sx={{ color: "#fff", fontSize: 32 }} />
               </Avatar>
-              <Box ml={2}>
+              <Box
+                ml={2}
+                display="flex"
+                justifyContent="space-between"
+                alignItems="center"
+                sx={{ width: "100%", flex: 1 }}
+              >
                 <Typography
                   variant="h5"
                   sx={{ fontWeight: "bold", color: "text.primary" }}
                 >
                   Student Enrollment
                 </Typography>
-                <Typography variant="subtitle2" color="text.secondary" />
+                {admissionApplications?.data?.[0] && (
+                  <Typography
+                    variant="subtitle1"
+                    sx={{ fontWeight: 600, lineHeight: 1.2 }}
+                  >
+                    {admissionApplications.data[0].studentInfo?.nameEnglish ||
+                      admissionApplications.data[0].studentInfo?.nameBangla ||
+                      "Student Name"}
+                  </Typography>
+                )}
               </Box>
             </Box>
           </Paper>
