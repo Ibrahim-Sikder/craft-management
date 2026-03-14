@@ -41,53 +41,12 @@ import CraftTable, { Column, RowAction, BulkAction } from "@/components/Table";
 import Swal from "sweetalert2";
 import { AdmissionDetailModal } from "./AdmissionDetailModal";
 import { TAdmissionStatus } from "@/interface/admission";
-import { format } from "date-fns";
-import { bn } from "date-fns/locale";
 
-// ─── Types ─────────────────────────────────────────────────────────────────────
+import { formatDate, formatShortDate } from "@/utils/formateDate";
+import { AdmissionApplicationListProps, ApplicationRow } from "@/types/apply";
 
-interface ApplicationRow {
-  _id: string;
-  applicationId: string;
-  status: string;
-  academicYear: string;
-  nameBangla: string;
-  nameEnglish: string;
-  studentPhoto?: string;
-  department: string;
-  class: string;
-  _classFlat: string;
-  mobile: string;
-  fatherMobile: string;
-  studentInfo: any;
-  parentInfo: any;
-  academicInfo: any;
-  address: any;
-  createdAt?: string;
-  updatedAt?: string;
-}
+// ─── Helper Components ──────────────────────────────────────────────────────
 
-interface AdmissionApplicationListProps {
-  type: "pending" | "approved" | "rejected" | "enrolled";
-}
-
-const formatDate = (date: string | Date) => {
-  try {
-    return format(new Date(date), "dd MMM yyyy, hh:mm a", { locale: bn });
-  } catch {
-    return "Invalid date";
-  }
-};
-
-const formatShortDate = (date: string | Date) => {
-  try {
-    return format(new Date(date), "dd MMM yyyy", { locale: bn });
-  } catch {
-    return "Invalid date";
-  }
-};
-
-// Update the StatusChip to include 'enrolled' styling
 const StatusChip = ({ status }: { status: TAdmissionStatus }) => {
   const statusConfig: Record<
     string,
@@ -113,7 +72,7 @@ const StatusChip = ({ status }: { status: TAdmissionStatus }) => {
       label: "Rejected",
     },
     enrolled: {
-      color: "secondary", // or "info" if you prefer
+      color: "secondary",
       icon: <HowToReg sx={{ fontSize: 16 }} />,
       label: "Enrolled",
     },
@@ -207,8 +166,6 @@ const MobileNumber = ({ number }: { number: string }) => (
   </Box>
 );
 
-//Date Display Component
-
 const DateDisplay = ({ date }: { date?: string }) => {
   if (!date) return <Typography variant="body2">N/A</Typography>;
   return (
@@ -240,8 +197,6 @@ function extractClassName(item: any): string {
   if (item.class) return item.class;
   return "N/A";
 }
-
-// Main Reusable Component
 
 export default function AdmissionApplicationList({
   type,
@@ -282,10 +237,10 @@ export default function AdmissionApplicationList({
   const { data, isLoading, refetch } =
     useGetAllAdmissionApplicationsQuery(queryParams);
 
-  // Flatten API data → flat rows
-  const tableData: ApplicationRow[] = useMemo(() => {
+  // Flatten API data → flat rows, but keep the original item
+  const tableData: any = useMemo(() => {
     if (!data?.data) return [];
-    return data.data.map((item: any): ApplicationRow => {
+    return data.data.map((item: any): any => {
       const cls = extractClassName(item);
       return {
         _id: item._id,
@@ -306,6 +261,7 @@ export default function AdmissionApplicationList({
         address: item.address,
         createdAt: item.createdAt,
         updatedAt: item.updatedAt,
+        original: item,
       };
     });
   }, [data]);
@@ -325,11 +281,12 @@ export default function AdmissionApplicationList({
 
   const totalCount = data?.meta?.total ?? tableData.length;
 
-  // Handlers
+  // ─── Handlers ─────────────────────────────────────────────────────────────
 
   const handleView = useCallback((row: ApplicationRow) => {
     setModalLoading(true);
-    setSelectedApplication(row);
+    // Pass the full original object to the modal
+    setSelectedApplication((row as any).original);
     setModalOpen(true);
     setTimeout(() => setModalLoading(false), 500);
   }, []);
@@ -379,7 +336,6 @@ export default function AdmissionApplicationList({
     [deleteAdmissionApplication, refetch],
   );
 
-  //Core approve handler — fixed to ensure status update completes
   const handleUpdateStatus = useCallback(
     async (
       row: ApplicationRow,
@@ -421,13 +377,11 @@ export default function AdmissionApplicationList({
       if (!result.isConfirmed) return;
 
       try {
-        // First update the status
-        const updatedResult = await updateApplication({
+        await updateApplication({
           id: row._id,
           data: { status: newStatus },
         }).unwrap();
 
-        // Show success message
         await Swal.fire({
           icon: "success",
           title: "Success!",
@@ -436,7 +390,6 @@ export default function AdmissionApplicationList({
           showConfirmButton: false,
         });
 
-        // If approving, navigate to enrollment page with the application data
         if (isApproving) {
           if (typeof window !== "undefined") {
             sessionStorage.setItem(
@@ -452,13 +405,10 @@ export default function AdmissionApplicationList({
               }),
             );
           }
-
-          // Navigate to enrollment page
           router.push(
             `/dashboard/enrollments?applicationId=${row.applicationId}`,
           );
         } else {
-          // For reject/restore, just refetch the data
           refetch();
         }
       } catch (error: any) {
@@ -506,10 +456,12 @@ export default function AdmissionApplicationList({
       text: "PDF download coming soon.",
     });
   }, []);
+
+  // Bulk action core (supports approve, delete, restore, reject)
   const handleBulkAction = useCallback(
     async (
       selectedRows: ApplicationRow[],
-      actionType: "approve" | "delete" | "restore",
+      actionType: "approve" | "delete" | "restore" | "reject",
     ) => {
       const ids = selectedRows.map((r) => r._id).filter(Boolean);
       if (!ids.length) return;
@@ -533,12 +485,21 @@ export default function AdmissionApplicationList({
           successMessage: "restored to pending",
           confirmText: "Yes, Restore!",
         },
+        reject: {
+          title: `Reject ${ids.length} Applications?`,
+          confirmButtonColor: "#d33",
+          successMessage: "rejected",
+          confirmText: "Yes, Reject!",
+        },
       }[actionType];
 
       const result = await Swal.fire({
         title: config.title,
         text: `You are about to ${actionType} ${ids.length} applications.`,
-        icon: actionType === "delete" ? "warning" : "question",
+        icon:
+          actionType === "delete" || actionType === "reject"
+            ? "warning"
+            : "question",
         showCancelButton: true,
         confirmButtonColor: config.confirmButtonColor,
         confirmButtonText: config.confirmText,
@@ -560,6 +521,11 @@ export default function AdmissionApplicationList({
               id,
               data: { status: "pending" },
             }).unwrap();
+          if (actionType === "reject")
+            return updateApplication({
+              id,
+              data: { status: "rejected" },
+            }).unwrap();
           return Promise.reject("Invalid action");
         });
 
@@ -569,7 +535,6 @@ export default function AdmissionApplicationList({
         ).length;
         const failed = results.filter((r) => r.status === "rejected").length;
 
-        // Show result message
         if (failed === 0) {
           await Swal.fire({
             icon: "success",
@@ -579,7 +544,6 @@ export default function AdmissionApplicationList({
             showConfirmButton: false,
           });
 
-          // For bulk approve, navigate to enrollments list
           if (actionType === "approve" && succeeded > 0) {
             router.push("/dashboard/enrollments");
           } else {
@@ -616,7 +580,13 @@ export default function AdmissionApplicationList({
     [handleBulkAction],
   );
 
-  // ── Columns configuration ──────────────────────────────────────────────────
+  const handleBulkReject = useCallback(
+    (rows: ApplicationRow[]) => handleBulkAction(rows, "reject"),
+    [handleBulkAction],
+  );
+
+  // ─── Columns Configuration ────────────────────────────────────────────────
+
   const columns: Column[] = useMemo(() => {
     const cols: Column[] = [
       {
@@ -721,6 +691,9 @@ export default function AdmissionApplicationList({
 
     return cols;
   }, [isMobile, isTablet, classFilterOptions]);
+
+  // ─── Row Actions ──────────────────────────────────────────────────────────
+
   const rowActions: RowAction[] = useMemo(() => {
     const baseActions: RowAction[] = [
       {
@@ -801,6 +774,16 @@ export default function AdmissionApplicationList({
           color: "error",
           inMenu: true,
         },
+        {
+          label: "Restore to Pending",
+          icon: <Restore fontSize="small" />,
+          onClick: handleRestore,
+          tooltip: "Move back to pending",
+          color: "warning",
+          inMenu: true,
+          disabled: (row: ApplicationRow) =>
+            row.status !== "approved" || isUpdating || isDeleting,
+        },
       ];
     } else if (type === "rejected") {
       return [
@@ -823,7 +806,7 @@ export default function AdmissionApplicationList({
         },
       ];
     } else {
-      // Enrolled type - mostly view-only actions
+      // Enrolled type
       return [
         ...baseActions,
         {
@@ -854,7 +837,8 @@ export default function AdmissionApplicationList({
     router,
   ]);
 
-  // ── Bulk actions based on type ────────────────────────────────────────────
+  // ─── Bulk Actions ─────────────────────────────────────────────────────────
+
   const bulkActions: BulkAction[] = useMemo(() => {
     if (type === "pending") {
       return [
@@ -869,14 +853,48 @@ export default function AdmissionApplicationList({
             isDeleting,
         },
         {
-          label: "Delete",
+          label: "Delete Selected",
           icon: <Delete fontSize="small" />,
           onClick: handleBulkDelete,
           color: "error",
           disabled: () => isDeleting || isUpdating,
         },
       ];
-    } else if (type === "rejected") {
+    }
+
+    if (type === "approved") {
+      return [
+        {
+          label: "Restore to Pending",
+          icon: <Restore fontSize="small" />,
+          onClick: handleBulkRestore,
+          color: "warning",
+          disabled: (rows: ApplicationRow[]) =>
+            rows.some((r) => r.status !== "approved") ||
+            isUpdating ||
+            isDeleting,
+        },
+        {
+          label: "Reject Selected",
+          icon: <Cancel fontSize="small" />,
+          onClick: handleBulkReject,
+          color: "error",
+          disabled: (rows: ApplicationRow[]) =>
+            rows.some((r) => r.status !== "approved") ||
+            isUpdating ||
+            isDeleting,
+        },
+        {
+          label: "Delete Selected",
+          icon: <Delete fontSize="small" />,
+          onClick: handleBulkDelete,
+          color: "error",
+          disabled: () => isDeleting || isUpdating,
+        },
+      ];
+    }
+
+    if (type === "rejected") {
       return [
         {
           label: "Restore to Pending",
@@ -899,7 +917,7 @@ export default function AdmissionApplicationList({
             isDeleting,
         },
         {
-          label: "Delete",
+          label: "Delete Selected",
           icon: <Delete fontSize="small" />,
           onClick: handleBulkDelete,
           color: "error",
@@ -907,6 +925,7 @@ export default function AdmissionApplicationList({
         },
       ];
     }
+
     return [];
   }, [
     type,
@@ -915,7 +934,10 @@ export default function AdmissionApplicationList({
     handleBulkApprove,
     handleBulkDelete,
     handleBulkRestore,
+    handleBulkReject,
   ]);
+
+  // ─── Header Banner ────────────────────────────────────────────────────────
 
   const getHeaderBanner = () => {
     if (type === "pending") {
@@ -1189,7 +1211,9 @@ export default function AdmissionApplicationList({
               ? "Pending Applications"
               : type === "approved"
                 ? "Approved Applications"
-                : "Rejected Applications"
+                : type === "rejected"
+                  ? "Rejected Applications"
+                  : "Enrolled Applications"
           }
           subtitle={`Total ${totalCount} ${type} applications`}
           emptyStateMessage={`No ${type} applications found`}
@@ -1217,7 +1241,9 @@ export default function AdmissionApplicationList({
               ? () => router.push("/dashboard/online-application/new")
               : undefined
           }
-          selectable={type === "pending" || type === "rejected"}
+          selectable={
+            type === "pending" || type === "rejected" || type === "approved"
+          }
           dense={isMobile}
           striped={true}
           hover={true}

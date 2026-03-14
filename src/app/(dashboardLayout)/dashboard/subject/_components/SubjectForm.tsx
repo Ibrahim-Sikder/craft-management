@@ -33,7 +33,7 @@ import {
   evaluationStle,
   evaluationStle2,
   typographyStyle,
-} from "@/style/customeStyle";
+} from "@/style/customStyle";
 import { LoadingState } from "@/components/common/LoadingState";
 
 export default function SubjectForm({ id }: any) {

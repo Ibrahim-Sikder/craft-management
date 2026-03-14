@@ -46,7 +46,7 @@ import {
 import { theme } from "@/lib/Theme/Theme";
 import Loader from "@/app/loading";
 import { motion } from "framer-motion";
-import { DepartmentChip, StyledCard } from "@/style/customeStyle";
+import { DepartmentChip, StyledCard } from "@/style/customStyle";
 
 const departmentColors: Record<string, string> = {
   Languages: "#3a7bd5",

@@ -27,7 +27,7 @@ import {
   SectionCard,
   GradientButton,
   StyledTextFieldSx,
-} from "@/style/customeStyle";
+} from "@/style/customStyle";
 import CraftForm from "@/components/Forms/Form";
 import CraftDatePicker from "@/components/Forms/DatePicker";
 import CraftInput from "@/components/Forms/Input";

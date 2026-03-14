@@ -5,7 +5,7 @@ import axios from "axios";
 
 const instance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_BASE_API_URL,
-  withCredentials: true, // THIS IS CRUCIAL
+  withCredentials: true,
   timeout: 60000,
   headers: {
     "Content-Type": "application/json",
@@ -13,10 +13,28 @@ const instance = axios.create({
   },
 });
 
+// ── Refresh queue state ──────────────────────────────────────────────────────
+let isRefreshing = false;
+let failedQueue: Array<{
+  resolve: (value?: unknown) => void;
+  reject: (reason?: unknown) => void;
+}> = [];
+
+const processQueue = (error: unknown) => {
+  failedQueue.forEach((prom) => {
+    if (error) {
+      prom.reject(error);
+    } else {
+      prom.resolve();
+    }
+  });
+  failedQueue = [];
+};
+// ────────────────────────────────────────────────────────────────────────────
+
 // Add a request interceptor
 instance.interceptors.request.use(
   function (config) {
-    // Log the request for debugging
     console.log("Making request to:", config.url);
     return config;
   },
@@ -30,7 +48,6 @@ instance.interceptors.response.use(
   function (response) {
     console.log("Response received:", response.status);
 
-    // Check if cookies are being set
     const cookies = response.headers["set-cookie"];
     if (cookies) {
       console.log("Cookies set:", cookies);
@@ -51,24 +68,31 @@ instance.interceptors.response.use(
 
     // Handle 401 errors (token expired)
     if (error?.response?.status === 401 && !originalRequest._retry) {
+      // If already refreshing, queue this request
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject });
+        })
+          .then(() => instance(originalRequest))
+          .catch((err) => Promise.reject(err));
+      }
+
       originalRequest._retry = true;
+      isRefreshing = true;
 
       try {
-        // Try to refresh token
-        const response = await axios.post(
-          `${process.env.NEXT_PUBLIC_BASE_API_URL}/auth/refresh-token`,
-          {},
-          { withCredentials: true },
-        );
-
-        if (response.data.success) {
-          return instance(originalRequest);
-        }
+        // Use instance (not bare axios) so withCredentials is always consistent
+        await instance.post("/auth/refresh-token", {});
+        processQueue(null);
+        return instance(originalRequest);
       } catch (refreshError: any) {
-        // Redirect to login if refresh fails
+        processQueue(refreshError);
         if (typeof window !== "undefined") {
           window.location.href = "/";
         }
+        return Promise.reject(refreshError);
+      } finally {
+        isRefreshing = false;
       }
     }
 

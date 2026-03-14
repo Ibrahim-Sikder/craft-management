@@ -22,7 +22,7 @@ import CraftTextArea from "@/components/Forms/TextArea";
 import CraftDatePicker from "@/components/Forms/DatePicker";
 import toast from "react-hot-toast";
 import { useEffect, useMemo, useState } from "react";
-import { cardStyle } from "@/style/customeStyle";
+import { cardStyle } from "@/style/customStyle";
 import CategoryAutoComplete from "@/utils/CategoryAutoComplete";
 import {
   useCreateExpenseMutation,

@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-"use client"
+"use client";
 
-import { useState } from "react"
+import { useState } from "react";
 import {
   Box,
   Grid,
@@ -25,7 +25,7 @@ import {
   IconButton,
   Container,
   Fab,
-} from "@mui/material"
+} from "@mui/material";
 import {
   Search,
   Add,
@@ -35,25 +35,27 @@ import {
   MonetizationOn,
   AccountBalance,
   Delete,
-} from "@mui/icons-material"
-import { GlassCard } from "@/style/customeStyle"
-import { useDeleteIncomeMutation, useGetAllIncomesQuery } from "@/redux/api/incomeApi"
-import AddIncomeModal from "../_components/AddIncomeDialog"
-import Swal from "sweetalert2"
-import { TIncome } from "@/interface"
-import { useGetAllIncomeCategoriesQuery } from "@/redux/api/incomeCategoryApi"
+} from "@mui/icons-material";
+import { GlassCard } from "@/style/customStyle";
+import {
+  useDeleteIncomeMutation,
+  useGetAllIncomesQuery,
+} from "@/redux/api/incomeApi";
+import AddIncomeModal from "../_components/AddIncomeDialog";
+import Swal from "sweetalert2";
+import { TIncome } from "@/interface";
+import { useGetAllIncomeCategoriesQuery } from "@/redux/api/incomeCategoryApi";
 
 export default function IncomeManagement() {
-  const [open, setOpen] = useState(false)
-  const [searchTerm, setSearchTerm] = useState("")
-  const [categoryFilter, setCategoryFilter] = useState("all")
-  const [statusFilter, setStatusFilter] = useState("all")
-  const [editData, setEditData] = useState<TIncome | null>(null)
-  const [deleteIncome] = useDeleteIncomeMutation()
-  const { data, isLoading } = useGetAllIncomesQuery({})
-  const incomeRecords = data?.data?.incomes || []
-  const { data: incomeCategories } = useGetAllIncomeCategoriesQuery({})
-
+  const [open, setOpen] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [editData, setEditData] = useState<TIncome | null>(null);
+  const [deleteIncome] = useDeleteIncomeMutation();
+  const { data, isLoading } = useGetAllIncomesQuery({});
+  const incomeRecords = data?.data?.incomes || [];
+  const { data: incomeCategories } = useGetAllIncomeCategoriesQuery({});
 
   const handleDeleteIncome = async (id: string) => {
     try {
@@ -64,26 +66,26 @@ export default function IncomeManagement() {
         showCancelButton: true,
         confirmButtonColor: "#3085d6",
         cancelButtonColor: "#d33",
-        confirmButtonText: "Yes, delete it!"
-      })
+        confirmButtonText: "Yes, delete it!",
+      });
 
       if (result.isConfirmed) {
-        await deleteIncome(id).unwrap()
+        await deleteIncome(id).unwrap();
 
         Swal.fire({
           title: "Deleted!",
           text: `Income has been deleted successfully.`,
-          icon: "success"
-        })
+          icon: "success",
+        });
       }
     } catch (err: any) {
       Swal.fire({
         title: "Error!",
         text: err.data?.message || "Failed to delete income",
-        icon: "error"
-      })
+        icon: "error",
+      });
     }
-  }
+  };
 
   const getStatusChip = (status: string) => {
     const statusLower = status?.toLowerCase() || "completed";
@@ -148,36 +150,37 @@ export default function IncomeManagement() {
     }
   };
 
-
-
   const getIncomeIcon = (category: string) => {
-    const cat = (category || "").toLowerCase()
-    if (cat.includes("student") || cat.includes("ছাত্র") || cat.includes("tuition")) {
-      return <School />
+    const cat = (category || "").toLowerCase();
+    if (
+      cat.includes("student") ||
+      cat.includes("ছাত্র") ||
+      cat.includes("tuition")
+    ) {
+      return <School />;
     } else if (cat.includes("donation") || cat.includes("দান")) {
-      return <CardGiftcard />
+      return <CardGiftcard />;
     } else if (cat.includes("grant") || cat.includes("অনুদান")) {
-      return <AccountBalance />
+      return <AccountBalance />;
     } else {
-      return <MonetizationOn />
+      return <MonetizationOn />;
     }
-  }
+  };
 
   const handleEdit = (income: TIncome) => {
-    setEditData(income)
-    setOpen(true)
-  }
+    setEditData(income);
+    setOpen(true);
+  };
 
   const handleAddNew = () => {
-    setEditData(null)
-    setOpen(true)
-  }
+    setEditData(null);
+    setOpen(true);
+  };
 
   const handleClose = () => {
-    setOpen(false)
-    setEditData(null)
-  }
-
+    setOpen(false);
+    setEditData(null);
+  };
 
   if (isLoading) {
     return (
@@ -186,14 +189,21 @@ export default function IncomeManagement() {
           <Typography variant="h6">Loading income data...</Typography>
         </Box>
       </Container>
-    )
+    );
   }
 
   return (
     <Container maxWidth="xl">
       <Box sx={{ py: 4 }}>
         {/* Header */}
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 6 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 6,
+          }}
+        >
           <Box>
             <Typography
               variant="h3"
@@ -257,7 +267,6 @@ export default function IncomeManagement() {
 
         </Grid> */}
 
-
         {/* Income Records */}
         <GlassCard>
           <CardContent sx={{ p: 4 }}>
@@ -300,14 +309,15 @@ export default function IncomeManagement() {
                     sx={{ borderRadius: "15px" }}
                   >
                     <MenuItem value="all">All</MenuItem>
-                    {incomeCategories?.data?.data?.map((income: any, index: number) => (
-                      <MenuItem key={index} value={income._id}>
-                        {income.name}
-                      </MenuItem>
-                    ))}
+                    {incomeCategories?.data?.data?.map(
+                      (income: any, index: number) => (
+                        <MenuItem key={index} value={income._id}>
+                          {income.name}
+                        </MenuItem>
+                      ),
+                    )}
                   </Select>
                 </FormControl>
-
               </Grid>
               <Grid item xs={12} md={2}>
                 <FormControl fullWidth>
@@ -325,7 +335,6 @@ export default function IncomeManagement() {
                   </Select>
                 </FormControl>
               </Grid>
-
             </Grid>
 
             {/* Income Table */}
@@ -339,18 +348,33 @@ export default function IncomeManagement() {
               <Table>
                 <TableHead>
                   <TableRow sx={{ bgcolor: "#f8f9fa" }}>
-                    <TableCell sx={{ fontWeight: 700, fontSize: "1rem" }}>Source & Description</TableCell>
-                    <TableCell sx={{ fontWeight: 700, fontSize: "1rem" }}>Amount</TableCell>
-                    <TableCell sx={{ fontWeight: 700, fontSize: "1rem" }}>Category</TableCell>
-                    <TableCell sx={{ fontWeight: 700, fontSize: "1rem" }}>Date</TableCell>
-                    <TableCell sx={{ fontWeight: 700, fontSize: "1rem" }}>Status</TableCell>
-                    <TableCell sx={{ fontWeight: 700, fontSize: "1rem" }}>Actions</TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: "1rem" }}>
+                      Source & Description
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: "1rem" }}>
+                      Amount
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: "1rem" }}>
+                      Category
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: "1rem" }}>
+                      Date
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: "1rem" }}>
+                      Status
+                    </TableCell>
+                    <TableCell sx={{ fontWeight: 700, fontSize: "1rem" }}>
+                      Actions
+                    </TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {incomeRecords?.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={6} sx={{ textAlign: "center", py: 4 }}>
+                      <TableCell
+                        colSpan={6}
+                        sx={{ textAlign: "center", py: 4 }}
+                      >
                         <Typography variant="h6" sx={{ color: "#666" }}>
                           কোন আয়ের রেকর্ড পাওয়া যায়নি
                         </Typography>
@@ -366,14 +390,15 @@ export default function IncomeManagement() {
                             bgcolor: "#f8f9fa",
                           },
                         }}
-
-
-
-
-
                       >
                         <TableCell>
-                          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+                          <Box
+                            sx={{
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 2,
+                            }}
+                          >
                             <Avatar
                               sx={{
                                 bgcolor: "#e3f2fd",
@@ -383,16 +408,20 @@ export default function IncomeManagement() {
                               {getIncomeIcon(income.category?.name || "")}
                             </Avatar>
                             <Box>
-
-                              <Typography variant="body1" sx={{ fontWeight: 600 }}>
+                              <Typography
+                                variant="body1"
+                                sx={{ fontWeight: 600 }}
+                              >
                                 {income.category?.name || "Other"}
                               </Typography>
-
                             </Box>
                           </Box>
                         </TableCell>
                         <TableCell>
-                          <Typography variant="h6" sx={{ fontWeight: 800, color: "#4CAF50" }}>
+                          <Typography
+                            variant="h6"
+                            sx={{ fontWeight: 800, color: "#4CAF50" }}
+                          >
                             ৳ {(income.totalAmount || 0).toLocaleString()}
                           </Typography>
                         </TableCell>
@@ -407,7 +436,9 @@ export default function IncomeManagement() {
                           />
                         </TableCell>
                         <TableCell>
-                          {new Date(income.incomeDate).toLocaleDateString("en-GB")}
+                          {new Date(income.incomeDate).toLocaleDateString(
+                            "en-GB",
+                          )}
                         </TableCell>
                         <TableCell>
                           {getStatusChip(income.status || "completed")}
@@ -452,5 +483,5 @@ export default function IncomeManagement() {
         <AddIncomeModal open={open} onClose={handleClose} id={editData?._id} />
       </Box>
     </Container>
-  )
+  );
 }

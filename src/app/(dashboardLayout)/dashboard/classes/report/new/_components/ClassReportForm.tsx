@@ -18,7 +18,7 @@ import {
   useUpdateClassReportMutation,
 } from "@/redux/api/classReportApi";
 import { useGetAllStudentsQuery } from "@/redux/api/studentApi";
-import { boxStyleReport } from "@/style/customeStyle";
+import { boxStyleReport } from "@/style/customStyle";
 import {
   Add,
   Delete as DeleteIcon,

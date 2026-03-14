@@ -159,7 +159,7 @@ const formatDate = (date: string | Date) => {
   }
 };
 
-// Info Row Component for better readability
+// Info Row Component
 const InfoRow = ({
   label,
   value,
@@ -226,9 +226,33 @@ export const AdmissionDetailModal = ({
     return <h2>Loading.........</h2>;
   }
 
+  console.log("Application data in modal:", application);
+
   if (!application) return null;
 
-  // Directly using the application data structure from your console
+  // Destructure all possible fields from the application object
+  const {
+    applicationId,
+    _id,
+    status,
+    academicYear,
+    department: topDepartment,
+    class: studentClassTop,
+    nameBangla: topNameBangla,
+    nameEnglish: topNameEnglish,
+    mobile: topMobile,
+    fatherMobile: topFatherMobile,
+    studentInfo = {},
+    parentInfo = {},
+    address = {},
+    academicInfo = {},
+    familyEnvironment = {},
+    behaviorSkills = {},
+    documents = {},
+    termsAccepted = false,
+  } = application;
+
+  // Student info
   const {
     nameBangla,
     nameEnglish,
@@ -242,35 +266,27 @@ export const AdmissionDetailModal = ({
     class: studentClass,
     session,
     studentPhoto,
-    mobile,
-    fatherMobile,
-    // Academic info
-    academicInfo = {},
-    // Address
-    address = { present: {}, permanent: {} },
-    // Parent info
-    parentInfo = { father: {}, mother: {} },
-    // Application metadata
-    applicationId,
-    _id,
-    status,
-    academicYear,
-    // Documents (assuming these might exist)
-    documents = {},
-  } = application;
+  } = studentInfo;
 
-  // Extract academic info
-  const { gpa, previousClass, previousSchool } = academicInfo;
+  // Academic info
+  const { previousSchool, previousClass, gpa } = academicInfo;
 
-  // Extract address info
+  // Parent info
+  const { father = {}, mother = {}, guardian = {} } = parentInfo;
+
+  // Address
   const presentAddress = address.present || {};
   const permanentAddress = address.permanent || {};
 
-  // Extract parent info
-  const father = parentInfo.father || {};
-  const mother = parentInfo.mother || {};
+  // Use values (prefer from studentInfo, fallback to top level)
+  const displayNameBangla = nameBangla || topNameBangla;
+  const displayNameEnglish = nameEnglish || topNameEnglish;
+  const displayDepartment = department || topDepartment;
+  const displayClass = studentClass || studentClassTop;
+  const displayMobile = topMobile;
+  const displayFatherMobile = topFatherMobile;
 
-  // Mock documents for display (you'll need to adjust these based on your actual data structure)
+  // For documents display
   const documentList = [
     { key: "photographs", label: "ছবি", value: documents.photographs || false },
     {
@@ -335,7 +351,7 @@ export const AdmissionDetailModal = ({
                 boxShadow: theme.shadows[3],
               }}
             >
-              {nameBangla?.charAt(0) || "S"}
+              {displayNameBangla?.charAt(0) || "S"}
             </Avatar>
             <Box>
               <Typography
@@ -348,7 +364,7 @@ export const AdmissionDetailModal = ({
                   WebkitTextFillColor: "transparent",
                 }}
               >
-                {nameBangla || nameEnglish}
+                {displayNameBangla || displayNameEnglish}
               </Typography>
               <Typography variant="body2" color="text.secondary">
                 Application ID: {applicationId || _id?.slice(-6).toUpperCase()}
@@ -408,11 +424,14 @@ export const AdmissionDetailModal = ({
                 >
                   <Table size="small">
                     <TableBody>
-                      <InfoRow label="নাম (বাংলা)" value={nameBangla} />
-                      <InfoRow label="নাম (ইংরেজি)" value={nameEnglish} />
+                      <InfoRow label="নাম (বাংলা)" value={displayNameBangla} />
+                      <InfoRow
+                        label="নাম (ইংরেজি)"
+                        value={displayNameEnglish}
+                      />
                       <InfoRow
                         label="জন্ম তারিখ"
-                        value={formatDate(dateOfBirth)}
+                        value={dateOfBirth ? formatDate(dateOfBirth) : "N/A"}
                         icon={
                           <CalendarToday
                             fontSize="small"
@@ -460,8 +479,8 @@ export const AdmissionDetailModal = ({
                         }
                       />
                       <InfoRow
-                        label="মোবাইল নম্বর"
-                        value={mobile}
+                        label="মোবাইল (ছাত্র)"
+                        value={displayMobile}
                         icon={
                           <LocalPhone
                             fontSize="small"
@@ -524,7 +543,7 @@ export const AdmissionDetailModal = ({
                           বিভাগ
                         </TableCell>
                         <TableCell sx={{ border: "none", py: 1 }}>
-                          <DepartmentChip department={department} />
+                          <DepartmentChip department={displayDepartment} />
                         </TableCell>
                       </TableRow>
                       <TableRow>
@@ -535,7 +554,7 @@ export const AdmissionDetailModal = ({
                         </TableCell>
                         <TableCell sx={{ border: "none", py: 1 }}>
                           <Chip
-                            label={studentClass || "N/A"}
+                            label={displayClass || "N/A"}
                             size="small"
                             sx={{ fontWeight: 600 }}
                           />
@@ -620,7 +639,7 @@ export const AdmissionDetailModal = ({
                       />
                       <InfoRow
                         label="মোবাইল"
-                        value={father.mobile || fatherMobile}
+                        value={father.mobile || displayFatherMobile}
                         icon={
                           <LocalPhone
                             fontSize="small"
@@ -716,6 +735,81 @@ export const AdmissionDetailModal = ({
               </CardContent>
             </Card>
           </Grid>
+
+          {/* Guardian's Information (if exists) */}
+          {guardian.nameBangla && (
+            <Grid item xs={12} md={6}>
+              <Card
+                variant="outlined"
+                sx={{
+                  borderRadius: 3,
+                  border: `1px solid ${alpha(theme.palette.warning.main, 0.1)}`,
+                }}
+              >
+                <CardHeader
+                  avatar={
+                    <Avatar
+                      sx={{
+                        bgcolor: alpha(theme.palette.warning.main, 0.1),
+                        color: theme.palette.warning.main,
+                      }}
+                    >
+                      <FamilyRestroom />
+                    </Avatar>
+                  }
+                  title="অভিভাবকের তথ্য"
+                  titleTypographyProps={{
+                    fontWeight: "bold",
+                    variant: isMobile ? "subtitle1" : "h6",
+                  }}
+                />
+                <Divider />
+                <CardContent>
+                  <TableContainer
+                    component={Paper}
+                    elevation={0}
+                    sx={{ bgcolor: "transparent" }}
+                  >
+                    <Table size="small">
+                      <TableBody>
+                        <InfoRow
+                          label="নাম (বাংলা)"
+                          value={guardian.nameBangla}
+                        />
+                        <InfoRow
+                          label="নাম (ইংরেজি)"
+                          value={guardian.nameEnglish}
+                        />
+                        <InfoRow label="পেশা" value={guardian.profession} />
+                        <InfoRow label="সম্পর্ক" value={guardian.relation} />
+                        <InfoRow
+                          label="মোবাইল"
+                          value={guardian.mobile}
+                          icon={
+                            <LocalPhone
+                              fontSize="small"
+                              sx={{ color: theme.palette.success.main }}
+                            />
+                          }
+                        />
+                        <InfoRow
+                          label="WhatsApp"
+                          value={guardian.whatsapp}
+                          icon={
+                            <WhatsAppIcon
+                              fontSize="small"
+                              sx={{ color: "#25D366" }}
+                            />
+                          }
+                        />
+                        <InfoRow label="ঠিকানা" value={guardian.address} />
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </CardContent>
+              </Card>
+            </Grid>
+          )}
 
           {/* Present Address */}
           <Grid item xs={12} md={6}>
@@ -817,58 +911,230 @@ export const AdmissionDetailModal = ({
             </Card>
           </Grid>
 
-          {/* Documents Section - Optional, hide if no documents */}
-          {documentList.some((doc) => doc.value) && (
-            <Grid item xs={12}>
-              <Card
-                variant="outlined"
+          {/* Family Environment Section */}
+          <Grid item xs={12} md={6}>
+            <Card
+              variant="outlined"
+              sx={{
+                borderRadius: 3,
+                border: `1px solid ${alpha(theme.palette.warning.main, 0.1)}`,
+              }}
+            >
+              <CardHeader
+                avatar={
+                  <Avatar
+                    sx={{
+                      bgcolor: alpha(theme.palette.warning.main, 0.1),
+                      color: theme.palette.warning.main,
+                    }}
+                  >
+                    <FamilyRestroom />
+                  </Avatar>
+                }
+                title="পারিবারিক পরিবেশ"
+                titleTypographyProps={{
+                  fontWeight: "bold",
+                  variant: isMobile ? "subtitle1" : "h6",
+                }}
+              />
+              <Divider />
+              <CardContent>
+                <TableContainer
+                  component={Paper}
+                  elevation={0}
+                  sx={{ bgcolor: "transparent" }}
+                >
+                  <Table size="small">
+                    <TableBody>
+                      <InfoRow
+                        label="হালাল আয়"
+                        value={familyEnvironment.halalIncome}
+                      />
+                      <InfoRow
+                        label="মা-বাবার নামাজ"
+                        value={familyEnvironment.parentsPrayer}
+                      />
+                      <InfoRow
+                        label="নেশা/অনিষ্টকর অভ্যাস"
+                        value={familyEnvironment.addiction}
+                      />
+                      <InfoRow label="টিভি দেখা" value={familyEnvironment.tv} />
+                      <InfoRow
+                        label="কুরআন তিলাওয়াত"
+                        value={familyEnvironment.quranRecitation}
+                      />
+                      <InfoRow
+                        label="পর্দা পালন"
+                        value={familyEnvironment.purdah}
+                      />
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Behavior & Skills Section */}
+          <Grid item xs={12} md={6}>
+            <Card
+              variant="outlined"
+              sx={{
+                borderRadius: 3,
+                border: `1px solid ${alpha(theme.palette.info.main, 0.1)}`,
+              }}
+            >
+              <CardHeader
+                avatar={
+                  <Avatar
+                    sx={{
+                      bgcolor: alpha(theme.palette.info.main, 0.1),
+                      color: theme.palette.info.main,
+                    }}
+                  >
+                    <Person />
+                  </Avatar>
+                }
+                title="আচরণ ও দক্ষতা"
+                titleTypographyProps={{
+                  fontWeight: "bold",
+                  variant: isMobile ? "subtitle1" : "h6",
+                }}
+              />
+              <Divider />
+              <CardContent>
+                <TableContainer
+                  component={Paper}
+                  elevation={0}
+                  sx={{ bgcolor: "transparent" }}
+                >
+                  <Table size="small">
+                    <TableBody>
+                      <InfoRow
+                        label="মোবাইল ব্যবহার"
+                        value={behaviorSkills.mobileUsage}
+                      />
+                      <InfoRow
+                        label="সাধারণ আচরণ"
+                        value={behaviorSkills.generalBehavior}
+                      />
+                      <InfoRow
+                        label="আনুগত্য"
+                        value={behaviorSkills.obedience}
+                      />
+                      <InfoRow
+                        label="বড়দের সাথে ব্যবহার"
+                        value={behaviorSkills.elderBehavior}
+                      />
+                      <InfoRow
+                        label="ছোটদের সাথে ব্যবহার"
+                        value={behaviorSkills.youngerBehavior}
+                      />
+                      <InfoRow
+                        label="মিথ্যা/একগুঁয়েমি"
+                        value={behaviorSkills.lyingStubbornness}
+                      />
+                      <InfoRow
+                        label="পড়াশোনায় আগ্রহ"
+                        value={behaviorSkills.studyInterest}
+                      />
+                      <InfoRow
+                        label="ধর্মীয় আগ্রহ"
+                        value={behaviorSkills.religiousInterest}
+                      />
+                      <InfoRow
+                        label="রাগ নিয়ন্ত্রণ"
+                        value={behaviorSkills.angerControl}
+                      />
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Documents Section */}
+          <Grid item xs={12}>
+            <Card
+              variant="outlined"
+              sx={{
+                borderRadius: 3,
+                border: `1px solid ${alpha(theme.palette.success.main, 0.1)}`,
+              }}
+            >
+              <CardHeader
+                avatar={
+                  <Avatar
+                    sx={{
+                      bgcolor: alpha(theme.palette.success.main, 0.1),
+                      color: theme.palette.success.main,
+                    }}
+                  >
+                    <Description />
+                  </Avatar>
+                }
+                title="প্রদত্ত ডকুমেন্টসমূহ"
+                titleTypographyProps={{
+                  fontWeight: "bold",
+                  variant: isMobile ? "subtitle1" : "h6",
+                }}
+                action={
+                  <Chip
+                    label={`${documentList.filter((d) => d.value).length}/${documentList.length} সম্পন্ন`}
+                    color={
+                      documentList.filter((d) => d.value).length ===
+                      documentList.length
+                        ? "success"
+                        : "warning"
+                    }
+                    size="small"
+                  />
+                }
+              />
+              <Divider />
+              <CardContent>
+                <Grid container spacing={2}>
+                  {documentList.map((doc, index) => (
+                    <Grid item xs={12} sm={6} md={4} key={index}>
+                      <DocumentItem label={doc.label} value={doc.value} />
+                    </Grid>
+                  ))}
+                </Grid>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          {/* Terms Accepted */}
+          <Grid item xs={12}>
+            <Card
+              variant="outlined"
+              sx={{
+                borderRadius: 3,
+                border: `1px solid ${alpha(theme.palette.info.main, 0.1)}`,
+              }}
+            >
+              <CardContent
                 sx={{
-                  borderRadius: 3,
-                  border: `1px solid ${alpha(theme.palette.success.main, 0.1)}`,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
                 }}
               >
-                <CardHeader
-                  avatar={
-                    <Avatar
-                      sx={{
-                        bgcolor: alpha(theme.palette.success.main, 0.1),
-                        color: theme.palette.success.main,
-                      }}
-                    >
-                      <Description />
-                    </Avatar>
+                <Typography variant="body1" fontWeight="bold">
+                  শর্তাবলী গ্রহণ করেছেন?
+                </Typography>
+                <Chip
+                  icon={
+                    termsAccepted ? <CheckCircleOutline /> : <CancelOutlined />
                   }
-                  title="প্রদত্ত ডকুমেন্টসমূহ"
-                  titleTypographyProps={{
-                    fontWeight: "bold",
-                    variant: isMobile ? "subtitle1" : "h6",
-                  }}
-                  action={
-                    <Chip
-                      label={`${documentList.filter((d) => d.value).length}/${documentList.length} সম্পন্ন`}
-                      color={
-                        documentList.filter((d) => d.value).length ===
-                        documentList.length
-                          ? "success"
-                          : "warning"
-                      }
-                      size="small"
-                    />
-                  }
+                  label={termsAccepted ? "হ্যাঁ" : "না"}
+                  color={termsAccepted ? "success" : "error"}
+                  variant="filled"
+                  size="small"
+                  sx={{ fontWeight: 600, minWidth: 80 }}
                 />
-                <Divider />
-                <CardContent>
-                  <Grid container spacing={2}>
-                    {documentList.map((doc, index) => (
-                      <Grid item xs={12} sm={6} md={4} key={index}>
-                        <DocumentItem label={doc.label} value={doc.value} />
-                      </Grid>
-                    ))}
-                  </Grid>
-                </CardContent>
-              </Card>
-            </Grid>
-          )}
+              </CardContent>
+            </Card>
+          </Grid>
         </Grid>
       </DialogContent>
 
