@@ -16,7 +16,7 @@ export const generatePDFFromData = async (
   // --- Load logo as Base64 ---
   let logoSrc = "";
   try {
-    const response = await fetch("/img/logo.png"); // relative path works
+    const response = await fetch("/img/logo.png");
     const blob = await response.blob();
     logoSrc = await new Promise<string>((resolve, reject) => {
       const reader = new FileReader();
@@ -26,8 +26,8 @@ export const generatePDFFromData = async (
     });
   } catch (error) {
     console.warn("Failed to load logo, using fallback:", error);
-    // Optional fallback: keep the original URL or an empty string
-    logoSrc = ""; // or use a data URI of a placeholder
+
+    logoSrc = "";
   }
 
   const formatAddress = (addr: any) => {
