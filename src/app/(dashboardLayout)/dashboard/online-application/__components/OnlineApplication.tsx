@@ -41,11 +41,78 @@ import CraftTable, { Column, RowAction, BulkAction } from "@/components/Table";
 import Swal from "sweetalert2";
 import { AdmissionDetailModal } from "./AdmissionDetailModal";
 import { TAdmissionStatus } from "@/interface/admission";
-
 import { formatDate, formatShortDate } from "@/utils/formateDate";
 import { AdmissionApplicationListProps, ApplicationRow } from "@/types/apply";
+import { generatePDFFromData } from "./PdfGeneratore";
 
-// ─── Helper Components ──────────────────────────────────────────────────────
+// ─── Helper: Map API application to form-data structure expected by PDF ─────
+const mapApplicationToFormData = (app: any): Record<string, any> => {
+  // Safely extract nested fields
+  const student = app.studentInfo || {};
+  const parent = app.parentInfo || {};
+  const father = parent.father || {};
+  const mother = parent.mother || {};
+  const academic = app.academicInfo || {};
+  const addr = app.address || {};
+  const present = addr.presentAddress || {};
+  const permanent = addr.permanentAddress || {};
+  const family = app.familyEnvironment || {}; // adjust if stored elsewhere
+  const behavior = app.behaviorSkills || {}; // adjust if stored elsewhere
+  const docs = app.documents || {};
+
+  return {
+    // Student Info
+    StudentName: student.nameBangla || "",
+    studentName: student.nameEnglish || "",
+    studentPhoto: student.studentPhoto || "",
+    gender: student.gender || "",
+    dateOfBirth: student.dateOfBirth || "",
+    Age: student.age || "",
+    nidBirth: student.nidBirth || student.birthCertificate || "",
+    studentDepartment: student.department || "",
+    Class: academic.class || student.class || "",
+    bloodGroup: student.bloodGroup || "",
+    session: academic.session || "",
+
+    // Parent Info
+    FatherNameBangla: father.nameBangla || "",
+    FatherName: father.nameEnglish || "",
+    FatherJob: father.occupation || "",
+    FatherMobile: father.mobile || "",
+    MotherNameBangla: mother.nameBangla || "",
+    MotherName: mother.nameEnglish || "",
+    MotherJob: mother.occupation || "",
+    MotherMobile: mother.mobile || "",
+
+    // Address (present)
+    village: present.village || "",
+    postOffice: present.postOffice || "",
+    policeStation: present.policeStation || "",
+    district: present.district || "",
+    // Address (permanent)
+    permVillage: permanent.village || "",
+    permPostOffice: permanent.postOffice || "",
+    permPoliceStation: permanent.policeStation || "",
+    permDistrict: permanent.district || "",
+
+    // Family Environment & Behavior
+    HalalIncome: family.halalIncome || "",
+    Purdah: family.purdah || "",
+    ParentsPrayer: family.parentsPrayer || "",
+    StudyInterest: behavior.studyInterest || "",
+    AngerControl: behavior.angerControl || "",
+    MobileUsage: behavior.mobileUsage || "",
+
+    // Documents & Terms
+    photographs: docs.photographs || false,
+    birthCertificate: docs.birthCertificate || false,
+    markSheet: docs.markSheet || false,
+    transferCertificate: docs.transferCertificate || false,
+    termsAccepted: app.termsAccepted || false,
+  };
+};
+
+// ─── Helper Components (unchanged) ─────────────────────────────────────────
 
 const StatusChip = ({ status }: { status: TAdmissionStatus }) => {
   const statusConfig: Record<
@@ -285,7 +352,6 @@ export default function AdmissionApplicationList({
 
   const handleView = useCallback((row: ApplicationRow) => {
     setModalLoading(true);
-    // Pass the full original object to the modal
     setSelectedApplication((row as any).original);
     setModalOpen(true);
     setTimeout(() => setModalLoading(false), 500);
@@ -335,6 +401,37 @@ export default function AdmissionApplicationList({
     },
     [deleteAdmissionApplication, refetch],
   );
+
+  // --- PDF Download Handler (REPLACED with actual implementation) ---
+  const handleDownloadPDF = useCallback(async (row: ApplicationRow) => {
+    try {
+      // Show loading modal
+      Swal.fire({
+        title: "Generating PDF...",
+        text: "Please wait",
+        allowOutsideClick: false,
+        didOpen: () => {
+          Swal.showLoading();
+        },
+      });
+
+      // Map the full API object to the structure expected by generatePDFFromData
+      const formData = mapApplicationToFormData((row as any).original);
+      const studentId =
+        row.applicationId || row._id?.slice(-6).toUpperCase() || "STU";
+
+      await generatePDFFromData(formData, studentId);
+
+      Swal.close();
+    } catch (error) {
+      console.error("PDF generation failed:", error);
+      Swal.fire({
+        icon: "error",
+        title: "PDF Generation Failed",
+        text: error instanceof Error ? error.message : "Unknown error",
+      });
+    }
+  }, []);
 
   const handleUpdateStatus = useCallback(
     async (
@@ -448,14 +545,6 @@ export default function AdmissionApplicationList({
     },
     [router],
   );
-
-  const handleDownloadPDF = useCallback((_row: ApplicationRow) => {
-    Swal.fire({
-      icon: "info",
-      title: "PDF Download",
-      text: "PDF download coming soon.",
-    });
-  }, []);
 
   // Bulk action core (supports approve, delete, restore, reject)
   const handleBulkAction = useCallback(
@@ -585,7 +674,7 @@ export default function AdmissionApplicationList({
     [handleBulkAction],
   );
 
-  // ─── Columns Configuration ────────────────────────────────────────────────
+  // ─── Columns Configuration (unchanged) ───────────────────────────────────
 
   const columns: Column[] = useMemo(() => {
     const cols: Column[] = [
@@ -692,7 +781,7 @@ export default function AdmissionApplicationList({
     return cols;
   }, [isMobile, isTablet, classFilterOptions]);
 
-  // ─── Row Actions ──────────────────────────────────────────────────────────
+  // ─── Row Actions (updated to use the new handleDownloadPDF) ─────────────
 
   const rowActions: RowAction[] = useMemo(() => {
     const baseActions: RowAction[] = [
@@ -715,7 +804,7 @@ export default function AdmissionApplicationList({
         alwaysShow: !isMobile,
       },
       {
-        label: "Download PDF",
+        label: "Download PDF", // <-- now uses real implementation
         icon: <PictureAsPdf fontSize="small" />,
         onClick: handleDownloadPDF,
         tooltip: "Download as PDF",
@@ -833,11 +922,11 @@ export default function AdmissionApplicationList({
     handleReject,
     handleRestore,
     handleEnroll,
-    handleDownloadPDF,
+    handleDownloadPDF, // <-- include new handler
     router,
   ]);
 
-  // ─── Bulk Actions ─────────────────────────────────────────────────────────
+  // ─── Bulk Actions (unchanged) ───────────────────────────────────────────
 
   const bulkActions: BulkAction[] = useMemo(() => {
     if (type === "pending") {
@@ -937,7 +1026,7 @@ export default function AdmissionApplicationList({
     handleBulkReject,
   ]);
 
-  // ─── Header Banner ────────────────────────────────────────────────────────
+  // ─── Header Banner (unchanged) ──────────────────────────────────────────
 
   const getHeaderBanner = () => {
     if (type === "pending") {
