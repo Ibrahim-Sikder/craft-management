@@ -12,24 +12,7 @@ export const generatePDFFromData = async (
     month: "long",
     day: "numeric",
   });
-
-  // ─── Preload logo and convert to base64 ──────────────────────────────────
-  let logoSrc = "";
-  try {
-    // Public folder path – adjust if needed
-    const logoUrl = window.location.origin + "/img/logo.png";
-    const response = await fetch(logoUrl);
-    const blob = await response.blob();
-    logoSrc = await new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      reader.onloadend = () => resolve(reader.result as string);
-      reader.onerror = reject;
-      reader.readAsDataURL(blob);
-    });
-  } catch (error) {
-    console.warn("Logo could not be loaded. Using placeholder.", error);
-    logoSrc = ""; // Fallback – you can also use a transparent pixel
-  }
+  const logoUrl = window.location.origin + "/img/logo.png";
 
   const formatAddress = (addr: any) => {
     const parts = [];
@@ -73,20 +56,21 @@ export const generatePDFFromData = async (
       .sidebar-photo { width: 120px; height: 145px; border: 3px solid rgba(255, 255, 255, 0.2); border-radius: 10px; overflow: hidden; background: rgba(255, 255, 255, 0.1); margin: 0 auto 20px; }
       .sidebar-photo img { width: 100%; height: 100%; object-fit: cover; }
       
+      /* FIXED SIDEBAR ID ALIGNMENT */
       .sidebar-id { 
         height: 32px;     
         padding: 0 6px; 
         background: white; 
         color: #4c1d95; 
         display: flex; 
-        align-items: center;
-        justify-content: center;
+        align-items: center; /* Vertical center */
+        justify-content: center; /* Horizontal center */
         border-radius: 20px; 
         font-weight: 700; 
         font-size: 13px; 
         margin: 0 auto 25px; 
         width: 120px; 
-        line-height: 1;
+        line-height: 1; /* Reset line height */
       }
       
       .sidebar-info-group { width: 100%; margin-bottom: 20px; }
@@ -112,6 +96,7 @@ export const generatePDFFromData = async (
       .field { padding: 3px 0; }
       .label { color: #64748b; font-size: 10px; font-weight: 600; display: block; line-height: 1.2; margin-bottom: 2px; }
       
+      /* FIXED MAIN CONTENT VALUE ALIGNMENT */
       .value { 
         font-size: 13px; 
         font-weight: 500; 
@@ -121,14 +106,26 @@ export const generatePDFFromData = async (
         display: flex; 
         align-items: center; 
         line-height: 1;
-        padding: 2px 0 2px 0;
+          padding: 2px 0 2px 0;
       }
       
       .info-card { background: #f5f3ff; padding: 10px; border-radius: 8px; border-left: 4px solid #7c3aed; }
       
       .doc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-top: 8px; }
       .doc-item { display: flex; align-items: center; gap: 8px; font-size: 10.5px; }
-      .check-box { width: 16px; height: 16px; font-size: 11px; line-height: 1; display: flex; align-items: center; justify-content: center; border: 1.5px solid #7c3aed; border-radius: 3px; color: #7c3aed; font-weight: bold; background: white; flex-shrink: 0; }
+      .check-box { width: 16px;
+  height: 16px;
+  font-size: 11px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+   border: 1.5px solid #7c3aed; 
+   border-radius: 3px;   
+   color: #7c3aed; 
+   font-weight: bold;  
+   background: white; 
+   flex-shrink: 0; }
       
       .pledge-box { margin-top: 12px; background: #f5f3ff; padding: 10px; border-radius: 6px; font-size: 11px; line-height: 1.5; border: 1px dashed #7c3aed; color: #1e1b4b; }
       .footer-signs { margin-top: 35px; display: flex; justify-content: space-between; }
@@ -162,7 +159,7 @@ export const generatePDFFromData = async (
 
       <div class="main-content">
         <div class="main-header">
-          ${logoSrc ? `<img src="${logoSrc}" class="logo-img" />` : '<div style="height:55px; width:auto;"></div>'}
+          <img src=${logoUrl} class="logo-img" onerror="this.style.opacity='0'" />
           <div style="text-align: right;">
             <h2 style="color: #4c1d95; font-size: 20px; margin: 0; font-weight: 800;">ভর্তি আবেদন ফরম</h2>
             <p style="font-size: 10px; color: #64748b; margin-top: 2px;">প্রিন্ট তারিখ: ${currentDate}</p>
@@ -212,11 +209,11 @@ export const generatePDFFromData = async (
         <div class="section">
           <div class="section-title">জমাকৃত ডকুমেন্টস ও অঙ্গীকারনামা</div>
           <div class="doc-grid">
-            <div class="doc-item"><div class="check-box">${formData.photographs ? "✓" : ""}</div>শিক্ষার্থীর পাসপোর্ট সাইজের ৪ কপি রঙিন ছবি (বাধ্যতামূলক)</div>
-            <div class="doc-item"><div class="check-box">${formData.birthCertificate ? "✓" : ""}</div>শিক্ষার্থীর জন্ম নিবন্ধন সনদ (বাধ্যতামূলক)</div>
+            <div class="doc-item"><div class="check-box">${formData.photographs ? "✓" : ""}</div>শিক্ষার্থীর পাসপোর্ট সাইজের ৪ কপি রঙিন ছবি (বাধ্যতামূলক) </div>
+            <div class="doc-item"><div class="check-box">${formData.birthCertificate ? "✓" : ""}</div> শিক্ষার্থীর জন্ম নিবন্ধন সনদ (বাধ্যতামূলক)</div>
             <div class="doc-item"><div class="check-box">${formData.birthCertificate ? "✓" : ""}</div>পিতা-মাতার জাতীয় পরিচয়পত্রের ফটোকপি/পাসপোর্টের ফটোকপি (বাধ্যতামূলক)</div>
-            <div class="doc-item"><div class="check-box">${formData.markSheet ? "✓" : ""}</div>মার্কশিট</div>
-            <div class="doc-item"><div class="check-box">${formData.transferCertificate ? "✓" : ""}</div>ট্রান্সফার সার্টিফিকেট</div>
+            <div class="doc-item"><div class="check-box">${formData.markSheet ? "✓" : ""}</div> মার্কশিট</div>
+            <div class="doc-item"><div class="check-box">${formData.markSheet ? "✓" : ""}</div> ট্রান্সফার সার্টিফিকেট</div>
           </div>
           
           ${
