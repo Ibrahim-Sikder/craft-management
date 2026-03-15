@@ -398,9 +398,12 @@ export default function AdmissionApplicationList({
         Swal.fire("Error", "Application ID not found", "error");
         return;
       }
-      router.push(`/dashboard/online-application/edit?id=${row._id}`);
+      // from = current page type (pending, approved, rejected, enrolled)
+      router.push(
+        `/dashboard/online-application/edit?id=${row._id}&from=${type}`,
+      );
     },
-    [router],
+    [router, type],
   );
 
   const handleDelete = useCallback(

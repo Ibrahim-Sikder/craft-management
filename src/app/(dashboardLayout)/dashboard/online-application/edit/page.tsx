@@ -70,7 +70,8 @@ export default function EditAdmissionApplication() {
   const theme = useTheme();
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
-
+  console.log("id check this ", id);
+  const from = searchParams.get("from") || "pending";
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [snackbar, setSnackbar] = useState({
     open: false,
@@ -186,7 +187,7 @@ export default function EditAdmissionApplication() {
 
       const res = await updateApplication({ id, data: apiData }).unwrap();
       if (res.success) {
-        router.push("/dashboard/online-application/approved");
+        router.push(`/dashboard/online-application/${from}`);
       }
     } catch (error: any) {
       console.error("Update failed:", error);
