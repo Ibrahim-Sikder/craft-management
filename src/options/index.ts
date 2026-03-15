@@ -280,13 +280,17 @@ export const motherProfessionOptions = [
 ];
 
 export const classOption = [
+  "Pre_one",
   "One",
   "Tow",
   "Three",
-  "Four",
+  "Four_boys",
+  "Four_girls",
   "Five",
   "Six",
+  "Seven",
   "Eight",
   "Nazera",
   "Hifz",
+  "Eight",
 ];
