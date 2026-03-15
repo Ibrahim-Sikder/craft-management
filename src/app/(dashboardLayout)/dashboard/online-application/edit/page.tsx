@@ -2,6 +2,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
+import { LoadingState } from "@/components/common/LoadingState";
 import CraftCheckbox from "@/components/Forms/CraftCheckbox";
 import CraftRadioGroup from "@/components/Forms/CraftRadioGroup";
 import CraftDatePicker from "@/components/Forms/DatePicker";
@@ -88,23 +89,19 @@ export default function EditAdmissionApplication() {
 
   const handleActiveChange = () => {};
 
-  // Handle submit
   const handleSubmit = async (formData: any) => {
     try {
-      // Transform data to match Mongoose Schema structure exactly
       const apiData = {
-        // Root level fields from Schema
-        academicYear: formData.session, // Maps to root 'academicYear'
+        academicYear: formData.session,
         termsAccepted: formData.termsAccepted,
-
         studentInfo: {
-          nameBangla: formData.StudentName,
-          nameEnglish: formData.studentName,
+          nameBangla: formData.StudentName, // "StudentName"  → nameBangla
+          nameEnglish: formData.studentName, // "studentName"  → nameEnglish
           dateOfBirth: formData.dateOfBirth,
-          age: Number(formData.Age), // Schema expects Number
+          age: Number(formData.Age),
           gender: formData.gender,
-          department: formData.studentDepartment, // Schema key is 'department'
-          class: formData.className, // Schema key is 'class'
+          department: formData.studentDept, // "studentDept"  → department
+          class: formData.className, // "className"    → class
           session: formData.session,
           nidBirth: formData.nidBirth,
           bloodGroup: formData.bloodGroup,
@@ -120,7 +117,7 @@ export default function EditAdmissionApplication() {
           father: {
             nameBangla: formData.FatherNameBangla,
             nameEnglish: formData.FatherName,
-            profession: formData.FatherJob,
+            profession: formData.FatherJob, // "FatherJob"    → profession
             education: formData.FatherEdu,
             mobile: formData.FatherMobile,
             whatsapp: formData.FatherWhatsapp,
@@ -128,7 +125,7 @@ export default function EditAdmissionApplication() {
           mother: {
             nameBangla: formData.MotherNameBangla,
             nameEnglish: formData.MotherName,
-            profession: formData.MotherJob,
+            profession: formData.MotherJob, // "MotherJob"    → profession
             education: formData.MotherEdu,
             mobile: formData.MotherMobile,
             whatsapp: formData.MotherWhatsapp,
@@ -139,7 +136,7 @@ export default function EditAdmissionApplication() {
             relation: formData.guardianRelation,
             mobile: formData.guardianMobile,
             whatsapp: formData.guardianWhatsapp,
-            profession: formData.guardianJob,
+            profession: formData.guardianJob, // "guardianJob"  → profession
             address: formData.guardianAddress,
           },
         },
@@ -187,9 +184,7 @@ export default function EditAdmissionApplication() {
         },
       };
 
-      // Send data to backend
       const res = await updateApplication({ id, data: apiData }).unwrap();
-
       if (res.success) {
         router.push("/dashboard/online-application/approved");
       }
@@ -197,30 +192,17 @@ export default function EditAdmissionApplication() {
       console.error("Update failed:", error);
       setSnackbar({
         open: true,
-        message: error?.data?.message || "আপডেট ব্যর্থ হয়েছে, আবার চেষ্টা করুন",
+        message:
+          error?.data?.message || "আপডেট ব্যর্থ হয়েছে, আবার চেষ্টা করুন",
         severity: "error",
       });
     }
   };
 
-  // Handle cancel
-  const handleCancel = () => {
-    router.back();
-  };
+  const handleCancel = () => router.back();
 
   if (isLoading) {
-    return (
-      <Box
-        sx={{
-          display: "flex",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-        }}
-      >
-        <CircularProgress />
-      </Box>
-    );
+    return <LoadingState />;
   }
 
   if (fetchError) {
@@ -234,122 +216,95 @@ export default function EditAdmissionApplication() {
     );
   }
 
-  // Create default values from the API data
+  const d = singleApplication?.data;
+
   const defaultValues = {
-    // Student Info
-    StudentName: singleApplication?.data?.studentInfo?.nameBangla || "",
-    studentName: singleApplication?.data?.studentInfo?.nameEnglish || "",
-    dateOfBirth:
-      singleApplication?.data?.studentInfo?.dateOfBirth?.split("T")[0] || "",
-    Age: singleApplication?.data?.studentInfo?.age?.toString() || "",
-    studentDepartment:
-      singleApplication?.data?.studentInfo?.studentDepartment ||
-      singleApplication?.data?.studentInfo?.department ||
-      "",
-    className: singleApplication?.data?.studentInfo?.class || "",
-    session:
-      singleApplication?.data?.studentInfo?.session ||
-      singleApplication?.data?.academicYear ||
-      "",
-    nidBirth: singleApplication?.data?.studentInfo?.nidBirth || "",
-    bloodGroup: singleApplication?.data?.studentInfo?.bloodGroup || "",
-    nationality:
-      singleApplication?.data?.studentInfo?.nationality || "Bangladeshi",
-    studentPhoto: singleApplication?.data?.studentInfo?.studentPhoto || "",
-    gender: singleApplication?.data?.studentInfo?.gender || "",
+    // ── Student Info ──────────────────────────────────────────────────────
+    StudentName: d?.studentInfo?.nameBangla ?? "",
+    studentName: d?.studentInfo?.nameEnglish ?? "",
+    dateOfBirth: d?.studentInfo?.dateOfBirth?.split("T")[0] ?? "",
+    Age: d?.studentInfo?.age?.toString() ?? "",
+    gender: d?.studentInfo?.gender ?? "",
+    studentDept: d?.studentInfo?.department ?? "",
+    className: d?.studentInfo?.class ?? "",
+    session: d?.studentInfo?.session ?? d?.academicYear ?? "",
+    nidBirth: d?.studentInfo?.nidBirth ?? "",
+    bloodGroup: d?.studentInfo?.bloodGroup ?? "",
+    nationality: d?.studentInfo?.nationality ?? "Bangladeshi",
+    studentPhoto: d?.studentInfo?.studentPhoto ?? "",
 
-    // Academic Info
-    PrevSchool: singleApplication?.data?.academicInfo?.previousSchool || "",
-    PrevClass: singleApplication?.data?.academicInfo?.previousClass || "",
-    GPA: singleApplication?.data?.academicInfo?.gpa || "",
+    // ── Academic Info ─────────────────────────────────────────────────────
+    PrevSchool: d?.academicInfo?.previousSchool ?? "",
+    PrevClass: d?.academicInfo?.previousClass ?? "",
+    GPA: d?.academicInfo?.gpa ?? "",
 
-    // Father Info
-    FatherNameBangla:
-      singleApplication?.data?.parentInfo?.father?.nameBangla || "",
-    FatherName: singleApplication?.data?.parentInfo?.father?.nameEnglish || "",
-    FatherJob: singleApplication?.data?.parentInfo?.father?.profession || "",
-    FatherEdu: singleApplication?.data?.parentInfo?.father?.education || "",
-    FatherMobile: singleApplication?.data?.parentInfo?.father?.mobile || "",
-    FatherWhatsapp: singleApplication?.data?.parentInfo?.father?.whatsapp || "",
+    // ── Father Info ───────────────────────────────────────────────────────
+    FatherNameBangla: d?.parentInfo?.father?.nameBangla ?? "",
+    FatherName: d?.parentInfo?.father?.nameEnglish ?? "",
+    FatherJob: d?.parentInfo?.father?.profession ?? "",
+    FatherEdu: d?.parentInfo?.father?.education ?? "",
+    FatherMobile: d?.parentInfo?.father?.mobile ?? "",
+    FatherWhatsapp: d?.parentInfo?.father?.whatsapp ?? "",
 
-    // Mother Info
-    MotherNameBangla:
-      singleApplication?.data?.parentInfo?.mother?.nameBangla || "",
-    MotherName: singleApplication?.data?.parentInfo?.mother?.nameEnglish || "",
-    MotherJob: singleApplication?.data?.parentInfo?.mother?.profession || "",
-    MotherEdu: singleApplication?.data?.parentInfo?.mother?.education || "",
-    MotherMobile: singleApplication?.data?.parentInfo?.mother?.mobile || "",
-    MotherWhatsapp: singleApplication?.data?.parentInfo?.mother?.whatsapp || "",
+    // ── Mother Info ───────────────────────────────────────────────────────
+    MotherNameBangla: d?.parentInfo?.mother?.nameBangla ?? "",
+    MotherName: d?.parentInfo?.mother?.nameEnglish ?? "",
+    MotherJob: d?.parentInfo?.mother?.profession ?? "",
+    MotherEdu: d?.parentInfo?.mother?.education ?? "",
+    MotherMobile: d?.parentInfo?.mother?.mobile ?? "",
+    MotherWhatsapp: d?.parentInfo?.mother?.whatsapp ?? "",
 
-    // Guardian Info
-    guardianNameBangla:
-      singleApplication?.data?.parentInfo?.guardian?.nameBangla || "",
-    guardianName:
-      singleApplication?.data?.parentInfo?.guardian?.nameEnglish || "",
-    guardianRelation:
-      singleApplication?.data?.parentInfo?.guardian?.relation || "",
-    guardianMobile: singleApplication?.data?.parentInfo?.guardian?.mobile || "",
-    guardianWhatsapp:
-      singleApplication?.data?.parentInfo?.guardian?.whatsapp || "",
-    guardianJob:
-      singleApplication?.data?.parentInfo?.guardian?.profession || "",
-    guardianAddress:
-      singleApplication?.data?.parentInfo?.guardian?.address || "",
+    // ── Guardian Info ─────────────────────────────────────────────────────
+    guardianNameBangla: d?.parentInfo?.guardian?.nameBangla ?? "",
+    guardianName: d?.parentInfo?.guardian?.nameEnglish ?? "",
+    guardianRelation: d?.parentInfo?.guardian?.relation ?? "",
+    guardianMobile: d?.parentInfo?.guardian?.mobile ?? "",
+    guardianWhatsapp: d?.parentInfo?.guardian?.whatsapp ?? "",
+    guardianJob: d?.parentInfo?.guardian?.profession ?? "",
+    guardianAddress: d?.parentInfo?.guardian?.address ?? "",
 
-    // Present Address
-    village: singleApplication?.data?.address?.present?.village || "",
-    postOffice: singleApplication?.data?.address?.present?.postOffice || "",
-    postCode: singleApplication?.data?.address?.present?.postCode || "",
-    policeStation:
-      singleApplication?.data?.address?.present?.policeStation || "",
-    district: singleApplication?.data?.address?.present?.district || "",
+    // ── Present Address ───────────────────────────────────────────────────
+    village: d?.address?.present?.village ?? "",
+    postOffice: d?.address?.present?.postOffice ?? "",
+    postCode: d?.address?.present?.postCode ?? "",
+    policeStation: d?.address?.present?.policeStation ?? "",
+    district: d?.address?.present?.district ?? "",
 
-    // Permanent Address
-    permVillage: singleApplication?.data?.address?.permanent?.village || "",
-    permPostOffice:
-      singleApplication?.data?.address?.permanent?.postOffice || "",
-    permPostCode: singleApplication?.data?.address?.permanent?.postCode || "",
-    permPoliceStation:
-      singleApplication?.data?.address?.permanent?.policeStation || "",
-    permDistrict: singleApplication?.data?.address?.permanent?.district || "",
+    // ── Permanent Address ─────────────────────────────────────────────────
+    permVillage: d?.address?.permanent?.village ?? "",
+    permPostOffice: d?.address?.permanent?.postOffice ?? "",
+    permPostCode: d?.address?.permanent?.postCode ?? "",
+    permPoliceStation: d?.address?.permanent?.policeStation ?? "",
+    permDistrict: d?.address?.permanent?.district ?? "",
 
-    // Family Environment
-    HalalIncome: singleApplication?.data?.familyEnvironment?.halalIncome || "",
-    ParentsPrayer:
-      singleApplication?.data?.familyEnvironment?.parentsPrayer || "",
-    Addiction: singleApplication?.data?.familyEnvironment?.addiction || "",
-    TV: singleApplication?.data?.familyEnvironment?.tv || "",
-    QuranRecitation:
-      singleApplication?.data?.familyEnvironment?.quranRecitation || "",
-    Purdah: singleApplication?.data?.familyEnvironment?.purdah || "",
+    // ── Family Environment ────────────────────────────────────────────────
+    HalalIncome: d?.familyEnvironment?.halalIncome ?? "",
+    ParentsPrayer: d?.familyEnvironment?.parentsPrayer ?? "",
+    Addiction: d?.familyEnvironment?.addiction ?? "",
+    TV: d?.familyEnvironment?.tv ?? "",
+    QuranRecitation: d?.familyEnvironment?.quranRecitation ?? "",
+    Purdah: d?.familyEnvironment?.purdah ?? "",
 
-    // Behavior Skills
-    MobileUsage: singleApplication?.data?.behaviorSkills?.mobileUsage || "",
-    GeneralBehavior:
-      singleApplication?.data?.behaviorSkills?.generalBehavior || "",
-    Obedience: singleApplication?.data?.behaviorSkills?.obedience || "",
-    ElderBehavior: singleApplication?.data?.behaviorSkills?.elderBehavior || "",
-    YoungerBehavior:
-      singleApplication?.data?.behaviorSkills?.youngerBehavior || "",
-    LyingStubbornness:
-      singleApplication?.data?.behaviorSkills?.lyingStubbornness || "",
-    StudyInterest: singleApplication?.data?.behaviorSkills?.studyInterest || "",
-    ReligiousInterest:
-      singleApplication?.data?.behaviorSkills?.religiousInterest || "",
-    AngerControl: singleApplication?.data?.behaviorSkills?.angerControl || "",
+    // ── Behavior Skills ───────────────────────────────────────────────────
+    MobileUsage: d?.behaviorSkills?.mobileUsage ?? "",
+    GeneralBehavior: d?.behaviorSkills?.generalBehavior ?? "",
+    Obedience: d?.behaviorSkills?.obedience ?? "",
+    ElderBehavior: d?.behaviorSkills?.elderBehavior ?? "",
+    YoungerBehavior: d?.behaviorSkills?.youngerBehavior ?? "",
+    LyingStubbornness: d?.behaviorSkills?.lyingStubbornness ?? "",
+    StudyInterest: d?.behaviorSkills?.studyInterest ?? "",
+    ReligiousInterest: d?.behaviorSkills?.religiousInterest ?? "",
+    AngerControl: d?.behaviorSkills?.angerControl ?? "",
 
-    // Documents
-    photographs: singleApplication?.data?.documents?.photographs || false,
-    birthCertificate:
-      singleApplication?.data?.documents?.birthCertificate || false,
-    markSheet: singleApplication?.data?.documents?.markSheet || false,
-    transferCertificate:
-      singleApplication?.data?.documents?.transferCertificate || false,
-    characterCertificate:
-      singleApplication?.data?.documents?.characterCertificate || false,
+    // ── Documents — use ?? so false is NOT replaced by fallback ──────────
+    photographs: d?.documents?.photographs ?? false,
+    birthCertificate: d?.documents?.birthCertificate ?? false,
+    markSheet: d?.documents?.markSheet ?? false,
+    transferCertificate: d?.documents?.transferCertificate ?? false,
+    characterCertificate: d?.documents?.characterCertificate ?? false,
 
-    // Terms
-    termsAccepted: singleApplication?.data?.termsAccepted || false,
+    // ── Terms ─────────────────────────────────────────────────────────────
+    termsAccepted: d?.termsAccepted ?? false,
   };
 
   return (
@@ -421,7 +376,6 @@ export default function EditAdmissionApplication() {
 
         <CraftForm onSubmit={handleSubmit} defaultValues={defaultValues}>
           <Box sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
-            {/* Section 1: Student Information */}
             <Card variant="outlined" sx={{ borderRadius: 3 }}>
               <CardContent>
                 <Box
@@ -441,7 +395,6 @@ export default function EditAdmissionApplication() {
                 </Box>
 
                 <Grid container spacing={3}>
-                  {/* Photo Upload */}
                   <Grid item xs={12} md={4}>
                     <FileUploadWithIcon
                       name="studentPhoto"
@@ -497,18 +450,18 @@ export default function EditAdmissionApplication() {
                         <CraftSelect
                           fullWidth
                           label="বিভাগ"
-                          name="studentDepartment"
+                          name="studentDept"
                           items={departments}
                           size="small"
                           required
                         />
                       </Grid>
                       <Grid item xs={12} md={4}>
-                        <CraftSelect
+                        <CraftInput
                           fullWidth
                           label="Class"
                           name="className"
-                          items={classOption}
+                          // items={classOption}
                           size="small"
                         />
                       </Grid>
@@ -551,7 +504,9 @@ export default function EditAdmissionApplication() {
               </CardContent>
             </Card>
 
-            {/* Section 2: Previous Academic Information */}
+            {/* ══════════════════════════════════════════════════════
+                Section 2 — Previous Academic Information
+            ══════════════════════════════════════════════════════ */}
             <Card variant="outlined" sx={{ borderRadius: 3 }}>
               <CardContent>
                 <Box
@@ -569,7 +524,6 @@ export default function EditAdmissionApplication() {
                     ২. পূর্ববর্তী একাডেমিক তথ্য
                   </Typography>
                 </Box>
-
                 <Grid container spacing={2}>
                   <Grid item xs={12} md={6}>
                     <CraftInput
@@ -599,7 +553,9 @@ export default function EditAdmissionApplication() {
               </CardContent>
             </Card>
 
-            {/* Section 3: Parent Information */}
+            {/* ══════════════════════════════════════════════════════
+                Section 3 — Parent Information
+            ══════════════════════════════════════════════════════ */}
             <Card variant="outlined" sx={{ borderRadius: 3 }}>
               <CardContent>
                 <Box
@@ -618,7 +574,7 @@ export default function EditAdmissionApplication() {
                   </Typography>
                 </Box>
 
-                {/* Father */}
+                {/* ── Father ── */}
                 <Typography
                   variant="subtitle1"
                   fontWeight="bold"
@@ -645,11 +601,11 @@ export default function EditAdmissionApplication() {
                     />
                   </Grid>
                   <Grid item xs={12} md={4}>
-                    <CraftSelect
+                    {/* ✅ name="FatherJob" → defaultValues.FatherJob → parentInfo.father.profession */}
+                    <CraftInput
                       fullWidth
                       label="পেশা"
                       name="FatherJob"
-                      items={fatherProfessionOptions}
                       size="small"
                     />
                   </Grid>
@@ -697,7 +653,7 @@ export default function EditAdmissionApplication() {
                   </Grid>
                 </Grid>
 
-                {/* Mother */}
+                {/* ── Mother ── */}
                 <Typography
                   variant="subtitle1"
                   fontWeight="bold"
@@ -723,11 +679,11 @@ export default function EditAdmissionApplication() {
                     />
                   </Grid>
                   <Grid item xs={12} md={4}>
-                    <CraftSelect
+                    {/* ✅ name="MotherJob" → defaultValues.MotherJob → parentInfo.mother.profession */}
+                    <CraftInput
                       fullWidth
                       label="পেশা"
                       name="MotherJob"
-                      items={motherProfessionOptions}
                       size="small"
                     />
                   </Grid>
@@ -774,7 +730,7 @@ export default function EditAdmissionApplication() {
                   </Grid>
                 </Grid>
 
-                {/* Guardian (Optional) */}
+                {/* ── Guardian ── */}
                 <Typography
                   variant="subtitle1"
                   fontWeight="bold"
@@ -824,6 +780,7 @@ export default function EditAdmissionApplication() {
                     />
                   </Grid>
                   <Grid item xs={12} md={4}>
+                    {/* ✅ name="guardianJob" → defaultValues.guardianJob → parentInfo.guardian.profession */}
                     <CraftInput
                       fullWidth
                       label="পেশা"
@@ -845,7 +802,9 @@ export default function EditAdmissionApplication() {
               </CardContent>
             </Card>
 
-            {/* Section 4: Address Information */}
+            {/* ══════════════════════════════════════════════════════
+                Section 4 — Address Information
+            ══════════════════════════════════════════════════════ */}
             <Card variant="outlined" sx={{ borderRadius: 3 }}>
               <CardContent>
                 <Box
@@ -864,7 +823,6 @@ export default function EditAdmissionApplication() {
                   </Typography>
                 </Box>
 
-                {/* Present Address */}
                 <Typography
                   variant="subtitle1"
                   fontWeight="bold"
@@ -915,7 +873,6 @@ export default function EditAdmissionApplication() {
                   </Grid>
                 </Grid>
 
-                {/* Permanent Address */}
                 <Typography
                   variant="subtitle1"
                   fontWeight="bold"
@@ -972,7 +929,9 @@ export default function EditAdmissionApplication() {
               </CardContent>
             </Card>
 
-            {/* Section 5: Family Environment */}
+            {/* ══════════════════════════════════════════════════════
+                Section 5 — Family Environment
+            ══════════════════════════════════════════════════════ */}
             <Card variant="outlined" sx={{ borderRadius: 3 }}>
               <CardContent>
                 <Box
@@ -990,7 +949,6 @@ export default function EditAdmissionApplication() {
                     ৫. পারিবারিক পরিবেশ
                   </Typography>
                 </Box>
-
                 <Grid container spacing={3}>
                   <Grid item xs={12} md={6}>
                     <CraftRadioGroup
@@ -1000,7 +958,6 @@ export default function EditAdmissionApplication() {
                       options={yesNoOptions}
                     />
                   </Grid>
-
                   <Grid item xs={12} md={6}>
                     <CraftRadioGroup
                       name="ParentsPrayer"
@@ -1009,7 +966,6 @@ export default function EditAdmissionApplication() {
                       options={yesNoOptions}
                     />
                   </Grid>
-
                   <Grid item xs={12} md={6}>
                     <CraftRadioGroup
                       name="Addiction"
@@ -1018,7 +974,6 @@ export default function EditAdmissionApplication() {
                       options={yesNoOptions}
                     />
                   </Grid>
-
                   <Grid item xs={12} md={6}>
                     <CraftRadioGroup
                       name="TV"
@@ -1027,7 +982,6 @@ export default function EditAdmissionApplication() {
                       options={yesNoOptions}
                     />
                   </Grid>
-
                   <Grid item xs={12} md={6}>
                     <CraftRadioGroup
                       name="QuranRecitation"
@@ -1036,7 +990,6 @@ export default function EditAdmissionApplication() {
                       options={yesNoSometimesOptions}
                     />
                   </Grid>
-
                   <Grid item xs={12} md={6}>
                     <CraftRadioGroup
                       name="Purdah"
@@ -1049,7 +1002,9 @@ export default function EditAdmissionApplication() {
               </CardContent>
             </Card>
 
-            {/* Section 6: Behavior & Skills */}
+            {/* ══════════════════════════════════════════════════════
+                Section 6 — Behavior & Skills
+            ══════════════════════════════════════════════════════ */}
             <Card variant="outlined" sx={{ borderRadius: 3 }}>
               <CardContent>
                 <Box
@@ -1067,7 +1022,6 @@ export default function EditAdmissionApplication() {
                     ৬. আচরণ ও দক্ষতা
                   </Typography>
                 </Box>
-
                 <Grid container spacing={3}>
                   <Grid item xs={12}>
                     <CraftInput
@@ -1078,7 +1032,6 @@ export default function EditAdmissionApplication() {
                       size="small"
                     />
                   </Grid>
-
                   <Grid item xs={12} md={6}>
                     <CraftRadioGroup
                       name="GeneralBehavior"
@@ -1087,7 +1040,6 @@ export default function EditAdmissionApplication() {
                       options={behaviorGeneralOptions}
                     />
                   </Grid>
-
                   <Grid item xs={12} md={6}>
                     <CraftRadioGroup
                       name="Obedience"
@@ -1096,7 +1048,6 @@ export default function EditAdmissionApplication() {
                       options={obedienceOptions}
                     />
                   </Grid>
-
                   <Grid item xs={12} md={6}>
                     <CraftRadioGroup
                       name="ElderBehavior"
@@ -1105,7 +1056,6 @@ export default function EditAdmissionApplication() {
                       options={behaviorGeneralOptions}
                     />
                   </Grid>
-
                   <Grid item xs={12} md={6}>
                     <CraftRadioGroup
                       name="YoungerBehavior"
@@ -1114,7 +1064,6 @@ export default function EditAdmissionApplication() {
                       options={behaviorGeneralOptions}
                     />
                   </Grid>
-
                   <Grid item xs={12} md={6}>
                     <CraftRadioGroup
                       name="LyingStubbornness"
@@ -1123,7 +1072,6 @@ export default function EditAdmissionApplication() {
                       options={frequencyOptions}
                     />
                   </Grid>
-
                   <Grid item xs={12} md={6}>
                     <CraftRadioGroup
                       name="StudyInterest"
@@ -1132,7 +1080,6 @@ export default function EditAdmissionApplication() {
                       options={interestOptions}
                     />
                   </Grid>
-
                   <Grid item xs={12} md={6}>
                     <CraftRadioGroup
                       name="ReligiousInterest"
@@ -1141,7 +1088,6 @@ export default function EditAdmissionApplication() {
                       options={interestOptions}
                     />
                   </Grid>
-
                   <Grid item xs={12} md={6}>
                     <CraftRadioGroup
                       name="AngerControl"
@@ -1154,7 +1100,9 @@ export default function EditAdmissionApplication() {
               </CardContent>
             </Card>
 
-            {/* Section 7: Documents */}
+            {/* ══════════════════════════════════════════════════════
+                Section 7 — Documents
+            ══════════════════════════════════════════════════════ */}
             <Card variant="outlined" sx={{ borderRadius: 3 }}>
               <CardContent>
                 <Box
@@ -1172,7 +1120,6 @@ export default function EditAdmissionApplication() {
                     ৭. ডকুমেন্টস
                   </Typography>
                 </Box>
-
                 <Box
                   sx={{
                     p: 3,
@@ -1183,10 +1130,9 @@ export default function EditAdmissionApplication() {
                   }}
                 >
                   <Typography variant="body2" color="error" sx={{ mb: 2 }}>
-                    ভর্তির সময় এই কাগজপত্রগুলো অফিসে জমা দেওয়া{" "}
+                    ভর্তির সময় এই কাগজপত্রগুলো অফিসে জমা দেওয়া{" "}
                     <strong>বাধ্যতামূলক</strong>।
                   </Typography>
-
                   <Grid container spacing={2}>
                     <Grid item xs={12} sm={6} md={4}>
                       <CraftCheckbox name="photographs" label="ছবি" />
@@ -1214,8 +1160,6 @@ export default function EditAdmissionApplication() {
                     </Grid>
                   </Grid>
                 </Box>
-
-                {/* Terms & Conditions */}
                 <Box
                   sx={{
                     p: 2,
@@ -1280,7 +1224,6 @@ export default function EditAdmissionApplication() {
         </CraftForm>
       </Paper>
 
-      {/* Snackbar */}
       <Snackbar
         open={snackbar.open}
         autoHideDuration={6000}

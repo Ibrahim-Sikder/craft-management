@@ -41,9 +41,89 @@ import CraftTable, { Column, RowAction, BulkAction } from "@/components/Table";
 import Swal from "sweetalert2";
 import { AdmissionDetailModal } from "./AdmissionDetailModal";
 import { TAdmissionStatus } from "@/interface/admission";
-
 import { formatDate, formatShortDate } from "@/utils/formateDate";
 import { AdmissionApplicationListProps, ApplicationRow } from "@/types/apply";
+import { generatePDFFromData } from "@/utils/pdfGenerator";
+
+// ══════════════════════════════════════════════════════════════════════════════
+// ✅ FIXED: mapApplicationToFormData
+//    — addr.present  (not addr.presentAddress)
+//    — addr.permanent (not addr.permanentAddress)
+//    — father.profession (not father.occupation)
+//    — mother.profession (not mother.occupation)
+// ══════════════════════════════════════════════════════════════════════════════
+const mapApplicationToFormData = (app: any): Record<string, any> => {
+  const student = app.studentInfo || {};
+  const parent = app.parentInfo || {};
+  const father = parent.father || {};
+  const mother = parent.mother || {};
+  const academic = app.academicInfo || {};
+  const addr = app.address || {};
+
+  // ✅ KEY FIX: your backend uses addr.present / addr.permanent
+  const present = addr.present || addr.presentAddress || {};
+  const permanent = addr.permanent || addr.permanentAddress || {};
+
+  const family = app.familyEnvironment || {};
+  const behavior = app.behaviorSkills || {};
+  const docs = app.documents || {};
+
+  return {
+    // Student
+    StudentName: student.nameBangla || "",
+    studentName: student.nameEnglish || "",
+    studentPhoto: student.studentPhoto || "",
+    gender: student.gender || "",
+    dateOfBirth: student.dateOfBirth || "",
+    Age: student.age || "",
+    nidBirth: student.nidBirth || student.birthCertificate || "",
+    studentDepartment: student.department || "",
+    Class: academic.class || student.class || "",
+    bloodGroup: student.bloodGroup || "",
+    session: academic.session || student.session || "",
+
+    // ✅ FIXED: profession (not occupation)
+    FatherNameBangla: father.nameBangla || "",
+    FatherName: father.nameEnglish || "",
+    FatherJob: father.profession || father.occupation || "", // both fallbacks
+    FatherMobile: father.mobile || "",
+
+    MotherNameBangla: mother.nameBangla || "",
+    MotherName: mother.nameEnglish || "",
+    MotherJob: mother.profession || mother.occupation || "", // both fallbacks
+    MotherMobile: mother.mobile || "",
+
+    // ✅ FIXED: present address keys
+    village: present.village || "",
+    postOffice: present.postOffice || "",
+    policeStation: present.policeStation || "",
+    district: present.district || "",
+
+    // ✅ FIXED: permanent address keys
+    permVillage: permanent.village || "",
+    permPostOffice: permanent.postOffice || "",
+    permPoliceStation: permanent.policeStation || "",
+    permDistrict: permanent.district || "",
+
+    // Family environment
+    HalalIncome: family.halalIncome || "",
+    Purdah: family.purdah || "",
+    ParentsPrayer: family.parentsPrayer || "",
+
+    // Behavior
+    StudyInterest: behavior.studyInterest || "",
+    AngerControl: behavior.angerControl || "",
+    MobileUsage: behavior.mobileUsage || "",
+
+    // Documents
+    photographs: docs.photographs || false,
+    birthCertificate: docs.birthCertificate || false,
+    markSheet: docs.markSheet || false,
+    transferCertificate: docs.transferCertificate || false,
+
+    termsAccepted: app.termsAccepted || false,
+  };
+};
 
 // ─── Helper Components ──────────────────────────────────────────────────────
 
@@ -211,10 +291,8 @@ export default function AdmissionApplicationList({
   const [deleteAdmissionApplication, { isLoading: isDeleting }] =
     useDeleteAdmissionApplicationMutation();
 
-  // Pagination state
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(isMobile ? 5 : 10);
-
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedApplication, setSelectedApplication] = useState<any>(null);
   const [modalLoading, setModalLoading] = useState(false);
@@ -223,13 +301,12 @@ export default function AdmissionApplicationList({
     setRowsPerPage(isMobile ? 5 : isTablet ? 8 : 10);
   }, [isMobile, isTablet]);
 
-  // Fetch applications based on type
   const queryParams = useMemo(() => {
     const params: any = { limit: 1000, page: 1 };
     if (type === "pending") params.status = "pending";
-    else if (type === "approved") params.status = "approved";
-    else if (type === "rejected") params.status = "rejected";
-    else if (type === "enrolled") params.status = "enrolled";
+    if (type === "approved") params.status = "approved";
+    if (type === "rejected") params.status = "rejected";
+    if (type === "enrolled") params.status = "enrolled";
     params.sort = "-createdAt";
     return params;
   }, [type]);
@@ -237,7 +314,6 @@ export default function AdmissionApplicationList({
   const { data, isLoading, refetch } =
     useGetAllAdmissionApplicationsQuery(queryParams);
 
-  // Flatten API data → flat rows, but keep the original item
   const tableData: any = useMemo(() => {
     if (!data?.data) return [];
     return data.data.map((item: any): any => {
@@ -266,7 +342,21 @@ export default function AdmissionApplicationList({
     });
   }, [data]);
 
-  // Class filter options
+  const classOrder = [
+    "Pre_one",
+    "One",
+    "Tow",
+    "Three",
+    "Four_boys",
+    "Four_girls",
+    "Five",
+    "Six",
+    "Seven",
+    "Eight",
+    "Nazera",
+    "Hifz",
+  ];
+
   const classFilterOptions = useMemo(() => {
     const seen = new Set<string>();
     const opts: { label: string; value: string }[] = [];
@@ -276,7 +366,14 @@ export default function AdmissionApplicationList({
         opts.push({ label: r.class, value: r.class });
       }
     });
-    return opts.sort((a, b) => a.label.localeCompare(b.label));
+    return opts.sort((a, b) => {
+      const ia = classOrder.indexOf(a.value);
+      const ib = classOrder.indexOf(b.value);
+      if (ia !== -1 && ib !== -1) return ia - ib;
+      if (ia !== -1) return -1;
+      if (ib !== -1) return 1;
+      return a.label.localeCompare(b.label);
+    });
   }, [tableData]);
 
   const totalCount = data?.meta?.total ?? tableData.length;
@@ -285,7 +382,6 @@ export default function AdmissionApplicationList({
 
   const handleView = useCallback((row: ApplicationRow) => {
     setModalLoading(true);
-    // Pass the full original object to the modal
     setSelectedApplication((row as any).original);
     setModalOpen(true);
     setTimeout(() => setModalLoading(false), 500);
@@ -336,28 +432,65 @@ export default function AdmissionApplicationList({
     [deleteAdmissionApplication, refetch],
   );
 
+  // ══════════════════════════════════════════════════════════════════════════
+  // ✅ FIXED handleDownloadPDF — log the mapped data so you can debug
+  // ══════════════════════════════════════════════════════════════════════════
+  const handleDownloadPDF = useCallback(async (row: ApplicationRow) => {
+    Swal.fire({
+      title: "Generating PDF...",
+      text: "Please wait",
+      allowOutsideClick: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+    });
+
+    try {
+      const original = (row as any).original;
+
+      // ✅ Debug: log raw API shape so you can verify field names
+      console.log(
+        "📋 Raw application data:",
+        JSON.stringify(original, null, 2),
+      );
+
+      const formData = mapApplicationToFormData(original);
+      const studentId =
+        row.applicationId || row._id?.slice(-6).toUpperCase() || "STU";
+
+      // ✅ Debug: log mapped form data to confirm addresses etc.
+      console.log("📋 Mapped formData for PDF:", formData);
+
+      await generatePDFFromData(formData, studentId);
+      Swal.close();
+    } catch (error) {
+      console.error("❌ PDF generation failed:", error);
+      Swal.fire({
+        icon: "error",
+        title: "PDF Generation Failed",
+        text: error instanceof Error ? error.message : "Unknown error occurred",
+      });
+    }
+  }, []);
+
   const handleUpdateStatus = useCallback(
     async (
       row: ApplicationRow,
       newStatus: "approved" | "rejected" | "pending",
     ) => {
       if (!row?._id) return;
-
       const isApproving = newStatus === "approved";
       const isRejecting = newStatus === "rejected";
-
       const confirmButtonColor = isApproving
         ? "#10B981"
         : isRejecting
           ? "#d33"
           : "#F59E0B";
-
       const title = isApproving
         ? "Approve Application?"
         : isRejecting
           ? "Reject Application?"
           : "Restore to Pending?";
-
       const confirmButtonText = isApproving
         ? "Yes, Approve!"
         : isRejecting
@@ -373,7 +506,6 @@ export default function AdmissionApplicationList({
         cancelButtonColor: "#3085d6",
         confirmButtonText,
       });
-
       if (!result.isConfirmed) return;
 
       try {
@@ -381,7 +513,6 @@ export default function AdmissionApplicationList({
           id: row._id,
           data: { status: newStatus },
         }).unwrap();
-
         await Swal.fire({
           icon: "success",
           title: "Success!",
@@ -389,7 +520,6 @@ export default function AdmissionApplicationList({
           timer: 1500,
           showConfirmButton: false,
         });
-
         if (isApproving) {
           if (typeof window !== "undefined") {
             sessionStorage.setItem(
@@ -427,12 +557,10 @@ export default function AdmissionApplicationList({
     (row: ApplicationRow) => handleUpdateStatus(row, "approved"),
     [handleUpdateStatus],
   );
-
   const handleReject = useCallback(
     (row: ApplicationRow) => handleUpdateStatus(row, "rejected"),
     [handleUpdateStatus],
   );
-
   const handleRestore = useCallback(
     (row: ApplicationRow) => handleUpdateStatus(row, "pending"),
     [handleUpdateStatus],
@@ -449,15 +577,6 @@ export default function AdmissionApplicationList({
     [router],
   );
 
-  const handleDownloadPDF = useCallback((_row: ApplicationRow) => {
-    Swal.fire({
-      icon: "info",
-      title: "PDF Download",
-      text: "PDF download coming soon.",
-    });
-  }, []);
-
-  // Bulk action core (supports approve, delete, restore, reject)
   const handleBulkAction = useCallback(
     async (
       selectedRows: ApplicationRow[],
@@ -480,7 +599,7 @@ export default function AdmissionApplicationList({
           confirmText: "Yes, Delete!",
         },
         restore: {
-          title: `Restore ${ids.length} Applications to Pending?`,
+          title: `Restore ${ids.length} to Pending?`,
           confirmButtonColor: "#F59E0B",
           successMessage: "restored to pending",
           confirmText: "Yes, Restore!",
@@ -504,7 +623,6 @@ export default function AdmissionApplicationList({
         confirmButtonColor: config.confirmButtonColor,
         confirmButtonText: config.confirmText,
       });
-
       if (!result.isConfirmed) return;
 
       try {
@@ -528,7 +646,6 @@ export default function AdmissionApplicationList({
             }).unwrap();
           return Promise.reject("Invalid action");
         });
-
         const results = await Promise.allSettled(promises);
         const succeeded = results.filter(
           (r) => r.status === "fulfilled",
@@ -543,12 +660,9 @@ export default function AdmissionApplicationList({
             timer: 1500,
             showConfirmButton: false,
           });
-
-          if (actionType === "approve" && succeeded > 0) {
+          if (actionType === "approve" && succeeded > 0)
             router.push("/dashboard/enrollments");
-          } else {
-            refetch();
-          }
+          else refetch();
         } else {
           Swal.fire(
             "Partial Success",
@@ -569,23 +683,20 @@ export default function AdmissionApplicationList({
     (rows: ApplicationRow[]) => handleBulkAction(rows, "approve"),
     [handleBulkAction],
   );
-
   const handleBulkDelete = useCallback(
     (rows: ApplicationRow[]) => handleBulkAction(rows, "delete"),
     [handleBulkAction],
   );
-
   const handleBulkRestore = useCallback(
     (rows: ApplicationRow[]) => handleBulkAction(rows, "restore"),
     [handleBulkAction],
   );
-
   const handleBulkReject = useCallback(
     (rows: ApplicationRow[]) => handleBulkAction(rows, "reject"),
     [handleBulkAction],
   );
 
-  // ─── Columns Configuration ────────────────────────────────────────────────
+  // ─── Columns ──────────────────────────────────────────────────────────────
 
   const columns: Column[] = useMemo(() => {
     const cols: Column[] = [
@@ -688,7 +799,6 @@ export default function AdmissionApplicationList({
         ),
       });
     }
-
     return cols;
   }, [isMobile, isTablet, classFilterOptions]);
 
@@ -806,7 +916,6 @@ export default function AdmissionApplicationList({
         },
       ];
     } else {
-      // Enrolled type
       return [
         ...baseActions,
         {
@@ -861,7 +970,6 @@ export default function AdmissionApplicationList({
         },
       ];
     }
-
     if (type === "approved") {
       return [
         {
@@ -893,7 +1001,6 @@ export default function AdmissionApplicationList({
         },
       ];
     }
-
     if (type === "rejected") {
       return [
         {
@@ -925,7 +1032,6 @@ export default function AdmissionApplicationList({
         },
       ];
     }
-
     return [];
   }, [
     type,
@@ -937,251 +1043,140 @@ export default function AdmissionApplicationList({
     handleBulkReject,
   ]);
 
-  // ─── Header Banner ────────────────────────────────────────────────────────
+  // ─── Header Banner ─────────────────────────────────────────────────────────
 
   const getHeaderBanner = () => {
-    if (type === "pending") {
-      return (
-        <Paper
-          elevation={0}
-          sx={{
-            p: 2.5,
-            borderRadius: 3,
-            background: `linear-gradient(135deg, ${alpha(theme.palette.warning.main, 0.08)} 0%, ${alpha(theme.palette.warning.light, 0.04)} 100%)`,
-            border: `1px solid ${alpha(theme.palette.warning.main, 0.25)}`,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
-            gap: 2,
-          }}
-        >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <Box
-              sx={{
-                width: 48,
-                height: 48,
-                borderRadius: 2,
-                bgcolor: alpha(theme.palette.warning.main, 0.15),
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Pending sx={{ color: "warning.main", fontSize: 28 }} />
-            </Box>
-            <Box>
-              <Typography variant="h6" fontWeight={700} color="warning.dark">
-                Pending Applications
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                These applications are waiting for review
-              </Typography>
-            </Box>
+    const bannerConfig = {
+      pending: {
+        palette: theme.palette.warning,
+        Icon: Pending,
+        title: "Pending Applications",
+        subtitle: "These applications are waiting for review",
+        chipLabel: `Total Pending: ${totalCount}`,
+        btnLabel: "New Application",
+        btnRoute: "/dashboard/online-application/new",
+        BtnIcon: School,
+      },
+      approved: {
+        palette: theme.palette.success,
+        Icon: CheckCircle,
+        title: "Approved Applications",
+        subtitle: "These students are approved and ready for enrollment",
+        chipLabel: `Total Approved: ${totalCount}`,
+        btnLabel: "New Enrollment",
+        btnRoute: "/dashboard/enrollments/new",
+        BtnIcon: School,
+      },
+      rejected: {
+        palette: theme.palette.error,
+        Icon: Cancel,
+        title: "Rejected Applications",
+        subtitle: "These applications have been rejected",
+        chipLabel: `Total Rejected: ${totalCount}`,
+        btnLabel: "Back to Pending",
+        btnRoute: "/dashboard/online-application",
+        BtnIcon: Restore,
+      },
+      enrolled: {
+        palette: theme.palette.secondary,
+        Icon: HowToReg,
+        title: "Enrolled Applications",
+        subtitle: "These students have been successfully enrolled",
+        chipLabel: `Total Enrolled: ${totalCount}`,
+        btnLabel: "View All Enrollments",
+        btnRoute: "/dashboard/enrollments",
+        BtnIcon: School,
+      },
+    }[type] ?? {
+      palette: theme.palette.warning,
+      Icon: Pending,
+      title: "",
+      subtitle: "",
+      chipLabel: "",
+      btnLabel: "",
+      btnRoute: "/",
+      BtnIcon: School,
+    };
+
+    const {
+      palette,
+      Icon,
+      title,
+      subtitle,
+      chipLabel,
+      btnLabel,
+      btnRoute,
+      BtnIcon,
+    } = bannerConfig;
+    const color = (
+      type === "pending"
+        ? "warning"
+        : type === "approved"
+          ? "success"
+          : type === "rejected"
+            ? "error"
+            : "secondary"
+    ) as any;
+
+    return (
+      <Paper
+        elevation={0}
+        sx={{
+          p: 2.5,
+          borderRadius: 3,
+          background: `linear-gradient(135deg, ${alpha(palette.main, 0.08)} 0%, ${alpha(palette.light, 0.04)} 100%)`,
+          border: `1px solid ${alpha(palette.main, 0.25)}`,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "space-between",
+          flexWrap: "wrap",
+          gap: 2,
+        }}
+      >
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+          <Box
+            sx={{
+              width: 48,
+              height: 48,
+              borderRadius: 2,
+              bgcolor: alpha(palette.main, 0.15),
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
+          >
+            <Icon sx={{ color: `${color}.main`, fontSize: 28 }} />
           </Box>
-          <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
-            <Chip
-              icon={<Pending />}
-              label={`Total Pending: ${totalCount}`}
-              color="warning"
-              variant="filled"
-              sx={{ fontWeight: 600 }}
-            />
-            <Button
-              variant="contained"
-              color="warning"
-              size="small"
-              startIcon={<School />}
-              onClick={() => router.push("/dashboard/online-application/new")}
-              sx={{ borderRadius: 2, textTransform: "none", fontWeight: 600 }}
-            >
-              New Application
-            </Button>
+          <Box>
+            <Typography variant="h6" fontWeight={700} color={`${color}.dark`}>
+              {title}
+            </Typography>
+            <Typography variant="body2" color="text.secondary">
+              {subtitle}
+            </Typography>
           </Box>
-        </Paper>
-      );
-    } else if (type === "approved") {
-      return (
-        <Paper
-          elevation={0}
-          sx={{
-            p: 2.5,
-            borderRadius: 3,
-            background: `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.08)} 0%, ${alpha(theme.palette.success.light, 0.04)} 100%)`,
-            border: `1px solid ${alpha(theme.palette.success.main, 0.25)}`,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
-            gap: 2,
-          }}
-        >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <Box
-              sx={{
-                width: 48,
-                height: 48,
-                borderRadius: 2,
-                bgcolor: alpha(theme.palette.success.main, 0.15),
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <CheckCircle sx={{ color: "success.main", fontSize: 28 }} />
-            </Box>
-            <Box>
-              <Typography variant="h6" fontWeight={700} color="success.dark">
-                Approved Applications
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                These students are approved and ready for enrollment
-              </Typography>
-            </Box>
-          </Box>
-          <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
-            <Chip
-              icon={<CheckCircle />}
-              label={`Total Approved: ${totalCount}`}
-              color="success"
-              variant="filled"
-              sx={{ fontWeight: 600 }}
-            />
-            <Button
-              variant="contained"
-              color="success"
-              size="small"
-              startIcon={<School />}
-              onClick={() => router.push("/dashboard/enrollments/new")}
-              sx={{ borderRadius: 2, textTransform: "none", fontWeight: 600 }}
-            >
-              New Enrollment
-            </Button>
-          </Box>
-        </Paper>
-      );
-    } else if (type === "rejected") {
-      return (
-        <Paper
-          elevation={0}
-          sx={{
-            p: 2.5,
-            borderRadius: 3,
-            background: `linear-gradient(135deg, ${alpha(theme.palette.error.main, 0.08)} 0%, ${alpha(theme.palette.error.light, 0.04)} 100%)`,
-            border: `1px solid ${alpha(theme.palette.error.main, 0.25)}`,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
-            gap: 2,
-          }}
-        >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <Box
-              sx={{
-                width: 48,
-                height: 48,
-                borderRadius: 2,
-                bgcolor: alpha(theme.palette.error.main, 0.15),
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <Cancel sx={{ color: "error.main", fontSize: 28 }} />
-            </Box>
-            <Box>
-              <Typography variant="h6" fontWeight={700} color="error.dark">
-                Rejected Applications
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                These applications have been rejected
-              </Typography>
-            </Box>
-          </Box>
-          <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
-            <Chip
-              icon={<Cancel />}
-              label={`Total Rejected: ${totalCount}`}
-              color="error"
-              variant="filled"
-              sx={{ fontWeight: 600 }}
-            />
-            <Button
-              variant="contained"
-              color="error"
-              size="small"
-              startIcon={<Restore />}
-              onClick={() => router.push("/dashboard/online-application")}
-              sx={{ borderRadius: 2, textTransform: "none", fontWeight: 600 }}
-            >
-              Back to Pending
-            </Button>
-          </Box>
-        </Paper>
-      );
-    } else {
-      // Enrolled type
-      return (
-        <Paper
-          elevation={0}
-          sx={{
-            p: 2.5,
-            borderRadius: 3,
-            background: `linear-gradient(135deg, ${alpha(theme.palette.secondary.main, 0.08)} 0%, ${alpha(theme.palette.secondary.light, 0.04)} 100%)`,
-            border: `1px solid ${alpha(theme.palette.secondary.main, 0.25)}`,
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            flexWrap: "wrap",
-            gap: 2,
-          }}
-        >
-          <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-            <Box
-              sx={{
-                width: 48,
-                height: 48,
-                borderRadius: 2,
-                bgcolor: alpha(theme.palette.secondary.main, 0.15),
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <HowToReg sx={{ color: "secondary.main", fontSize: 28 }} />
-            </Box>
-            <Box>
-              <Typography variant="h6" fontWeight={700} color="secondary.dark">
-                Enrolled Applications
-              </Typography>
-              <Typography variant="body2" color="text.secondary">
-                These students have been successfully enrolled
-              </Typography>
-            </Box>
-          </Box>
-          <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
-            <Chip
-              icon={<HowToReg />}
-              label={`Total Enrolled: ${totalCount}`}
-              color="secondary"
-              variant="filled"
-              sx={{ fontWeight: 600 }}
-            />
-            <Button
-              variant="contained"
-              color="secondary"
-              size="small"
-              startIcon={<School />}
-              onClick={() => router.push("/dashboard/enrollments")}
-              sx={{ borderRadius: 2, textTransform: "none", fontWeight: 600 }}
-            >
-              View All Enrollments
-            </Button>
-          </Box>
-        </Paper>
-      );
-    }
+        </Box>
+        <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
+          <Chip
+            icon={<Icon />}
+            label={chipLabel}
+            color={color}
+            variant="filled"
+            sx={{ fontWeight: 600 }}
+          />
+          <Button
+            variant="contained"
+            color={color}
+            size="small"
+            startIcon={<BtnIcon />}
+            onClick={() => router.push(btnRoute)}
+            sx={{ borderRadius: 2, textTransform: "none", fontWeight: 600 }}
+          >
+            {btnLabel}
+          </Button>
+        </Box>
+      </Paper>
+    );
   };
 
   if (isLoading) {
