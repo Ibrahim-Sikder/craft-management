@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
@@ -9,44 +10,48 @@ import {
   Card,
   Chip,
   Container,
-  FormControl,
-  Grid,
-  InputLabel,
-  MenuItem,
   Paper,
-  Select,
-  TextField,
   Typography,
   useTheme,
   alpha,
   Avatar,
-  InputAdornment,
 } from "@mui/material";
 import {
   Add,
   Edit,
   Delete,
   Visibility,
-  Search,
-  FilterList,
-  Print,
-  FileDownload,
   Refresh,
   School,
   Phone,
-  Email,
 } from "@mui/icons-material";
 import Link from "next/link";
 import {
   useDeleteStudentMutation,
   useGetAllStudentsQuery,
 } from "@/redux/api/studentApi";
-
 import Swal from "sweetalert2";
-import { useGetAllClassesQuery } from "@/redux/api/classApi";
 import { useGetAllSectionsQuery } from "@/redux/api/sectionApi";
 import { useGetAllMetaQuery } from "@/redux/api/metaApi";
 import CraftTable, { Column, RowAction } from "@/components/Table";
+
+// Reference order for classes (only used for sorting filter options)
+const classOrder = [
+  "Pre_one",
+  "One",
+  "Two",
+  "Three",
+  "Four_boys",
+  "Four_girls",
+  "Five",
+  "Six",
+  "Seven",
+  "Eight",
+  "Nurani",
+  "Nazera",
+  "Hifz",
+  "Sunani",
+];
 
 const StudentList = () => {
   const theme = useTheme();
@@ -65,32 +70,18 @@ const StudentList = () => {
     background: "#f5f5f5",
   };
 
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(10);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [showFilters, setShowFilters] = useState(false);
-  const [filters, setFilters] = useState({
-    className: "",
-    section: "",
-    status: "",
-    gender: "",
-    studentType: "",
-  });
-
   const { data: metaData } = useGetAllMetaQuery({});
 
+  // Fetch all students (high limit to allow client‑side filtering/pagination)
   const {
     data: studentData,
     isLoading,
     refetch,
   } = useGetAllStudentsQuery({
-    limit: rowsPerPage,
-    page: page + 1,
-    searchTerm: searchTerm,
+    limit: 1000,
+    page: 1,
   });
 
-  // Fetch class and section data separately
-  const { data: classData } = useGetAllClassesQuery({});
   const { data: sectionData } = useGetAllSectionsQuery({});
 
   const [deleteStudent] = useDeleteStudentMutation();
@@ -98,82 +89,72 @@ const StudentList = () => {
   const students = studentData?.data || [];
   const totalStudents = studentData?.meta?.total || 0;
 
-  // Extract class and section options from their respective data
-  const classOptions = useMemo(() => {
-    if (!classData?.data) return [];
-    if (Array.isArray(classData.data)) {
-      return classData.data.map((cls: any) => ({
-        id: cls._id || cls.id,
-        name: cls.className || cls.name || cls,
-      }));
-    } else if (
-      classData.data.classes &&
-      Array.isArray(classData.data.classes)
-    ) {
-      return classData.data.classes.map((cls: any) => ({
-        id: cls._id || cls.id,
-        name: cls.className || cls.name || cls,
-      }));
-    }
-    return [];
-  }, [classData]);
+  // Prepare table data with flattened fields for class and section
+  const tableData = useMemo(() => {
+    return students.map((student: any) => {
+      // Extract class name
+      let className = "N/A";
+      if (Array.isArray(student.className) && student.className.length > 0) {
+        className =
+          student.className[0].className || student.className[0].name || "N/A";
+      }
 
-  const sectionOptions = useMemo(() => {
+      // Extract section name
+      let sectionName = "N/A";
+      if (Array.isArray(student.section) && student.section.length > 0) {
+        sectionName =
+          student.section[0].name || student.section[0].section || "N/A";
+      }
+
+      return {
+        ...student,
+        _className: className,
+        _sectionName: sectionName,
+      };
+    });
+  }, [students]);
+
+  // Build class filter options dynamically from the data (only classes that appear)
+  const classFilterOptions = useMemo(() => {
+    const seen = new Set<string>();
+    const options: { value: string; label: string }[] = [];
+
+    tableData.forEach((item: any) => {
+      const cls = item._className;
+      if (cls && cls !== "N/A" && !seen.has(cls)) {
+        seen.add(cls);
+        options.push({ value: cls, label: cls });
+      }
+    });
+
+    // Sort according to the reference order
+    return options.sort((a, b) => {
+      const ia = classOrder.indexOf(a.value);
+      const ib = classOrder.indexOf(b.value);
+      if (ia !== -1 && ib !== -1) return ia - ib;
+      if (ia !== -1) return -1;
+      if (ib !== -1) return 1;
+      return a.label.localeCompare(b.label);
+    });
+  }, [tableData]);
+
+  // Build section filter options from sectionData (all available sections)
+  const sectionFilterOptions = useMemo(() => {
     if (!sectionData?.data) return [];
+    let sections: any[] = [];
     if (Array.isArray(sectionData.data)) {
-      return sectionData.data.map((section: any) => ({
-        id: section._id || section.id,
-        name: section.name || section.section || section,
-      }));
+      sections = sectionData.data;
     } else if (
       sectionData.data.sections &&
       Array.isArray(sectionData.data.sections)
     ) {
-      return sectionData.data.sections.map((section: any) => ({
-        id: section._id || section.id,
-        name: section.name || section.section || section,
-      }));
+      sections = sectionData.data.sections;
     }
-    return [];
+    return sections.map((sec: any) => ({
+      value: sec.name || sec.section,
+      label: sec.name || sec.section,
+    }));
   }, [sectionData]);
-
-  // Handle search
-  const handleSearch = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(e.target.value);
-    setPage(0);
-  };
-
-  // Handle filter change
-  const handleFilterChange = (e: any) => {
-    const { name, value } = e.target;
-    setFilters({
-      ...filters,
-      [name]: value,
-    });
-  };
-
-  // Reset filters
-  const resetFilters = () => {
-    setFilters({
-      className: "",
-      section: "",
-      status: "",
-      gender: "",
-      studentType: "",
-    });
-    setSearchTerm("");
-    setPage(0);
-    refetch();
-  };
-
-  const handleChangePage = (newPage: number) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (newRowsPerPage: number) => {
-    setRowsPerPage(newRowsPerPage);
-    setPage(0);
-  };
 
   const handleRefresh = () => {
     refetch();
@@ -182,25 +163,11 @@ const StudentList = () => {
   const handleExport = () => {};
 
   const handlePrint = () => {
-    // Implement print functionality
     window.print();
   };
 
   const handleAddStudent = () => {
     window.location.href = "/dashboard/student/create";
-  };
-
-  const getStudentTypeColor = (type: string) => {
-    switch (type) {
-      case "Residential":
-        return customColors.accent1;
-      case "Non-Residential":
-        return customColors.accent3;
-      case "Day-care":
-        return customColors.accent4;
-      default:
-        return customColors.accent4;
-    }
   };
 
   const handleDelete = async (id: string) => {
@@ -216,13 +183,11 @@ const StudentList = () => {
       if (result.isConfirmed) {
         try {
           await deleteStudent(id).unwrap();
-
           Swal.fire({
             title: "Deleted!",
             text: `Student has been deleted successfully.`,
             icon: "success",
           });
-
           refetch();
         } catch (err: any) {
           Swal.fire({
@@ -235,7 +200,7 @@ const StudentList = () => {
     });
   };
 
-  // Define table columns using the Column interface
+  // Define table columns – using only fields that actually exist in the data
   const columns: Column[] = [
     {
       id: "studentId",
@@ -278,60 +243,61 @@ const StudentList = () => {
             <Typography variant="body2" sx={{ fontWeight: "medium" }}>
               {row.name}
             </Typography>
-            <Typography
-              variant="caption"
-              color="text.secondary"
-              sx={{
-                display: "flex",
-                alignItems: "center",
-              }}
-            >
-              <Email fontSize="small" sx={{ mr: 0.5, fontSize: 12 }} />
-              {row.email}
-            </Typography>
           </Box>
         </Box>
       ),
     },
     {
-      id: "className",
+      id: "_className",
       label: "Class",
       minWidth: 100,
       sortable: true,
       filterable: true,
-      render: (row: any) => {
-        const className =
-          Array.isArray(row.className) && row.className.length > 0
-            ? row.className[0].className || row.className[0].name
-            : "N/A";
-
-        return (
-          <Box>
-            <Typography variant="body2" sx={{ fontWeight: "medium" }}>
-              {className}
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              {Array.isArray(row.section) && row.section.length > 0
-                ? row.section[0].name || row.section[0].section
-                : "N/A"}
-            </Typography>
-          </Box>
-        );
-      },
+      filterOptions: classFilterOptions,
+      render: (row: any) => (
+        <Typography variant="body2" sx={{ fontWeight: "medium" }}>
+          {row._className}
+        </Typography>
+      ),
     },
     {
-      id: "studentClassRoll",
-      label: "Roll",
-      minWidth: 80,
+      id: "_sectionName",
+      label: "Section",
+      minWidth: 100,
       sortable: true,
       filterable: true,
-      format: (value: string) => (
+      filterOptions: sectionFilterOptions,
+      render: (row: any) => (
+        <Typography variant="body2" color="text.secondary">
+          {row._sectionName}
+        </Typography>
+      ),
+    },
+    {
+      id: "studentDepartment",
+      label: "Department",
+      minWidth: 120,
+      sortable: true,
+      filterable: true,
+      filterOptions: [
+        { value: "academic", label: "Academic" },
+        { value: "hifz", label: "Hifz" },
+        // add other departments as needed
+      ],
+      render: (row: any) => (
         <Chip
-          label={value}
+          label={row.studentDepartment || "N/A"}
           size="small"
           sx={{
-            bgcolor: alpha(customColors.secondary, 0.1),
-            color: customColors.secondary,
+            bgcolor:
+              row.studentDepartment === "hifz"
+                ? alpha(customColors.accent1, 0.1)
+                : alpha(customColors.accent3, 0.1),
+            color:
+              row.studentDepartment === "hifz"
+                ? customColors.accent1
+                : customColors.accent3,
+            fontWeight: "medium",
           }}
         />
       ),
@@ -366,46 +332,22 @@ const StudentList = () => {
             <Phone fontSize="small" sx={{ mr: 0.5, fontSize: 14 }} />
             {row.mobile || "N/A"}
           </Typography>
-          <Typography
-            variant="caption"
-            color="text.secondary"
-            sx={{ display: "flex", alignItems: "center" }}
-          >
-            <Phone fontSize="small" sx={{ mr: 0.5, fontSize: 12 }} />
-            {row.fatherMobile}
-          </Typography>
         </Box>
       ),
     },
     {
-      id: "studentType",
-      label: "Type",
-      minWidth: 120,
-      sortable: true,
-      filterable: true,
-      format: (value: string) => (
-        <Chip
-          label={value}
-          size="small"
-          sx={{
-            bgcolor: alpha(getStudentTypeColor(value), 0.1),
-            color: getStudentTypeColor(value),
-            fontWeight: "medium",
-          }}
-        />
-      ),
-    },
-    {
-      id: "status",
-      label: "Status",
+      id: "bloodGroup",
+      label: "Blood Group",
       minWidth: 100,
       sortable: true,
       filterable: true,
-      type: "status",
+      render: (row: any) => (
+        <Typography variant="body2">{row.bloodGroup || "N/A"}</Typography>
+      ),
     },
   ];
 
-  // Define row actions using the RowAction interface
+  // Row actions
   const rowActions: RowAction[] = [
     {
       label: "View",
@@ -435,52 +377,9 @@ const StudentList = () => {
     },
   ];
 
-  const filteredData = useMemo(() => {
-    let filtered = students;
-
-    if (filters.className) {
-      filtered = filtered.filter((student: any) => {
-        const className =
-          Array.isArray(student.className) && student.className.length > 0
-            ? student.className[0].className || student.className[0].name
-            : "";
-        return className === filters.className;
-      });
-    }
-
-    if (filters.section) {
-      filtered = filtered.filter((student: any) => {
-        const sectionName =
-          Array.isArray(student.section) && student.section.length > 0
-            ? student.section[0].name || student.section[0].section
-            : "";
-        return sectionName === filters.section;
-      });
-    }
-
-    if (filters.status) {
-      filtered = filtered.filter(
-        (student: any) => student.status === filters.status,
-      );
-    }
-
-    if (filters.gender) {
-      filtered = filtered.filter(
-        (student: any) => student.gender === filters.gender,
-      );
-    }
-
-    if (filters.studentType) {
-      filtered = filtered.filter(
-        (student: any) => student.studentType === filters.studentType,
-      );
-    }
-
-    return filtered;
-  }, [students, filters]);
-
   return (
     <Container maxWidth="xl" sx={{ p: { xs: "4px" } }}>
+      {/* Header Banner */}
       <Paper
         className="mb-6 py-6 rounded-lg text-white"
         style={{
@@ -510,9 +409,7 @@ const StudentList = () => {
               />
             </div>
 
-            {/* Secondary Stats - 2 rows of statistics */}
             <div className="flex flex-col justify-center gap-1">
-              {/* First row - Student Types */}
               <div className="grid grid-cols-2 md:grid-cols-3 justify-center gap-1">
                 <Chip
                   label={`Residential: ${metaData?.data?.totalResidentialStudents}`}
@@ -573,209 +470,63 @@ const StudentList = () => {
             p: 2,
             background: `linear-gradient(90deg, ${alpha(customColors.secondary, 0.1)} 0%, ${alpha(customColors.accent2, 0.05)} 100%)`,
             borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            flexWrap: "wrap",
+            gap: 2,
           }}
         >
           <Typography
             variant="h6"
-            sx={{ color: customColors.secondary, fontWeight: "bold", mb: 2 }}
+            sx={{ color: customColors.secondary, fontWeight: "bold" }}
           >
             Student Directory
           </Typography>
 
-          <Grid container spacing={2} alignItems="center">
-            <Grid item xs={12} md={6}>
-              <TextField
-                fullWidth
-                placeholder="Search by name, ID, email, or mobile..."
-                value={searchTerm}
-                onChange={handleSearch}
-                InputProps={{
-                  startAdornment: (
-                    <InputAdornment position="start">
-                      <Search color="primary" />
-                    </InputAdornment>
-                  ),
-                  sx: { borderRadius: 2 },
-                }}
-                variant="outlined"
-                size="small"
-              />
-            </Grid>
-            <Grid item xs={12} md={6}>
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: { xs: "flex-start", md: "flex-end" },
-                  gap: 1,
-                  flexWrap: "wrap",
-                }}
-              >
-                <Button
-                  variant="outlined"
-                  startIcon={<FilterList />}
-                  onClick={() => setShowFilters(!showFilters)}
-                  color={showFilters ? "primary" : "inherit"}
-                  sx={{ borderRadius: 6 }}
-                >
-                  Filters
-                </Button>
-                <Button
-                  variant="outlined"
-                  startIcon={<Refresh />}
-                  onClick={resetFilters}
-                  sx={{ borderRadius: 6 }}
-                >
-                  Reset
-                </Button>
-                <Button
-                  component={Link}
-                  href="/dashboard/student/create"
-                  variant="contained"
-                  startIcon={<Add />}
-                  sx={{
-                    borderRadius: 6,
-                    background: `linear-gradient(45deg, ${customColors.primary} 30%, ${customColors.accent3} 90%)`,
-                    boxShadow: `0 3px 5px 2px ${alpha(customColors.primary, 0.3)}`,
-                  }}
-                >
-                  Add Student
-                </Button>
-              </Box>
-            </Grid>
-          </Grid>
-        </Box>
-
-        {showFilters && (
-          <Box
-            sx={{
-              p: 2,
-              bgcolor: alpha(theme.palette.background.paper, 0.7),
-              borderRadius: 1,
-              mx: 2,
-              my: 2,
-              border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-              boxShadow: `inset 0 2px 4px 0 ${alpha(theme.palette.common.black, 0.05)}`,
-            }}
-          >
-            <Typography
-              variant="subtitle1"
+          <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
+            <Button
+              variant="outlined"
+              startIcon={<Refresh />}
+              onClick={handleRefresh}
+              sx={{ borderRadius: 6 }}
+            >
+              Refresh
+            </Button>
+            <Button
+              component={Link}
+              href="/dashboard/student/create"
+              variant="contained"
+              startIcon={<Add />}
               sx={{
-                mb: 2,
-                color: customColors.secondary,
-                fontWeight: "medium",
+                borderRadius: 6,
+                background: `linear-gradient(45deg, ${customColors.primary} 30%, ${customColors.accent3} 90%)`,
+                boxShadow: `0 3px 5px 2px ${alpha(customColors.primary, 0.3)}`,
               }}
             >
-              Advanced Filters
-            </Typography>
-            <Grid container spacing={2}>
-              <Grid item xs={12} sm={6} md={2.4}>
-                <FormControl fullWidth size="small">
-                  <InputLabel>Class</InputLabel>
-                  <Select
-                    name="className"
-                    value={filters.className}
-                    label="Class"
-                    onChange={handleFilterChange}
-                  >
-                    <MenuItem value="">All Classes</MenuItem>
-                    {classOptions.map((cls: any, i: number) => (
-                      <MenuItem key={i} value={cls.name}>
-                        {cls.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12} sm={6} md={2.4}>
-                <FormControl fullWidth size="small">
-                  <InputLabel>Section</InputLabel>
-                  <Select
-                    name="section"
-                    value={filters.section}
-                    label="Section"
-                    onChange={handleFilterChange}
-                  >
-                    <MenuItem value="">All Sections</MenuItem>
-                    {sectionOptions.map((section: any, i: number) => (
-                      <MenuItem key={i} value={section.name}>
-                        {section.name}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12} sm={6} md={2.4}>
-                <FormControl fullWidth size="small">
-                  <InputLabel>Status</InputLabel>
-                  <Select
-                    name="status"
-                    value={filters.status}
-                    label="Status"
-                    onChange={handleFilterChange}
-                  >
-                    <MenuItem value="">All Status</MenuItem>
-                    <MenuItem value="Active">Active</MenuItem>
-                    <MenuItem value="Inactive">Inactive</MenuItem>
-                    <MenuItem value="Graduated">Graduated</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12} sm={6} md={2.4}>
-                <FormControl fullWidth size="small">
-                  <InputLabel>Gender</InputLabel>
-                  <Select
-                    name="gender"
-                    value={filters.gender}
-                    label="Gender"
-                    onChange={handleFilterChange}
-                  >
-                    <MenuItem value="">All Genders</MenuItem>
-                    <MenuItem value="Male">Male</MenuItem>
-                    <MenuItem value="Female">Female</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-              <Grid item xs={12} sm={6} md={2.4}>
-                <FormControl fullWidth size="small">
-                  <InputLabel>Student Type</InputLabel>
-                  <Select
-                    name="studentType"
-                    value={filters.studentType}
-                    label="Student Type"
-                    onChange={handleFilterChange}
-                  >
-                    <MenuItem value="">All Types</MenuItem>
-                    <MenuItem value="Residential">Residential</MenuItem>
-                    <MenuItem value="Non-residential">Non-residential</MenuItem>
-                    <MenuItem value="Day-care">Day-care</MenuItem>
-                  </Select>
-                </FormControl>
-              </Grid>
-            </Grid>
+              Add Student
+            </Button>
           </Box>
-        )}
+        </Box>
 
-        {/* Using the CraftTable component with all features */}
+        {/* CraftTable */}
         <CraftTable
           title="Students"
-          subtitle={`Total: ${filteredData.length} students`}
+          subtitle={`Total: ${totalStudents} students`}
           columns={columns}
-          data={filteredData}
+          data={tableData}
           loading={isLoading}
-          page={page}
-          rowsPerPage={rowsPerPage}
-          onPageChange={handleChangePage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
+          pagination={true}
+          searchable={true}
+          filterable={true}
+          sortable={true}
+          serverSideSorting={false}
+          rowActions={rowActions}
+          selectable={true}
           onRefresh={handleRefresh}
           onExport={handleExport}
           onPrint={handlePrint}
           onAdd={handleAddStudent}
-          rowActions={rowActions}
-          selectable={true}
-          searchable={false} // We're using our own search above
-          filterable={true}
-          sortable={true}
-          pagination={true}
           emptyStateMessage="No students found. Try adjusting your filters or add new students."
           idField="_id"
           height="auto"

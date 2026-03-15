@@ -26,78 +26,26 @@ import {
   useMediaQuery,
   useTheme,
 } from "@mui/material";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "react-hot-toast";
 import PaymentModal from "../../student/profile/__components/PaymentModal";
+import BulkPaymentModal from "../../student/profile/__components/BulkPaymentModal";
+import PrintModal from "../../student/profile/__components/PrintModal";
+import {
+  Fee,
+  StudentTableRow,
+  StudentWithFees,
+  Summary,
+} from "@/types/feeCollection";
 
-interface Student {
-  _id: string;
-  name: string;
-  studentId: string;
-  mobile: string;
-}
-
-interface Fee {
-  _id: string;
-  feeType: string;
-  month: string;
-  class: string;
-  amount: number;
-  paidAmount: number;
-  dueAmount: number;
-  status: string;
-  academicYear?: string;
-  isCurrentMonth?: boolean;
-  advanceUsed?: number;
-  discount?: number;
-  waiver?: number;
-  computedDue?: number;
-}
-
-interface Enrollment {
-  _id: string;
-  rollNumber: string;
-  studentName?: string;
-}
-
-interface StudentWithFees {
-  student: Student;
-  enrollment: Enrollment;
-  fees: Fee[];
-  totalDue: number;
-  totalPaid: number;
-  totalAmount: number;
-  feesCount?: number;
-}
-
-interface Summary {
-  totalStudents: number;
-  totalFees: number;
-  totalDueAmount: number;
-  totalPaidAmount: number;
-  totalAmount: number;
-}
-
-interface FlattenedFeeRow {
-  _id: string;
-  studentId: string;
-  studentName: string;
-  rollNumber: string;
-  mobile: string;
-  feeType: string;
-  month: string;
-  class: string;
-  amount: number;
-  paidAmount: number;
-  dueAmount: number;
-  status: string;
-  academicYear?: string;
-  isCurrentMonth?: boolean;
-  advanceUsed?: number;
-  discount?: number;
-  waiver?: number;
-  computedDue?: number;
-}
+const getClassNameFromId = (classId: string): string => {
+  const classMap: Record<string, string> = {
+    "69692956177ba8ddf04a2d86": "Five",
+    "6969295d177ba8ddf04a2d8c": "Six",
+    "69692935177ba8ddf04a2d67": "Seven",
+  };
+  return classMap[classId] || "";
+};
 
 const FeeCollection = () => {
   const theme = useTheme();
@@ -113,59 +61,94 @@ const FeeCollection = () => {
   const [selectedStudent, setSelectedStudent] =
     useState<StudentWithFees | null>(null);
 
-  // State for PaymentModal
+  const [bulkPaymentModalOpen, setBulkPaymentModalOpen] = useState(false);
+  const [selectedStudentForBulk, setSelectedStudentForBulk] =
+    useState<StudentWithFees | null>(null);
+
+  const [selectedReceipt, setSelectedReceipt] = useState<any>(null);
+  const [printModalOpen, setPrintModalOpen] = useState(false);
+
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
   const [selectedFee, setSelectedFee] = useState<any>(null);
 
-  // Use the RTK Query hook
   const { data, error, isLoading, refetch } = useGetDueFeesQuery({
     year: year.toString(),
     class: classFilter,
   });
 
-  // Process data when it loads
+  // ---------- Process API data ----------
   useEffect(() => {
     if (data && data.success) {
-      const studentsData = data.data?.students || [];
-      const summaryData = data.data?.summary || null;
+      const dueFees = data.data?.dueFees || [];
+      const totalDue = data.data?.totalDue || 0;
+      const totalPaid = data.data?.totalPaid || 0;
+      const totalFees = data.data?.totalFees || 0;
 
-      if (Array.isArray(studentsData)) {
-        // Transform the data to match the expected interface
-        const transformedData: StudentWithFees[] = studentsData.map(
-          (studentItem: any) => ({
-            student: studentItem.student,
-            enrollment: studentItem.enrollment,
-            fees: studentItem.fees.map((fee: any) => ({
-              _id: fee._id,
-              feeType: fee.feeType,
-              month: fee.month,
-              class: fee.class,
-              amount: fee.amount,
-              paidAmount: fee.paidAmount,
-              dueAmount:
-                fee.computedDue || fee.dueAmount || fee.amount - fee.paidAmount,
-              status: fee.status,
-              academicYear: fee.academicYear,
-              isCurrentMonth: fee.isCurrentMonth,
-              advanceUsed: fee.advanceUsed || 0,
-              discount: fee.discount || 0,
-              waiver: fee.waiver || 0,
-              computedDue: fee.computedDue,
-            })),
-            totalDue: studentItem.totalDue,
-            totalPaid: studentItem.totalPaid,
-            totalAmount: studentItem.totalAmount,
-            feesCount: studentItem.feesCount,
-          }),
-        );
+      const studentsMap = new Map<string, StudentWithFees>();
 
-        setDueFeesData(transformedData);
-        setSummary(summaryData);
-      } else {
-        console.error("Invalid students data structure:", studentsData);
-        setDueFeesData([]);
-      }
+      dueFees.forEach((fee: any) => {
+        const studentId = fee.student._id;
 
+        if (!studentsMap.has(studentId)) {
+          studentsMap.set(studentId, {
+            student: {
+              _id: fee.student._id,
+              studentId: fee.student.studentId,
+              name: fee.student.nameBangla || fee.student.name || "",
+              mobile: fee.enrollment?.mobileNo || fee.student.mobile || "",
+            },
+            enrollment: {
+              _id: fee.enrollment._id,
+              rollNumber:
+                fee.enrollment?.rollNumber || fee.enrollment?.roll || "",
+              className: fee.enrollment?.className,
+            },
+            fees: [],
+            totalDue: 0,
+            totalPaid: 0,
+            totalAmount: 0,
+            feesCount: 0,
+          });
+        }
+
+        const studentEntry = studentsMap.get(studentId)!;
+        const classId = fee.enrollment?.className?.[0] || "";
+        const className = classId ? getClassNameFromId(classId) : "";
+
+        studentEntry.fees.push({
+          _id: fee._id,
+          feeType: fee.feeType,
+          month: fee.month,
+          class: className,
+          amount: fee.amount,
+          paidAmount: fee.paidAmount,
+          dueAmount: fee.dueAmount,
+          status: fee.status,
+          academicYear: fee.academicYear,
+          isCurrentMonth: fee.isCurrentMonth,
+          advanceUsed: fee.advanceUsed || 0,
+          discount: fee.discount || 0,
+          waiver: fee.waiver || 0,
+          computedDue: fee.dueAmount,
+        });
+
+        studentEntry.totalDue += fee.dueAmount || 0;
+        studentEntry.totalPaid += fee.paidAmount || 0;
+        studentEntry.totalAmount += fee.amount || 0;
+        studentEntry.feesCount = studentEntry.fees.length;
+      });
+
+      const studentsData = Array.from(studentsMap.values());
+      const summaryData = {
+        totalStudents: studentsData.length,
+        totalFees,
+        totalDueAmount: totalDue,
+        totalPaidAmount: totalPaid,
+        totalAmount: totalFees,
+      };
+
+      setDueFeesData(studentsData);
+      setSummary(summaryData);
       setLoading(false);
     } else if (error) {
       console.error("Error fetching due fees:", error);
@@ -175,21 +158,91 @@ const FeeCollection = () => {
     }
   }, [data, error]);
 
-  // Handle refetch when filters change
   useEffect(() => {
     refetch();
   }, [year, classFilter, refetch]);
 
-  // ফি ডিটেইলস ভিউ হ্যান্ডলার
+  const getStudentOverallStatus = (fees: Fee[]): string => {
+    if (fees.every((f) => f.status === "paid")) return "paid";
+    if (fees.some((f) => f.status === "unpaid")) return "unpaid";
+    if (fees.some((f) => f.status === "partial")) return "partial";
+    return "unknown";
+  };
+
+  const studentTableData: StudentTableRow[] = useMemo(() => {
+    return dueFeesData.map((studentWithFees) => {
+      const firstFee = studentWithFees.fees[0];
+      return {
+        _id: studentWithFees.student._id,
+        studentName: studentWithFees.student.name,
+        studentId: studentWithFees.student.studentId,
+        rollNumber: studentWithFees.enrollment.rollNumber,
+        mobile: studentWithFees.student.mobile,
+        className: firstFee?.class || "",
+        totalAmount: studentWithFees.totalAmount,
+        totalPaid: studentWithFees.totalPaid,
+        totalDue: studentWithFees.totalDue,
+        feesCount: studentWithFees.fees.length,
+        overallStatus: getStudentOverallStatus(studentWithFees.fees),
+      };
+    });
+  }, [dueFeesData]);
+
+  const classFilterOptions = useMemo(() => {
+    const seen = new Set<string>();
+    return studentTableData
+      .filter((row) => row.className && row.className.trim() !== "")
+      .reduce((acc: { label: string; value: string }[], row) => {
+        if (!seen.has(row.className)) {
+          seen.add(row.className);
+          acc.push({ label: row.className, value: row.className });
+        }
+        return acc;
+      }, [])
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [studentTableData]);
+
+  const statusFilterOptions = useMemo(() => {
+    const seen = new Set<string>();
+    return studentTableData
+      .filter((row) => row.overallStatus)
+      .reduce((acc: { label: string; value: string }[], row) => {
+        if (!seen.has(row.overallStatus)) {
+          seen.add(row.overallStatus);
+          const label =
+            row.overallStatus.charAt(0).toUpperCase() +
+            row.overallStatus.slice(1);
+          acc.push({ label, value: row.overallStatus });
+        }
+        return acc;
+      }, [])
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [studentTableData]);
+
+  // ---------- Handlers ----------
   const handleViewDetails = (student: StudentWithFees) => {
     setSelectedStudent(student);
     setViewDetailsModalOpen(true);
   };
 
-  // Handlers for the PaymentModal
-  const handleOpenPaymentModal = (fee: any) => {
-    setSelectedFee(fee);
-    setPaymentModalOpen(true);
+  const handleOpenBulkPayment = (student: StudentWithFees) => {
+    setSelectedStudentForBulk(student);
+    setBulkPaymentModalOpen(true);
+  };
+
+  const handleCloseBulkPayment = () => {
+    setBulkPaymentModalOpen(false);
+    setSelectedStudentForBulk(null);
+  };
+
+  const handleBulkPaymentCompleted = (receiptData: any) => {
+    setSelectedReceipt(receiptData);
+    setPrintModalOpen(true); // directly open print modal
+  };
+
+  const handleClosePrintModal = () => {
+    setPrintModalOpen(false);
+    setSelectedReceipt(null);
   };
 
   const handleClosePaymentModal = () => {
@@ -203,194 +256,146 @@ const FeeCollection = () => {
     handleClosePaymentModal();
   };
 
-  // Flatten the data for the table
-  const flattenedData: FlattenedFeeRow[] = dueFeesData.flatMap(
-    (studentWithFees) =>
-      studentWithFees.fees.map((fee) => ({
-        ...fee,
-        studentId: studentWithFees.student.studentId,
-        studentName: studentWithFees.student.name,
-        rollNumber: studentWithFees.enrollment.rollNumber,
-        mobile: studentWithFees.student.mobile,
-      })),
-  );
-
-  // Define columns based on screen size
-  const getColumns = (): Column[] => {
-    // Base columns that are always shown
+  const getStudentColumns = (): Column[] => {
     const baseColumns: Column[] = [
       {
         id: "studentName",
         label: "Student",
-        minWidth: isSmallMobile ? 100 : 150,
+        minWidth: isSmallMobile ? 120 : 180,
         sortable: true,
         filterable: true,
       },
       {
-        id: "feeType",
-        label: "Fee Type",
-        minWidth: isSmallMobile ? 100 : 150,
-        sortable: true,
-        filterable: true,
-        format: (value: string) => (
-          <Chip
-            label={value}
-            size="small"
-            variant="outlined"
-            color={
-              value?.toLowerCase().includes("admission")
-                ? "primary"
-                : value?.toLowerCase().includes("monthly")
-                  ? "secondary"
-                  : value?.toLowerCase().includes("exam")
-                    ? "warning"
-                    : value?.toLowerCase().includes("form")
-                      ? "info"
-                      : "default"
-            }
-          />
-        ),
-      },
-      {
-        id: "dueAmount",
-        label: "Due",
-        minWidth: isSmallMobile ? 80 : 130,
-        align: "right",
-        sortable: true,
-        format: (value: number) => (
-          <Typography color="error.main" fontWeight="bold">
-            ৳{value?.toFixed(2)}
-          </Typography>
-        ),
-      },
-      {
-        id: "status",
-        label: "Status",
-        minWidth: isSmallMobile ? 80 : 100,
-        sortable: true,
-        filterable: true,
-        format: (value: string) => {
-          const statusConfig: any = {
-            paid: { color: "success", label: "Paid" },
-            partial: { color: "warning", label: "Partial" },
-            unpaid: { color: "error", label: "Due" },
-          };
-          const config = statusConfig[value] || {
-            color: "default",
-            label: value,
-          };
-          return (
-            <Chip label={config.label} color={config.color} size="small" />
-          );
-        },
-      },
-    ];
-
-    // Additional columns for larger screens
-    if (!isSmallMobile) {
-      baseColumns.splice(1, 0, {
         id: "studentId",
         label: "ID",
         minWidth: 100,
         sortable: true,
         filterable: true,
-      });
-    }
-
-    if (!isMobile) {
-      baseColumns.splice(2, 0, {
+      },
+      {
         id: "rollNumber",
         label: "Roll",
         minWidth: 100,
         sortable: true,
         filterable: true,
-      });
-
-      baseColumns.splice(3, 0, {
+      },
+      {
         id: "mobile",
         label: "Mobile",
         minWidth: 120,
         sortable: true,
         filterable: true,
-      });
+      },
+    ];
 
-      baseColumns.splice(-2, 0, {
-        id: "month",
-        label: "Month",
-        minWidth: 120,
-        sortable: true,
-        filterable: true,
-      });
-
-      baseColumns.splice(-2, 0, {
-        id: "class",
-        label: "Class",
-        minWidth: 100,
-        sortable: true,
-        filterable: true,
-      });
-
-      baseColumns.splice(-2, 0, {
-        id: "amount",
-        label: "Total",
-        minWidth: 130,
-        align: "right",
-        sortable: true,
-        format: (value: number) => `৳${value?.toFixed(2)}`,
-      });
-
-      baseColumns.splice(-2, 0, {
-        id: "paidAmount",
-        label: "Paid",
-        minWidth: 130,
-        align: "right",
-        sortable: true,
-        format: (value: number) => `৳${value?.toFixed(2)}`,
-      });
+    if (!isMobile) {
+      baseColumns.push(
+        {
+          id: "className",
+          label: "Class",
+          minWidth: 100,
+          sortable: true,
+          filterable: true,
+          filterOptions: classFilterOptions,
+        },
+        {
+          id: "totalAmount",
+          label: "Total (৳)",
+          minWidth: 120,
+          align: "right",
+          sortable: true,
+          format: (value: number) => `৳${value?.toFixed(2)}`,
+        },
+        {
+          id: "totalPaid",
+          label: "Paid (৳)",
+          minWidth: 120,
+          align: "right",
+          sortable: true,
+          format: (value: number) => `৳${value?.toFixed(2)}`,
+        },
+        {
+          id: "totalDue",
+          label: "Due (৳)",
+          minWidth: 120,
+          align: "right",
+          sortable: true,
+          format: (value: number) => (
+            <Typography color="error.main" fontWeight="bold">
+              ৳{value?.toFixed(2)}
+            </Typography>
+          ),
+        },
+        {
+          id: "feesCount",
+          label: "# Fees",
+          minWidth: 80,
+          align: "center",
+          sortable: true,
+        },
+        {
+          id: "overallStatus",
+          label: "Status",
+          minWidth: 100,
+          sortable: true,
+          filterable: true,
+          filterOptions: statusFilterOptions,
+          format: (value: string) => {
+            const statusMap: any = {
+              paid: { color: "success", label: "Paid" },
+              partial: { color: "warning", label: "Partial" },
+              unpaid: { color: "error", label: "Due" },
+            };
+            const config = statusMap[value] || {
+              color: "default",
+              label: value,
+            };
+            return (
+              <Chip label={config.label} color={config.color} size="small" />
+            );
+          },
+        },
+      );
     }
 
     return baseColumns;
   };
 
-  // Row actions
-  const rowActions: RowAction[] = [
-    {
-      label: "Collect Fee",
-      icon: <Payment fontSize="small" />,
-      onClick: (row) => {
-        // The 'row' object here is the specific fee data from the table
-        handleOpenPaymentModal(row);
-      },
-      color: "success",
-      tooltip: "Collect this fee",
-    },
+  const studentRowActions: RowAction[] = [
     {
       label: "View Details",
       icon: <Visibility fontSize="small" />,
       onClick: (row) => {
-        const student = dueFeesData.find((s) =>
-          s.fees.some((fee) => fee._id === row._id),
-        );
-        if (student) {
-          handleViewDetails(student);
-        }
+        const student = dueFeesData.find((s) => s.student._id === row._id);
+        if (student) handleViewDetails(student);
       },
       color: "primary",
-      tooltip: "View student details",
+      tooltip: "View student fee details",
+    },
+    {
+      label: "Collect Payment",
+      icon: <Payment fontSize="small" />,
+      onClick: (row) => {
+        const student = dueFeesData.find((s) => s.student._id === row._id);
+        if (student) handleOpenBulkPayment(student);
+      },
+      color: "success",
+      tooltip: "Collect all due fees for this student",
     },
   ];
 
-  // Bulk actions
-  const bulkActions = [
+  const studentBulkActions = [
     {
-      label: "Collect Selected Fees",
+      label: "Collect Selected",
       icon: <Payment />,
       onClick: (selectedRows: any[]) => {
         if (selectedRows.length === 0) {
-          toast.error("Please select at least one fee");
+          toast.error("Please select at least one student");
           return;
         }
-        toast.success(`Selected ${selectedRows.length} fees for payment`);
+        toast.error(
+          "Bulk collection for multiple students is not yet implemented",
+        );
       },
       color: "success" as const,
     },
@@ -410,61 +415,77 @@ const FeeCollection = () => {
   }
 
   return (
-    <Box sx={{ p: 3, backgroundColor: "grey.50", minHeight: "100vh" }}>
+    <>
       <Typography variant="h4" gutterBottom fontWeight="bold">
         Due Fees Collection
       </Typography>
       <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
         Manage and collect pending fees from students
       </Typography>
+      <Box sx={{ p: { xs: 1, sm: 2, md: 3 }, height: "100%", width: "100%" }}>
+        {studentTableData.length > 0 ? (
+          <CraftTable
+            title="Due Fees (Student Wise)"
+            subtitle={`Showing ${studentTableData.length} students with due fees`}
+            columns={getStudentColumns()}
+            data={studentTableData}
+            loading={loading}
+            rowActions={studentRowActions}
+            bulkActions={studentBulkActions}
+            selectable={true}
+            idField="_id"
+            hover={true}
+            showToolbar={true}
+            striped={true}
+            searchable={true}
+            filterable={true}
+            sortable={true}
+            pagination={true}
+            elevation={3}
+            showRowNumbers={!isMobile}
+            rowNumberHeader="#"
+            defaultSortColumn="totalDue"
+            defaultSortDirection="desc"
+            borderRadius={3}
+          />
+        ) : (
+          <Card>
+            <CardContent sx={{ textAlign: "center", py: 8 }}>
+              <Typography variant="h5" color="text.secondary" gutterBottom>
+                No Due Fees Found
+              </Typography>
+              <Typography variant="body2" color="text.secondary">
+                All fees are cleared for the selected filters
+              </Typography>
+            </CardContent>
+          </Card>
+        )}
+      </Box>
 
-      {/* বকেয়া ফির তালিকা */}
-      {flattenedData.length > 0 ? (
-        <CraftTable
-          title="Due Fees"
-          subtitle={`Showing ${flattenedData.length} fees`}
-          columns={getColumns()}
-          data={flattenedData}
-          loading={loading}
-          rowActions={rowActions}
-          bulkActions={bulkActions}
-          selectable={true}
-          idField="_id"
-          hover={true}
-          showToolbar={true}
-          striped={true}
-          searchable={true}
-          filterable={true}
-          sortable={true}
-          pagination={true}
-          elevation={3}
-          borderRadius={1}
-          showRowNumbers={!isMobile}
-          rowNumberHeader="#"
-          defaultSortColumn="dueAmount"
-          defaultSortDirection="desc"
-        />
-      ) : (
-        <Card>
-          <CardContent sx={{ textAlign: "center", py: 8 }}>
-            <Typography variant="h5" color="text.secondary" gutterBottom>
-              No Due Fees Found
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              All fees are cleared for the selected filters
-            </Typography>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* ফি ডিটেইলস ভিউ মোডাল */}
+      {/* Student Details Modal (unchanged) */}
       <Dialog
         open={viewDetailsModalOpen}
         onClose={() => setViewDetailsModalOpen(false)}
         maxWidth="lg"
         fullWidth
       >
-        <DialogTitle>Fee Details - {selectedStudent?.student.name}</DialogTitle>
+        <DialogTitle>
+          Fee Details - {selectedStudent?.student.name}
+          <Button
+            variant="contained"
+            color="success"
+            startIcon={<Payment />}
+            onClick={() => {
+              if (selectedStudent) {
+                handleOpenBulkPayment(selectedStudent);
+                setViewDetailsModalOpen(false);
+              }
+            }}
+            sx={{ ml: 2 }}
+          >
+            Bulk Payment
+          </Button>
+        </DialogTitle>
         <DialogContent>
           {selectedStudent && (
             <Box sx={{ mt: 2 }}>
@@ -618,13 +639,41 @@ const FeeCollection = () => {
         </DialogActions>
       </Dialog>
 
+      {/* Bulk Payment Modal */}
+      {selectedStudentForBulk && (
+        <BulkPaymentModal
+          open={bulkPaymentModalOpen}
+          onClose={handleCloseBulkPayment}
+          student={{
+            _id: selectedStudentForBulk.student._id,
+            name: selectedStudentForBulk.student.name,
+            studentId: selectedStudentForBulk.student.studentId,
+            className: selectedStudentForBulk.fees[0]?.class || "",
+            roll: selectedStudentForBulk.enrollment.rollNumber,
+            section: "",
+            jamatGroup: "",
+          }}
+          fees={selectedStudentForBulk.fees.filter((fee) => fee.dueAmount > 0)}
+          refetch={refetch}
+          onPaymentCompleted={handleBulkPaymentCompleted}
+        />
+      )}
+
+      {/* Print Modal (directly after payment) */}
+      <PrintModal
+        open={printModalOpen}
+        setOpen={handleClosePrintModal}
+        receipt={selectedReceipt}
+      />
+
+      {/* Single Payment Modal */}
       <PaymentModal
         open={paymentModalOpen}
         onClose={handleClosePaymentModal}
         fee={selectedFee}
         onPaymentSuccess={handlePaymentSuccess}
       />
-    </Box>
+    </>
   );
 };
 

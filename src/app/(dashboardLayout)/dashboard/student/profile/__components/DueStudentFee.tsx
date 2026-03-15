@@ -19,7 +19,8 @@ import AddFeeModal from "./AddFeeModal";
 import PaymentModal from "./PaymentModal";
 import BulkPaymentModal from "./BulkPaymentModal";
 import LateFeeCustomizationModal from "./LateFeeCustomizationModal";
-import FeeSummaryCards from "./FeeSummaryCards"; // Import the new component
+import FeeSummaryCards from "./FeeSummaryCards";
+import PrintModal from "./PrintModal";
 
 interface StudentFeeProps {
   studentFees: any[];
@@ -56,14 +57,16 @@ const DueStudentFee = ({
     totalOverdue: 0,
   });
 
+  // State for print modal
+  const [printModalOpen, setPrintModalOpen] = useState(false);
+  const [selectedReceipt, setSelectedReceipt] = useState<any>(null);
+
   // Filter only unpaid fees
   useEffect(() => {
-    // Filter to show only unpaid fees
     const unpaidFees =
       studentFees?.filter((fee) => fee?.status === "unpaid") || [];
     setFilteredFees(unpaidFees);
 
-    // Calculate late fee summary for unpaid fees only
     if (unpaidFees?.length) {
       const summary = unpaidFees.reduce(
         (acc, fee) => {
@@ -173,7 +176,18 @@ const DueStudentFee = ({
     setAddFeeModalOpen(false);
   };
 
-  // Calculate summary statistics for unpaid fees only
+  // Callback when bulk payment completes
+  const handleBulkPaymentCompleted = (receiptData: any) => {
+    setSelectedReceipt(receiptData);
+    setPrintModalOpen(true);
+  };
+
+  // Close print modal and clear receipt
+  const handleClosePrintModal = () => {
+    setPrintModalOpen(false);
+    setSelectedReceipt(null);
+  };
+
   const calculateSummary = () => {
     const unpaidFees =
       studentFees?.filter((fee) => fee?.status === "unpaid") || [];
@@ -212,7 +226,7 @@ const DueStudentFee = ({
 
   const summary = calculateSummary();
 
-  // Define columns for fee table with all fee information
+  // Define columns for fee table (unchanged)
   const columns: Column[] = [
     {
       id: "feeType",
@@ -548,7 +562,7 @@ const DueStudentFee = ({
     },
   ];
 
-  // Define row actions with customization option
+  // Define row actions (unchanged)
   const rowActions: RowAction[] = [
     {
       label: "View Details",
@@ -608,7 +622,6 @@ const DueStudentFee = ({
         Due Student Fee Management
       </Typography>
 
-      {/* Summary Cards - Using the new component */}
       <FeeSummaryCards
         type="due"
         summary={summary}
@@ -655,7 +668,7 @@ const DueStudentFee = ({
                 },
               }}
             >
-              Bulk Payment ({filteredFees?.length})
+              Payment Now ({filteredFees?.length})
             </Button>
           </Box>
         }
@@ -704,7 +717,6 @@ const DueStudentFee = ({
       <AddFeeModal
         open={addFeeModalOpen}
         setOpen={handleCloseAddFeeModal}
-        // onAddFee={handleAddFee}
         student={student}
       />
 
@@ -728,9 +740,24 @@ const DueStudentFee = ({
       <BulkPaymentModal
         open={bulkPaymentModalOpen}
         onClose={() => setBulkPaymentModalOpen(false)}
-        student={student}
+        student={{
+          ...student,
+          // Ensure className is a string
+          className:
+            typeof student?.className === "object"
+              ? student.className?.className || student.className?.name || ""
+              : student?.className || "",
+        }}
         fees={filteredFees}
         refetch={refetch}
+        onPaymentCompleted={handleBulkPaymentCompleted}
+      />
+
+      {/* Print Modal */}
+      <PrintModal
+        open={printModalOpen}
+        setOpen={handleClosePrintModal}
+        receipt={selectedReceipt}
       />
     </Box>
   );
