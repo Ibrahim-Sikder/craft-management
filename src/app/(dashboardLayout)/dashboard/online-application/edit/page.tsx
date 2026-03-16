@@ -1228,6 +1228,7 @@ export default function EditAdmissionApplication() {
                   }}
                 >
                   <CraftSwitch
+                    checked
                     onChange={handleActiveChange}
                     color="primary"
                     name="termsAccepted"
