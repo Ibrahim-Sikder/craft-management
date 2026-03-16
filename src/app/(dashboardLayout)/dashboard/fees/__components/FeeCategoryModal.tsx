@@ -156,15 +156,7 @@ const FeeItemsField = ({
 
 // ─── FeeCategoryModal ─────────────────────────────────────────────────────────
 
-export default function FeeCategoryModal({
-  open,
-  setOpen,
-  id,
-}: {
-  open: boolean;
-  setOpen: (v: boolean) => void;
-  id?: string;
-}) {
+export default function FeeCategoryModal({ open, setOpen, id }: any) {
   const [createFeeCategory] = useCreateFeeCategoryMutation();
   const [updateFeeCategory] = useUpdateFeeCategoryMutation();
 
