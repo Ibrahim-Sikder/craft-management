@@ -164,7 +164,7 @@ export const academicClassValues = [
   "Eight",
 ];
 export const hifzClassValues = ["Nurani", "Nazera", "Hifz", "Sunani"];
-export const allClasses = [
+export const classOrder = [
   "Pre_one",
   "One",
   "Two",

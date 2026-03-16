@@ -11,7 +11,6 @@ import { Box, Container, Chip, Stack, Typography } from "@mui/material";
 import { useState } from "react";
 import Swal from "sweetalert2";
 import FeeCategoryModal from "../__components/FeeCategoryModal";
-import FeeCategoryStats from "../__components/FeeCategoryStats";
 import CraftTable, { Column, RowAction } from "@/components/Table";
 
 export interface FeeCategory {
@@ -43,19 +42,10 @@ const FeeCategoriesPage = () => {
 
   const feeCategories: FeeCategory[] = feesData?.data?.data || [];
 
-  // Calculate total amount for each category
   const feeCategoriesWithTotal = feeCategories.map((category) => ({
     ...category,
     totalAmount: category.feeItems.reduce((sum, item) => sum + item.amount, 0),
   }));
-
-  // Calculate stats
-  const totalFeeAmount = feeCategoriesWithTotal.reduce(
-    (sum, category) => sum + (category.totalAmount || 0),
-    0,
-  );
-  const totalCategories = feeCategories.length;
-  const uniqueClasses = new Set(feeCategories.map((i) => i.className)).size;
 
   const getClassColor = (className: string) => {
     const colors: Record<string, string> = {
@@ -312,12 +302,6 @@ const FeeCategoriesPage = () => {
 
   return (
     <Container maxWidth="xl" sx={{ py: 2 }}>
-      <FeeCategoryStats
-        totalCategories={totalCategories}
-        uniqueClasses={uniqueClasses}
-        totalFeeAmount={totalFeeAmount}
-      />
-
       <CraftTable
         title="Fee Categories"
         subtitle={`${feeCategoriesWithTotal.length} categories found`}
