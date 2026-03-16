@@ -262,7 +262,7 @@ export default function EditAdmissionApplication() {
   const handleCancel = () => router.back();
 
   if (isLoading) return <LoadingState />;
-
+  const handleActiveChange = () => {};
   if (fetchError) {
     return (
       <Box sx={{ p: 3 }}>
@@ -1228,6 +1228,7 @@ export default function EditAdmissionApplication() {
                   }}
                 >
                   <CraftSwitch
+                    onChange={handleActiveChange}
                     color="primary"
                     name="termsAccepted"
                     label="আমি ভর্তির সকল শর্ত মেনে নিচ্ছি"
