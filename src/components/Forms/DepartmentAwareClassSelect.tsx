@@ -1,4 +1,4 @@
-// ─── Constants ────────────────────────────────────────────────────────────────
+/* eslint-disable react-hooks/exhaustive-deps */
 
 import { useEffect } from "react";
 import CraftSelect from "./Select";
@@ -25,8 +25,6 @@ const getClassItemsByDept = (dept: string): string[] => {
   return [];
 };
 
-// ─── DepartmentAwareClassSelect ───────────────────────────────────────────────
-
 export const DepartmentAwareClassSelect = ({
   defaultDept,
 }: {
@@ -41,13 +39,11 @@ export const DepartmentAwareClassSelect = ({
     if (!selectedDept) return;
     const validClasses = getClassItemsByDept(selectedDept);
     const currentClass = watch("className");
-    // ✅ Only reset if the current class is NOT valid for the new dept
     if (currentClass && !validClasses.includes(currentClass)) {
       setValue("className", "");
     }
   }, [selectedDept]);
 
-  // ✅ Pass plain string[] — CraftSelect handles it correctly
   const classItems = getClassItemsByDept(currentDept);
 
   return (
@@ -55,10 +51,9 @@ export const DepartmentAwareClassSelect = ({
       fullWidth
       label="Class"
       name="className"
-      items={classItems} // ✅ plain string[]
+      items={classItems}
       size="small"
       required
-      // ✅ No defaultValue here — let form defaultValues handle it
     />
   );
 };
