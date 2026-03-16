@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
@@ -22,7 +23,7 @@ export const BootstrapDialog = styled(Dialog)(({ theme }) => ({
 
 type TModalProps = {
   open: boolean;
-  setOpen: React.Dispatch<React.SetStateAction<boolean>>;
+  setOpen: any;
   title: string;
   children: React.ReactNode;
   sx?: SxProps;

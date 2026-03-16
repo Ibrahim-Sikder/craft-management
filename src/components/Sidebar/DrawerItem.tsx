@@ -129,16 +129,7 @@ export const navigationItems: NavigationItem[] = [
         path: "/dashboard/subject",
         roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
       },
-      {
-        title: "Class Reports",
-        icon: (
-          <ColorfulIcon color="#2a52be">
-            <Analytics />
-          </ColorfulIcon>
-        ),
-        path: "/dashboard/classes/report/list",
-        roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
-      },
+
       {
         title: "New Report",
         icon: (

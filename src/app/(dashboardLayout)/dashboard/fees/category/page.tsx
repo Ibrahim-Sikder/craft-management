@@ -30,7 +30,7 @@ export interface FeeCategory {
 
 const FeeCategoriesPage = () => {
   const [editFeeCategoryId, setEditFeeCategoryId] = useState<string | null>(
-    null
+    null,
   );
   const [openModal, setOpenModal] = useState(false);
 
@@ -44,13 +44,16 @@ const FeeCategoriesPage = () => {
   const feeCategories: FeeCategory[] = feesData?.data?.data || [];
 
   // Calculate total amount for each category
-  const feeCategoriesWithTotal = feeCategories.map(category => ({
+  const feeCategoriesWithTotal = feeCategories.map((category) => ({
     ...category,
-    totalAmount: category.feeItems.reduce((sum, item) => sum + item.amount, 0)
+    totalAmount: category.feeItems.reduce((sum, item) => sum + item.amount, 0),
   }));
 
   // Calculate stats
-  const totalFeeAmount = feeCategoriesWithTotal.reduce((sum, category) => sum + (category.totalAmount || 0), 0);
+  const totalFeeAmount = feeCategoriesWithTotal.reduce(
+    (sum, category) => sum + (category.totalAmount || 0),
+    0,
+  );
   const totalCategories = feeCategories.length;
   const uniqueClasses = new Set(feeCategories.map((i) => i.className)).size;
 
@@ -94,7 +97,7 @@ const FeeCategoriesPage = () => {
 
   const getCategoryColor = (categoryName: string) => {
     const colors: Record<string, string> = {
-      "Residential": "#4caf50",
+      Residential: "#4caf50",
       "Non-Residential": "#2196f3",
       "Day Care": "#ff9800",
       "Non-Residential One Meal": "#9c27b0",
@@ -204,23 +207,24 @@ const FeeCategoriesPage = () => {
             <Box
               key={item._id || index}
               sx={{
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
                 p: 1,
-                borderRadius: '6px',
-                backgroundColor: index % 2 === 0 ? 'action.hover' : 'transparent',
+                borderRadius: "6px",
+                backgroundColor:
+                  index % 2 === 0 ? "action.hover" : "transparent",
               }}
             >
-              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+              <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                 <Chip
                   label={item.feeType}
                   size="small"
                   sx={{
                     backgroundColor: getFeeTypeColor(item.feeType),
-                    color: 'white',
+                    color: "white",
                     fontWeight: 500,
-                    minWidth: '100px',
+                    minWidth: "100px",
                   }}
                 />
                 <Typography variant="body2" color="text.secondary">
@@ -248,11 +252,11 @@ const FeeCategoriesPage = () => {
             fontWeight: "bold",
             color: "success.main",
             fontSize: "1.1rem",
-            backgroundColor: 'success.50',
+            backgroundColor: "success.50",
             px: 2,
             py: 1,
-            borderRadius: '8px',
-            textAlign: 'center'
+            borderRadius: "8px",
+            textAlign: "center",
           }}
         >
           ৳ {value.toLocaleString()}
