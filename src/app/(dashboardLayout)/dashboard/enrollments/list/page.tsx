@@ -43,6 +43,24 @@ import PromotionModal from "../__components/PromotionModal";
 import RetainModal from "../__components/RetainModal";
 import LoadingSpinner from "@/components/LoadingSpinner";
 
+// ✅ Define the desired class order (same as in AdmissionApplicationList)
+const ALL_CLASSES = [
+  "Pre_one",
+  "One",
+  "Two",
+  "Three",
+  "Four_boys",
+  "Four_girls",
+  "Five",
+  "Six",
+  "Seven",
+  "Eight",
+  "Nurani",
+  "Nazera",
+  "Hifz",
+  "Sunani",
+];
+
 const calculateTotalFees = (fees: any[]) => {
   if (!fees || !Array.isArray(fees) || fees.length === 0) {
     return { total: 0, paid: 0, due: 0, discount: 0, waiver: 0 };
@@ -126,7 +144,7 @@ export default function EnrollmentsPage() {
     error,
     refetch,
   } = useGetAllEnrollmentsQuery({ limit: 1000, page: 1 });
-
+  console.log("Fetched enrollments:", enrollmentData);
   const [deleteEnrollment] = useDeleteEnrollmentMutation();
   const { classOptions } = useAcademicOption();
 
@@ -228,7 +246,7 @@ export default function EnrollmentsPage() {
     });
   }, [enrollmentData]);
 
-  // Dynamic filter options from data
+  // ✅ FIXED: class filter options sorted by ALL_CLASSES order
   const classFilterOptions = useMemo(() => {
     const seen = new Set<string>();
     const opts: { label: string; value: string }[] = [];
@@ -238,7 +256,16 @@ export default function EnrollmentsPage() {
         opts.push({ label: r.className, value: r.className });
       }
     });
-    return opts.sort((a, b) => a.label.localeCompare(b.label));
+
+    // Sort by the predefined order; unknown classes go to the end alphabetically.
+    return opts.sort((a, b) => {
+      const indexA = ALL_CLASSES.indexOf(a.value);
+      const indexB = ALL_CLASSES.indexOf(b.value);
+      if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+      if (indexA !== -1) return -1;
+      if (indexB !== -1) return 1;
+      return a.label.localeCompare(b.label);
+    });
   }, [tableData]);
 
   const totalCount = enrollmentData?.data?.meta?.total ?? tableData.length;
@@ -336,7 +363,7 @@ export default function EnrollmentsPage() {
         minWidth: isMobile ? 100 : 180,
         sortable: true,
         filterable: true,
-        filterOptions: classFilterOptions,
+        filterOptions: classFilterOptions, // ✅ now sorted correctly
         render: (row: any) => (
           <Box>
             <Typography
@@ -819,7 +846,7 @@ export default function EnrollmentsPage() {
         </Box>
       </Box>
 
-      {/* Table — same props pattern as AdmissionApplicationList */}
+      {/* Table */}
       <Box sx={{ p: { xs: 0, sm: 1 } }}>
         <Table
           title="Enrollments"
@@ -834,7 +861,6 @@ export default function EnrollmentsPage() {
               : undefined
           }
           idField="id"
-          // ── pagination (client-side)
           pagination={true}
           page={page}
           rowsPerPage={rowsPerPage}
@@ -843,20 +869,16 @@ export default function EnrollmentsPage() {
             setRowsPerPage(n);
             setPage(0);
           }}
-          // ── search / sort / filter (client-side)
           searchable={true}
           sortable={true}
           serverSideSorting={false}
           filterable={true}
-          // ── actions
           rowActions={rowActions}
           bulkActions={bulkActions}
           selectable={true}
-          // ── toolbar
           customToolbar={customToolbar}
           showToolbar={true}
           onRefresh={refetch}
-          // ── appearance
           dense={isMobile}
           striped={true}
           hover={true}
@@ -879,6 +901,7 @@ export default function EnrollmentsPage() {
         onEdit={handleEditEnrollment}
         onCollectFee={handleCollectFee}
       />
+
       <FeeCollectionModal
         open={feeCollectionOpen}
         setOpen={handleCloseFeeCollection}

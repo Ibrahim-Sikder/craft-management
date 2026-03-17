@@ -251,7 +251,8 @@ export const generatePDFFromData = async (
       format: "a4",
     });
     pdf.addImage(imgData, "PNG", 0, 0, 210, 297);
-    pdf.save(`admission-form-${studentId}.pdf`);
+    pdf.save(`admission-Form-${studentId}.pdf`);
+    //  pdf.save(`${studentId}.pdf`);
   } catch (error) {
     console.error("PDF generation failed:", error);
   } finally {

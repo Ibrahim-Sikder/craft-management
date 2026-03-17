@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
@@ -11,14 +12,7 @@ import CraftInput from "@/components/Forms/Input";
 import CraftSelect from "@/components/Forms/Select";
 import CraftSwitch from "@/components/Forms/switch";
 import FileUploadWithIcon from "@/components/Forms/Upload";
-import {
-  bloodGroups,
-  classOption,
-  departments,
-  fatherProfessionOptions,
-  genderOptions,
-  motherProfessionOptions,
-} from "@/options";
+import { bloodGroups, genderOptions } from "@/options";
 import {
   angerOptions,
   behaviorGeneralOptions,
@@ -46,6 +40,7 @@ import {
   WhatsApp,
 } from "@mui/icons-material";
 import {
+  Alert,
   alpha,
   Avatar,
   Box,
@@ -57,21 +52,88 @@ import {
   Grid,
   InputAdornment,
   Paper,
+  Snackbar,
   Typography,
   useTheme,
-  Alert,
-  Snackbar,
 } from "@mui/material";
 import { useRouter, useSearchParams } from "next/navigation";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useFormContext } from "react-hook-form";
+
+// ─── Class Constants ──────────────────────────────────────────────────────────
+
+const hifzClassValues = ["Nurani", "Nazera", "Hifz", "Sunani"];
+
+const academicClassValues = [
+  "Pre_one",
+  "One",
+  "Two",
+  "Three",
+  "Four_boys",
+  "Four_girls",
+  "Five",
+  "Six",
+  "Seven",
+  "Eight",
+];
+
+// Plain string arrays — CraftSelect accepts string[]
+const getClassItemsByDept = (dept: string): string[] => {
+  if (dept === "hifz") return hifzClassValues;
+  if (dept === "academic") return academicClassValues;
+  return [];
+};
+
+// Department options — plain strings
+const departmentItems = ["hifz", "academic"];
+
+// ─── DepartmentAwareClassSelect ───────────────────────────────────────────────
+
+const DepartmentAwareClassSelect = ({
+  defaultDept,
+  defaultClass,
+}: {
+  defaultDept: string;
+  defaultClass: string;
+}) => {
+  const { watch, setValue } = useFormContext();
+  const selectedDept = watch("studentDept");
+  const currentDept = selectedDept || defaultDept;
+  const classItems = getClassItemsByDept(currentDept);
+
+  useEffect(() => {
+    if (!selectedDept) return;
+    const validClasses = getClassItemsByDept(selectedDept);
+    const currentClass = watch("className");
+    // ✅ Only clear if current class does not belong to new department
+    if (currentClass && !validClasses.includes(currentClass)) {
+      setValue("className", "");
+    }
+  }, [selectedDept]);
+
+  return (
+    <CraftSelect
+      fullWidth
+      label="Class"
+      name="className"
+      // ✅ Pass plain string[] — CraftSelect renders them as MenuItems
+      items={classItems}
+      size="small"
+      required
+    />
+  );
+};
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 
 export default function EditAdmissionApplication() {
   const router = useRouter();
   const theme = useTheme();
   const searchParams = useSearchParams();
   const id = searchParams.get("id");
+  const from = searchParams.get("from") || "pending";
 
-  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [errors] = useState<Record<string, string>>({});
   const [snackbar, setSnackbar] = useState({
     open: false,
     message: "",
@@ -87,21 +149,19 @@ export default function EditAdmissionApplication() {
   const [updateApplication, { isLoading: isUpdating }] =
     useUpdateAdmissionApplicationMutation();
 
-  const handleActiveChange = () => {};
-
   const handleSubmit = async (formData: any) => {
     try {
       const apiData = {
         academicYear: formData.session,
         termsAccepted: formData.termsAccepted,
         studentInfo: {
-          nameBangla: formData.StudentName, // "StudentName"  → nameBangla
-          nameEnglish: formData.studentName, // "studentName"  → nameEnglish
+          nameBangla: formData.StudentName,
+          nameEnglish: formData.studentName,
           dateOfBirth: formData.dateOfBirth,
           age: Number(formData.Age),
           gender: formData.gender,
-          department: formData.studentDept, // "studentDept"  → department
-          class: formData.className, // "className"    → class
+          department: formData.studentDept,
+          class: formData.className,
           session: formData.session,
           nidBirth: formData.nidBirth,
           bloodGroup: formData.bloodGroup,
@@ -117,7 +177,7 @@ export default function EditAdmissionApplication() {
           father: {
             nameBangla: formData.FatherNameBangla,
             nameEnglish: formData.FatherName,
-            profession: formData.FatherJob, // "FatherJob"    → profession
+            profession: formData.FatherJob,
             education: formData.FatherEdu,
             mobile: formData.FatherMobile,
             whatsapp: formData.FatherWhatsapp,
@@ -125,7 +185,7 @@ export default function EditAdmissionApplication() {
           mother: {
             nameBangla: formData.MotherNameBangla,
             nameEnglish: formData.MotherName,
-            profession: formData.MotherJob, // "MotherJob"    → profession
+            profession: formData.MotherJob,
             education: formData.MotherEdu,
             mobile: formData.MotherMobile,
             whatsapp: formData.MotherWhatsapp,
@@ -136,7 +196,7 @@ export default function EditAdmissionApplication() {
             relation: formData.guardianRelation,
             mobile: formData.guardianMobile,
             whatsapp: formData.guardianWhatsapp,
-            profession: formData.guardianJob, // "guardianJob"  → profession
+            profession: formData.guardianJob,
             address: formData.guardianAddress,
           },
         },
@@ -186,7 +246,7 @@ export default function EditAdmissionApplication() {
 
       const res = await updateApplication({ id, data: apiData }).unwrap();
       if (res.success) {
-        router.push("/dashboard/online-application/approved");
+        router.push(`/dashboard/online-application/${from}`);
       }
     } catch (error: any) {
       console.error("Update failed:", error);
@@ -201,10 +261,8 @@ export default function EditAdmissionApplication() {
 
   const handleCancel = () => router.back();
 
-  if (isLoading) {
-    return <LoadingState />;
-  }
-
+  if (isLoading) return <LoadingState />;
+  const handleActiveChange = () => {};
   if (fetchError) {
     return (
       <Box sx={{ p: 3 }}>
@@ -218,14 +276,17 @@ export default function EditAdmissionApplication() {
 
   const d = singleApplication?.data;
 
+  // ✅ All defaultValues mapped 1-to-1 from API response
   const defaultValues = {
-    // ── Student Info ──────────────────────────────────────────────────────
+    // Student Info
     StudentName: d?.studentInfo?.nameBangla ?? "",
     studentName: d?.studentInfo?.nameEnglish ?? "",
     dateOfBirth: d?.studentInfo?.dateOfBirth?.split("T")[0] ?? "",
     Age: d?.studentInfo?.age?.toString() ?? "",
     gender: d?.studentInfo?.gender ?? "",
+    // ✅ department MUST be set before className so class list renders correctly
     studentDept: d?.studentInfo?.department ?? "",
+    // ✅ "class" from API maps to "className" in form
     className: d?.studentInfo?.class ?? "",
     session: d?.studentInfo?.session ?? d?.academicYear ?? "",
     nidBirth: d?.studentInfo?.nidBirth ?? "",
@@ -233,12 +294,12 @@ export default function EditAdmissionApplication() {
     nationality: d?.studentInfo?.nationality ?? "Bangladeshi",
     studentPhoto: d?.studentInfo?.studentPhoto ?? "",
 
-    // ── Academic Info ─────────────────────────────────────────────────────
+    // Academic Info
     PrevSchool: d?.academicInfo?.previousSchool ?? "",
     PrevClass: d?.academicInfo?.previousClass ?? "",
     GPA: d?.academicInfo?.gpa ?? "",
 
-    // ── Father Info ───────────────────────────────────────────────────────
+    // Father
     FatherNameBangla: d?.parentInfo?.father?.nameBangla ?? "",
     FatherName: d?.parentInfo?.father?.nameEnglish ?? "",
     FatherJob: d?.parentInfo?.father?.profession ?? "",
@@ -246,7 +307,7 @@ export default function EditAdmissionApplication() {
     FatherMobile: d?.parentInfo?.father?.mobile ?? "",
     FatherWhatsapp: d?.parentInfo?.father?.whatsapp ?? "",
 
-    // ── Mother Info ───────────────────────────────────────────────────────
+    // Mother
     MotherNameBangla: d?.parentInfo?.mother?.nameBangla ?? "",
     MotherName: d?.parentInfo?.mother?.nameEnglish ?? "",
     MotherJob: d?.parentInfo?.mother?.profession ?? "",
@@ -254,7 +315,7 @@ export default function EditAdmissionApplication() {
     MotherMobile: d?.parentInfo?.mother?.mobile ?? "",
     MotherWhatsapp: d?.parentInfo?.mother?.whatsapp ?? "",
 
-    // ── Guardian Info ─────────────────────────────────────────────────────
+    // Guardian
     guardianNameBangla: d?.parentInfo?.guardian?.nameBangla ?? "",
     guardianName: d?.parentInfo?.guardian?.nameEnglish ?? "",
     guardianRelation: d?.parentInfo?.guardian?.relation ?? "",
@@ -263,21 +324,21 @@ export default function EditAdmissionApplication() {
     guardianJob: d?.parentInfo?.guardian?.profession ?? "",
     guardianAddress: d?.parentInfo?.guardian?.address ?? "",
 
-    // ── Present Address ───────────────────────────────────────────────────
+    // Present Address
     village: d?.address?.present?.village ?? "",
     postOffice: d?.address?.present?.postOffice ?? "",
     postCode: d?.address?.present?.postCode ?? "",
     policeStation: d?.address?.present?.policeStation ?? "",
     district: d?.address?.present?.district ?? "",
 
-    // ── Permanent Address ─────────────────────────────────────────────────
+    // Permanent Address
     permVillage: d?.address?.permanent?.village ?? "",
     permPostOffice: d?.address?.permanent?.postOffice ?? "",
     permPostCode: d?.address?.permanent?.postCode ?? "",
     permPoliceStation: d?.address?.permanent?.policeStation ?? "",
     permDistrict: d?.address?.permanent?.district ?? "",
 
-    // ── Family Environment ────────────────────────────────────────────────
+    // Family Environment
     HalalIncome: d?.familyEnvironment?.halalIncome ?? "",
     ParentsPrayer: d?.familyEnvironment?.parentsPrayer ?? "",
     Addiction: d?.familyEnvironment?.addiction ?? "",
@@ -285,7 +346,7 @@ export default function EditAdmissionApplication() {
     QuranRecitation: d?.familyEnvironment?.quranRecitation ?? "",
     Purdah: d?.familyEnvironment?.purdah ?? "",
 
-    // ── Behavior Skills ───────────────────────────────────────────────────
+    // Behavior Skills
     MobileUsage: d?.behaviorSkills?.mobileUsage ?? "",
     GeneralBehavior: d?.behaviorSkills?.generalBehavior ?? "",
     Obedience: d?.behaviorSkills?.obedience ?? "",
@@ -296,14 +357,14 @@ export default function EditAdmissionApplication() {
     ReligiousInterest: d?.behaviorSkills?.religiousInterest ?? "",
     AngerControl: d?.behaviorSkills?.angerControl ?? "",
 
-    // ── Documents — use ?? so false is NOT replaced by fallback ──────────
+    // Documents — ?? so false is preserved, not replaced
     photographs: d?.documents?.photographs ?? false,
     birthCertificate: d?.documents?.birthCertificate ?? false,
     markSheet: d?.documents?.markSheet ?? false,
     transferCertificate: d?.documents?.transferCertificate ?? false,
     characterCertificate: d?.documents?.characterCertificate ?? false,
 
-    // ── Terms ─────────────────────────────────────────────────────────────
+    // Terms
     termsAccepted: d?.termsAccepted ?? false,
   };
 
@@ -374,8 +435,17 @@ export default function EditAdmissionApplication() {
 
         <Divider sx={{ mb: 4 }} />
 
-        <CraftForm onSubmit={handleSubmit} defaultValues={defaultValues}>
+        {/*
+          ✅ key={d?._id} forces CraftForm to fully re-mount once real data
+             arrives, so all defaultValues (including className) are applied
+        */}
+        <CraftForm
+          onSubmit={handleSubmit}
+          defaultValues={defaultValues}
+          key={d?._id ?? "edit-form"}
+        >
           <Box sx={{ display: "flex", flexDirection: "column", gap: 4 }}>
+            {/* ══ Section 1 — Student Info ══ */}
             <Card variant="outlined" sx={{ borderRadius: 3 }}>
               <CardContent>
                 <Box
@@ -438,6 +508,7 @@ export default function EditAdmissionApplication() {
                         />
                       </Grid>
                       <Grid item xs={12} md={4}>
+                        {/* ✅ genderOptions must be string[] e.g. ["male","female"] */}
                         <CraftSelect
                           fullWidth
                           label="লিঙ্গ"
@@ -446,25 +517,27 @@ export default function EditAdmissionApplication() {
                           size="small"
                         />
                       </Grid>
+
+                      {/* ✅ Department — plain string[] */}
                       <Grid item xs={12} md={4}>
                         <CraftSelect
                           fullWidth
                           label="বিভাগ"
                           name="studentDept"
-                          items={departments}
+                          items={departmentItems}
                           size="small"
                           required
                         />
                       </Grid>
+
+                      {/* ✅ Class — filtered by department, defaultValue from API */}
                       <Grid item xs={12} md={4}>
-                        <CraftInput
-                          fullWidth
-                          label="Class"
-                          name="className"
-                          // items={classOption}
-                          size="small"
+                        <DepartmentAwareClassSelect
+                          defaultDept={defaultValues.studentDept}
+                          defaultClass={defaultValues.className}
                         />
                       </Grid>
+
                       <Grid item xs={12} md={4}>
                         <CraftInput
                           fullWidth
@@ -482,6 +555,7 @@ export default function EditAdmissionApplication() {
                         />
                       </Grid>
                       <Grid item xs={12} md={4}>
+                        {/* ✅ bloodGroups must be string[] e.g. ["A+","B+", ...] */}
                         <CraftSelect
                           fullWidth
                           label="রক্তের গ্রুপ"
@@ -504,9 +578,7 @@ export default function EditAdmissionApplication() {
               </CardContent>
             </Card>
 
-            {/* ══════════════════════════════════════════════════════
-                Section 2 — Previous Academic Information
-            ══════════════════════════════════════════════════════ */}
+            {/* ══ Section 2 — Academic Info ══ */}
             <Card variant="outlined" sx={{ borderRadius: 3 }}>
               <CardContent>
                 <Box
@@ -553,9 +625,7 @@ export default function EditAdmissionApplication() {
               </CardContent>
             </Card>
 
-            {/* ══════════════════════════════════════════════════════
-                Section 3 — Parent Information
-            ══════════════════════════════════════════════════════ */}
+            {/* ══ Section 3 — Parent Info ══ */}
             <Card variant="outlined" sx={{ borderRadius: 3 }}>
               <CardContent>
                 <Box
@@ -574,7 +644,7 @@ export default function EditAdmissionApplication() {
                   </Typography>
                 </Box>
 
-                {/* ── Father ── */}
+                {/* Father */}
                 <Typography
                   variant="subtitle1"
                   fontWeight="bold"
@@ -601,7 +671,6 @@ export default function EditAdmissionApplication() {
                     />
                   </Grid>
                   <Grid item xs={12} md={4}>
-                    {/* ✅ name="FatherJob" → defaultValues.FatherJob → parentInfo.father.profession */}
                     <CraftInput
                       fullWidth
                       label="পেশা"
@@ -653,7 +722,7 @@ export default function EditAdmissionApplication() {
                   </Grid>
                 </Grid>
 
-                {/* ── Mother ── */}
+                {/* Mother */}
                 <Typography
                   variant="subtitle1"
                   fontWeight="bold"
@@ -679,7 +748,6 @@ export default function EditAdmissionApplication() {
                     />
                   </Grid>
                   <Grid item xs={12} md={4}>
-                    {/* ✅ name="MotherJob" → defaultValues.MotherJob → parentInfo.mother.profession */}
                     <CraftInput
                       fullWidth
                       label="পেশা"
@@ -730,7 +798,7 @@ export default function EditAdmissionApplication() {
                   </Grid>
                 </Grid>
 
-                {/* ── Guardian ── */}
+                {/* Guardian */}
                 <Typography
                   variant="subtitle1"
                   fontWeight="bold"
@@ -780,7 +848,6 @@ export default function EditAdmissionApplication() {
                     />
                   </Grid>
                   <Grid item xs={12} md={4}>
-                    {/* ✅ name="guardianJob" → defaultValues.guardianJob → parentInfo.guardian.profession */}
                     <CraftInput
                       fullWidth
                       label="পেশা"
@@ -802,9 +869,7 @@ export default function EditAdmissionApplication() {
               </CardContent>
             </Card>
 
-            {/* ══════════════════════════════════════════════════════
-                Section 4 — Address Information
-            ══════════════════════════════════════════════════════ */}
+            {/* ══ Section 4 — Address ══ */}
             <Card variant="outlined" sx={{ borderRadius: 3 }}>
               <CardContent>
                 <Box
@@ -929,9 +994,7 @@ export default function EditAdmissionApplication() {
               </CardContent>
             </Card>
 
-            {/* ══════════════════════════════════════════════════════
-                Section 5 — Family Environment
-            ══════════════════════════════════════════════════════ */}
+            {/* ══ Section 5 — Family Environment ══ */}
             <Card variant="outlined" sx={{ borderRadius: 3 }}>
               <CardContent>
                 <Box
@@ -1002,9 +1065,7 @@ export default function EditAdmissionApplication() {
               </CardContent>
             </Card>
 
-            {/* ══════════════════════════════════════════════════════
-                Section 6 — Behavior & Skills
-            ══════════════════════════════════════════════════════ */}
+            {/* ══ Section 6 — Behavior & Skills ══ */}
             <Card variant="outlined" sx={{ borderRadius: 3 }}>
               <CardContent>
                 <Box
@@ -1100,9 +1161,7 @@ export default function EditAdmissionApplication() {
               </CardContent>
             </Card>
 
-            {/* ══════════════════════════════════════════════════════
-                Section 7 — Documents
-            ══════════════════════════════════════════════════════ */}
+            {/* ══ Section 7 — Documents ══ */}
             <Card variant="outlined" sx={{ borderRadius: 3 }}>
               <CardContent>
                 <Box
@@ -1169,9 +1228,9 @@ export default function EditAdmissionApplication() {
                   }}
                 >
                   <CraftSwitch
+                    checked
                     onChange={handleActiveChange}
                     color="primary"
-                    checked
                     name="termsAccepted"
                     label="আমি ভর্তির সকল শর্ত মেনে নিচ্ছি"
                   />

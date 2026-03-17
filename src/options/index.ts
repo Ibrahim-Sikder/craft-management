@@ -151,6 +151,35 @@ export const subjects = [
 ];
 
 export const departments = ["hifz", "academic"];
+export const academicClassValues = [
+  "Pre_one",
+  "One",
+  "Two",
+  "Three",
+  "Four_boys",
+  "Four_girls",
+  "Five",
+  "Six",
+  "Seven",
+  "Eight",
+];
+export const hifzClassValues = ["Nurani", "Nazera", "Hifz", "Sunani"];
+export const classOrder = [
+  "Pre_one",
+  "One",
+  "Two",
+  "Three",
+  "Four_boys",
+  "Four_girls",
+  "Five",
+  "Six",
+  "Seven",
+  "Eight",
+  "Nurani",
+  "Nazera",
+  "Hifz",
+  "Sunani",
+];
 export const designations = [
   "Principal",
   "Vice Principal",

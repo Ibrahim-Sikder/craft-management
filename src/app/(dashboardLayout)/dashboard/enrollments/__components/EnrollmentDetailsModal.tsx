@@ -8,6 +8,7 @@ import {
   DateRange,
   Description,
   Edit,
+  Email,
   FamilyRestroom,
   History,
   Payment,
@@ -52,7 +53,6 @@ interface TabPanelProps {
 
 function TabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
-
   return (
     <div
       role="tabpanel"
@@ -69,7 +69,7 @@ function TabPanel(props: TabPanelProps) {
 interface EnrollmentDetailsModalProps {
   open: boolean;
   setOpen: (open: boolean) => void;
-  enrollment: any;
+  enrollment: any; // flattened row with rawData
   activeTab: number;
   onTabChange: (tab: number) => void;
   onEdit: (enrollment: any) => void;
@@ -87,11 +87,65 @@ const EnrollmentDetailsModal: React.FC<EnrollmentDetailsModalProps> = ({
 }) => {
   if (!enrollment) return null;
 
-  console.log("enrollment details check", enrollment);
+  // Helper to safely get nested student data
+  const student = enrollment.student || enrollment.rawData?.student || {};
 
-  const handleClose = () => {
-    setOpen(false);
+  // ----- Data extraction helpers -----
+  const getValue = (field: string, fallback: any = "N/A") => {
+    return enrollment[field] ?? student[field] ?? fallback;
   };
+
+  const getClassName = () => {
+    // className can be an array of class objects or a string
+    if (
+      Array.isArray(enrollment.className) &&
+      enrollment.className.length > 0
+    ) {
+      const first = enrollment.className[0];
+      return first.className || first.label || first.name || "N/A";
+    }
+    if (typeof enrollment.className === "string") return enrollment.className;
+    if (enrollment.rawData?.className?.[0]?.className) {
+      return enrollment.rawData.className[0].className;
+    }
+    return "N/A";
+  };
+
+  const formatDate = (dateString?: string) => {
+    if (!dateString) return "N/A";
+    try {
+      return new Date(dateString).toLocaleDateString("en-BD", {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      });
+    } catch {
+      return "N/A";
+    }
+  };
+
+  // ----- Fee calculations -----
+  const fees = enrollment.fees || [];
+  const totalFees = fees.reduce(
+    (sum: number, f: any) => sum + (f.amount || 0),
+    0,
+  );
+  const totalPaid = fees.reduce(
+    (sum: number, f: any) => sum + (f.paidAmount || 0),
+    0,
+  );
+  const totalDue = fees.reduce(
+    (sum: number, f: any) => sum + (f.dueAmount || 0),
+    0,
+  );
+  const totalDiscount = fees.reduce(
+    (sum: number, f: any) => sum + (f.discount || 0),
+    0,
+  );
+
+  const paymentStatus =
+    enrollment.paymentStatus ||
+    (totalDue === 0 ? "paid" : totalPaid > 0 ? "partial" : "unpaid");
 
   const getPaymentStatusColor = (
     status: string,
@@ -109,109 +163,53 @@ const EnrollmentDetailsModal: React.FC<EnrollmentDetailsModalProps> = ({
     }
   };
 
-  const getPaymentStatusIcon = (
-    status: string,
-  ): React.ReactElement | undefined => {
+  const getPaymentStatusIcon = (status: string) => {
     switch (status?.toLowerCase()) {
       case "paid":
-        return <CheckCircle />;
+        return <CheckCircle fontSize="small" />;
       case "partial":
-        return <Pending />;
+        return <Pending fontSize="small" />;
       case "unpaid":
       case "pending":
-        return <Cancel />;
+        return <Cancel fontSize="small" />;
       default:
-        return undefined; // Return undefined instead of null
+        return undefined;
     }
   };
 
-  // Calculate total fees from fees array
-  const calculateTotalFees = () => {
-    if (!enrollment.fees || !Array.isArray(enrollment.fees)) return 0;
-    return enrollment.fees.reduce(
-      (sum: number, fee: any) => sum + (fee.amount || 0),
-      0,
-    );
+  // ----- Address display -----
+  const formatAddress = (addr: any) => {
+    if (!addr || typeof addr !== "object") return "N/A";
+    const parts = [
+      addr.village,
+      addr.postOffice,
+      addr.postCode && `-${addr.postCode}`,
+      addr.policeStation,
+      addr.district,
+    ].filter(Boolean);
+    return parts.join(", ") || "N/A";
   };
 
-  // Calculate total paid from fees array
-  const calculateTotalPaid = () => {
-    if (!enrollment.fees || !Array.isArray(enrollment.fees))
-      return enrollment.paidAmount || 0;
-    return enrollment.fees.reduce(
-      (sum: number, fee: any) => sum + (fee.paidAmount || 0),
-      0,
-    );
-  };
-
-  // Calculate total due from fees array
-  const calculateTotalDue = () => {
-    if (!enrollment.fees || !Array.isArray(enrollment.fees))
-      return enrollment.dueAmount || 0;
-    return enrollment.fees.reduce(
-      (sum: number, fee: any) => sum + (fee.dueAmount || 0),
-      0,
-    );
-  };
-
-  // Calculate total discount from fees array
-  const calculateTotalDiscount = () => {
-    if (!enrollment.fees || !Array.isArray(enrollment.fees))
-      return enrollment.totalDiscount || 0;
-    return enrollment.fees.reduce(
-      (sum: number, fee: any) => sum + (fee.discount || 0),
-      0,
-    );
-  };
-
-  const totalFees = calculateTotalFees();
-  const totalPaid = calculateTotalPaid();
-  const totalDue = calculateTotalDue();
-  const totalDiscount = calculateTotalDiscount();
-
-  // Format date
-  const formatDate = (dateString: string) => {
-    if (!dateString) return "N/A";
-    try {
-      return new Date(dateString).toLocaleDateString();
-    } catch {
-      return "N/A";
-    }
-  };
-
-  // Get class name
-  const getClassName = () => {
-    if (enrollment.className) {
-      if (
-        typeof enrollment.className === "object" &&
-        enrollment.className.className
-      ) {
-        return enrollment.className.className;
-      }
-      if (typeof enrollment.className === "string") {
-        return enrollment.className;
-      }
-    }
-    if (enrollment.rawData?.className?.[0]?.label) {
-      return enrollment.rawData.className[0].label;
-    }
-    return "N/A";
-  };
+  // ----- Handle close -----
+  const handleClose = () => setOpen(false);
 
   return (
     <Dialog open={open} onClose={handleClose} maxWidth="md" fullWidth>
       <DialogTitle>
         <Box display="flex" alignItems="center" justifyContent="space-between">
           <Box display="flex" alignItems="center" gap={2}>
-            <Avatar sx={{ bgcolor: "primary.main" }}>
+            <Avatar
+              src={enrollment.studentPhoto || student.studentPhoto}
+              sx={{ bgcolor: "primary.main", width: 48, height: 48 }}
+            >
               <Person />
             </Avatar>
             <Box>
               <Typography variant="h6">
-                {enrollment.studentName || enrollment.name}
+                {getValue("studentName", getValue("name", "Unknown"))}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                ID: {enrollment.studentId} • Class: {getClassName()}
+                ID: {getValue("studentId")} • Class: {getClassName()}
               </Typography>
             </Box>
           </Box>
@@ -222,7 +220,12 @@ const EnrollmentDetailsModal: React.FC<EnrollmentDetailsModalProps> = ({
       </DialogTitle>
 
       <DialogContent dividers>
-        <Tabs value={activeTab} onChange={(e, value) => onTabChange(value)}>
+        <Tabs
+          value={activeTab}
+          onChange={(_, v) => onTabChange(v)}
+          variant="scrollable"
+          scrollButtons="auto"
+        >
           <Tab icon={<Person />} label="Personal" />
           <Tab icon={<FamilyRestroom />} label="Family" />
           <Tab icon={<School />} label="Academic" />
@@ -231,8 +234,8 @@ const EnrollmentDetailsModal: React.FC<EnrollmentDetailsModalProps> = ({
           <Tab icon={<History />} label="History" />
         </Tabs>
 
+        {/* ========== PERSONAL TAB ========== */}
         <TabPanel value={activeTab} index={0}>
-          {/* Personal Information */}
           <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
               <Paper sx={{ p: 2 }}>
@@ -250,9 +253,7 @@ const EnrollmentDetailsModal: React.FC<EnrollmentDetailsModalProps> = ({
                     </ListItemIcon>
                     <ListItemText
                       primary="Full Name"
-                      secondary={
-                        enrollment.studentName || enrollment.name || "N/A"
-                      }
+                      secondary={getValue("studentName", getValue("name"))}
                     />
                   </ListItem>
                   <ListItem>
@@ -261,11 +262,7 @@ const EnrollmentDetailsModal: React.FC<EnrollmentDetailsModalProps> = ({
                     </ListItemIcon>
                     <ListItemText
                       primary="Name (Bangla)"
-                      secondary={
-                        enrollment.nameBangla ||
-                        enrollment.studentNameBangla ||
-                        "N/A"
-                      }
+                      secondary={getValue("nameBangla")}
                     />
                   </ListItem>
                   <ListItem>
@@ -274,9 +271,16 @@ const EnrollmentDetailsModal: React.FC<EnrollmentDetailsModalProps> = ({
                     </ListItemIcon>
                     <ListItemText
                       primary="Mobile"
-                      secondary={
-                        enrollment.mobileNo || enrollment.mobile || "N/A"
-                      }
+                      secondary={getValue("mobileNo", getValue("mobile"))}
+                    />
+                  </ListItem>
+                  <ListItem>
+                    <ListItemIcon>
+                      <Email fontSize="small" />
+                    </ListItemIcon>
+                    <ListItemText
+                      primary="Email"
+                      secondary={getValue("email", "N/A")}
                     />
                   </ListItem>
                   <ListItem>
@@ -285,9 +289,7 @@ const EnrollmentDetailsModal: React.FC<EnrollmentDetailsModalProps> = ({
                     </ListItemIcon>
                     <ListItemText
                       primary="Date of Birth"
-                      secondary={formatDate(
-                        enrollment.birthDate || enrollment.rawData?.birthDate,
-                      )}
+                      secondary={formatDate(getValue("birthDate"))}
                     />
                   </ListItem>
                   <ListItem>
@@ -296,7 +298,7 @@ const EnrollmentDetailsModal: React.FC<EnrollmentDetailsModalProps> = ({
                     </ListItemIcon>
                     <ListItemText
                       primary="Birth Registration No"
-                      secondary={enrollment.birthRegistrationNo || "N/A"}
+                      secondary={getValue("birthRegistrationNo")}
                     />
                   </ListItem>
                   <ListItem>
@@ -305,7 +307,7 @@ const EnrollmentDetailsModal: React.FC<EnrollmentDetailsModalProps> = ({
                     </ListItemIcon>
                     <ListItemText
                       primary="Blood Group"
-                      secondary={enrollment.bloodGroup || "N/A"}
+                      secondary={getValue("bloodGroup")}
                     />
                   </ListItem>
                   <ListItem>
@@ -314,7 +316,7 @@ const EnrollmentDetailsModal: React.FC<EnrollmentDetailsModalProps> = ({
                     </ListItemIcon>
                     <ListItemText
                       primary="Nationality"
-                      secondary={enrollment.nationality || "Bangladeshi"}
+                      secondary={getValue("nationality", "Bangladeshi")}
                     />
                   </ListItem>
                 </List>
@@ -336,9 +338,9 @@ const EnrollmentDetailsModal: React.FC<EnrollmentDetailsModalProps> = ({
                       Enrollment Status
                     </Typography>
                     <Chip
-                      label={enrollment.status || "active"}
+                      label={getValue("status", "active")}
                       color={
-                        enrollment.status === "active" ? "success" : "default"
+                        getValue("status") === "active" ? "success" : "default"
                       }
                       size="small"
                       sx={{ ml: 1 }}
@@ -349,16 +351,16 @@ const EnrollmentDetailsModal: React.FC<EnrollmentDetailsModalProps> = ({
                       Admission Type
                     </Typography>
                     <Chip
-                      label={enrollment.admissionType || "admission"}
+                      label={getValue("admissionType", "admission")}
                       color={
-                        enrollment.admissionType === "promotion"
+                        getValue("admissionType") === "promotion"
                           ? "success"
                           : "primary"
                       }
                       size="small"
                       sx={{ ml: 1 }}
                       icon={
-                        enrollment.admissionType === "promotion" ? (
+                        getValue("admissionType") === "promotion" ? (
                           <ArrowForward />
                         ) : undefined
                       }
@@ -369,9 +371,9 @@ const EnrollmentDetailsModal: React.FC<EnrollmentDetailsModalProps> = ({
                       Payment Status
                     </Typography>
                     <Chip
-                      label={enrollment.paymentStatus || "pending"}
-                      color={getPaymentStatusColor(enrollment.paymentStatus)}
-                      icon={getPaymentStatusIcon(enrollment.paymentStatus)}
+                      label={paymentStatus}
+                      color={getPaymentStatusColor(paymentStatus)}
+                      icon={getPaymentStatusIcon(paymentStatus)}
                       size="small"
                       sx={{ ml: 1 }}
                     />
@@ -381,11 +383,10 @@ const EnrollmentDetailsModal: React.FC<EnrollmentDetailsModalProps> = ({
                       Student Type
                     </Typography>
                     <Chip
-                      label={
-                        enrollment.studentType ||
-                        enrollment.category ||
-                        "Residential"
-                      }
+                      label={getValue(
+                        "studentType",
+                        getValue("category", "Residential"),
+                      )}
                       color="info"
                       size="small"
                       sx={{ ml: 1 }}
@@ -396,7 +397,7 @@ const EnrollmentDetailsModal: React.FC<EnrollmentDetailsModalProps> = ({
                       Department
                     </Typography>
                     <Chip
-                      label={enrollment.studentDepartment || "academic"}
+                      label={getValue("studentDepartment", "academic")}
                       color="secondary"
                       size="small"
                       sx={{ ml: 1 }}
@@ -408,8 +409,8 @@ const EnrollmentDetailsModal: React.FC<EnrollmentDetailsModalProps> = ({
           </Grid>
         </TabPanel>
 
+        {/* ========== FAMILY TAB ========== */}
         <TabPanel value={activeTab} index={1}>
-          {/* Family Information */}
           <Grid container spacing={3}>
             <Grid item xs={12} md={6}>
               <Paper sx={{ p: 2 }}>
@@ -424,37 +425,37 @@ const EnrollmentDetailsModal: React.FC<EnrollmentDetailsModalProps> = ({
                   <ListItem>
                     <ListItemText
                       primary="Name"
-                      secondary={enrollment.fatherName || "N/A"}
+                      secondary={getValue("fatherName")}
                     />
                   </ListItem>
                   <ListItem>
                     <ListItemText
                       primary="Name (Bangla)"
-                      secondary={enrollment.fatherNameBangla || "N/A"}
+                      secondary={getValue("fatherNameBangla")}
                     />
                   </ListItem>
                   <ListItem>
                     <ListItemText
                       primary="Mobile"
-                      secondary={enrollment.fatherMobile || "N/A"}
+                      secondary={getValue("fatherMobile")}
                     />
                   </ListItem>
                   <ListItem>
                     <ListItemText
                       primary="NID"
-                      secondary={enrollment.fatherNid || "N/A"}
+                      secondary={getValue("fatherNid")}
                     />
                   </ListItem>
                   <ListItem>
                     <ListItemText
                       primary="Profession"
-                      secondary={enrollment.fatherProfession || "N/A"}
+                      secondary={getValue("fatherProfession")}
                     />
                   </ListItem>
                   <ListItem>
                     <ListItemText
                       primary="Income"
-                      secondary={`৳${enrollment.fatherIncome?.toLocaleString() || "0"}`}
+                      secondary={`৳${getValue("fatherIncome", 0).toLocaleString()}`}
                     />
                   </ListItem>
                 </List>
@@ -474,45 +475,44 @@ const EnrollmentDetailsModal: React.FC<EnrollmentDetailsModalProps> = ({
                   <ListItem>
                     <ListItemText
                       primary="Name"
-                      secondary={enrollment.motherName || "N/A"}
+                      secondary={getValue("motherName")}
                     />
                   </ListItem>
                   <ListItem>
                     <ListItemText
                       primary="Name (Bangla)"
-                      secondary={enrollment.motherNameBangla || "N/A"}
+                      secondary={getValue("motherNameBangla")}
                     />
                   </ListItem>
                   <ListItem>
                     <ListItemText
                       primary="Mobile"
-                      secondary={enrollment.motherMobile || "N/A"}
+                      secondary={getValue("motherMobile")}
                     />
                   </ListItem>
                   <ListItem>
                     <ListItemText
                       primary="NID"
-                      secondary={enrollment.motherNid || "N/A"}
+                      secondary={getValue("motherNid")}
                     />
                   </ListItem>
                   <ListItem>
                     <ListItemText
                       primary="Profession"
-                      secondary={enrollment.motherProfession || "N/A"}
+                      secondary={getValue("motherProfession")}
                     />
                   </ListItem>
                   <ListItem>
                     <ListItemText
                       primary="Income"
-                      secondary={`৳${enrollment.motherIncome?.toLocaleString() || "0"}`}
+                      secondary={`৳${getValue("motherIncome", 0).toLocaleString()}`}
                     />
                   </ListItem>
                 </List>
               </Paper>
             </Grid>
 
-            {(enrollment.guardianInfo?.name ||
-              enrollment.guardianInfo?.relation) && (
+            {(enrollment.guardianInfo?.name || student.guardianInfo?.name) && (
               <Grid item xs={12}>
                 <Paper sx={{ p: 2 }}>
                   <Typography
@@ -523,38 +523,42 @@ const EnrollmentDetailsModal: React.FC<EnrollmentDetailsModalProps> = ({
                     Guardian Information
                   </Typography>
                   <List dense>
-                    {enrollment.guardianInfo?.name && (
-                      <ListItem>
-                        <ListItemText
-                          primary="Name"
-                          secondary={enrollment.guardianInfo.name}
-                        />
-                      </ListItem>
-                    )}
-                    {enrollment.guardianInfo?.relation && (
-                      <ListItem>
-                        <ListItemText
-                          primary="Relation"
-                          secondary={enrollment.guardianInfo.relation}
-                        />
-                      </ListItem>
-                    )}
-                    {enrollment.guardianInfo?.mobile && (
-                      <ListItem>
-                        <ListItemText
-                          primary="Mobile"
-                          secondary={enrollment.guardianInfo.mobile}
-                        />
-                      </ListItem>
-                    )}
-                    {enrollment.guardianInfo?.address && (
-                      <ListItem>
-                        <ListItemText
-                          primary="Address"
-                          secondary={enrollment.guardianInfo.address}
-                        />
-                      </ListItem>
-                    )}
+                    <ListItem>
+                      <ListItemText
+                        primary="Name"
+                        secondary={
+                          enrollment.guardianInfo?.name ||
+                          student.guardianInfo?.name
+                        }
+                      />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemText
+                        primary="Relation"
+                        secondary={
+                          enrollment.guardianInfo?.relation ||
+                          student.guardianInfo?.relation
+                        }
+                      />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemText
+                        primary="Mobile"
+                        secondary={
+                          enrollment.guardianInfo?.mobile ||
+                          student.guardianInfo?.mobile
+                        }
+                      />
+                    </ListItem>
+                    <ListItem>
+                      <ListItemText
+                        primary="Address"
+                        secondary={
+                          enrollment.guardianInfo?.address ||
+                          student.guardianInfo?.address
+                        }
+                      />
+                    </ListItem>
                   </List>
                 </Paper>
               </Grid>
@@ -562,8 +566,8 @@ const EnrollmentDetailsModal: React.FC<EnrollmentDetailsModalProps> = ({
           </Grid>
         </TabPanel>
 
+        {/* ========== ACADEMIC TAB ========== */}
         <TabPanel value={activeTab} index={2}>
-          {/* Academic Information */}
           <Paper sx={{ p: 3 }}>
             <Grid container spacing={3}>
               <Grid item xs={12} md={6}>
@@ -587,7 +591,7 @@ const EnrollmentDetailsModal: React.FC<EnrollmentDetailsModalProps> = ({
                     </ListItemIcon>
                     <ListItemText
                       primary="Department"
-                      secondary={enrollment.studentDepartment || "academic"}
+                      secondary={getValue("studentDepartment", "academic")}
                     />
                   </ListItem>
                   <ListItem>
@@ -596,11 +600,10 @@ const EnrollmentDetailsModal: React.FC<EnrollmentDetailsModalProps> = ({
                     </ListItemIcon>
                     <ListItemText
                       primary="Student Type"
-                      secondary={
-                        enrollment.studentType ||
-                        enrollment.category ||
-                        "Residential"
-                      }
+                      secondary={getValue(
+                        "studentType",
+                        getValue("category", "Residential"),
+                      )}
                     />
                   </ListItem>
                 </List>
@@ -618,33 +621,34 @@ const EnrollmentDetailsModal: React.FC<EnrollmentDetailsModalProps> = ({
                   <ListItem>
                     <ListItemText
                       primary="Roll Number"
-                      secondary={
-                        enrollment.rollNumber || enrollment.roll || "N/A"
-                      }
+                      secondary={getValue(
+                        "rollNumber",
+                        getValue("roll", "N/A"),
+                      )}
                     />
                   </ListItem>
                   <ListItem>
                     <ListItemText
                       primary="Section"
-                      secondary={enrollment.section || "N/A"}
+                      secondary={getValue("section", "N/A")}
                     />
                   </ListItem>
                   <ListItem>
                     <ListItemText
                       primary="Session"
-                      secondary={enrollment.session || "N/A"}
+                      secondary={getValue("session", "N/A")}
                     />
                   </ListItem>
                   <ListItem>
                     <ListItemText
                       primary="Batch/Group"
-                      secondary={enrollment.batch || enrollment.group || "N/A"}
+                      secondary={getValue("batch", getValue("group", "N/A"))}
                     />
                   </ListItem>
                 </List>
               </Grid>
 
-              {enrollment.previousSchool && (
+              {enrollment.previousSchool?.institution && (
                 <Grid item xs={12}>
                   <Typography
                     variant="subtitle2"
@@ -657,9 +661,7 @@ const EnrollmentDetailsModal: React.FC<EnrollmentDetailsModalProps> = ({
                     <ListItem>
                       <ListItemText
                         primary="Institution"
-                        secondary={
-                          enrollment.previousSchool.institution || "N/A"
-                        }
+                        secondary={enrollment.previousSchool.institution}
                       />
                     </ListItem>
                     <ListItem>
@@ -675,8 +677,8 @@ const EnrollmentDetailsModal: React.FC<EnrollmentDetailsModalProps> = ({
           </Paper>
         </TabPanel>
 
+        {/* ========== FEES TAB ========== */}
         <TabPanel value={activeTab} index={3}>
-          {/* Fees Information */}
           <Paper sx={{ p: 3 }}>
             <Box
               display="flex"
@@ -687,55 +689,32 @@ const EnrollmentDetailsModal: React.FC<EnrollmentDetailsModalProps> = ({
               <Typography variant="h6">Fee Summary</Typography>
               <Chip
                 label={`৳${totalPaid.toLocaleString()} / ৳${totalFees.toLocaleString()}`}
-                color={getPaymentStatusColor(enrollment.paymentStatus)}
+                color={getPaymentStatusColor(paymentStatus)}
                 icon={<AttachMoney />}
               />
             </Box>
 
             <Grid container spacing={2} mb={3}>
-              <Grid item xs={6} sm={3}>
-                <Paper sx={{ p: 2, textAlign: "center" }}>
-                  <Typography variant="caption" color="text.secondary">
-                    Total Fees
-                  </Typography>
-                  <Typography variant="h6" color="primary.main">
-                    ৳{totalFees.toLocaleString()}
-                  </Typography>
-                </Paper>
-              </Grid>
-              <Grid item xs={6} sm={3}>
-                <Paper sx={{ p: 2, textAlign: "center" }}>
-                  <Typography variant="caption" color="text.secondary">
-                    Paid Amount
-                  </Typography>
-                  <Typography variant="h6" color="success.main">
-                    ৳{totalPaid.toLocaleString()}
-                  </Typography>
-                </Paper>
-              </Grid>
-              <Grid item xs={6} sm={3}>
-                <Paper sx={{ p: 2, textAlign: "center" }}>
-                  <Typography variant="caption" color="text.secondary">
-                    Due Amount
-                  </Typography>
-                  <Typography variant="h6" color="error.main">
-                    ৳{totalDue.toLocaleString()}
-                  </Typography>
-                </Paper>
-              </Grid>
-              <Grid item xs={6} sm={3}>
-                <Paper sx={{ p: 2, textAlign: "center" }}>
-                  <Typography variant="caption" color="text.secondary">
-                    Discount
-                  </Typography>
-                  <Typography variant="h6" color="warning.main">
-                    ৳{totalDiscount.toLocaleString()}
-                  </Typography>
-                </Paper>
-              </Grid>
+              {[
+                { label: "Total Fees", value: totalFees, color: "primary" },
+                { label: "Paid Amount", value: totalPaid, color: "success" },
+                { label: "Due Amount", value: totalDue, color: "error" },
+                { label: "Discount", value: totalDiscount, color: "warning" },
+              ].map((item) => (
+                <Grid item xs={6} sm={3} key={item.label}>
+                  <Paper sx={{ p: 2, textAlign: "center" }}>
+                    <Typography variant="caption" color="text.secondary">
+                      {item.label}
+                    </Typography>
+                    <Typography variant="h6" color={`${item.color}.main`}>
+                      ৳{item.value.toLocaleString()}
+                    </Typography>
+                  </Paper>
+                </Grid>
+              ))}
             </Grid>
 
-            {enrollment.fees && enrollment.fees.length > 0 && (
+            {fees.length > 0 && (
               <>
                 <Typography variant="subtitle1" gutterBottom>
                   Fee Details
@@ -754,21 +733,21 @@ const EnrollmentDetailsModal: React.FC<EnrollmentDetailsModalProps> = ({
                       </TableRow>
                     </TableHead>
                     <TableBody>
-                      {enrollment.fees.map((fee: any, index: number) => (
-                        <TableRow key={index}>
+                      {fees.map((fee: any, idx: number) => (
+                        <TableRow key={idx}>
                           <TableCell>{fee.feeType || "N/A"}</TableCell>
                           <TableCell>{fee.month || "N/A"}</TableCell>
                           <TableCell align="right">
-                            ৳{fee.amount?.toLocaleString() || "0"}
+                            ৳{(fee.amount || 0).toLocaleString()}
                           </TableCell>
                           <TableCell align="right">
-                            ৳{fee.discount?.toLocaleString() || "0"}
+                            ৳{(fee.discount || 0).toLocaleString()}
                           </TableCell>
                           <TableCell align="right">
-                            ৳{fee.paidAmount?.toLocaleString() || "0"}
+                            ৳{(fee.paidAmount || 0).toLocaleString()}
                           </TableCell>
                           <TableCell align="right">
-                            ৳{fee.dueAmount?.toLocaleString() || "0"}
+                            ৳{(fee.dueAmount || 0).toLocaleString()}
                           </TableCell>
                           <TableCell>
                             <Chip
@@ -787,8 +766,8 @@ const EnrollmentDetailsModal: React.FC<EnrollmentDetailsModalProps> = ({
           </Paper>
         </TabPanel>
 
+        {/* ========== DOCUMENTS TAB ========== */}
         <TabPanel value={activeTab} index={4}>
-          {/* Documents */}
           <Paper sx={{ p: 3 }}>
             <Typography variant="subtitle1" gutterBottom>
               Submitted Documents
@@ -838,48 +817,31 @@ const EnrollmentDetailsModal: React.FC<EnrollmentDetailsModalProps> = ({
                 Address Information
               </Typography>
               <Grid container spacing={2}>
-                {enrollment.presentAddress && (
+                {(enrollment.presentAddress || student.presentAddress) && (
                   <Grid item xs={12} md={6}>
                     <Paper sx={{ p: 2 }}>
                       <Typography variant="subtitle2" gutterBottom>
                         Present Address
                       </Typography>
                       <Typography variant="body2">
-                        {enrollment.presentAddress.village &&
-                          `Village: ${enrollment.presentAddress.village}`}
-                        {enrollment.presentAddress.postOffice &&
-                          `, Post: ${enrollment.presentAddress.postOffice}`}
-                        {enrollment.presentAddress.postCode &&
-                          `-${enrollment.presentAddress.postCode}`}
-                      </Typography>
-                      <Typography variant="body2">
-                        {enrollment.presentAddress.policeStation &&
-                          `Thana: ${enrollment.presentAddress.policeStation}`}
-                        {enrollment.presentAddress.district &&
-                          `, District: ${enrollment.presentAddress.district}`}
+                        {formatAddress(
+                          enrollment.presentAddress || student.presentAddress,
+                        )}
                       </Typography>
                     </Paper>
                   </Grid>
                 )}
-                {enrollment.permanentAddress && (
+                {(enrollment.permanentAddress || student.permanentAddress) && (
                   <Grid item xs={12} md={6}>
                     <Paper sx={{ p: 2 }}>
                       <Typography variant="subtitle2" gutterBottom>
                         Permanent Address
                       </Typography>
                       <Typography variant="body2">
-                        {enrollment.permanentAddress.village &&
-                          `Village: ${enrollment.permanentAddress.village}`}
-                        {enrollment.permanentAddress.postOffice &&
-                          `, Post: ${enrollment.permanentAddress.postOffice}`}
-                        {enrollment.permanentAddress.postCode &&
-                          `-${enrollment.permanentAddress.postCode}`}
-                      </Typography>
-                      <Typography variant="body2">
-                        {enrollment.permanentAddress.policeStation &&
-                          `Thana: ${enrollment.permanentAddress.policeStation}`}
-                        {enrollment.permanentAddress.district &&
-                          `, District: ${enrollment.permanentAddress.district}`}
+                        {formatAddress(
+                          enrollment.permanentAddress ||
+                            student.permanentAddress,
+                        )}
                       </Typography>
                     </Paper>
                   </Grid>
@@ -889,8 +851,8 @@ const EnrollmentDetailsModal: React.FC<EnrollmentDetailsModalProps> = ({
           </Paper>
         </TabPanel>
 
+        {/* ========== HISTORY TAB ========== */}
         <TabPanel value={activeTab} index={5}>
-          {/* History */}
           <Paper sx={{ p: 3 }}>
             <Typography variant="subtitle1" gutterBottom>
               Enrollment History

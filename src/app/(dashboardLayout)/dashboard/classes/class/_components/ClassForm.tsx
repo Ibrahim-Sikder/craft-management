@@ -109,7 +109,7 @@ export default function ClassForm({ id }: ClassProps) {
       }
     } catch (err) {
       toast.error(
-        err instanceof Error ? err.message : "Failed to process class!"
+        err instanceof Error ? err.message : "Class name already exists!",
       );
     }
   };

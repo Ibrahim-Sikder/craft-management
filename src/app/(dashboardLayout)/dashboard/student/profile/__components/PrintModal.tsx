@@ -3,12 +3,18 @@
 
 import CraftModal from "@/components/Shared/Modal";
 import { Description, MapRounded, Phone } from "@mui/icons-material";
-import { Box, Button } from "@mui/material";
-import { useRef } from "react";
+import { Box, Button, Typography } from "@mui/material";
+import { useEffect, useRef } from "react";
 import { useReactToPrint } from "react-to-print";
 
 const PrintModal = ({ open, setOpen, receipt }: any) => {
   const componentRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    if (open) {
+      console.log("PrintModal opened with receipt:", receipt?.receiptNo);
+    }
+  }, [open, receipt]);
 
   const handlePrint = useReactToPrint({
     contentRef: componentRef,
@@ -18,7 +24,6 @@ const PrintModal = ({ open, setOpen, receipt }: any) => {
         size: A4;
         margin: 0;
       }
-
       body {
         margin: 0;
         padding: 0;
@@ -42,8 +47,6 @@ const PrintModal = ({ open, setOpen, receipt }: any) => {
   };
 
   const calculateTotal = () => {
-    // FIX: If receipt.fees exists and has items, use them.
-    // Otherwise, use the root receipt totals.
     if (
       receipt?.fees &&
       Array.isArray(receipt.fees) &&
@@ -54,12 +57,10 @@ const PrintModal = ({ open, setOpen, receipt }: any) => {
         0,
       );
     }
-    // Fallback to root totals if no items found
     return receipt?.totalAmount || receipt?.paidAmount || 0;
   };
 
   const getDisplayFees = () => {
-    // FIX: If we have fee items, use them. Otherwise create a summary row.
     if (
       receipt?.fees &&
       Array.isArray(receipt.fees) &&
@@ -67,13 +68,10 @@ const PrintModal = ({ open, setOpen, receipt }: any) => {
     ) {
       return receipt.fees;
     }
-
-    // Fallback: Create a summary row from enrollment totals
     return [
       {
-        feeType: "Admission / Enrollment Fees",
-        amount: receipt?.totalAmount || 0,
-        paidAmount: receipt?.paidAmount || 0,
+        feeType: "Total Payment",
+        paidAmount: receipt?.totalAmount || 0,
         quantity: 1,
       },
     ];
@@ -106,21 +104,42 @@ const PrintModal = ({ open, setOpen, receipt }: any) => {
   const isMonthSelected = (monthIndex: number) =>
     monthIndex === getPaymentMonthIndex();
 
-  // Get Class Name robustly
+  // Improved getClassName to handle objects
   const getClassName = () => {
-    if (Array.isArray(receipt?.className)) {
-      return receipt.className[0]?.label || receipt.className[0] || "N/A";
+    const className = receipt?.className || receipt?.studentClass;
+    if (!className) return "N/A";
+    if (typeof className === "string") return className;
+    if (Array.isArray(className)) {
+      const first = className[0];
+      if (typeof first === "string") return first;
+      if (first && typeof first === "object") {
+        return first.label || first.name || first.className || "N/A";
+      }
+      return "N/A";
     }
-    return receipt?.className || receipt?.studentClass || "N/A";
+    if (typeof className === "object") {
+      return className.label || className.name || className.className || "N/A";
+    }
+    return "N/A";
   };
 
-  const getStudentName = () => {
-    return receipt?.studentName || receipt?.name || "N/A";
-  };
+  const getStudentName = () => receipt?.studentName || receipt?.name || "N/A";
+  const getRoll = () => receipt?.rollNumber || receipt?.studentRoll || "N/A";
 
-  const getRoll = () => {
-    return receipt?.rollNumber || receipt?.studentRoll || "N/A";
-  };
+  if (!receipt) {
+    return (
+      <CraftModal
+        open={open}
+        setOpen={setOpen}
+        title="Print Money Receipt"
+        size="xl"
+      >
+        <Box p={3}>
+          <Typography>No receipt data available.</Typography>
+        </Box>
+      </CraftModal>
+    );
+  }
 
   return (
     <CraftModal
@@ -144,19 +163,15 @@ const PrintModal = ({ open, setOpen, receipt }: any) => {
       }}
     >
       <Box className="p-4 flex gap-4 h-full overflow-hidden">
-        {/* --- RIGHT SIDE: PRINT PREVIEW --- */}
+        {/* RIGHT SIDE: PRINT PREVIEW */}
         <Box className="flex-1 bg-gray-100 rounded-lg p-4 overflow-y-auto flex justify-center">
-          <div ref={componentRef} className="w-full max-w-[850px]">
+          <div
+            ref={componentRef}
+            className="w-full max-w-[850px]"
+            style={{ minHeight: "700px" }}
+          >
             {/* PRINTABLE AREA START */}
-            <div className="bg-white shadow-xl overflow-hidden text-black font-bengali relative">
-              {/* Decorative Waves */}
-              <div className="absolute top-0 right-0 w-full h-[80px] z-0 overflow-hidden">
-                <div className="absolute right-0 top-0 w-[63%] h-full bg-[#e5daf8] rounded-bl-[120px] opacity-90" />
-                <div className="absolute right-0 top-0 w-[55%] h-full bg-[#8b6bbd] rounded-bl-[160px] opacity-90" />
-                <div className="absolute right-0 top-0 w-[45%] h-full bg-[#6a4aa3] rounded-bl-[160px] opacity-80" />
-                <div className="absolute right-0 top-0 w-[35%] h-full bg-[#4c2a70] rounded-bl-[160px]" />
-              </div>
-
+            <div className="bg-white shadow-xl overflow-hidden text-black font-bengali relative h-full">
               <div className="p-8 pb-4 relative z-10">
                 {/* Header */}
                 <div className="flex items-center gap-4 mb-6">
@@ -259,7 +274,6 @@ const PrintModal = ({ open, setOpen, receipt }: any) => {
                           </td>
                         </tr>
                       ))}
-
                       {getDisplayFees().length > 0 && (
                         <tr className="font-bold bg-gray-200">
                           <td
@@ -366,7 +380,6 @@ const PrintModal = ({ open, setOpen, receipt }: any) => {
                       </p>
                     </div>
                   </div>
-
                   <div className="text-center">
                     <div className="w-32 border-t border-black mb-1"></div>
                     <p className="text-sm font-semibold">আদায়কারীর স্বাক্ষর</p>

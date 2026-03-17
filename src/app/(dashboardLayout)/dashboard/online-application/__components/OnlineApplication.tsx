@@ -44,14 +44,8 @@ import { TAdmissionStatus } from "@/interface/admission";
 import { formatDate, formatShortDate } from "@/utils/formateDate";
 import { AdmissionApplicationListProps, ApplicationRow } from "@/types/apply";
 import { generatePDFFromData } from "@/utils/pdfGenerator";
+import { classOrder } from "@/options";
 
-// ══════════════════════════════════════════════════════════════════════════════
-// ✅ FIXED: mapApplicationToFormData
-//    — addr.present  (not addr.presentAddress)
-//    — addr.permanent (not addr.permanentAddress)
-//    — father.profession (not father.occupation)
-//    — mother.profession (not mother.occupation)
-// ══════════════════════════════════════════════════════════════════════════════
 const mapApplicationToFormData = (app: any): Record<string, any> => {
   const student = app.studentInfo || {};
   const parent = app.parentInfo || {};
@@ -60,7 +54,6 @@ const mapApplicationToFormData = (app: any): Record<string, any> => {
   const academic = app.academicInfo || {};
   const addr = app.address || {};
 
-  // ✅ KEY FIX: your backend uses addr.present / addr.permanent
   const present = addr.present || addr.presentAddress || {};
   const permanent = addr.permanent || addr.permanentAddress || {};
 
@@ -82,24 +75,21 @@ const mapApplicationToFormData = (app: any): Record<string, any> => {
     bloodGroup: student.bloodGroup || "",
     session: academic.session || student.session || "",
 
-    // ✅ FIXED: profession (not occupation)
     FatherNameBangla: father.nameBangla || "",
     FatherName: father.nameEnglish || "",
-    FatherJob: father.profession || father.occupation || "", // both fallbacks
+    FatherJob: father.profession || father.occupation || "",
     FatherMobile: father.mobile || "",
 
     MotherNameBangla: mother.nameBangla || "",
     MotherName: mother.nameEnglish || "",
-    MotherJob: mother.profession || mother.occupation || "", // both fallbacks
+    MotherJob: mother.profession || mother.occupation || "",
     MotherMobile: mother.mobile || "",
 
-    // ✅ FIXED: present address keys
     village: present.village || "",
     postOffice: present.postOffice || "",
     policeStation: present.policeStation || "",
     district: present.district || "",
 
-    // ✅ FIXED: permanent address keys
     permVillage: permanent.village || "",
     permPostOffice: permanent.postOffice || "",
     permPoliceStation: permanent.policeStation || "",
@@ -124,8 +114,6 @@ const mapApplicationToFormData = (app: any): Record<string, any> => {
     termsAccepted: app.termsAccepted || false,
   };
 };
-
-// ─── Helper Components ──────────────────────────────────────────────────────
 
 const StatusChip = ({ status }: { status: TAdmissionStatus }) => {
   const statusConfig: Record<
@@ -342,21 +330,7 @@ export default function AdmissionApplicationList({
     });
   }, [data]);
 
-  const classOrder = [
-    "Pre_one",
-    "One",
-    "Tow",
-    "Three",
-    "Four_boys",
-    "Four_girls",
-    "Five",
-    "Six",
-    "Seven",
-    "Eight",
-    "Nazera",
-    "Hifz",
-  ];
-
+  // ─── Class filter options with the exact order from ALL_CLASSES ─────────────
   const classFilterOptions = useMemo(() => {
     const seen = new Set<string>();
     const opts: { label: string; value: string }[] = [];
@@ -366,12 +340,13 @@ export default function AdmissionApplicationList({
         opts.push({ label: r.class, value: r.class });
       }
     });
+
     return opts.sort((a, b) => {
-      const ia = classOrder.indexOf(a.value);
-      const ib = classOrder.indexOf(b.value);
-      if (ia !== -1 && ib !== -1) return ia - ib;
-      if (ia !== -1) return -1;
-      if (ib !== -1) return 1;
+      const indexA = classOrder.indexOf(a.value);
+      const indexB = classOrder.indexOf(b.value);
+      if (indexA !== -1 && indexB !== -1) return indexA - indexB;
+      if (indexA !== -1) return -1;
+      if (indexB !== -1) return 1;
       return a.label.localeCompare(b.label);
     });
   }, [tableData]);
@@ -398,9 +373,12 @@ export default function AdmissionApplicationList({
         Swal.fire("Error", "Application ID not found", "error");
         return;
       }
-      router.push(`/dashboard/online-application/edit?id=${row._id}`);
+      // from = current page type (pending, approved, rejected, enrolled)
+      router.push(
+        `/dashboard/online-application/edit?id=${row._id}&from=${type}`,
+      );
     },
-    [router],
+    [router, type],
   );
 
   const handleDelete = useCallback(
@@ -759,7 +737,7 @@ export default function AdmissionApplicationList({
         minWidth: isMobile ? 70 : 100,
         sortable: true,
         filterable: true,
-        filterOptions: classFilterOptions,
+        filterOptions: classFilterOptions, // now using the sorted options
         render: (row: ApplicationRow) => (
           <Typography
             variant="body2"

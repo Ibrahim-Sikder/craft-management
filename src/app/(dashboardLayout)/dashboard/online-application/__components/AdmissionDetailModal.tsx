@@ -478,16 +478,6 @@ export const AdmissionDetailModal = ({
                           />
                         }
                       />
-                      <InfoRow
-                        label="মোবাইল (ছাত্র)"
-                        value={displayMobile}
-                        icon={
-                          <LocalPhone
-                            fontSize="small"
-                            sx={{ color: theme.palette.success.main }}
-                          />
-                        }
-                      />
                     </TableBody>
                   </Table>
                 </TableContainer>
