@@ -10,7 +10,6 @@
 // import FileUploadWithIcon from "@/components/Forms/Upload";
 // import CraftInputWithIcon from "@/components/Forms/inputWithIcon";
 // import CraftSelectWithIcon from "@/components/Forms/selectWithIcon";
-// import { LoadingState } from "@/components/common/LoadingState";
 // import { useAcademicOption } from "@/hooks/useAcademicOption";
 // import { bloodGroups } from "@/options";
 // import {
@@ -19,7 +18,10 @@
 //   useUpdateEnrollmentMutation,
 // } from "@/redux/api/enrollmentApi";
 // import { useGetAllStudentsQuery } from "@/redux/api/studentApi";
-// import { useGetAllAdmissionApplicationsQuery } from "@/redux/api/admissionApplication";
+// import {
+//   useGetAllAdmissionApplicationsQuery,
+//   useGetSingleAdmissionApplicationQuery,
+// } from "@/redux/api/admissionApplication";
 // import {
 //   AccessTime,
 //   AccountCircle,
@@ -50,8 +52,6 @@
 //   Print,
 //   Assignment,
 //   FileCopy,
-//   Info,
-//   Warning,
 // } from "@mui/icons-material";
 // import {
 //   Alert,
@@ -64,7 +64,6 @@
 //   CircularProgress,
 //   Container,
 //   Dialog,
-//   DialogTitle,
 //   DialogContent,
 //   DialogActions,
 //   FormControlLabel,
@@ -83,7 +82,7 @@
 // } from "@mui/material";
 // import { useRouter, useSearchParams } from "next/navigation";
 // import { useEffect, useState, useCallback } from "react";
-// import { useFieldArray, useFormContext, useWatch } from "react-hook-form";
+// import { useFieldArray, useFormContext } from "react-hook-form";
 // import toast from "react-hot-toast";
 // import PrintModal from "../../student/profile/__components/PrintModal";
 // import AddFeeModal from "../../student/profile/__components/AddFeeModal";
@@ -112,9 +111,6 @@
 //   },
 // };
 
-// // ─────────────────────────────────────────────────────────────────────────────
-// // SMART STEP DETECTION
-// // ─────────────────────────────────────────────────────────────────────────────
 // const getFirstIncompleteStep = (formData: any): number => {
 //   if (
 //     !formData.studentName ||
@@ -133,7 +129,6 @@
 //   return 4;
 // };
 
-// // --- Admission Application Selector Component ---
 // const AdmissionApplicationSelector = ({
 //   onSelect,
 // }: {
@@ -312,6 +307,10 @@
 //             isSelected: true,
 //             discount: item.discount || 0,
 //             isMonthly: typeLabel.toLowerCase().includes("monthly"),
+//             discountRangeStart: "",
+//             discountRangeEnd: "",
+//             discountRangeAmount: 0,
+//             _tempId: Date.now() + Math.random(),
 //           });
 //         });
 
@@ -386,11 +385,6 @@
 //       return Array.from(types).map((t) => ({ label: t, value: t }));
 //     }
 //     return options;
-//   };
-
-//   const calculateTotalAmount = (feeItems: any[]) => {
-//     if (!Array.isArray(feeItems)) return 0;
-//     return feeItems?.reduce((total, item) => total + (item.amount || 0), 0);
 //   };
 
 //   useEffect(() => {
@@ -469,14 +463,10 @@
 //               ? item.feeType
 //               : item.feeType?.value || "";
 
-//           // Determine if this is Admission Fee (case insensitive check)
 //           const isAdmissionFee = typeLabel
 //             .toLowerCase()
 //             .includes("admission fee");
 
-//           // Only include items based on the switch state:
-//           // - If selectAllFees is true: include ALL items
-//           // - If selectAllFees is false: include ONLY Admission Fee items
 //           if (selectAllFees || isAdmissionFee) {
 //             feeItems.push({
 //               feeType:
@@ -485,21 +475,22 @@
 //                   : item.feeType,
 //               amount: item.amount,
 //               advanceAmount: "",
-//               isSelected: true, // Auto-select all included items
+//               isSelected: true,
 //               discount: item.discount || 0,
 //               isMonthly: typeLabel.toLowerCase().includes("monthly"),
+//               discountRangeStart: "",
+//               discountRangeEnd: "",
+//               discountRangeAmount: 0,
+//               _tempId: Date.now() + Math.random(),
 //             });
 //           }
 //         });
 
 //         setValue(`fees.${index}.feeItems`, feeItems);
-
-//         // Calculate total based on all items (they're all selected)
 //         const totalAmount = feeItems.reduce(
 //           (sum: number, item: any) => sum + (item.amount || 0),
 //           0,
 //         );
-
 //         setValue(`fees.${index}.feeAmount`, totalAmount.toString());
 
 //         toast.success(
@@ -517,14 +508,13 @@
 //     }
 //   };
 
-//   const removeFeeItem = (feeIndex: number, itemIndex: number) => {
+//   const removeFeeItem = (feeIndex: number, tempId: number) => {
 //     const currentFeeItems = watch(`fees.${feeIndex}.feeItems`) || [];
 //     const newFeeItems = currentFeeItems.filter(
-//       (_: any, i: number) => i !== itemIndex,
+//       (item: any) => item._tempId !== tempId,
 //     );
 //     setValue(`fees.${feeIndex}.feeItems`, newFeeItems);
 
-//     // Calculate total based on selected items
 //     const selectedTotal = newFeeItems
 //       .filter((item: any) => item.isSelected)
 //       .reduce((sum: number, item: any) => sum + (item.amount || 0), 0);
@@ -544,7 +534,6 @@
 //       updatedItems[itemIndex] = { ...updatedItems[itemIndex], [field]: value };
 //       setValue(`fees.${feeIndex}.feeItems`, updatedItems);
 
-//       // Recalculate total when amount or selection changes
 //       if (field === "amount" || field === "isSelected" || field === "feeType") {
 //         const selectedTotal = updatedItems
 //           .filter((item: any) => item.isSelected)
@@ -565,55 +554,40 @@
 //       toast.error("Please select start and end month");
 //       return;
 //     }
+
+//     const startIdx = MONTHS.indexOf(startMonth);
+//     const endIdx = MONTHS.indexOf(endMonth);
+
+//     if (startIdx === -1 || endIdx === -1) {
+//       toast.error("Invalid month selection");
+//       return;
+//     }
+
+//     const actualStart = startIdx <= endIdx ? startMonth : endMonth;
+//     const actualEnd = startIdx <= endIdx ? endMonth : startMonth;
+
 //     setValue(
 //       `fees.${feeIndex}.feeItems.${itemIndex}.discountRangeStart`,
-//       startMonth,
+//       actualStart,
 //     );
 //     setValue(
 //       `fees.${feeIndex}.feeItems.${itemIndex}.discountRangeEnd`,
-//       endMonth,
+//       actualEnd,
 //     );
 //     setValue(
 //       `fees.${feeIndex}.feeItems.${itemIndex}.discountRangeAmount`,
 //       amount,
 //     );
+
 //     toast.success(
-//       `Discount range set: ${startMonth} to ${endMonth} (৳${amount}/month)`,
+//       `Discount range set: ${actualStart} to ${actualEnd} (৳${amount}/month)`,
 //     );
 //   };
 
-//   const handleSelectAllForCategory = (feeIndex: number, checked: boolean) => {
-//     const feeItems = watch(`fees.${feeIndex}.feeItems`) || [];
-//     const updatedItems = feeItems.map((item: any) => ({
-//       ...item,
-//       isSelected: checked,
-//     }));
-
-//     setValue(`fees.${feeIndex}.feeItems`, updatedItems);
-
-//     const selectedTotal = updatedItems
-//       .filter((item: any) => item.isSelected)
-//       .reduce((sum: number, item: any) => sum + (item.amount || 0), 0);
-
-//     setValue(`fees.${feeIndex}.feeAmount`, selectedTotal.toString());
-
-//     toast.success(
-//       checked
-//         ? "All items selected for this category"
-//         : "All items deselected for this category",
-//     );
-//   };
-
-//   // Effect to handle switching between "Admission Only" and "All Fees" for existing categories
 //   useEffect(() => {
-//     // This effect runs when selectAllFees changes
-//     // It will update all existing fee categories to show only Admission Fee items
-//     // when switching to "Admission Only" mode
-
 //     const fees = watch("fees") || [];
 
 //     fees.forEach((fee: any, index: number) => {
-//       // Only process if there's a category selected and we have fee items
 //       if (
 //         fee.category &&
 //         fee.category.length > 0 &&
@@ -649,12 +623,10 @@
 //                 ? item.feeType
 //                 : item.feeType?.value || "";
 
-//             // Determine if this is Admission Fee
 //             const isAdmissionFee = typeLabel
 //               .toLowerCase()
 //               .includes("admission fee");
 
-//             // Only include items based on the switch state
 //             if (selectAllFees || isAdmissionFee) {
 //               feeItems.push({
 //                 feeType:
@@ -666,6 +638,10 @@
 //                 isSelected: true,
 //                 discount: item.discount || 0,
 //                 isMonthly: typeLabel.toLowerCase().includes("monthly"),
+//                 discountRangeStart: "",
+//                 discountRangeEnd: "",
+//                 discountRangeAmount: 0,
+//                 _tempId: Date.now() + Math.random(),
 //               });
 //             }
 //           });
@@ -682,7 +658,6 @@
 //       }
 //     });
 
-//     // Optional: Show a toast notification when switching modes
 //     if (fees.length > 0) {
 //       toast.success(
 //         selectAllFees
@@ -724,9 +699,6 @@
 //           >
 //             Fee Details
 //           </Typography>
-//           <Typography variant="caption" color="text.secondary">
-//             Manage fee categories and discounts
-//           </Typography>
 //         </Box>
 //         <Box sx={{ display: "flex", alignItems: "center", gap: 3 }}>
 //           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -755,28 +727,6 @@
 //               All Fees
 //             </Typography>
 //           </Box>
-//           <Button
-//             onClick={addFeeField}
-//             size="medium"
-//             disabled={!mainClassName || mainClassName.length === 0}
-//             sx={{
-//               textTransform: "none",
-//               fontWeight: "bold",
-//               bgcolor:
-//                 !mainClassName || mainClassName.length === 0
-//                   ? theme.palette.action.disabled
-//                   : theme.palette.primary.main,
-//               color: "#fff",
-//               "&:hover": {
-//                 bgcolor:
-//                   !mainClassName || mainClassName.length === 0
-//                     ? theme.palette.action.disabled
-//                     : theme.palette.primary.dark,
-//               },
-//             }}
-//           >
-//             <Add sx={{ fontSize: 18, mr: 0.5 }} /> Add New Category
-//           </Button>
 //         </Box>
 //       </Box>
 
@@ -796,11 +746,6 @@
 //           const [rangeStart, setRangeStart] = useState("");
 //           const [rangeEnd, setRangeEnd] = useState("");
 //           const [rangeAmt, setRangeAmt] = useState(0);
-
-//           // Calculate if all items are selected for this category
-//           const allItemsSelected =
-//             feeItems.length > 0 &&
-//             feeItems.every((item: any) => item.isSelected);
 
 //           return (
 //             <Box
@@ -915,604 +860,7 @@
 //                 </Grid>
 //               </Grid>
 
-//               {feeCategory && feeCategory.length > 0 ? (
-//                 feeItems.length > 0 ? (
-//                   <Box sx={{ mb: 3 }}>
-//                     <Box
-//                       sx={{
-//                         display: "flex",
-//                         justifyContent: "space-between",
-//                         alignItems: "center",
-//                         mb: 2,
-//                       }}
-//                     >
-//                       <Typography
-//                         variant="subtitle1"
-//                         fontWeight="bold"
-//                         sx={{ color: "primary.main" }}
-//                       >
-//                         📋 Fee Items ({feeItems.length} items)
-//                       </Typography>
-//                       <Box sx={{ display: "flex", gap: 1 }}>
-//                         <FormControlLabel
-//                           control={
-//                             <Switch
-//                               size="small"
-//                               checked={allItemsSelected}
-//                               onChange={(e) =>
-//                                 handleSelectAllForCategory(
-//                                   index,
-//                                   e.target.checked,
-//                                 )
-//                               }
-//                               color="primary"
-//                             />
-//                           }
-//                           label="Select All"
-//                           labelPlacement="start"
-//                         />
-//                         <Button
-//                           size="small"
-//                           variant="outlined"
-//                           onClick={() => {
-//                             const newItems = [
-//                               ...feeItems,
-//                               {
-//                                 feeType: "",
-//                                 amount: 0,
-//                                 advanceAmount: "",
-//                                 isSelected: selectAllFees,
-//                                 discount: 0,
-//                                 isMonthly: false,
-//                               },
-//                             ];
-//                             setValue(`fees.${index}.feeItems`, newItems);
-//                           }}
-//                         >
-//                           <Add fontSize="small" /> Add Custom Item
-//                         </Button>
-//                       </Box>
-//                     </Box>
-//                     <Paper
-//                       elevation={0}
-//                       sx={{
-//                         p: 2,
-//                         bgcolor: alpha(theme.palette.background.paper, 0.7),
-//                         border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-//                         borderRadius: 1,
-//                       }}
-//                     >
-//                       <Grid container spacing={2}>
-//                         <Grid item xs={12}>
-//                           <Grid
-//                             container
-//                             spacing={2}
-//                             sx={{
-//                               mb: 1,
-//                               pb: 1,
-//                               borderBottom: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-//                             }}
-//                           >
-//                             <Grid item xs={1}>
-//                               <Typography
-//                                 variant="caption"
-//                                 fontWeight="bold"
-//                                 color="text.secondary"
-//                               >
-//                                 SEL
-//                               </Typography>
-//                             </Grid>
-//                             <Grid item xs={3}>
-//                               <Typography
-//                                 variant="caption"
-//                                 fontWeight="bold"
-//                                 color="text.secondary"
-//                               >
-//                                 FEE TYPE
-//                               </Typography>
-//                             </Grid>
-//                             <Grid item xs={2.5}>
-//                               <Typography
-//                                 variant="caption"
-//                                 fontWeight="bold"
-//                                 color="text.secondary"
-//                               >
-//                                 AMOUNT
-//                               </Typography>
-//                             </Grid>
-//                             <Grid item xs={2.5}>
-//                               <Typography
-//                                 variant="caption"
-//                                 fontWeight="bold"
-//                                 color="text.secondary"
-//                               >
-//                                 DISCOUNT
-//                               </Typography>
-//                             </Grid>
-//                             <Grid item xs={2}>
-//                               <Typography
-//                                 variant="caption"
-//                                 fontWeight="bold"
-//                                 color="text.secondary"
-//                               >
-//                                 PAY NOW
-//                               </Typography>
-//                             </Grid>
-//                             <Grid item xs={1}></Grid>
-//                           </Grid>
-//                         </Grid>
-
-//                         {feeItems.map((item: any, itemIndex: number) => {
-//                           const isMonthly = item.isMonthly;
-//                           return (
-//                             <Grid item xs={12} key={itemIndex}>
-//                               <Grid
-//                                 container
-//                                 spacing={2}
-//                                 alignItems="center"
-//                                 sx={{
-//                                   mb: 1,
-//                                   bgcolor: isMonthly
-//                                     ? alpha(theme.palette.info.light, 0.15)
-//                                     : "transparent",
-//                                   p: 0.5,
-//                                   borderRadius: 1,
-//                                 }}
-//                               >
-//                                 <Grid item xs={1}>
-//                                   <Checkbox
-//                                     size="small"
-//                                     checked={item.isSelected || false}
-//                                     onChange={(e) => {
-//                                       handleItemFieldChange(
-//                                         index,
-//                                         itemIndex,
-//                                         "isSelected",
-//                                         e.target.checked,
-//                                       );
-//                                     }}
-//                                     color="primary"
-//                                   />
-//                                 </Grid>
-//                                 <Grid item xs={3}>
-//                                   {/* ── MONTHLY: show read-only label + badge ── */}
-//                                   {isMonthly ? (
-//                                     <Box
-//                                       sx={{
-//                                         display: "flex",
-//                                         alignItems: "center",
-//                                         gap: 1,
-//                                       }}
-//                                     >
-//                                       <CraftInputWithIcon
-//                                         name={`fees.${index}.feeItems.${itemIndex}.feeTypeDisplay`}
-//                                         label=""
-//                                         fullWidth
-//                                         margin="none"
-//                                         size="small"
-//                                         disabled
-//                                         value={
-//                                           typeof item.feeType === "string"
-//                                             ? item.feeType
-//                                             : item.feeType?.label ||
-//                                               item.feeType?.value ||
-//                                               ""
-//                                         }
-//                                         InputProps={{
-//                                           startAdornment: (
-//                                             <InputAdornment position="start">
-//                                               <Description
-//                                                 color="disabled"
-//                                                 sx={{ fontSize: 16 }}
-//                                               />
-//                                             </InputAdornment>
-//                                           ),
-//                                         }}
-//                                       />
-//                                       <Chip
-//                                         label="×12"
-//                                         size="small"
-//                                         color="info"
-//                                         variant="outlined"
-//                                         sx={{ fontSize: "0.65rem", height: 20 }}
-//                                       />
-//                                     </Box>
-//                                   ) : (
-//                                     <CraftIntAutoCompleteWithIcon
-//                                       freeSolo
-//                                       name={`fees.${index}.feeItems.${itemIndex}.feeType`}
-//                                       label=""
-//                                       options={classSpecificFeeOptions}
-//                                       size="small"
-//                                       fullWidth
-//                                       placeholder="Select Fee Type"
-//                                       multiple={false}
-//                                       icon={
-//                                         <Description
-//                                           color="disabled"
-//                                           sx={{ fontSize: 16 }}
-//                                         />
-//                                       }
-//                                       disableClearable={false}
-//                                       disabled={!isClassSelected}
-//                                       isOptionEqualToValue={(
-//                                         option: any,
-//                                         value: any,
-//                                       ) => {
-//                                         if (!option || !value) return false;
-//                                         const optVal =
-//                                           typeof option === "string"
-//                                             ? option
-//                                             : option.value;
-//                                         const valVal =
-//                                           typeof value === "string"
-//                                             ? value
-//                                             : value.value;
-//                                         return optVal === valVal;
-//                                       }}
-//                                       onKeyDown={(e) => {
-//                                         if (e.key === "Enter")
-//                                           e.preventDefault();
-//                                       }}
-//                                       onChange={(e: any, val: any) => {
-//                                         handleItemFieldChange(
-//                                           index,
-//                                           itemIndex,
-//                                           "feeType",
-//                                           val,
-//                                         );
-//                                       }}
-//                                     />
-//                                   )}
-//                                 </Grid>
-
-//                                 <Grid item xs={2.5}>
-//                                   <CraftInputWithIcon
-//                                     name={`fees.${index}.feeItems.${itemIndex}.amount`}
-//                                     label=""
-//                                     fullWidth
-//                                     margin="none"
-//                                     size="small"
-//                                     type="number"
-//                                     InputProps={{
-//                                       startAdornment: (
-//                                         <InputAdornment position="start">
-//                                           <Typography
-//                                             variant="body2"
-//                                             color="text.secondary"
-//                                           >
-//                                             ৳
-//                                           </Typography>
-//                                         </InputAdornment>
-//                                       ),
-//                                     }}
-//                                   />
-//                                 </Grid>
-
-//                                 <Grid item xs={2.5}>
-//                                   <CraftInputWithIcon
-//                                     name={`fees.${index}.feeItems.${itemIndex}.discount`}
-//                                     label=""
-//                                     fullWidth
-//                                     margin="none"
-//                                     size="small"
-//                                     type="number"
-//                                     placeholder="0"
-//                                     InputProps={{
-//                                       startAdornment: (
-//                                         <InputAdornment position="start">
-//                                           <Discount
-//                                             sx={{
-//                                               fontSize: 16,
-//                                               color: "error.main",
-//                                             }}
-//                                           />
-//                                         </InputAdornment>
-//                                       ),
-//                                     }}
-//                                   />
-//                                 </Grid>
-
-//                                 <Grid item xs={2}>
-//                                   <CraftInputWithIcon
-//                                     name={`fees.${index}.feeItems.${itemIndex}.advanceAmount`}
-//                                     label=""
-//                                     fullWidth
-//                                     margin="none"
-//                                     size="small"
-//                                     type="number"
-//                                     disabled={!isClassSelected || !item.amount}
-//                                     InputProps={{
-//                                       startAdornment: (
-//                                         <InputAdornment position="start">
-//                                           <Typography
-//                                             variant="body2"
-//                                             color="text.secondary"
-//                                           >
-//                                             ৳
-//                                           </Typography>
-//                                         </InputAdornment>
-//                                       ),
-//                                     }}
-//                                   />
-//                                 </Grid>
-
-//                                 <Grid
-//                                   item
-//                                   xs={1}
-//                                   sx={{
-//                                     display: "flex",
-//                                     justifyContent: "center",
-//                                   }}
-//                                 >
-//                                   <Tooltip title="Remove this item">
-//                                     <IconButton
-//                                       size="small"
-//                                       onClick={() =>
-//                                         removeFeeItem(index, itemIndex)
-//                                       }
-//                                       sx={{ color: "error.main" }}
-//                                     >
-//                                       <Delete fontSize="small" />
-//                                     </IconButton>
-//                                   </Tooltip>
-//                                 </Grid>
-
-//                                 {/* Monthly discount range editor */}
-//                                 {isMonthly && (
-//                                   <Grid item xs={12} sx={{ mt: 1 }}>
-//                                     <Paper
-//                                       variant="outlined"
-//                                       sx={{
-//                                         p: 1.5,
-//                                         borderColor: theme.palette.info.main,
-//                                         bgcolor: alpha(
-//                                           theme.palette.info.light,
-//                                           0.1,
-//                                         ),
-//                                       }}
-//                                     >
-//                                       <Typography
-//                                         variant="caption"
-//                                         color="info.main"
-//                                         fontWeight="bold"
-//                                         sx={{ mb: 1 }}
-//                                       >
-//                                         Apply Discount to Specific Months (all
-//                                         12 months will be updated):
-//                                       </Typography>
-//                                       <Box
-//                                         sx={{
-//                                           display: "flex",
-//                                           gap: 1,
-//                                           alignItems: "center",
-//                                           flexWrap: "wrap",
-//                                         }}
-//                                       >
-//                                         <Select
-//                                           size="small"
-//                                           value={rangeStart}
-//                                           onChange={(e) =>
-//                                             setRangeStart(e.target.value)
-//                                           }
-//                                           displayEmpty
-//                                           sx={{ minWidth: 100 }}
-//                                         >
-//                                           <MenuItem value="" disabled>
-//                                             From
-//                                           </MenuItem>
-//                                           {MONTHS.map((m) => (
-//                                             <MenuItem key={m} value={m}>
-//                                               {m}
-//                                             </MenuItem>
-//                                           ))}
-//                                         </Select>
-//                                         <Typography variant="body2">
-//                                           to
-//                                         </Typography>
-//                                         <Select
-//                                           size="small"
-//                                           value={rangeEnd}
-//                                           onChange={(e) =>
-//                                             setRangeEnd(e.target.value)
-//                                           }
-//                                           displayEmpty
-//                                           sx={{ minWidth: 100 }}
-//                                         >
-//                                           <MenuItem value="" disabled>
-//                                             To
-//                                           </MenuItem>
-//                                           {MONTHS.map((m) => (
-//                                             <MenuItem key={m} value={m}>
-//                                               {m}
-//                                             </MenuItem>
-//                                           ))}
-//                                         </Select>
-//                                         <CraftInputWithIcon
-//                                           name="rangAmt"
-//                                           size="small"
-//                                           type="number"
-//                                           placeholder="Amt"
-//                                           value={rangeAmt || ""}
-//                                           onChange={(e) =>
-//                                             setRangeAmt(
-//                                               parseFloat(e.target.value),
-//                                             )
-//                                           }
-//                                           sx={{ width: 80 }}
-//                                         />
-//                                         <Button
-//                                           size="small"
-//                                           variant="contained"
-//                                           onClick={() =>
-//                                             handleApplyRangeDiscount(
-//                                               index,
-//                                               itemIndex,
-//                                               rangeStart,
-//                                               rangeEnd,
-//                                               rangeAmt,
-//                                             )
-//                                           }
-//                                           sx={{ fontSize: "0.75rem", py: 0.5 }}
-//                                         >
-//                                           Set Range
-//                                         </Button>
-//                                       </Box>
-//                                       {item.discountRangeStart &&
-//                                         item.discountRangeEnd && (
-//                                           <Typography
-//                                             variant="caption"
-//                                             color="success.main"
-//                                             sx={{ mt: 1, display: "block" }}
-//                                           >
-//                                             Active: {item.discountRangeStart} to{" "}
-//                                             {item.discountRangeEnd} (-৳
-//                                             {item.discountRangeAmount}/mo)
-//                                           </Typography>
-//                                         )}
-//                                     </Paper>
-//                                   </Grid>
-//                                 )}
-//                               </Grid>
-//                             </Grid>
-//                           );
-//                         })}
-
-//                         {/* Totals row */}
-//                         <Grid item xs={12}>
-//                           <Box
-//                             sx={{
-//                               mt: 2,
-//                               pt: 2,
-//                               borderTop: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-//                             }}
-//                           >
-//                             <Grid container spacing={2}>
-//                               <Grid item xs={4}>
-//                                 <Typography
-//                                   variant="body1"
-//                                   fontWeight="bold"
-//                                   color="primary.main"
-//                                 >
-//                                   TOTAL (Selected)
-//                                 </Typography>
-//                               </Grid>
-//                               <Grid item xs={2.5}>
-//                                 <CraftInputWithIcon
-//                                   name={`fees.${index}.feeAmount`}
-//                                   label=""
-//                                   fullWidth
-//                                   margin="none"
-//                                   size="small"
-//                                   type="number"
-//                                   disabled={true}
-//                                   value={feeAmount}
-//                                   InputProps={{
-//                                     startAdornment: (
-//                                       <InputAdornment position="start">
-//                                         <Typography
-//                                           variant="body2"
-//                                           color="text.secondary"
-//                                         >
-//                                           ৳
-//                                         </Typography>
-//                                       </InputAdornment>
-//                                     ),
-//                                     readOnly: true,
-//                                   }}
-//                                   sx={{
-//                                     "& .MuiInputBase-input": {
-//                                       backgroundColor: alpha(
-//                                         theme.palette.primary.light,
-//                                         0.1,
-//                                       ),
-//                                       fontWeight: "bold",
-//                                       fontSize: "1.1rem",
-//                                       color: theme.palette.primary.main,
-//                                     },
-//                                   }}
-//                                 />
-//                               </Grid>
-//                               <Grid item xs={2.5}>
-//                                 <Box
-//                                   sx={{
-//                                     p: 1.5,
-//                                     bgcolor: alpha(
-//                                       theme.palette.error.light,
-//                                       0.1,
-//                                     ),
-//                                     borderRadius: 1,
-//                                     border: `1px solid ${alpha(theme.palette.error.main, 0.2)}`,
-//                                   }}
-//                                 >
-//                                   <Typography
-//                                     variant="body2"
-//                                     color="error.main"
-//                                     align="center"
-//                                   >
-//                                     Disc: ৳
-//                                     {feeItems
-//                                       ?.filter((item: any) => item.isSelected)
-//                                       .reduce(
-//                                         (sum: number, item: any) =>
-//                                           sum +
-//                                           (parseFloat(item.discount) || 0),
-//                                         0,
-//                                       )
-//                                       .toLocaleString()}
-//                                   </Typography>
-//                                 </Box>
-//                               </Grid>
-//                               <Grid item xs={2}>
-//                                 <Box
-//                                   sx={{
-//                                     p: 1.5,
-//                                     bgcolor: alpha(
-//                                       theme.palette.info.light,
-//                                       0.1,
-//                                     ),
-//                                     borderRadius: 1,
-//                                     border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`,
-//                                   }}
-//                                 >
-//                                   <Typography
-//                                     variant="body2"
-//                                     color="info.main"
-//                                     align="center"
-//                                   >
-//                                     Pay Now: ৳
-//                                     {feeItems
-//                                       ?.filter((item: any) => item.isSelected)
-//                                       .reduce(
-//                                         (sum: number, item: any) =>
-//                                           sum +
-//                                           (parseFloat(item.advanceAmount) || 0),
-//                                         0,
-//                                       )
-//                                       .toLocaleString()}
-//                                   </Typography>
-//                                 </Box>
-//                               </Grid>
-//                               <Grid item xs={1}></Grid>
-//                             </Grid>
-//                           </Box>
-//                         </Grid>
-//                       </Grid>
-//                     </Paper>
-//                   </Box>
-//                 ) : // ── feeItems loaded from edit mode (no category selected yet) ──
-//                 feeItems.length > 0 ? null : (
-//                   <Box
-//                     sx={{ textAlign: "center", py: 3, color: "text.disabled" }}
-//                   >
-//                     <Money sx={{ fontSize: 36, mb: 1, opacity: 0.5 }} />
-//                     <Typography variant="body2">
-//                       No fee items found for this category
-//                     </Typography>
-//                   </Box>
-//                 )
-//               ) : // ── Edit mode: no category selected but we have pre-loaded feeItems ──
-//               feeItems.length > 0 ? (
+//               {feeItems.length > 0 && (
 //                 <Box sx={{ mb: 3 }}>
 //                   <Box
 //                     sx={{
@@ -1522,58 +870,37 @@
 //                       mb: 2,
 //                     }}
 //                   >
-//                     <Box>
-//                       <Typography
-//                         variant="subtitle1"
-//                         fontWeight="bold"
-//                         sx={{ color: "primary.main" }}
-//                       >
-//                         📋 Fee Items ({feeItems.length} items)
-//                       </Typography>
-//                       <Typography variant="caption" color="info.main">
-//                         Editing existing fees — each monthly item represents all
-//                         12 months on save
-//                       </Typography>
-//                     </Box>
-//                     <Box sx={{ display: "flex", gap: 1 }}>
-//                       <FormControlLabel
-//                         control={
-//                           <Switch
-//                             size="small"
-//                             checked={allItemsSelected}
-//                             onChange={(e) =>
-//                               handleSelectAllForCategory(
-//                                 index,
-//                                 e.target.checked,
-//                               )
-//                             }
-//                             color="primary"
-//                           />
-//                         }
-//                         label="Select All"
-//                         labelPlacement="start"
-//                       />
-//                       <Button
-//                         size="small"
-//                         variant="outlined"
-//                         onClick={() => {
-//                           const newItems = [
-//                             ...feeItems,
-//                             {
-//                               feeType: "",
-//                               amount: 0,
-//                               advanceAmount: "",
-//                               isSelected: selectAllFees,
-//                               discount: 0,
-//                               isMonthly: false,
-//                             },
-//                           ];
-//                           setValue(`fees.${index}.feeItems`, newItems);
-//                         }}
-//                       >
-//                         <Add fontSize="small" /> Add Custom Item
-//                       </Button>
-//                     </Box>
+//                     <Typography
+//                       variant="subtitle1"
+//                       fontWeight="bold"
+//                       sx={{ color: "primary.main" }}
+//                     >
+//                       📋 Fee Items ({feeItems.length} items)
+//                     </Typography>
+//                     <Button
+//                       size="small"
+//                       variant="outlined"
+//                       onClick={() => {
+//                         const newItems = [
+//                           ...feeItems,
+//                           {
+//                             feeType: "",
+//                             amount: 0,
+//                             advanceAmount: "",
+//                             isSelected: true,
+//                             discount: 0,
+//                             isMonthly: false,
+//                             discountRangeStart: "",
+//                             discountRangeEnd: "",
+//                             discountRangeAmount: 0,
+//                             _tempId: Date.now() + Math.random(),
+//                           },
+//                         ];
+//                         setValue(`fees.${index}.feeItems`, newItems);
+//                       }}
+//                     >
+//                       <Add fontSize="small" /> Add Custom Item
+//                     </Button>
 //                   </Box>
 //                   <Paper
 //                     elevation={0}
@@ -1646,8 +973,11 @@
 
 //                       {feeItems.map((item: any, itemIndex: number) => {
 //                         const isMonthly = item.isMonthly;
+//                         const hasRangeDiscount =
+//                           item.discountRangeStart && item.discountRangeEnd;
+
 //                         return (
-//                           <Grid item xs={12} key={itemIndex}>
+//                           <Grid item xs={12} key={item._tempId || itemIndex}>
 //                             <Grid
 //                               container
 //                               spacing={2}
@@ -1665,14 +995,14 @@
 //                                 <Checkbox
 //                                   size="small"
 //                                   checked={item.isSelected || false}
-//                                   onChange={(e) => {
+//                                   onChange={(e) =>
 //                                     handleItemFieldChange(
 //                                       index,
 //                                       itemIndex,
 //                                       "isSelected",
 //                                       e.target.checked,
-//                                     );
-//                                   }}
+//                                     )
+//                                   }
 //                                   color="primary"
 //                                 />
 //                               </Grid>
@@ -1754,14 +1084,14 @@
 //                                     onKeyDown={(e) => {
 //                                       if (e.key === "Enter") e.preventDefault();
 //                                     }}
-//                                     onChange={(e: any, val: any) => {
+//                                     onChange={(e: any, val: any) =>
 //                                       handleItemFieldChange(
 //                                         index,
 //                                         itemIndex,
 //                                         "feeType",
 //                                         val,
-//                                       );
-//                                     }}
+//                                       )
+//                                     }
 //                                   />
 //                                 )}
 //                               </Grid>
@@ -1849,7 +1179,7 @@
 //                                   <IconButton
 //                                     size="small"
 //                                     onClick={() =>
-//                                       removeFeeItem(index, itemIndex)
+//                                       removeFeeItem(index, item._tempId)
 //                                     }
 //                                     sx={{ color: "error.main" }}
 //                                   >
@@ -1957,18 +1287,17 @@
 //                                         Set Range
 //                                       </Button>
 //                                     </Box>
-//                                     {item.discountRangeStart &&
-//                                       item.discountRangeEnd && (
-//                                         <Typography
-//                                           variant="caption"
-//                                           color="success.main"
-//                                           sx={{ mt: 1, display: "block" }}
-//                                         >
-//                                           Active: {item.discountRangeStart} to{" "}
-//                                           {item.discountRangeEnd} (-৳
-//                                           {item.discountRangeAmount}/mo)
-//                                         </Typography>
-//                                       )}
+//                                     {hasRangeDiscount && (
+//                                       <Typography
+//                                         variant="caption"
+//                                         color="success.main"
+//                                         sx={{ mt: 1, display: "block" }}
+//                                       >
+//                                         Active: {item.discountRangeStart} to{" "}
+//                                         {item.discountRangeEnd} (-৳
+//                                         {item.discountRangeAmount}/mo)
+//                                       </Typography>
+//                                     )}
 //                                   </Paper>
 //                                 </Grid>
 //                               )}
@@ -2094,7 +1423,20 @@
 //                     </Grid>
 //                   </Paper>
 //                 </Box>
-//               ) : null}
+//               )}
+
+//               {feeItems.length === 0 && (
+//                 <Box
+//                   sx={{ textAlign: "center", py: 3, color: "text.disabled" }}
+//                 >
+//                   <Money sx={{ fontSize: 36, mb: 1, opacity: 0.5 }} />
+//                   <Typography variant="body2">
+//                     {feeCategory && feeCategory.length > 0
+//                       ? "No fee items found for this category"
+//                       : "Select a category to load fee items"}
+//                   </Typography>
+//                 </Box>
+//               )}
 //             </Box>
 //           );
 //         })}
@@ -2123,7 +1465,7 @@
 //   );
 // };
 
-// // --- STEPS COMPONENTS ---
+// // --- STEPS COMPONENTS --- (unchanged, same as original)
 // const StudentInformationStep = () => (
 //   <Box sx={{ ...fadeInSlideUp }}>
 //     <Grid container spacing={3}>
@@ -2660,10 +2002,8 @@
 //   const { watch, setValue } = useFormContext();
 //   const termsAccepted = watch("termsAccepted") || false;
 //   const sameAsPermanent = watch("sameAsPermanent") || false;
-
 //   const handleTermsChange = (event: React.ChangeEvent<HTMLInputElement>) =>
 //     setValue("termsAccepted", event.target.checked);
-
 //   const handleSameAsPermanentChange = (
 //     event: React.ChangeEvent<HTMLInputElement>,
 //   ) => {
@@ -2677,7 +2017,6 @@
 //       setValue("district", watch("permDistrict") || "");
 //     }
 //   };
-
 //   return (
 //     <Box sx={{ ...fadeInSlideUp }}>
 //       <Grid container spacing={3}>
@@ -2690,7 +2029,6 @@
 //             Address & Documents
 //           </Typography>
 //         </Grid>
-
 //         <Grid item xs={12}>
 //           <Typography
 //             variant="subtitle1"
@@ -2775,7 +2113,6 @@
 //             }}
 //           />
 //         </Grid>
-
 //         <Grid item xs={12}>
 //           <Box
 //             sx={{
@@ -2812,7 +2149,6 @@
 //             />
 //           </Box>
 //         </Grid>
-
 //         <Grid item xs={12} md={4}>
 //           <CraftInputWithIcon
 //             size="medium"
@@ -2923,7 +2259,6 @@
 //             }}
 //           />
 //         </Grid>
-
 //         <Grid item xs={12}>
 //           <Box
 //             sx={{
@@ -2955,7 +2290,6 @@
 //             </Grid>
 //           </Box>
 //         </Grid>
-
 //         <Grid item xs={12}>
 //           <Box
 //             sx={{
@@ -2996,10 +2330,6 @@
 // const FeeStep = ({ classOptions, feeCategoryData, studentData }: any) => {
 //   const theme = useTheme();
 //   const { watch, setValue } = useFormContext();
-//   const paymentMethod = watch("paymentMethod") || {
-//     label: "Cash",
-//     value: "cash",
-//   };
 //   const [paidAmount, setPaidAmount] = useState<string>("0");
 
 //   const paymentOptions = [
@@ -3015,9 +2345,7 @@
 //     fees.forEach((fee: any) => {
 //       if (fee.feeItems && Array.isArray(fee.feeItems)) {
 //         fee.feeItems.forEach((item: any) => {
-//           if (item.isSelected) {
-//             total += parseFloat(item.amount) || 0;
-//           }
+//           if (item.isSelected) total += parseFloat(item.amount) || 0;
 //         });
 //       }
 //     });
@@ -3030,24 +2358,7 @@
 //     fees.forEach((fee: any) => {
 //       if (fee.feeItems && Array.isArray(fee.feeItems)) {
 //         fee.feeItems.forEach((item: any) => {
-//           if (item.isSelected) {
-//             total += parseFloat(item.discount) || 0;
-//           }
-//         });
-//       }
-//     });
-//     return total;
-//   };
-
-//   const calculateTotalAdvanceAmount = () => {
-//     const fees = watch("fees") || [];
-//     let total = 0;
-//     fees.forEach((fee: any) => {
-//       if (fee.feeItems && Array.isArray(fee.feeItems)) {
-//         fee.feeItems.forEach((item: any) => {
-//           if (item.isSelected) {
-//             total += parseFloat(item.advanceAmount) || 0;
-//           }
+//           if (item.isSelected) total += parseFloat(item.discount) || 0;
 //         });
 //       }
 //     });
@@ -3057,7 +2368,6 @@
 //   const calculateSummary = () => {
 //     const totalFees = calculateTotalFees();
 //     const totalItemDiscounts = calculateTotalItemDiscounts();
-//     const totalAdvance = calculateTotalAdvanceAmount();
 //     const netPayable = totalFees - totalItemDiscounts;
 //     const paidAmountNum = parseFloat(paidAmount) || 0;
 //     const dueAmount = Math.max(0, netPayable - paidAmountNum);
@@ -3068,7 +2378,6 @@
 //       netPayable,
 //       paidAmount: paidAmountNum,
 //       dueAmount,
-//       totalAdvance,
 //     };
 //   };
 
@@ -3090,7 +2399,6 @@
 //         feeCategoryData={feeCategoryData}
 //         studentData={studentData}
 //       />
-
 //       <Card
 //         elevation={2}
 //         sx={{
@@ -3114,33 +2422,14 @@
 //                   borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
 //                 }}
 //               >
-//                 <Box>
-//                   <Typography
-//                     variant="h6"
-//                     color="text.primary"
-//                     fontWeight="bold"
-//                   >
-//                     Monthly Fee Summary
-//                   </Typography>
-//                   <Typography variant="caption" color="text.secondary">
-//                     Showing selected fees only
-//                   </Typography>
-//                 </Box>
-//                 <Box sx={{ textAlign: "right" }}>
-//                   <Typography
-//                     variant="h3"
-//                     color="primary.main"
-//                     fontWeight="800"
-//                   >
-//                     ৳{summary.totalFees.toLocaleString()}
-//                   </Typography>
-//                   <Typography variant="caption" color="text.secondary">
-//                     Selected Monthly Total
-//                   </Typography>
-//                 </Box>
+//                 <Typography variant="h6" color="text.primary" fontWeight="bold">
+//                   Total Fees
+//                 </Typography>
+//                 <Typography variant="h3" color="primary.main" fontWeight="800">
+//                   ৳{summary.totalFees.toLocaleString()}
+//                 </Typography>
 //               </Box>
 //             </Grid>
-
 //             {summary.totalItemDiscounts > 0 && (
 //               <Grid item xs={12}>
 //                 <Alert severity="info" sx={{ borderRadius: 2 }}>
@@ -3153,7 +2442,6 @@
 //                 </Alert>
 //               </Grid>
 //             )}
-
 //             <Grid item xs={12}>
 //               <Typography
 //                 variant="subtitle2"
@@ -3210,7 +2498,6 @@
 //                 </Grid>
 //               </Grid>
 //             </Grid>
-
 //             <Grid item xs={12}>
 //               <Box
 //                 sx={{
@@ -3256,7 +2543,6 @@
 //                 )}
 //               </Box>
 //             </Grid>
-
 //             <Grid item xs={12}>
 //               <Box
 //                 sx={{
@@ -3272,7 +2558,7 @@
 //                   color="text.secondary"
 //                   sx={{ mb: 1, fontWeight: 600 }}
 //                 >
-//                   Summary Breakdown
+//                   Summary
 //                 </Typography>
 //                 <Grid container spacing={1}>
 //                   <Grid item xs={6}>
@@ -3363,17 +2649,6 @@
 //                   </Grid>
 //                 </Grid>
 //               </Box>
-//             </Grid>
-
-//             <Grid item xs={12}>
-//               <Alert severity="info" sx={{ borderRadius: 2 }}>
-//                 <Typography variant="body2">
-//                   <strong>Note:</strong> You are paying for selected fees only.
-//                   Use the "Admission Only/All Fees" switch at the top to control
-//                   default selection. All 12 months will be generated in the
-//                   system.
-//                 </Typography>
-//               </Alert>
 //             </Grid>
 //           </Grid>
 //         </CardContent>
@@ -3555,43 +2830,82 @@
 //     }
 //   };
 
-//   // ── Deduplicate fee items: one row per BASE fee type ──────────────────────
-//   // Monthly fees stored as "Monthly Fee - January", "Monthly Fee - February", …
-//   // We want to show just "Monthly Fee" once with isMonthly = true.
 //   const MONTH_SET = new Set(MONTHS);
-
 //   const uniqueFeeItemsMap = new Map<string, any>();
 
 //   if (data.fees && Array.isArray(data.fees)) {
+//     const feeGroups = new Map<string, any[]>();
+
 //     data.fees.forEach((fee: any) => {
 //       let baseFeeType: string = fee.feeType || "";
 //       let isMonthlyFee = false;
+//       let month = null;
 
-//       // Detect and strip month suffix: "Some Fee Type - January" → "Some Fee Type"
 //       const dashIdx = baseFeeType.lastIndexOf(" - ");
 //       if (dashIdx !== -1) {
 //         const possibleMonth = baseFeeType.slice(dashIdx + 3);
 //         if (MONTH_SET.has(possibleMonth)) {
 //           baseFeeType = baseFeeType.slice(0, dashIdx);
 //           isMonthlyFee = true;
+//           month = possibleMonth;
 //         }
 //       }
 
-//       // Only keep the first occurrence (all 12 months have same amount/discount)
-//       if (!uniqueFeeItemsMap.has(baseFeeType)) {
-//         uniqueFeeItemsMap.set(baseFeeType, {
-//           feeType: { label: baseFeeType, value: baseFeeType },
-//           amount: fee.amount,
-//           advanceAmount: 0, // reset — user can enter new pay-now amount
-//           isSelected: true,
-//           discount: fee.discount || 0,
-//           isMonthly: isMonthlyFee,
-//           // Preserve any range discount stored on first monthly month
-//           discountRangeStart: fee.discountRangeStart || "",
-//           discountRangeEnd: fee.discountRangeEnd || "",
-//           discountRangeAmount: fee.discountRangeAmount || 0,
+//       if (!feeGroups.has(baseFeeType)) feeGroups.set(baseFeeType, []);
+//       feeGroups
+//         .get(baseFeeType)!
+//         .push({ ...fee, originalFeeType: fee.feeType, month, isMonthlyFee });
+//     });
+
+//     feeGroups.forEach((fees, baseFeeType) => {
+//       const firstFee = fees[0];
+//       const isMonthlyGroup = fees.some((f) => f.isMonthlyFee);
+//       let discountRangeStart = "",
+//         discountRangeEnd = "",
+//         discountRangeAmount = 0;
+//       let baseDiscount = firstFee.discount || 0;
+
+//       if (isMonthlyGroup && fees.length > 1) {
+//         const discountCounts: { [key: number]: number } = {};
+//         fees.forEach((f) => {
+//           const d = f.discount || 0;
+//           discountCounts[d] = (discountCounts[d] || 0) + 1;
 //         });
+//         let maxCount = 0;
+//         Object.entries(discountCounts).forEach(([discount, count]) => {
+//           if (count > maxCount) {
+//             maxCount = count;
+//             baseDiscount = parseFloat(discount);
+//           }
+//         });
+//         const rangeMonths: string[] = [];
+//         fees.forEach((f) => {
+//           if ((f.discount || 0) !== baseDiscount && f.month)
+//             rangeMonths.push(f.month);
+//         });
+//         if (rangeMonths.length > 0) {
+//           rangeMonths.sort((a, b) => MONTHS.indexOf(a) - MONTHS.indexOf(b));
+//           discountRangeStart = rangeMonths[0];
+//           discountRangeEnd = rangeMonths[rangeMonths.length - 1];
+//           const rangeMonthFee = fees.find(
+//             (f) => f.month === discountRangeStart,
+//           );
+//           discountRangeAmount = rangeMonthFee?.discount || 0;
+//         }
 //       }
+
+//       uniqueFeeItemsMap.set(baseFeeType, {
+//         feeType: { label: baseFeeType, value: baseFeeType },
+//         amount: firstFee.amount,
+//         advanceAmount: 0,
+//         isSelected: true,
+//         discount: baseDiscount,
+//         isMonthly: isMonthlyGroup,
+//         discountRangeStart,
+//         discountRangeEnd,
+//         discountRangeAmount,
+//         _tempId: Date.now() + Math.random(),
+//       });
 //     });
 //   }
 
@@ -3662,9 +2976,9 @@
 //     termsAccepted: data.termsAccepted || false,
 //     fees: [
 //       {
-//         category: [], // category selector is empty; feeItems already loaded
+//         category: [],
 //         className: formattedClass,
-//         feeItems: uniqueFeeItems, // ← deduplicated: one row per base type
+//         feeItems: uniqueFeeItems,
 //         feeAmount: uniqueFeeItems
 //           .reduce((sum, item) => sum + item.amount, 0)
 //           .toString(),
@@ -3679,14 +2993,14 @@
 //     totalAmount: data.totalAmount || 0,
 //     totalDiscount: data.totalDiscount || 0,
 //     netPayable: data.netPayable || 0,
-//     paidAmount: 0, // reset paid amount for update — admin enters new payment
+//     paidAmount: 0,
 //     dueAmount: data.dueAmount || 0,
 //     advanceBalance: data.advanceBalance || 0,
 //   };
 // };
 
 // // --- MAIN COMPONENT ---
-// const EnrollmentForm = () => {
+// const EnrollmentForm = ({ applicationId, admissionApplications }: any) => {
 //   const theme = useTheme();
 //   const limit = 200;
 //   const [page] = useState(0);
@@ -3694,7 +3008,6 @@
 //   const router = useRouter();
 //   const searchParams = useSearchParams();
 //   const id = searchParams.get("id");
-//   const applicationId = searchParams.get("applicationId");
 //   const [openSuccessModal, setOpenSuccessModal] = useState(false);
 //   const [openPrintModal, setOpenPrintModal] = useState(false);
 //   const [openAddFeeModal, setOpenAddFeeModal] = useState(false);
@@ -3707,13 +3020,6 @@
 //   const [updateEnrollment] = useUpdateEnrollmentMutation();
 //   const { data: singleEnrollment, isLoading: enrollmentLoading } =
 //     useGetSingleEnrollmentQuery(id ? { id } : undefined, { skip: !id });
-
-//   const { data: admissionApplications, isLoading: admissionsLoading } =
-//     useGetAllAdmissionApplicationsQuery(
-//       applicationId ? { applicationId, limit: 1 } : { skip: true },
-//       { skip: !applicationId },
-//     );
-
 //   const { data: studentData } = useGetAllStudentsQuery({
 //     limit,
 //     page: page + 1,
@@ -3862,10 +3168,10 @@
 //       if (formData) {
 //         setDefaultValues(formData);
 //         setFormKey((prev) => prev + 1);
-//         const studentName = formData.studentNameBangla || formData.studentName;
-//         toast.success(`Application data loaded for ${studentName}`);
-//         const targetStep = getFirstIncompleteStep(formData);
-//         setTimeout(() => setActiveStep(targetStep), 300);
+//         toast.success(
+//           `Application data loaded for ${formData.studentNameBangla || formData.studentName}`,
+//         );
+//         setTimeout(() => setActiveStep(getFirstIncompleteStep(formData)), 300);
 //       } else toast.error("Failed to load application data");
 //     },
 //     [classOptions],
@@ -3879,30 +3185,11 @@
 //     router.push(`/dashboard/enrollments/list`);
 //   };
 
-//   const handlePrintReceipt = () => {
-//     setOpenSuccessModal(false);
-//     setOpenPrintModal(true);
-//   };
-//   const handleAddAdditionalFee = () => {
-//     setOpenSuccessModal(false);
-//     setOpenAddFeeModal(true);
-//   };
-//   const handlePayDueAmount = () => {
-//     setOpenSuccessModal(false);
-//     setOpenPaymentModal(true);
-//   };
-
-//   // ─────────────────────────────────────────────────────────────────────────────
-//   // DROP-IN REPLACEMENT for handleSubmit inside EnrollmentForm component
-//   // ─────────────────────────────────────────────────────────────────────────────
-//   // Replace the handleSubmit function in your EnrollmentForm component with this:
-
 //   const handleSubmit = async (data: any) => {
 //     try {
 //       setSubmitting(true);
 //       const { studentIdSelect, studentNameSelect, ...submitData } = data;
 
-//       // ── Basic validation ────────────────────────────────────────────────────
 //       if (!submitData.studentName) {
 //         toast.error("Student name is required");
 //         setSubmitting(false);
@@ -3927,31 +3214,31 @@
 //         return;
 //       }
 
-//       // ── Class IDs ───────────────────────────────────────────────────────────
 //       const classNameArray = submitData.className
 //         .map((cls: any) => cls.value || cls)
 //         .filter(Boolean);
-
 //       if (!classNameArray.length) {
 //         toast.error("Class selection is required");
 //         setSubmitting(false);
 //         return;
 //       }
 
-//       // ── Payment method ──────────────────────────────────────────────────────
 //       const paymentMethodValue =
 //         typeof submitData.paymentMethod === "object"
 //           ? submitData.paymentMethod?.value || "cash"
 //           : submitData.paymentMethod || "cash";
 
-//       // ── Student photo ───────────────────────────────────────────────────────
 //       const studentPhotoValue =
 //         typeof submitData.studentPhoto === "string" &&
 //         submitData.studentPhoto.startsWith("data:")
 //           ? ""
 //           : submitData.studentPhoto || "";
 
-//       // ── Build fees payload with proper structure ────────────────────────────
+//       // ─────────────────────────────────────────────────────────────────────
+//       // FIXED: Send fee items as-is with isMonthly flag intact.
+//       // Do NOT expand monthly fees into 12 entries here.
+//       // The backend is responsible for generating monthly fee records.
+//       // ─────────────────────────────────────────────────────────────────────
 //       const fees: any[] = [];
 
 //       if (submitData.fees && Array.isArray(submitData.fees)) {
@@ -3961,44 +3248,30 @@
 //             Array.isArray(fee.feeItems) &&
 //             fee.feeItems.length > 0
 //           ) {
-//             // Log the fee items to debug
-//             console.log("Processing fee items:", fee.feeItems);
+//             const processedFeeItems: any[] = [];
 
-//             const processedFeeItems = fee.feeItems
-//               .filter((item: any) => {
-//                 // Get fee type string
-//                 const feeTypeStr =
-//                   typeof item.feeType === "object"
-//                     ? item.feeType?.label || item.feeType?.value || ""
-//                     : item.feeType || "";
+//             fee.feeItems.forEach((item: any) => {
+//               const feeTypeStr =
+//                 typeof item.feeType === "object"
+//                   ? item.feeType?.label || item.feeType?.value || ""
+//                   : item.feeType || "";
+//               const isSelected = item.isSelected !== false;
+//               if (!feeTypeStr.trim() || !isSelected) return;
 
-//                 // Check if item is selected - default to true if not specified
-//                 const isSelected = item.isSelected !== false;
-
-//                 console.log("Filtering item:", { feeTypeStr, isSelected });
-
-//                 return feeTypeStr.trim() !== "" && isSelected;
-//               })
-//               .map((item: any) => {
-//                 // Get fee type string
-//                 const feeTypeStr =
-//                   typeof item.feeType === "object"
-//                     ? item.feeType?.label || item.feeType?.value || ""
-//                     : item.feeType || "";
-
-//                 return {
-//                   feeType: feeTypeStr,
-//                   amount: parseFloat(String(item.amount)) || 0,
-//                   discount: parseFloat(String(item.discount)) || 0,
-//                   advanceAmount: parseFloat(String(item.advanceAmount)) || 0,
-//                   isMonthly: Boolean(item.isMonthly),
-//                   discountRangeStart: item.discountRangeStart || "",
-//                   discountRangeEnd: item.discountRangeEnd || "",
-//                   discountRangeAmount:
-//                     parseFloat(String(item.discountRangeAmount)) || 0,
-//                   isSelected: true, // Always true after filtering
-//                 };
+//               // Send isMonthly=true items as-is — backend handles month expansion
+//               processedFeeItems.push({
+//                 feeType: feeTypeStr,
+//                 amount: parseFloat(String(item.amount)) || 0,
+//                 discount: parseFloat(String(item.discount)) || 0,
+//                 advanceAmount: parseFloat(String(item.advanceAmount)) || 0,
+//                 isMonthly: item.isMonthly === true,
+//                 isSelected: true,
+//                 discountRangeStart: item.discountRangeStart || "",
+//                 discountRangeEnd: item.discountRangeEnd || "",
+//                 discountRangeAmount:
+//                   parseFloat(String(item.discountRangeAmount)) || 0,
 //               });
+//             });
 
 //             if (processedFeeItems.length > 0) {
 //               fees.push({
@@ -4017,11 +3290,6 @@
 //         });
 //       }
 
-//       console.log(
-//         "Processed fees for submission:",
-//         JSON.stringify(fees, null, 2),
-//       );
-
 //       if (fees.length === 0) {
 //         toast.error("Please configure fee items before submitting");
 //         setSubmitting(false);
@@ -4030,7 +3298,6 @@
 
 //       const totalPaidAmount = parseFloat(String(submitData.paidAmount)) || 0;
 
-//       // ── Final payload ───────────────────────────────────────────────────────
 //       const finalSubmitData: any = {
 //         studentName: submitData.studentName || "",
 //         nameBangla: submitData.studentNameBangla || "",
@@ -4101,19 +3368,14 @@
 //         collectedBy: "Admin",
 //       };
 
-//       console.log("Submitting enrollment payload:", {
-//         ...finalSubmitData,
-//         studentPhoto: finalSubmitData.studentPhoto
-//           ? `[URL: ${finalSubmitData.studentPhoto.slice(0, 60)}]`
-//           : "[empty]",
-//         fees: finalSubmitData.fees,
-//       });
-
 //       let res;
 //       if (id) {
 //         res = await updateEnrollment({ id, data: finalSubmitData }).unwrap();
 //       } else {
-//         res = await createEnrollment(finalSubmitData).unwrap();
+//         res = await createEnrollment({
+//           data: finalSubmitData,
+//           applicationId: applicationId,
+//         }).unwrap();
 //       }
 
 //       if (res?.success) {
@@ -4124,7 +3386,6 @@
 //         throw new Error(res?.message || "Failed to enroll student");
 //       }
 //     } catch (err: any) {
-//       console.error("Submission error:", err);
 //       let errorMessage = "Failed to enroll student!";
 //       if (err?.data?.message) errorMessage = err.data.message;
 //       else if (err?.data?.errorSources?.[0]?.message)
@@ -4151,14 +3412,6 @@
 //       .getElementById("form-content-wrapper")
 //       ?.scrollIntoView({ behavior: "smooth", block: "start" });
 //   };
-
-//   if (
-//     (id && enrollmentLoading) ||
-//     (applicationId && admissionsLoading) ||
-//     !defaultValues ||
-//     isApplicationLoading
-//   )
-//     return <LoadingState />;
 
 //   const getClassLabel = (clsData: any) => {
 //     if (!clsData) return "";
@@ -4217,7 +3470,11 @@
 //               justifyContent: "space-between",
 //             }}
 //           >
-//             <Box display="flex" alignItems="center">
+//             <Box
+//               display="flex"
+//               alignItems="center"
+//               sx={{ width: "100%", flex: 1 }}
+//             >
 //               <Avatar
 //                 sx={{
 //                   bgcolor: theme.palette.primary.main,
@@ -4228,14 +3485,29 @@
 //               >
 //                 <School sx={{ color: "#fff", fontSize: 32 }} />
 //               </Avatar>
-//               <Box ml={2}>
+//               <Box
+//                 ml={2}
+//                 display="flex"
+//                 justifyContent="space-between"
+//                 alignItems="center"
+//                 sx={{ width: "100%", flex: 1 }}
+//               >
 //                 <Typography
 //                   variant="h5"
 //                   sx={{ fontWeight: "bold", color: "text.primary" }}
 //                 >
 //                   Student Enrollment
 //                 </Typography>
-//                 <Typography variant="subtitle2" color="text.secondary" />
+//                 {admissionApplications?.data?.[0] && (
+//                   <Typography
+//                     variant="subtitle1"
+//                     sx={{ fontWeight: 600, lineHeight: 1.2 }}
+//                   >
+//                     {admissionApplications.data[0].studentInfo?.nameEnglish ||
+//                       admissionApplications.data[0].studentInfo?.nameBangla ||
+//                       "Student Name"}
+//                   </Typography>
+//                 )}
 //               </Box>
 //             </Box>
 //           </Paper>
@@ -4273,7 +3545,6 @@
 //                 {activeStep + 1} OF {steps.length}
 //               </Typography>
 //             </Box>
-
 //             <CardContent sx={{ p: 4 }} id="form-content-wrapper">
 //               <Box minHeight={400}>
 //                 {activeStep === 0 && <StudentInformationStep />}
@@ -4311,17 +3582,13 @@
 //               sx={{
 //                 fontWeight: "bold",
 //                 color: "text.secondary",
-//                 "&:hover": {
-//                   color: "text.primary",
-//                   bgcolor: alpha(theme.palette.action.hover, 0.04),
-//                 },
+//                 "&:hover": { color: "text.primary" },
 //                 px: 2,
 //                 py: 1.5,
 //               }}
 //             >
 //               Back
 //             </Button>
-
 //             {activeStep === steps.length - 1 ? (
 //               <Button
 //                 type="submit"
@@ -4381,7 +3648,6 @@
 //           </Box>
 //         </Container>
 
-//         {/* Success Modal */}
 //         <Dialog
 //           open={openSuccessModal}
 //           onClose={() => {}}
@@ -4432,7 +3698,10 @@
 //                 <Button
 //                   variant="contained"
 //                   color="warning"
-//                   onClick={handlePayDueAmount}
+//                   onClick={() => {
+//                     setOpenSuccessModal(false);
+//                     setOpenPaymentModal(true);
+//                   }}
 //                   startIcon={<Payment />}
 //                   sx={{ borderRadius: 2, px: 3 }}
 //                 >
@@ -4442,7 +3711,10 @@
 //               )}
 //               <Button
 //                 variant="outlined"
-//                 onClick={handlePrintReceipt}
+//                 onClick={() => {
+//                   setOpenSuccessModal(false);
+//                   setOpenPrintModal(true);
+//                 }}
 //                 startIcon={<Print />}
 //                 sx={{ borderRadius: 2, px: 3 }}
 //               >
@@ -4450,7 +3722,10 @@
 //               </Button>
 //               <Button
 //                 variant="contained"
-//                 onClick={handleAddAdditionalFee}
+//                 onClick={() => {
+//                   setOpenSuccessModal(false);
+//                   setOpenAddFeeModal(true);
+//                 }}
 //                 startIcon={<Payment />}
 //                 sx={{ borderRadius: 2, px: 3, bgcolor: "primary.main" }}
 //               >
@@ -4466,9 +3741,8 @@
 //         <PrintModal
 //           open={openPrintModal}
 //           setOpen={setOpenPrintModal}
-//           receipt={enrolledStudentData?.receipt}
-//           previousPayments={enrolledStudentData?.receipt?.fees || []}
-//           student={enrolledStudentData?.student || enrolledStudentData}
+//           receipt={enrolledStudentData?.data?.receipt}
+//           student={enrolledStudentData?.data?.student || enrolledStudentData}
 //         />
 //         <AddFeeModal
 //           open={openAddFeeModal}
@@ -4479,7 +3753,7 @@
 //           open={openPaymentModal}
 //           onClose={() => setOpenPaymentModal(false)}
 //           fee={feeDataForPaymentModal}
-//           onPaymentSuccess={(data) => {
+//           onPaymentSuccess={() => {
 //             toast.success("Payment successful!");
 //             setOpenPaymentModal(false);
 //             router.push(`/dashboard/enrollments/list`);
