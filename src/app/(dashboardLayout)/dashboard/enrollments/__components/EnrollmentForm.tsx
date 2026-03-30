@@ -87,21 +87,9 @@ import toast from "react-hot-toast";
 import PrintModal from "../../student/profile/__components/PrintModal";
 import AddFeeModal from "../../student/profile/__components/AddFeeModal";
 import PaymentModal from "../../student/profile/__components/PaymentModal";
+import { MONTHS } from "@/constant/month";
 
-const MONTHS = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
+const CURRENT_MONTH = MONTHS[new Date().getMonth()];
 
 const fadeInSlideUp = {
   animation: "fadeInSlideUp 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both",
@@ -387,6 +375,97 @@ const DynamicFeeFields = ({
     return options;
   };
 
+  // Reload fee items for all existing fee categories based on current selectAllFees mode
+  const reloadAllFeeItems = useCallback(() => {
+    const fees = watch("fees") || [];
+    fees.forEach((fee: any, index: number) => {
+      if (
+        fee.category &&
+        fee.category.length > 0 &&
+        fee.className &&
+        fee.className.length > 0
+      ) {
+        const selectedClassName = Array.isArray(fee.className)
+          ? fee.className[0]?.label || fee.className[0]
+          : fee.className;
+        const categoryName = Array.isArray(fee.category)
+          ? fee.category[0]?.label || fee.category[0]
+          : fee.category;
+
+        const matchingEntries =
+          feeCategoryData?.data?.data?.filter(
+            (item: any) =>
+              item.className === selectedClassName &&
+              item.categoryName === categoryName,
+          ) || [];
+
+        const allFeeItems: any[] = [];
+        matchingEntries.forEach((entry: any) => {
+          if (entry.feeItems && Array.isArray(entry.feeItems))
+            allFeeItems.push(...entry.feeItems);
+          else if (entry.feeType) allFeeItems.push(entry);
+        });
+
+        if (allFeeItems.length > 0) {
+          const feeItems: any[] = [];
+          allFeeItems.forEach((item: any) => {
+            const typeLabel =
+              typeof item.feeType === "string"
+                ? item.feeType
+                : item.feeType?.value || "";
+
+            const isAdmissionFee = typeLabel
+              .toLowerCase()
+              .includes("admission fee");
+
+            if (selectAllFees || isAdmissionFee) {
+              feeItems.push({
+                feeType:
+                  typeof item.feeType === "string"
+                    ? { label: item.feeType, value: item.feeType }
+                    : item.feeType,
+                amount: item.amount,
+                advanceAmount: "",
+                isSelected: true,
+                discount: item.discount || 0,
+                isMonthly: typeLabel.toLowerCase().includes("monthly"),
+                discountRangeStart: "",
+                discountRangeEnd: "",
+                discountRangeAmount: 0,
+                _tempId: Date.now() + Math.random(),
+              });
+            }
+          });
+
+          setValue(`fees.${index}.feeItems`, feeItems);
+          const totalAmount = feeItems.reduce(
+            (sum: number, item: any) => sum + (item.amount || 0),
+            0,
+          );
+          setValue(`fees.${index}.feeAmount`, totalAmount.toString());
+        } else {
+          setValue(`fees.${index}.feeItems`, []);
+          setValue(`fees.${index}.feeAmount`, "");
+        }
+      }
+    });
+  }, [watch, setValue, feeCategoryData, selectAllFees]);
+
+  // Handle switch toggle - reload all fee items immediately
+  const handleSelectAllFeesToggle = (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const newValue = e.target.checked;
+    setSelectAllFees(newValue);
+    // Use setTimeout to ensure state is updated before reload
+    setTimeout(() => reloadAllFeeItems(), 0);
+    toast.success(
+      newValue
+        ? "Switched to All Fees mode"
+        : "Switched to Admission Only mode",
+    );
+  };
+
   useEffect(() => {
     if (selectedStudent && studentData?.data) {
       const student = studentData.data.find(
@@ -584,89 +663,6 @@ const DynamicFeeFields = ({
     );
   };
 
-  useEffect(() => {
-    const fees = watch("fees") || [];
-
-    fees.forEach((fee: any, index: number) => {
-      if (
-        fee.category &&
-        fee.category.length > 0 &&
-        fee.className &&
-        fee.className.length > 0
-      ) {
-        const selectedClassName = Array.isArray(fee.className)
-          ? fee.className[0]?.label || fee.className[0]
-          : fee.className;
-        const categoryName = Array.isArray(fee.category)
-          ? fee.category[0]?.label || fee.category[0]
-          : fee.category;
-
-        const matchingEntries =
-          feeCategoryData?.data?.data?.filter(
-            (item: any) =>
-              item.className === selectedClassName &&
-              item.categoryName === categoryName,
-          ) || [];
-
-        const allFeeItems: any[] = [];
-        matchingEntries.forEach((entry: any) => {
-          if (entry.feeItems && Array.isArray(entry.feeItems))
-            allFeeItems.push(...entry.feeItems);
-          else if (entry.feeType) allFeeItems.push(entry);
-        });
-
-        if (allFeeItems.length > 0) {
-          const feeItems: any[] = [];
-          allFeeItems.forEach((item: any) => {
-            const typeLabel =
-              typeof item.feeType === "string"
-                ? item.feeType
-                : item.feeType?.value || "";
-
-            const isAdmissionFee = typeLabel
-              .toLowerCase()
-              .includes("admission fee");
-
-            if (selectAllFees || isAdmissionFee) {
-              feeItems.push({
-                feeType:
-                  typeof item.feeType === "string"
-                    ? { label: item.feeType, value: item.feeType }
-                    : item.feeType,
-                amount: item.amount,
-                advanceAmount: "",
-                isSelected: true,
-                discount: item.discount || 0,
-                isMonthly: typeLabel.toLowerCase().includes("monthly"),
-                discountRangeStart: "",
-                discountRangeEnd: "",
-                discountRangeAmount: 0,
-                _tempId: Date.now() + Math.random(),
-              });
-            }
-          });
-
-          setValue(`fees.${index}.feeItems`, feeItems);
-
-          const totalAmount = feeItems.reduce(
-            (sum: number, item: any) => sum + (item.amount || 0),
-            0,
-          );
-
-          setValue(`fees.${index}.feeAmount`, totalAmount.toString());
-        }
-      }
-    });
-
-    if (fees.length > 0) {
-      toast.success(
-        selectAllFees
-          ? "Switched to All Fees mode"
-          : "Switched to Admission Only mode",
-      );
-    }
-  }, [selectAllFees, watch, setValue, feeCategoryData]);
-
   const categoryOptions = getCategoryOptions();
 
   return (
@@ -713,7 +709,7 @@ const DynamicFeeFields = ({
             </Typography>
             <Switch
               checked={selectAllFees}
-              onChange={(e) => setSelectAllFees(e.target.checked)}
+              onChange={handleSelectAllFeesToggle}
               color="info"
               size="small"
             />
@@ -735,7 +731,6 @@ const DynamicFeeFields = ({
           const feeClassName = watch(`fees.${index}.className`);
           const feeCategory = watch(`fees.${index}.category`);
           const feeItems = watch(`fees.${index}.feeItems`) || [];
-          const feeAmount = parseFloat(watch(`fees.${index}.feeAmount`) || 0);
           const isClassSelected = mainClassName && mainClassName.length > 0;
           const classNameStr = Array.isArray(feeClassName)
             ? feeClassName[0]?.label || feeClassName[0]
@@ -806,7 +801,7 @@ const DynamicFeeFields = ({
                     letterSpacing: 1,
                   }}
                 >
-                  Fee Category #{index + 1}
+                  Fee Category
                 </Typography>
               </Box>
 
@@ -875,7 +870,7 @@ const DynamicFeeFields = ({
                       fontWeight="bold"
                       sx={{ color: "primary.main" }}
                     >
-                      📋 Fee Items ({feeItems.length} items)
+                      Fee Items
                     </Typography>
                     <Button
                       size="small"
@@ -1013,6 +1008,7 @@ const DynamicFeeFields = ({
                                       display: "flex",
                                       alignItems: "center",
                                       gap: 1,
+                                      flexWrap: "wrap",
                                     }}
                                   >
                                     <CraftInputWithIcon
@@ -1024,10 +1020,8 @@ const DynamicFeeFields = ({
                                       disabled
                                       value={
                                         typeof item.feeType === "string"
-                                          ? item.feeType
-                                          : item.feeType?.label ||
-                                            item.feeType?.value ||
-                                            ""
+                                          ? `${item.feeType} (${CURRENT_MONTH})`
+                                          : `${item.feeType?.label || item.feeType?.value || ""} (${CURRENT_MONTH})`
                                       }
                                       InputProps={{
                                         startAdornment: (
@@ -1039,13 +1033,6 @@ const DynamicFeeFields = ({
                                           </InputAdornment>
                                         ),
                                       }}
-                                    />
-                                    <Chip
-                                      label="×12"
-                                      size="small"
-                                      color="info"
-                                      variant="outlined"
-                                      sx={{ fontSize: "0.65rem", height: 20 }}
                                     />
                                   </Box>
                                 ) : (
@@ -1201,15 +1188,6 @@ const DynamicFeeFields = ({
                                       ),
                                     }}
                                   >
-                                    <Typography
-                                      variant="caption"
-                                      color="info.main"
-                                      fontWeight="bold"
-                                      sx={{ mb: 1 }}
-                                    >
-                                      Apply Discount to Specific Months (all 12
-                                      months will be updated):
-                                    </Typography>
                                     <Box
                                       sx={{
                                         display: "flex",
@@ -1350,7 +1328,6 @@ const DynamicFeeFields = ({
   );
 };
 
-// --- STEPS COMPONENTS --- (unchanged, same as original)
 const StudentInformationStep = () => (
   <Box sx={{ ...fadeInSlideUp }}>
     <Grid container spacing={3}>
@@ -2211,11 +2188,10 @@ const AddressDocumentsStep = () => {
   );
 };
 
-// --- FEE STEP ---
 const FeeStep = ({ classOptions, feeCategoryData, studentData }: any) => {
   const theme = useTheme();
   const { watch, setValue } = useFormContext();
-  const [paidAmount, setPaidAmount] = useState<string>("0");
+  const [isPaidAmountEdited, setIsPaidAmountEdited] = useState(false);
 
   const paymentOptions = [
     { label: "Cash", value: "cash" },
@@ -2254,7 +2230,8 @@ const FeeStep = ({ classOptions, feeCategoryData, studentData }: any) => {
     const totalFees = calculateTotalFees();
     const totalItemDiscounts = calculateTotalItemDiscounts();
     const netPayable = totalFees - totalItemDiscounts;
-    const paidAmountNum = parseFloat(paidAmount) || 0;
+    const formPaidAmount = parseFloat(watch("paidAmount") || "0");
+    const paidAmountNum = isPaidAmountEdited ? formPaidAmount : totalFees;
     const dueAmount = Math.max(0, netPayable - paidAmountNum);
     return {
       totalFees,
@@ -2269,13 +2246,27 @@ const FeeStep = ({ classOptions, feeCategoryData, studentData }: any) => {
   const summary = calculateSummary();
 
   useEffect(() => {
+    if (!isPaidAmountEdited && summary.totalFees > 0) {
+      setValue("paidAmount", summary.totalFees);
+    }
+  }, [summary.totalFees, isPaidAmountEdited, setValue]);
+
+  useEffect(() => {
     setValue("totalAmount", summary.yearlyTotal);
     setValue("monthlyAmount", summary.totalFees);
     setValue("totalDiscount", summary.totalItemDiscounts);
     setValue("netPayable", summary.netPayable);
     setValue("dueAmount", summary.dueAmount);
-    setValue("paidAmount", summary.paidAmount);
-  }, [summary, setValue]);
+    if (!isPaidAmountEdited) {
+      setValue("paidAmount", summary.paidAmount);
+    }
+  }, [summary, setValue, isPaidAmountEdited]);
+
+  const handlePaidAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setIsPaidAmountEdited(true);
+    setValue("paidAmount", parseFloat(value) || 0);
+  };
 
   return (
     <Box sx={{ ...fadeInSlideUp }}>
@@ -2298,36 +2289,6 @@ const FeeStep = ({ classOptions, feeCategoryData, studentData }: any) => {
         <CardContent sx={{ p: 4 }}>
           <Grid container spacing={3}>
             <Grid item xs={12}>
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  pb: 2,
-                  borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                }}
-              >
-                <Typography variant="h6" color="text.primary" fontWeight="bold">
-                  Total Fees
-                </Typography>
-                <Typography variant="h3" color="primary.main" fontWeight="800">
-                  ৳{summary.totalFees.toLocaleString()}
-                </Typography>
-              </Box>
-            </Grid>
-            {summary.totalItemDiscounts > 0 && (
-              <Grid item xs={12}>
-                <Alert severity="info" sx={{ borderRadius: 2 }}>
-                  <Typography variant="body2">
-                    Total Discounts Applied:{" "}
-                    <strong>
-                      - ৳{summary.totalItemDiscounts.toLocaleString()}
-                    </strong>
-                  </Typography>
-                </Alert>
-              </Grid>
-            )}
-            <Grid item xs={12}>
               <Typography
                 variant="subtitle2"
                 color="text.secondary"
@@ -2340,16 +2301,11 @@ const FeeStep = ({ classOptions, feeCategoryData, studentData }: any) => {
                   <CraftInputWithIcon
                     name="paidAmount"
                     label="Pay Amount Now"
-                    placeholder="0"
+                    placeholder=""
                     type="number"
                     fullWidth
                     size="small"
-                    value={paidAmount}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
-                      const value = e.target.value;
-                      setPaidAmount(value);
-                      setValue("paidAmount", parseFloat(value) || 0);
-                    }}
+                    onChange={handlePaidAmountChange}
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
@@ -2383,51 +2339,7 @@ const FeeStep = ({ classOptions, feeCategoryData, studentData }: any) => {
                 </Grid>
               </Grid>
             </Grid>
-            <Grid item xs={12}>
-              <Box
-                sx={{
-                  mt: 1,
-                  p: 2,
-                  borderRadius: 2,
-                  bgcolor: alpha(
-                    summary.dueAmount > 0
-                      ? theme.palette.error.light
-                      : theme.palette.success.light,
-                    0.1,
-                  ),
-                  border: `1px solid ${alpha(summary.dueAmount > 0 ? theme.palette.error.main : theme.palette.success.main, 0.2)}`,
-                  textAlign: "center",
-                }}
-              >
-                {summary.dueAmount > 0 ? (
-                  <Box>
-                    <Typography variant="body2" color="text.secondary">
-                      Due Amount after payment
-                    </Typography>
-                    <Typography
-                      variant="h5"
-                      fontWeight="bold"
-                      color="error.main"
-                    >
-                      ৳{summary.dueAmount.toLocaleString()}
-                    </Typography>
-                  </Box>
-                ) : (
-                  <Box>
-                    <Typography variant="body2" color="text.secondary">
-                      Status
-                    </Typography>
-                    <Typography
-                      variant="h5"
-                      fontWeight="bold"
-                      color="success.main"
-                    >
-                      Fully Paid
-                    </Typography>
-                  </Box>
-                )}
-              </Box>
-            </Grid>
+
             <Grid item xs={12}>
               <Box
                 sx={{
@@ -2446,30 +2358,6 @@ const FeeStep = ({ classOptions, feeCategoryData, studentData }: any) => {
                   Summary
                 </Typography>
                 <Grid container spacing={1}>
-                  <Grid item xs={6}>
-                    <Typography variant="body2" color="text.secondary">
-                      Selected Monthly Fee:
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={6} sx={{ textAlign: "right" }}>
-                    <Typography variant="body2" fontWeight="bold">
-                      ৳{summary.totalFees.toLocaleString()}
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={6}>
-                    <Typography variant="body2" color="text.secondary">
-                      Yearly Total (12 months):
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={6} sx={{ textAlign: "right" }}>
-                    <Typography
-                      variant="body2"
-                      fontWeight="bold"
-                      color="primary.main"
-                    >
-                      ৳{summary.yearlyTotal.toLocaleString()}
-                    </Typography>
-                  </Grid>
                   {summary.totalItemDiscounts > 0 && (
                     <>
                       <Grid item xs={6}>
@@ -2490,7 +2378,7 @@ const FeeStep = ({ classOptions, feeCategoryData, studentData }: any) => {
                   )}
                   <Grid item xs={6}>
                     <Typography variant="body2" color="text.secondary">
-                      Net Payable (Monthly):
+                      Net Payable :
                     </Typography>
                   </Grid>
                   <Grid item xs={6} sx={{ textAlign: "right" }}>
@@ -2542,9 +2430,6 @@ const FeeStep = ({ classOptions, feeCategoryData, studentData }: any) => {
   );
 };
 
-// ─────────────────────────────────────────────────────────────────────────────
-// TRANSFORM FUNCTIONS
-// ─────────────────────────────────────────────────────────────────────────────
 const transformApplicationToFormData = (
   application: any,
   classOptions: any[],
@@ -2878,13 +2763,12 @@ const transformEnrollmentDataToForm = (
     totalAmount: data.totalAmount || 0,
     totalDiscount: data.totalDiscount || 0,
     netPayable: data.netPayable || 0,
-    paidAmount: 0,
+    paidAmount: data.paidAmount || 0,
     dueAmount: data.dueAmount || 0,
     advanceBalance: data.advanceBalance || 0,
   };
 };
 
-// --- MAIN COMPONENT ---
 const EnrollmentForm = ({ applicationId, admissionApplications }: any) => {
   const theme = useTheme();
   const limit = 200;
@@ -3067,7 +2951,7 @@ const EnrollmentForm = ({ applicationId, admissionApplications }: any) => {
     setOpenPrintModal(false);
     setOpenAddFeeModal(false);
     setOpenPaymentModal(false);
-    router.push(`/dashboard/enrollments/list`);
+    router.push(`/dashboard/student/list`);
   };
 
   const handleSubmit = async (data: any) => {
@@ -3090,14 +2974,14 @@ const EnrollmentForm = ({ applicationId, admissionApplications }: any) => {
         setSubmitting(false);
         return;
       }
-      if (
-        !submitData.fees ||
-        !submitData.fees.some((f: any) => f.feeItems && f.feeItems.length > 0)
-      ) {
-        toast.error("Please add at least one fee category with items");
-        setSubmitting(false);
-        return;
-      }
+      // if (
+      //   !submitData.fees ||
+      //   !submitData.fees.some((f: any) => f.feeItems && f.feeItems.length > 0)
+      // ) {
+      //   toast.error("Please add at least one fee category with items");
+      //   setSubmitting(false);
+      //   return;
+      // }
 
       const classNameArray = submitData.className
         .map((cls: any) => cls.value || cls)
@@ -3119,11 +3003,6 @@ const EnrollmentForm = ({ applicationId, admissionApplications }: any) => {
           ? ""
           : submitData.studentPhoto || "";
 
-      // ─────────────────────────────────────────────────────────────────────
-      // FIXED: Send fee items as-is with isMonthly flag intact.
-      // Do NOT expand monthly fees into 12 entries here.
-      // The backend is responsible for generating monthly fee records.
-      // ─────────────────────────────────────────────────────────────────────
       const fees: any[] = [];
 
       if (submitData.fees && Array.isArray(submitData.fees)) {
@@ -3143,7 +3022,6 @@ const EnrollmentForm = ({ applicationId, admissionApplications }: any) => {
               const isSelected = item.isSelected !== false;
               if (!feeTypeStr.trim() || !isSelected) return;
 
-              // Send isMonthly=true items as-is — backend handles month expansion
               processedFeeItems.push({
                 feeType: feeTypeStr,
                 amount: parseFloat(String(item.amount)) || 0,
@@ -3605,7 +3483,7 @@ const EnrollmentForm = ({ applicationId, admissionApplications }: any) => {
               >
                 Print Receipt
               </Button>
-              <Button
+              {/* <Button
                 variant="contained"
                 onClick={() => {
                   setOpenSuccessModal(false);
@@ -3615,7 +3493,7 @@ const EnrollmentForm = ({ applicationId, admissionApplications }: any) => {
                 sx={{ borderRadius: 2, px: 3, bgcolor: "primary.main" }}
               >
                 Add Additional Fee
-              </Button>
+              </Button> */}
             </Box>
             <Button variant="text" onClick={handleFinishProcess}>
               Close & Go to List
@@ -3628,6 +3506,9 @@ const EnrollmentForm = ({ applicationId, admissionApplications }: any) => {
           setOpen={setOpenPrintModal}
           receipt={enrolledStudentData?.data?.receipt}
           student={enrolledStudentData?.data?.student || enrolledStudentData}
+          afterClose={() => {
+            router.push("/dashboard/student/list");
+          }}
         />
         <AddFeeModal
           open={openAddFeeModal}

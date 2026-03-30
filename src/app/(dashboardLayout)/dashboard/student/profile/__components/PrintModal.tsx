@@ -6,19 +6,45 @@ import { Description, MapRounded, Phone } from "@mui/icons-material";
 import { Box, Button, Typography } from "@mui/material";
 import { useEffect, useRef } from "react";
 import { useReactToPrint } from "react-to-print";
+import { useRouter } from "next/navigation";
 
-const PrintModal = ({ open, setOpen, receipt }: any) => {
+const PrintModal = ({ open, setOpen, receipt, afterClose }: any) => {
+  const router = useRouter();
   const componentRef = useRef<HTMLDivElement | null>(null);
+  const afterCloseCalledRef = useRef(false);
+  const printTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (open) {
-      console.log("PrintModal opened with receipt:", receipt?.receiptNo);
+      afterCloseCalledRef.current = false;
+      if (printTimeoutRef.current) clearTimeout(printTimeoutRef.current);
     }
-  }, [open, receipt]);
+  }, [open]);
+
+  const handleClose = () => {
+    if (!afterCloseCalledRef.current) {
+      afterCloseCalledRef.current = true;
+      if (afterClose) afterClose();
+    }
+    setOpen(false);
+    router.push("/dashboard/student/list");
+  };
+
+  useEffect(() => {
+    if (!open && !afterCloseCalledRef.current) {
+      afterCloseCalledRef.current = true;
+      if (afterClose) afterClose();
+      router.push("/dashboard/student/list");
+    }
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handlePrint = useReactToPrint({
     contentRef: componentRef,
     documentTitle: `Money Receipt - ${receipt?.receiptNo || "Unknown"}`,
+    onAfterPrint: () => {
+      if (printTimeoutRef.current) clearTimeout(printTimeoutRef.current);
+      handleClose();
+    },
     pageStyle: `
       @page {
         size: A4;
@@ -36,6 +62,15 @@ const PrintModal = ({ open, setOpen, receipt }: any) => {
       }
     `,
   });
+
+  const handlePrintWithSafety = () => {
+    handlePrint();
+    printTimeoutRef.current = setTimeout(() => {
+      if (!afterCloseCalledRef.current) {
+        handleClose();
+      }
+    }, 5000);
+  };
 
   const formatDate = (dateString: string) => {
     if (!dateString) return "N/A";
@@ -104,7 +139,6 @@ const PrintModal = ({ open, setOpen, receipt }: any) => {
   const isMonthSelected = (monthIndex: number) =>
     monthIndex === getPaymentMonthIndex();
 
-  // Improved getClassName to handle objects
   const getClassName = () => {
     const className = receipt?.className || receipt?.studentClass;
     if (!className) return "N/A";
@@ -133,6 +167,7 @@ const PrintModal = ({ open, setOpen, receipt }: any) => {
         setOpen={setOpen}
         title="Print Money Receipt"
         size="xl"
+        onClose={handleClose}
       >
         <Box p={3}>
           <Typography>No receipt data available.</Typography>
@@ -147,6 +182,7 @@ const PrintModal = ({ open, setOpen, receipt }: any) => {
       setOpen={setOpen}
       title="Print Money Receipt"
       size="xl"
+      onClose={handleClose}
       sx={{
         "& .MuiDialog-paper": {
           height: "95vh",
@@ -163,7 +199,6 @@ const PrintModal = ({ open, setOpen, receipt }: any) => {
       }}
     >
       <Box className="p-4 flex gap-4 h-full overflow-hidden">
-        {/* RIGHT SIDE: PRINT PREVIEW */}
         <Box className="flex-1 bg-gray-100 rounded-lg p-4 overflow-y-auto flex justify-center">
           <div
             ref={componentRef}
@@ -293,7 +328,6 @@ const PrintModal = ({ open, setOpen, receipt }: any) => {
 
                 {/* Footer Grid */}
                 <div className="grid grid-cols-12 gap-0 border border-gray-300 mt-4">
-                  {/* Left: Months */}
                   <div className="col-span-8 flex flex-col">
                     <div className="p-3 bg-gray-50 border-b border-gray-200">
                       <div className="grid grid-cols-6 gap-2 text-xs font-semibold">
@@ -324,12 +358,11 @@ const PrintModal = ({ open, setOpen, receipt }: any) => {
                     </div>
                     <div className="p-3 bg-gray-100 flex-1 flex items-start gap-2">
                       <span className="font-bold text-sm whitespace-nowrap">
-                        কথায়:
+                        কথায়:
                       </span>
                       <div className="border-b border-dotted border-gray-400 w-full h-5"></div>
                     </div>
                   </div>
-                  {/* Right: Totals */}
                   <div className="col-span-4 text-sm font-semibold">
                     <div className="grid grid-cols-2 h-full">
                       <div className="flex flex-col">
@@ -340,7 +373,7 @@ const PrintModal = ({ open, setOpen, receipt }: any) => {
                           পরিশোধিত
                         </div>
                         <div className="flex-1 flex items-center justify-center bg-gray-200 border-r border-white text-[#9c27b0]">
-                          বকেয়া
+                          বকেয়া
                         </div>
                       </div>
                       <div className="flex flex-col">
@@ -382,7 +415,7 @@ const PrintModal = ({ open, setOpen, receipt }: any) => {
                   </div>
                   <div className="text-center">
                     <div className="w-32 border-t border-black mb-1"></div>
-                    <p className="text-sm font-semibold">আদায়কারীর স্বাক্ষর</p>
+                    <p className="text-sm font-semibold">আদায়কারীর স্বাক্ষর</p>
                     <p className="text-sm mt-1">
                       {receipt?.collectedBy || "Admin"}
                     </p>
@@ -406,12 +439,12 @@ const PrintModal = ({ open, setOpen, receipt }: any) => {
         <div className="printInvoiceBtnGroup flex gap-2 mt-4 justify-center no-print">
           <Button
             variant="contained"
-            onClick={handlePrint}
+            onClick={handlePrintWithSafety}
             startIcon={<Description />}
           >
             Print
           </Button>
-          <Button variant="outlined" onClick={() => setOpen(false)}>
+          <Button variant="outlined" onClick={handleClose}>
             Close
           </Button>
         </div>

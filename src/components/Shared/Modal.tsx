@@ -28,6 +28,7 @@ type TModalProps = {
   children: React.ReactNode;
   sx?: SxProps;
   size?: "sm" | "md" | "lg" | "xl";
+  onClose?: () => void; // 👈 added
 };
 
 export default function CraftModal({
@@ -37,14 +38,15 @@ export default function CraftModal({
   children,
   sx,
   size = "lg",
+  onClose,
 }: TModalProps) {
   const theme = useTheme();
 
   const handleClose = () => {
     setOpen(false);
+    if (onClose) onClose(); // 👈 call the external handler
   };
 
-  // Size mapping
   const sizeMap = {
     sm: "400px",
     md: "600px",
@@ -52,7 +54,6 @@ export default function CraftModal({
     xl: "1200px",
   };
 
-  // Default styles
   const modalStyles = {
     paper: {
       background: theme.palette.background.paper,

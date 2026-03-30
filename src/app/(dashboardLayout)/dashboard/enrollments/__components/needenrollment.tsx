@@ -1305,121 +1305,6 @@
 //                           </Grid>
 //                         );
 //                       })}
-
-//                       <Grid item xs={12}>
-//                         <Box
-//                           sx={{
-//                             mt: 2,
-//                             pt: 2,
-//                             borderTop: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-//                           }}
-//                         >
-//                           <Grid container spacing={2}>
-//                             <Grid item xs={4}>
-//                               <Typography
-//                                 variant="body1"
-//                                 fontWeight="bold"
-//                                 color="primary.main"
-//                               >
-//                                 TOTAL (Selected)
-//                               </Typography>
-//                             </Grid>
-//                             <Grid item xs={2.5}>
-//                               <CraftInputWithIcon
-//                                 name={`fees.${index}.feeAmount`}
-//                                 label=""
-//                                 fullWidth
-//                                 margin="none"
-//                                 size="small"
-//                                 type="number"
-//                                 disabled={true}
-//                                 value={feeAmount}
-//                                 InputProps={{
-//                                   startAdornment: (
-//                                     <InputAdornment position="start">
-//                                       <Typography
-//                                         variant="body2"
-//                                         color="text.secondary"
-//                                       >
-//                                         ৳
-//                                       </Typography>
-//                                     </InputAdornment>
-//                                   ),
-//                                   readOnly: true,
-//                                 }}
-//                                 sx={{
-//                                   "& .MuiInputBase-input": {
-//                                     backgroundColor: alpha(
-//                                       theme.palette.primary.light,
-//                                       0.1,
-//                                     ),
-//                                     fontWeight: "bold",
-//                                     fontSize: "1.1rem",
-//                                     color: theme.palette.primary.main,
-//                                   },
-//                                 }}
-//                               />
-//                             </Grid>
-//                             <Grid item xs={2.5}>
-//                               <Box
-//                                 sx={{
-//                                   p: 1.5,
-//                                   bgcolor: alpha(
-//                                     theme.palette.error.light,
-//                                     0.1,
-//                                   ),
-//                                   borderRadius: 1,
-//                                   border: `1px solid ${alpha(theme.palette.error.main, 0.2)}`,
-//                                 }}
-//                               >
-//                                 <Typography
-//                                   variant="body2"
-//                                   color="error.main"
-//                                   align="center"
-//                                 >
-//                                   Disc: ৳
-//                                   {feeItems
-//                                     ?.filter((item: any) => item.isSelected)
-//                                     .reduce(
-//                                       (sum: number, item: any) =>
-//                                         sum + (parseFloat(item.discount) || 0),
-//                                       0,
-//                                     )
-//                                     .toLocaleString()}
-//                                 </Typography>
-//                               </Box>
-//                             </Grid>
-//                             <Grid item xs={2}>
-//                               <Box
-//                                 sx={{
-//                                   p: 1.5,
-//                                   bgcolor: alpha(theme.palette.info.light, 0.1),
-//                                   borderRadius: 1,
-//                                   border: `1px solid ${alpha(theme.palette.info.main, 0.2)}`,
-//                                 }}
-//                               >
-//                                 <Typography
-//                                   variant="body2"
-//                                   color="info.main"
-//                                   align="center"
-//                                 >
-//                                   Pay Now: ৳
-//                                   {feeItems
-//                                     ?.filter((item: any) => item.isSelected)
-//                                     .reduce(
-//                                       (sum: number, item: any) =>
-//                                         sum +
-//                                         (parseFloat(item.advanceAmount) || 0),
-//                                       0,
-//                                     )
-//                                     .toLocaleString()}
-//                                 </Typography>
-//                               </Box>
-//                             </Grid>
-//                             <Grid item xs={1}></Grid>
-//                           </Grid>
-//                         </Box>
-//                       </Grid>
 //                     </Grid>
 //                   </Paper>
 //                 </Box>
@@ -2330,7 +2215,7 @@
 // const FeeStep = ({ classOptions, feeCategoryData, studentData }: any) => {
 //   const theme = useTheme();
 //   const { watch, setValue } = useFormContext();
-//   const [paidAmount, setPaidAmount] = useState<string>("0");
+//   const [paidAmount, setPaidAmount] = useState<string>("");
 
 //   const paymentOptions = [
 //     { label: "Cash", value: "cash" },
@@ -2430,18 +2315,7 @@
 //                 </Typography>
 //               </Box>
 //             </Grid>
-//             {summary.totalItemDiscounts > 0 && (
-//               <Grid item xs={12}>
-//                 <Alert severity="info" sx={{ borderRadius: 2 }}>
-//                   <Typography variant="body2">
-//                     Total Discounts Applied:{" "}
-//                     <strong>
-//                       - ৳{summary.totalItemDiscounts.toLocaleString()}
-//                     </strong>
-//                   </Typography>
-//                 </Alert>
-//               </Grid>
-//             )}
+
 //             <Grid item xs={12}>
 //               <Typography
 //                 variant="subtitle2"
@@ -2455,15 +2329,18 @@
 //                   <CraftInputWithIcon
 //                     name="paidAmount"
 //                     label="Pay Amount Now"
-//                     placeholder="0"
+//                     placeholder=""
 //                     type="number"
 //                     fullWidth
 //                     size="small"
-//                     value={paidAmount}
+//                     value={paidAmount || summary.totalFees.toLocaleString()}
 //                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
 //                       const value = e.target.value;
 //                       setPaidAmount(value);
-//                       setValue("paidAmount", parseFloat(value) || 0);
+//                       setValue(
+//                         "paidAmount",
+//                         parseFloat(value) || summary.totalFees.toLocaleString(),
+//                       );
 //                     }}
 //                     InputProps={{
 //                       startAdornment: (
@@ -2498,51 +2375,7 @@
 //                 </Grid>
 //               </Grid>
 //             </Grid>
-//             <Grid item xs={12}>
-//               <Box
-//                 sx={{
-//                   mt: 1,
-//                   p: 2,
-//                   borderRadius: 2,
-//                   bgcolor: alpha(
-//                     summary.dueAmount > 0
-//                       ? theme.palette.error.light
-//                       : theme.palette.success.light,
-//                     0.1,
-//                   ),
-//                   border: `1px solid ${alpha(summary.dueAmount > 0 ? theme.palette.error.main : theme.palette.success.main, 0.2)}`,
-//                   textAlign: "center",
-//                 }}
-//               >
-//                 {summary.dueAmount > 0 ? (
-//                   <Box>
-//                     <Typography variant="body2" color="text.secondary">
-//                       Due Amount after payment
-//                     </Typography>
-//                     <Typography
-//                       variant="h5"
-//                       fontWeight="bold"
-//                       color="error.main"
-//                     >
-//                       ৳{summary.dueAmount.toLocaleString()}
-//                     </Typography>
-//                   </Box>
-//                 ) : (
-//                   <Box>
-//                     <Typography variant="body2" color="text.secondary">
-//                       Status
-//                     </Typography>
-//                     <Typography
-//                       variant="h5"
-//                       fontWeight="bold"
-//                       color="success.main"
-//                     >
-//                       Fully Paid
-//                     </Typography>
-//                   </Box>
-//                 )}
-//               </Box>
-//             </Grid>
+
 //             <Grid item xs={12}>
 //               <Box
 //                 sx={{
@@ -2561,30 +2394,6 @@
 //                   Summary
 //                 </Typography>
 //                 <Grid container spacing={1}>
-//                   <Grid item xs={6}>
-//                     <Typography variant="body2" color="text.secondary">
-//                       Selected Monthly Fee:
-//                     </Typography>
-//                   </Grid>
-//                   <Grid item xs={6} sx={{ textAlign: "right" }}>
-//                     <Typography variant="body2" fontWeight="bold">
-//                       ৳{summary.totalFees.toLocaleString()}
-//                     </Typography>
-//                   </Grid>
-//                   <Grid item xs={6}>
-//                     <Typography variant="body2" color="text.secondary">
-//                       Yearly Total (12 months):
-//                     </Typography>
-//                   </Grid>
-//                   <Grid item xs={6} sx={{ textAlign: "right" }}>
-//                     <Typography
-//                       variant="body2"
-//                       fontWeight="bold"
-//                       color="primary.main"
-//                     >
-//                       ৳{summary.yearlyTotal.toLocaleString()}
-//                     </Typography>
-//                   </Grid>
 //                   {summary.totalItemDiscounts > 0 && (
 //                     <>
 //                       <Grid item xs={6}>
