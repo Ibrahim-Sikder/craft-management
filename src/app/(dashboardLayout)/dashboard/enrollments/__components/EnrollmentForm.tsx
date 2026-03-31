@@ -3508,10 +3508,9 @@ const EnrollmentForm = ({ applicationId, admissionApplications }: any) => {
           student={enrolledStudentData?.data?.student || enrolledStudentData}
           onClose={() => {
             console.log("Navigating to student list");
+            // Use window.location.href for reliable navigation
             setTimeout(() => {
-              router.push("/dashboard/student/list").catch(() => {
-                window.location.href = "/dashboard/student/list";
-              });
+              window.location.href = "/dashboard/student/list";
             }, 100);
           }}
         />
