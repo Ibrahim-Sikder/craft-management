@@ -23,9 +23,14 @@ const PrintModal = ({
   }, [open]);
 
   const handleClose = () => {
-    console.log("PrintModal handleClose"); // for debugging
+    console.log("PrintModal handleClose"); // debugging
     setOpen(false);
-    if (onClose) onClose(); // 👈 call parent's navigation callback
+    // Clear any pending timeout to avoid double navigation
+    if (printTimeoutRef.current) {
+      clearTimeout(printTimeoutRef.current);
+      printTimeoutRef.current = null;
+    }
+    if (onClose) onClose(); // call parent's navigation callback
   };
 
   const handlePrint = useReactToPrint({
@@ -55,7 +60,7 @@ const PrintModal = ({
 
   const handlePrintWithSafety = () => {
     handlePrint();
-    // Fallback in case onAfterPrint doesn't fire
+    // Fallback in case onAfterPrint doesn't fire (e.g., user cancels print)
     printTimeoutRef.current = setTimeout(() => {
       handleClose();
     }, 5000);
@@ -171,7 +176,7 @@ const PrintModal = ({
       setOpen={setOpen}
       title="Print Money Receipt"
       size="xl"
-      onClose={handleClose} // 👈 pass handleClose to CraftModal
+      onClose={handleClose}
       sx={{
         "& .MuiDialog-paper": {
           height: "95vh",

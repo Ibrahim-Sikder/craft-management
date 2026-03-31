@@ -3508,7 +3508,10 @@ const EnrollmentForm = ({ applicationId, admissionApplications }: any) => {
           student={enrolledStudentData?.data?.student || enrolledStudentData}
           onClose={() => {
             console.log("Navigating to student list");
-            router.push("/dashboard/student/list");
+            // Small delay to allow modal to fully close before navigation
+            setTimeout(() => {
+              router.push("/dashboard/student/list");
+            }, 100);
           }}
         />
         <AddFeeModal
