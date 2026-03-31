@@ -11,7 +11,7 @@ const PrintModal = ({
   open,
   setOpen,
   receipt,
-  onPrintComplete, // new prop
+  onClose, // called when modal is closed (by any means)
 }: any) => {
   const componentRef = useRef<HTMLDivElement | null>(null);
   const printTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -23,8 +23,9 @@ const PrintModal = ({
   }, [open]);
 
   const handleClose = () => {
-    // Just close the modal – no navigation
+    console.log("PrintModal handleClose"); // for debugging
     setOpen(false);
+    if (onClose) onClose(); // 👈 call parent's navigation callback
   };
 
   const handlePrint = useReactToPrint({
@@ -32,9 +33,7 @@ const PrintModal = ({
     documentTitle: `Money Receipt - ${receipt?.receiptNo || "Unknown"}`,
     onAfterPrint: () => {
       if (printTimeoutRef.current) clearTimeout(printTimeoutRef.current);
-      // After printing, call the optional callback and then close the modal
-      if (onPrintComplete) onPrintComplete();
-      handleClose();
+      handleClose(); // close after print
     },
     pageStyle: `
       @page {
@@ -56,7 +55,7 @@ const PrintModal = ({
 
   const handlePrintWithSafety = () => {
     handlePrint();
-    // Fallback timeout in case onAfterPrint doesn't fire (rare)
+    // Fallback in case onAfterPrint doesn't fire
     printTimeoutRef.current = setTimeout(() => {
       handleClose();
     }, 5000);
@@ -172,7 +171,7 @@ const PrintModal = ({
       setOpen={setOpen}
       title="Print Money Receipt"
       size="xl"
-      onClose={handleClose}
+      onClose={handleClose} // 👈 pass handleClose to CraftModal
       sx={{
         "& .MuiDialog-paper": {
           height: "95vh",

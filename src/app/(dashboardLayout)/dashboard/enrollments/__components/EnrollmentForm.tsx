@@ -3506,7 +3506,8 @@ const EnrollmentForm = ({ applicationId, admissionApplications }: any) => {
           setOpen={setOpenPrintModal}
           receipt={enrolledStudentData?.data?.receipt}
           student={enrolledStudentData?.data?.student || enrolledStudentData}
-          onPrintComplete={() => {
+          onClose={() => {
+            console.log("Navigating to student list");
             router.push("/dashboard/student/list");
           }}
         />
