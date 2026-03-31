@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { Print } from "@mui/icons-material";
 import {
   Box,
   Button,
@@ -7,10 +8,7 @@ import {
   Chip,
   Dialog,
   DialogContent,
-  DialogTitle,
-  Divider,
   Grid,
-  IconButton,
   Paper,
   Table,
   TableBody,
@@ -20,7 +18,6 @@ import {
   TableRow,
   Typography,
 } from "@mui/material";
-import { Close, Download, Print } from "@mui/icons-material";
 import React from "react";
 
 interface ReceiptDetailsDialogProps {
@@ -38,7 +35,6 @@ const ReceiptDetailsDialog: React.FC<ReceiptDetailsDialogProps> = ({
   receipt,
   studentName,
   onPrint,
-  onDownload,
 }) => {
   const getStatusColor = (status: string) => {
     switch (status?.toLowerCase()) {
@@ -63,46 +59,9 @@ const ReceiptDetailsDialog: React.FC<ReceiptDetailsDialogProps> = ({
       fullWidth
       scroll="paper"
     >
-      <DialogTitle sx={{ pb: 1 }}>
-        <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Box>
-            <Typography variant="h6" fontWeight="bold">
-              রিসিট ডিটেইলস
-            </Typography>
-            <Typography variant="body2" color="textSecondary">
-              {receipt.receiptNo} • {studentName}
-            </Typography>
-          </Box>
-          <IconButton onClick={onClose} size="small">
-            <Close />
-          </IconButton>
-        </Box>
-      </DialogTitle>
-      <Divider />
       <DialogContent dividers sx={{ py: 3 }}>
         <Box>
-          {/* হেডার */}
-          <Box textAlign="center" mb={4}>
-            <Typography
-              variant="h4"
-              fontWeight="bold"
-              color="primary"
-              gutterBottom
-            >
-              Craft International Institute
-            </Typography>
-            <Typography variant="body1" color="textSecondary" gutterBottom>
-              123 Education Street, Dhaka, Bangladesh
-            </Typography>
-            <Typography variant="body2" color="textSecondary">
-              📞 +880 1300-726000 • 📱 +880 1830-678383 • ✉️
-              info@craftinstitute.edu.bd
-            </Typography>
-          </Box>
-
-          <Divider sx={{ mb: 3 }} />
-
-          {/* রিসিট টাইটেল */}
+          {/* Receipt Title */}
           <Typography
             variant="h5"
             align="center"
@@ -113,10 +72,10 @@ const ReceiptDetailsDialog: React.FC<ReceiptDetailsDialogProps> = ({
               fontWeight: 600,
             }}
           >
-            ফি পরিশোধের রসিদ
+            Fee Payment Receipt
           </Typography>
 
-          {/* রিসিট ইনফো */}
+          {/* Receipt Info */}
           <Grid container spacing={3} mb={4}>
             <Grid item xs={6}>
               <Card variant="outlined">
@@ -126,31 +85,31 @@ const ReceiptDetailsDialog: React.FC<ReceiptDetailsDialogProps> = ({
                     color="textSecondary"
                     gutterBottom
                   >
-                    রিসিট তথ্য
+                    Receipt Information
                   </Typography>
                   <Box display="flex" justifyContent="space-between" mb={1}>
-                    <Typography variant="body2">রসিদ নং:</Typography>
+                    <Typography variant="body2">Receipt No.:</Typography>
                     <Typography fontWeight="bold">
                       {receipt.receiptNo}
                     </Typography>
                   </Box>
                   <Box display="flex" justifyContent="space-between" mb={1}>
-                    <Typography variant="body2">তারিখ:</Typography>
+                    <Typography variant="body2">Date:</Typography>
                     <Typography>
                       {new Date(receipt.paymentDate).toLocaleDateString(
-                        "bn-BD"
+                        "en-US",
                       )}
                     </Typography>
                   </Box>
                   <Box display="flex" justifyContent="space-between">
-                    <Typography variant="body2">সময়:</Typography>
+                    <Typography variant="body2">Time:</Typography>
                     <Typography>
                       {new Date(receipt.paymentDate).toLocaleTimeString(
-                        "bn-BD",
+                        "en-US",
                         {
                           hour: "2-digit",
                           minute: "2-digit",
-                        }
+                        },
                       )}
                     </Typography>
                   </Box>
@@ -166,10 +125,10 @@ const ReceiptDetailsDialog: React.FC<ReceiptDetailsDialogProps> = ({
                     color="textSecondary"
                     gutterBottom
                   >
-                    পেমেন্ট তথ্য
+                    Payment Information
                   </Typography>
                   <Box display="flex" justifyContent="space-between" mb={1}>
-                    <Typography variant="body2">স্ট্যাটাস:</Typography>
+                    <Typography variant="body2">Status:</Typography>
                     <Chip
                       label={receipt.status?.toUpperCase() || "ACTIVE"}
                       color={getStatusColor(receipt.status)}
@@ -177,13 +136,13 @@ const ReceiptDetailsDialog: React.FC<ReceiptDetailsDialogProps> = ({
                     />
                   </Box>
                   <Box display="flex" justifyContent="space-between" mb={1}>
-                    <Typography variant="body2">পদ্ধতি:</Typography>
+                    <Typography variant="body2">Method:</Typography>
                     <Typography>
                       {receipt.paymentMethod?.toUpperCase()}
                     </Typography>
                   </Box>
                   <Box display="flex" justifyContent="space-between">
-                    <Typography variant="body2">সংগ্রহকারী:</Typography>
+                    <Typography variant="body2">Collected By:</Typography>
                     <Typography>{receipt.collectedBy}</Typography>
                   </Box>
                 </CardContent>
@@ -191,34 +150,34 @@ const ReceiptDetailsDialog: React.FC<ReceiptDetailsDialogProps> = ({
             </Grid>
           </Grid>
 
-          {/* শিক্ষার্থীর তথ্য */}
+          {/* Student Information */}
           <Card variant="outlined" sx={{ mb: 4 }}>
             <CardContent>
               <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                শিক্ষার্থীর তথ্য
+                Student Information
               </Typography>
               <Grid container spacing={2}>
                 <Grid item xs={6} md={3}>
                   <Typography variant="body2" color="textSecondary">
-                    নাম
+                    Name
                   </Typography>
                   <Typography>{receipt.studentName || studentName}</Typography>
                 </Grid>
                 <Grid item xs={6} md={3}>
                   <Typography variant="body2" color="textSecondary">
-                    আইডি
+                    ID
                   </Typography>
                   <Typography>{receipt.studentId}</Typography>
                 </Grid>
                 <Grid item xs={6} md={3}>
                   <Typography variant="body2" color="textSecondary">
-                    ক্লাস
+                    Class
                   </Typography>
                   <Typography>{receipt.className}</Typography>
                 </Grid>
                 <Grid item xs={6} md={3}>
                   <Typography variant="body2" color="textSecondary">
-                    মোট টাকা
+                    Total Amount
                   </Typography>
                   <Typography variant="h6" color="primary">
                     ৳{receipt.totalAmount?.toLocaleString()}
@@ -228,11 +187,11 @@ const ReceiptDetailsDialog: React.FC<ReceiptDetailsDialogProps> = ({
             </CardContent>
           </Card>
 
-          {/* ফি আইটেমগুলোর টেবিল */}
+          {/* Fee Items Table */}
           {receipt.fees && receipt.fees.length > 0 && (
             <>
               <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                ফি আইটেমসমূহ
+                Fee Items
               </Typography>
               <TableContainer
                 component={Paper}
@@ -249,7 +208,7 @@ const ReceiptDetailsDialog: React.FC<ReceiptDetailsDialogProps> = ({
                           py: 1.5,
                         }}
                       >
-                        ক্রমিক
+                        Sl. No.
                       </TableCell>
                       <TableCell
                         sx={{
@@ -258,7 +217,7 @@ const ReceiptDetailsDialog: React.FC<ReceiptDetailsDialogProps> = ({
                           py: 1.5,
                         }}
                       >
-                        ফি ধরণ
+                        Fee Type
                       </TableCell>
                       <TableCell
                         sx={{
@@ -267,17 +226,7 @@ const ReceiptDetailsDialog: React.FC<ReceiptDetailsDialogProps> = ({
                           py: 1.5,
                         }}
                       >
-                        মাস
-                      </TableCell>
-                      <TableCell
-                        align="right"
-                        sx={{
-                          color: "white",
-                          fontWeight: "bold",
-                          py: 1.5,
-                        }}
-                      >
-                        মূল পরিমাণ
+                        Month
                       </TableCell>
                       <TableCell
                         align="right"
@@ -287,7 +236,7 @@ const ReceiptDetailsDialog: React.FC<ReceiptDetailsDialogProps> = ({
                           py: 1.5,
                         }}
                       >
-                        ডিসকাউন্ট
+                        Original Amount
                       </TableCell>
                       <TableCell
                         align="right"
@@ -297,7 +246,7 @@ const ReceiptDetailsDialog: React.FC<ReceiptDetailsDialogProps> = ({
                           py: 1.5,
                         }}
                       >
-                        ছাড়
+                        Discount
                       </TableCell>
                       <TableCell
                         align="right"
@@ -307,7 +256,7 @@ const ReceiptDetailsDialog: React.FC<ReceiptDetailsDialogProps> = ({
                           py: 1.5,
                         }}
                       >
-                        নিট পরিমাণ
+                        Waiver
                       </TableCell>
                       <TableCell
                         align="right"
@@ -317,7 +266,17 @@ const ReceiptDetailsDialog: React.FC<ReceiptDetailsDialogProps> = ({
                           py: 1.5,
                         }}
                       >
-                        পরিশোধিত
+                        Net Amount
+                      </TableCell>
+                      <TableCell
+                        align="right"
+                        sx={{
+                          color: "white",
+                          fontWeight: "bold",
+                          py: 1.5,
+                        }}
+                      >
+                        Paid
                       </TableCell>
                     </TableRow>
                   </TableHead>
@@ -356,7 +315,7 @@ const ReceiptDetailsDialog: React.FC<ReceiptDetailsDialogProps> = ({
                 </Table>
               </TableContainer>
 
-              {/* সামারি */}
+              {/* Summary */}
               {receipt.summary && (
                 <Card variant="outlined" sx={{ mb: 4 }}>
                   <CardContent>
@@ -365,12 +324,12 @@ const ReceiptDetailsDialog: React.FC<ReceiptDetailsDialogProps> = ({
                       fontWeight="bold"
                       gutterBottom
                     >
-                      ফি সারাংশ
+                      Fee Summary
                     </Typography>
                     <Grid container spacing={2}>
                       <Grid item xs={6} sm={3}>
                         <Typography variant="body2" color="textSecondary">
-                          মোট আইটেম
+                          Total Items
                         </Typography>
                         <Typography variant="h6">
                           {receipt.summary.totalItems}
@@ -378,7 +337,7 @@ const ReceiptDetailsDialog: React.FC<ReceiptDetailsDialogProps> = ({
                       </Grid>
                       <Grid item xs={6} sm={3}>
                         <Typography variant="body2" color="textSecondary">
-                          মোট পরিমাণ
+                          Subtotal
                         </Typography>
                         <Typography variant="h6">
                           ৳{receipt.summary.subtotal?.toLocaleString()}
@@ -386,7 +345,7 @@ const ReceiptDetailsDialog: React.FC<ReceiptDetailsDialogProps> = ({
                       </Grid>
                       <Grid item xs={6} sm={3}>
                         <Typography variant="body2" color="textSecondary">
-                          মোট ডিসকাউন্ট
+                          Total Discount
                         </Typography>
                         <Typography variant="h6" color="error">
                           ৳{receipt.summary.totalDiscount?.toLocaleString()}
@@ -394,7 +353,7 @@ const ReceiptDetailsDialog: React.FC<ReceiptDetailsDialogProps> = ({
                       </Grid>
                       <Grid item xs={6} sm={3}>
                         <Typography variant="body2" color="textSecondary">
-                          মোট ছাড়
+                          Total Waiver
                         </Typography>
                         <Typography variant="h6" color="error">
                           ৳{receipt.summary.totalWaiver?.toLocaleString()}
@@ -410,7 +369,7 @@ const ReceiptDetailsDialog: React.FC<ReceiptDetailsDialogProps> = ({
                           justifyContent="space-between"
                           alignItems="center"
                         >
-                          <Typography variant="h5">মোট পরিশোধিত:</Typography>
+                          <Typography variant="h5">Total Paid:</Typography>
                           <Typography
                             variant="h3"
                             color="primary"
@@ -427,18 +386,18 @@ const ReceiptDetailsDialog: React.FC<ReceiptDetailsDialogProps> = ({
             </>
           )}
 
-          {/* অতিরিক্ত তথ্য */}
+          {/* Additional Information */}
           {(receipt.transactionId || receipt.note) && (
             <Card variant="outlined" sx={{ mb: 4 }}>
               <CardContent>
                 <Typography variant="subtitle1" fontWeight="bold" gutterBottom>
-                  অতিরিক্ত তথ্য
+                  Additional Information
                 </Typography>
                 <Grid container spacing={2}>
                   {receipt.transactionId && (
                     <Grid item xs={12}>
                       <Typography variant="body2" color="textSecondary">
-                        লেনদেন আইডি
+                        Transaction ID
                       </Typography>
                       <Typography>{receipt.transactionId}</Typography>
                     </Grid>
@@ -446,7 +405,7 @@ const ReceiptDetailsDialog: React.FC<ReceiptDetailsDialogProps> = ({
                   {receipt.note && (
                     <Grid item xs={12}>
                       <Typography variant="body2" color="textSecondary">
-                        মন্তব্য
+                        Note
                       </Typography>
                       <Typography>{receipt.note}</Typography>
                     </Grid>
@@ -456,7 +415,7 @@ const ReceiptDetailsDialog: React.FC<ReceiptDetailsDialogProps> = ({
             </Card>
           )}
 
-          {/* একশন বাটন */}
+          {/* Action Buttons */}
           <Box display="flex" justifyContent="center" gap={3} mt={4}>
             <Button
               variant="contained"
@@ -465,24 +424,16 @@ const ReceiptDetailsDialog: React.FC<ReceiptDetailsDialogProps> = ({
               size="large"
               sx={{ px: 4, py: 1.5 }}
             >
-              রিসিট প্রিন্ট করুন
+              Print Receipt
             </Button>
-            <Button
-              variant="outlined"
-              startIcon={<Download />}
-              onClick={() => onDownload(receipt)}
-              size="large"
-              sx={{ px: 4, py: 1.5 }}
-            >
-              ডাউনলোড করুন
-            </Button>
+
             <Button
               variant="text"
               onClick={onClose}
               size="large"
               sx={{ px: 4, py: 1.5 }}
             >
-              বন্ধ করুন
+              Close
             </Button>
           </Box>
         </Box>

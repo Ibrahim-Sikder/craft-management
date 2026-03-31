@@ -18,19 +18,8 @@ import BulkPaymentModal from "./BulkPaymentModal";
 import LateFeeCustomizationModal from "./LateFeeCustomizationModal";
 import PaymentModal from "./PaymentModal";
 import FeeSummaryCards from "./FeeSummaryCards";
-
-interface StudentFeeProps {
-  studentFees: any[];
-  loading?: boolean;
-  onView?: (fee: any) => void;
-  onEdit?: (fee: any) => void;
-  onDelete?: (fee: any) => void;
-  onDownload?: (fee: any) => void;
-  onPay?: (fee: any) => void;
-  onAddFee?: (feeData: any) => void;
-  student?: any;
-  refetch?: () => void;
-}
+import ViewFeeModal from "./ViewFeeModal"; // <-- import the new modal
+import { StudentFeeProps } from "@/interface/student";
 
 const PaidStudentFee = ({
   studentFees,
@@ -55,7 +44,10 @@ const PaidStudentFee = ({
     totalOverdue: 0,
   });
 
-  // Filter only paid fees (status = "paid")
+  // State for view modal
+  const [viewModalOpen, setViewModalOpen] = useState(false);
+  const [selectedFeeForView, setSelectedFeeForView] = useState<any>(null);
+
   useEffect(() => {
     const paidFees = studentFees?.filter((fee) => fee?.status === "paid") || [];
     setFilteredFees(paidFees);
@@ -87,6 +79,13 @@ const PaidStudentFee = ({
   const handleCustomizeLateFeeClick = (fee: any) => {
     setSelectedFee(fee);
     setCustomizationModalOpen(true);
+  };
+
+  const handleViewClick = (fee: any) => {
+    setSelectedFeeForView(fee);
+    setViewModalOpen(true);
+    // Optionally still call onView if needed
+    if (onView) onView(fee);
   };
 
   const handlePaymentSuccess = (paymentData: any) => {
@@ -200,14 +199,7 @@ const PaidStudentFee = ({
       sortable: true,
       filterable: true,
     },
-    {
-      id: "month",
-      label: "Month",
-      minWidth: 120,
-      sortable: true,
-      filterable: true,
-      type: "text",
-    },
+
     {
       id: "amount",
       label: "Total Amount",
@@ -217,44 +209,7 @@ const PaidStudentFee = ({
       type: "number",
       format: (value: number) => `৳${value?.toLocaleString()}`,
     },
-    {
-      id: "discount",
-      label: "Discount",
-      minWidth: 100,
-      align: "right",
-      sortable: true,
-      type: "number",
-      format: (value: number) =>
-        value > 0 ? `-৳${value?.toLocaleString()}` : "৳0",
-      render: (row: any) => (
-        <Typography
-          color={row.discount > 0 ? "error" : "text.secondary"}
-          variant="body2"
-          fontWeight={row.discount > 0 ? "bold" : "normal"}
-        >
-          {row.discount > 0 ? `-৳${row.discount?.toLocaleString()}` : "৳0"}
-        </Typography>
-      ),
-    },
-    {
-      id: "waiver",
-      label: "Waiver",
-      minWidth: 100,
-      align: "right",
-      sortable: true,
-      type: "number",
-      format: (value: number) =>
-        value > 0 ? `-৳${value?.toLocaleString()}` : "৳0",
-      render: (row: any) => (
-        <Typography
-          color={row.waiver > 0 ? "error" : "text.secondary"}
-          variant="body2"
-          fontWeight={row.waiver > 0 ? "bold" : "normal"}
-        >
-          {row.waiver > 0 ? `-৳${row.waiver?.toLocaleString()}` : "৳0"}
-        </Typography>
-      ),
-    },
+
     {
       id: "netAmount",
       label: "Net Amount",
@@ -305,129 +260,7 @@ const PaidStudentFee = ({
         </Typography>
       ),
     },
-    {
-      id: "dueDate",
-      label: "Due Date",
-      minWidth: 120,
-      sortable: true,
-      type: "date",
-      format: (value: string) => {
-        if (!value) return "N/A";
-        try {
-          return new Date(value).toLocaleDateString();
-        } catch {
-          return "Invalid Date";
-        }
-      },
-      render: (row: any) => {
-        return (
-          <Typography variant="body2">
-            {row.dueDate ? new Date(row.dueDate).toLocaleDateString() : "N/A"}
-          </Typography>
-        );
-      },
-    },
-    {
-      id: "lateFee",
-      label: "Late Fee Paid",
-      minWidth: 130,
-      align: "right",
-      sortable: true,
-      render: (row: any) => {
-        if (row.isLateFeeRecord) return null;
 
-        return (
-          <Box>
-            {row.lateFeeAmount > 0 ? (
-              <>
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "flex-end",
-                    gap: 0.5,
-                  }}
-                >
-                  <Typography
-                    variant="body2"
-                    color="warning.main"
-                    fontWeight="bold"
-                    sx={{
-                      textDecoration: row.lateFeeCustomized
-                        ? "underline"
-                        : "none",
-                      textDecorationStyle: "dotted",
-                    }}
-                  >
-                    ৳{row.lateFeeAmount?.toLocaleString()}
-                  </Typography>
-                  {row.lateFeeCustomized && (
-                    <Tooltip title="Customized">
-                      <Edit sx={{ fontSize: 14, color: "success.main" }} />
-                    </Tooltip>
-                  )}
-                </Box>
-                {row.lateFeeAppliedDate && (
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{ fontSize: "0.625rem", display: "block" }}
-                  >
-                    Applied:{" "}
-                    {new Date(row.lateFeeAppliedDate).toLocaleDateString()}
-                  </Typography>
-                )}
-              </>
-            ) : (
-              <Typography variant="body2" color="text.disabled">
-                ৳0
-              </Typography>
-            )}
-          </Box>
-        );
-      },
-    },
-    {
-      id: "lateFeeStatus",
-      label: "Late Status",
-      minWidth: 120,
-      align: "center",
-      render: (row: any) => {
-        if (row.isLateFeeRecord) return null;
-
-        if (row.lateFeeAmount > 0) {
-          return (
-            <Chip
-              label={row.lateFeeCustomized ? "Customized" : "Late Fee Paid"}
-              size="small"
-              color={row.lateFeeCustomized ? "success" : "warning"}
-              variant={row.lateFeeCustomized ? "filled" : "outlined"}
-              sx={{ height: 24, fontWeight: "bold" }}
-              icon={row.lateFeeCustomized ? <CheckCircle /> : undefined}
-            />
-          );
-        } else {
-          return (
-            <Chip
-              label="No Late Fee"
-              size="small"
-              color="success"
-              variant="outlined"
-              sx={{ height: 24 }}
-            />
-          );
-        }
-      },
-    },
-    {
-      id: "advanceUsed",
-      label: "Advance Used",
-      minWidth: 120,
-      align: "right",
-      sortable: true,
-      type: "number",
-      format: (value: number) => `৳${value?.toLocaleString()}`,
-    },
     {
       id: "paymentDate",
       label: "Payment Date",
@@ -521,39 +354,11 @@ const PaidStudentFee = ({
     {
       label: "View Details",
       icon: <Visibility fontSize="small" />,
-      onClick: (row) => onView?.(row),
+      onClick: (row) => handleViewClick(row),
       color: "info",
       tooltip: "View fee details",
     },
-    {
-      label: "Download Receipt",
-      icon: <Download fontSize="small" />,
-      onClick: (row) => onDownload?.(row),
-      color: "secondary",
-      tooltip: "Download payment receipt",
-      disabled: (row) => !row.paidAmount || row.paidAmount === 0,
-    },
-    {
-      label: "View Payment History",
-      icon: <History fontSize="small" />,
-      onClick: (row) => {},
-      color: "info",
-      tooltip: "View payment history",
-      inMenu: true,
-    },
-    {
-      label: "View Late Fee History",
-      icon: <History fontSize="small" />,
-      onClick: (row) => {
-        if (row.lateFeeAmount > 0) {
-          handleCustomizeLateFeeClick(row);
-        }
-      },
-      color: "info",
-      tooltip: "View late fee customization history",
-      disabled: (row) => !row.lateFeeAmount || row.lateFeeAmount === 0,
-      inMenu: true,
-    },
+
     {
       label: "Delete",
       icon: <Delete fontSize="small" />,
@@ -603,28 +408,6 @@ const PaidStudentFee = ({
         rowNumberHeader="#"
         onRefresh={refetch}
         onAdd={handleAddFeeClick}
-        bulkActions={[
-          {
-            label: "Download Receipts",
-            icon: <Download fontSize="small" />,
-            onClick: (selectedRows) => {
-              alert(
-                `Downloading receipts for ${selectedRows.length} selected fees`,
-              );
-            },
-          },
-          {
-            label: "Export Selected",
-            icon: <Download fontSize="small" />,
-            onClick: (selectedRows) => {},
-          },
-          {
-            label: "Delete Selected",
-            icon: <Delete fontSize="small" />,
-            onClick: (selectedRows) => {},
-            color: "error",
-          },
-        ]}
       />
 
       {/* Payment Modal */}
@@ -658,13 +441,21 @@ const PaidStudentFee = ({
         onSuccess={handleCustomizationSuccess}
       />
 
-      {/* Bulk Payment Modal - Not needed for paid fees, but kept for consistency */}
+      {/* Bulk Payment Modal */}
       <BulkPaymentModal
         open={bulkPaymentModalOpen}
         onClose={() => setBulkPaymentModalOpen(false)}
         student={student}
         fees={[]}
         refetch={refetch}
+      />
+
+      {/* View Fee Modal */}
+      <ViewFeeModal
+        open={viewModalOpen}
+        onClose={() => setViewModalOpen(false)}
+        fee={selectedFeeForView}
+        student={student}
       />
     </Box>
   );

@@ -6,43 +6,34 @@ import { Description, MapRounded, Phone } from "@mui/icons-material";
 import { Box, Button, Typography } from "@mui/material";
 import { useEffect, useRef } from "react";
 import { useReactToPrint } from "react-to-print";
-import { useRouter } from "next/navigation";
 
-const PrintModal = ({ open, setOpen, receipt, afterClose }: any) => {
-  const router = useRouter();
+const PrintModal = ({
+  open,
+  setOpen,
+  receipt,
+  onPrintComplete, // new prop
+}: any) => {
   const componentRef = useRef<HTMLDivElement | null>(null);
-  const afterCloseCalledRef = useRef(false);
   const printTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (open) {
-      afterCloseCalledRef.current = false;
       if (printTimeoutRef.current) clearTimeout(printTimeoutRef.current);
     }
   }, [open]);
 
   const handleClose = () => {
-    if (!afterCloseCalledRef.current) {
-      afterCloseCalledRef.current = true;
-      if (afterClose) afterClose();
-    }
+    // Just close the modal – no navigation
     setOpen(false);
-    router.push("/dashboard/student/list");
   };
-
-  useEffect(() => {
-    if (!open && !afterCloseCalledRef.current) {
-      afterCloseCalledRef.current = true;
-      if (afterClose) afterClose();
-      router.push("/dashboard/student/list");
-    }
-  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handlePrint = useReactToPrint({
     contentRef: componentRef,
     documentTitle: `Money Receipt - ${receipt?.receiptNo || "Unknown"}`,
     onAfterPrint: () => {
       if (printTimeoutRef.current) clearTimeout(printTimeoutRef.current);
+      // After printing, call the optional callback and then close the modal
+      if (onPrintComplete) onPrintComplete();
       handleClose();
     },
     pageStyle: `
@@ -65,10 +56,9 @@ const PrintModal = ({ open, setOpen, receipt, afterClose }: any) => {
 
   const handlePrintWithSafety = () => {
     handlePrint();
+    // Fallback timeout in case onAfterPrint doesn't fire (rare)
     printTimeoutRef.current = setTimeout(() => {
-      if (!afterCloseCalledRef.current) {
-        handleClose();
-      }
+      handleClose();
     }, 5000);
   };
 

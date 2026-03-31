@@ -34,17 +34,7 @@ import StudentOverview from "./StudentOverview";
 import { getStatusColor } from "./Utils";
 import DueStudentFee from "./DueStudentFee";
 import PaidStudentFee from "./PaidStudentFee";
-
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
-interface PageProps {
-  params: {
-    id: string;
-  };
-}
+import { PageProps, TabPanelProps } from "@/interface/student";
 
 function TabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
@@ -70,7 +60,7 @@ const StudentProfile = ({ params }: PageProps) => {
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
-
+  console.log("Fetched student data:", singleStudent);
   return (
     <Container maxWidth="xl" sx={{ p: { xs: "4px" } }}>
       <Card sx={{ mb: 3, overflow: "visible" }}>

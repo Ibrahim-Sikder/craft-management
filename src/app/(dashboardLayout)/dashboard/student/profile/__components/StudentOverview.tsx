@@ -4,11 +4,9 @@
 
 import {
   Box,
-  Button,
   Chip,
   Divider,
   Grid,
-  LinearProgress,
   Typography,
   Alert,
   Paper,
@@ -17,10 +15,8 @@ import {
 } from "@mui/material";
 import {
   Home,
-  LocalLibrary,
   Person,
   School,
-  People,
   CalendarMonth,
   Email,
   Phone,
@@ -31,7 +27,10 @@ import {
   Verified,
   ContactPhone,
   FamilyRestroom,
-  Book,
+  Info,
+  CheckCircle,
+  Cancel,
+  Assignment,
 } from "@mui/icons-material";
 import { format } from "date-fns";
 
@@ -59,13 +58,31 @@ const formatDate = (dateString: string) => {
   }
 };
 
-const sampleSubjects = [
-  { name: "Mathematics", progress: 85 },
-  { name: "Science", progress: 92 },
-  { name: "English", progress: 78 },
-  { name: "Social Studies", progress: 88 },
-  { name: "Computer Science", progress: 95 },
-];
+// Helper to safely extract class name from array or object
+const getClassName = (classData: any): string => {
+  if (!classData) return "N/A";
+  if (Array.isArray(classData) && classData.length > 0) {
+    const first = classData[0];
+    if (typeof first === "string") return first;
+    if (first.className) return first.className;
+    if (first.name) return first.name;
+    return "N/A";
+  }
+  if (typeof classData === "string") return classData;
+  if (classData.className) return classData.className;
+  if (classData.name) return classData.name;
+  return "N/A";
+};
+
+// Helper to safely get sections
+const getSections = (sectionData: any): string => {
+  if (!sectionData) return "N/A";
+  if (Array.isArray(sectionData) && sectionData.length > 0) {
+    return sectionData.join(", ");
+  }
+  if (typeof sectionData === "string") return sectionData;
+  return "N/A";
+};
 
 const StudentOverview = ({ student }: { student: any }) => {
   const theme = useTheme();
@@ -79,32 +96,21 @@ const StudentOverview = ({ student }: { student: any }) => {
   }
 
   const studentData = student.data || student;
-
-  const className = studentData.className?.[0]?.className || "N/A";
-  const sections = studentData.section || [];
-
-  const totalFees =
-    studentData.fees?.reduce(
-      (sum: number, fee: any) => sum + (fee.amount || 0),
-      0
-    ) || 0;
-  const totalPaid =
-    studentData.payments?.reduce(
-      (sum: number, payment: any) => sum + (payment.amountPaid || 0),
-      0
-    ) || 0;
-  const balance = totalFees - totalPaid + (studentData.advanceBalance || 0);
+  const className = getClassName(studentData.className);
+  const sections = getSections(studentData.section);
 
   return (
     <Grid container spacing={3}>
+      {/* LEFT COLUMN - Personal & Guardian Information */}
       <Grid item xs={12} md={6}>
+        {/* Personal Information */}
         <Paper
           elevation={0}
           sx={{
             p: 3,
             borderRadius: 2,
             border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-            height: "100%",
+            mb: 3,
           }}
         >
           <Typography
@@ -225,42 +231,196 @@ const StudentOverview = ({ student }: { student: any }) => {
                 {formatDate(studentData.createdAt)}
               </Typography>
             </Grid>
+            {studentData.birthRegistrationNo && (
+              <Grid item xs={12}>
+                <Typography
+                  variant="subtitle2"
+                  color="text.secondary"
+                  sx={{ display: "flex", alignItems: "center" }}
+                >
+                  <Info fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} /> Birth
+                  Registration No.
+                </Typography>
+                <Typography variant="body1" fontWeight="medium">
+                  {studentData.birthRegistrationNo}
+                </Typography>
+              </Grid>
+            )}
           </Grid>
-
-          <Typography
-            variant="h6"
-            gutterBottom
-            sx={{ mt: 4, display: "flex", alignItems: "center" }}
-          >
-            <Home sx={{ mr: 1, color: theme.palette.primary.main }} /> Address
-            Information
-          </Typography>
-          <Divider sx={{ mb: 2 }} />
-
-          <Box sx={{ mb: 3 }}>
-            <Typography
-              variant="subtitle2"
-              color="text.secondary"
-              sx={{ display: "flex", alignItems: "center", mb: 1 }}
-            >
-              <LocationOn fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} />{" "}
-              Same as Permanent Address
-            </Typography>
-            <Typography variant="body1" fontWeight="medium">
-              {studentData.sameAsPermanent ? "Yes" : "No"}
-            </Typography>
-          </Box>
         </Paper>
-      </Grid>
 
-      <Grid item xs={12} md={6}>
+        {/* Guardian Information */}
         <Paper
           elevation={0}
           sx={{
             p: 3,
             borderRadius: 2,
             border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
-            height: "100%",
+          }}
+        >
+          <Typography
+            variant="h6"
+            gutterBottom
+            sx={{ display: "flex", alignItems: "center" }}
+          >
+            <FamilyRestroom sx={{ mr: 1, color: theme.palette.primary.main }} />{" "}
+            Guardian Information
+          </Typography>
+          <Divider sx={{ mb: 2 }} />
+          <Grid container spacing={2}>
+            <Grid item xs={6}>
+              <Typography
+                variant="subtitle2"
+                color="text.secondary"
+                sx={{ display: "flex", alignItems: "center" }}
+              >
+                <FamilyRestroom
+                  fontSize="small"
+                  sx={{ mr: 0.5, opacity: 0.7 }}
+                />{" "}
+                Father's Name
+              </Typography>
+              <Typography variant="body1" fontWeight="medium">
+                {studentData.fatherName || "N/A"}
+              </Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography
+                variant="subtitle2"
+                color="text.secondary"
+                sx={{ display: "flex", alignItems: "center" }}
+              >
+                <Phone fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} />{" "}
+                Father's Mobile
+              </Typography>
+              <Typography variant="body1" fontWeight="medium">
+                {studentData.fatherMobile || "N/A"}
+              </Typography>
+            </Grid>
+            {studentData.fatherProfession && (
+              <Grid item xs={12}>
+                <Typography
+                  variant="subtitle2"
+                  color="text.secondary"
+                  sx={{ display: "flex", alignItems: "center" }}
+                >
+                  <Info fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} />{" "}
+                  Father's Profession
+                </Typography>
+                <Typography variant="body1" fontWeight="medium">
+                  {studentData.fatherProfession}
+                </Typography>
+              </Grid>
+            )}
+            <Grid item xs={6}>
+              <Typography
+                variant="subtitle2"
+                color="text.secondary"
+                sx={{ display: "flex", alignItems: "center" }}
+              >
+                <FamilyRestroom
+                  fontSize="small"
+                  sx={{ mr: 0.5, opacity: 0.7 }}
+                />{" "}
+                Mother's Name
+              </Typography>
+              <Typography variant="body1" fontWeight="medium">
+                {studentData.motherName || "N/A"}
+              </Typography>
+            </Grid>
+            <Grid item xs={6}>
+              <Typography
+                variant="subtitle2"
+                color="text.secondary"
+                sx={{ display: "flex", alignItems: "center" }}
+              >
+                <Phone fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} />{" "}
+                Mother's Mobile
+              </Typography>
+              <Typography variant="body1" fontWeight="medium">
+                {studentData.motherMobile || "N/A"}
+              </Typography>
+            </Grid>
+            {studentData.motherProfession && (
+              <Grid item xs={12}>
+                <Typography
+                  variant="subtitle2"
+                  color="text.secondary"
+                  sx={{ display: "flex", alignItems: "center" }}
+                >
+                  <Info fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} />{" "}
+                  Mother's Profession
+                </Typography>
+                <Typography variant="body1" fontWeight="medium">
+                  {studentData.motherProfession}
+                </Typography>
+              </Grid>
+            )}
+            {/* Additional Guardian */}
+            {studentData.guardianInfo && (
+              <>
+                <Grid item xs={12}>
+                  <Divider sx={{ my: 1 }} />
+                  <Typography
+                    variant="subtitle2"
+                    color="text.secondary"
+                    sx={{ display: "flex", alignItems: "center" }}
+                  >
+                    <ContactPhone
+                      fontSize="small"
+                      sx={{ mr: 0.5, opacity: 0.7 }}
+                    />{" "}
+                    Emergency Contact
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="body2" color="text.secondary">
+                    Name
+                  </Typography>
+                  <Typography variant="body1" fontWeight="medium">
+                    {studentData.guardianInfo.name || "N/A"}
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="body2" color="text.secondary">
+                    Relation
+                  </Typography>
+                  <Typography variant="body1" fontWeight="medium">
+                    {studentData.guardianInfo.relation || "N/A"}
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="body2" color="text.secondary">
+                    Mobile
+                  </Typography>
+                  <Typography variant="body1" fontWeight="medium">
+                    {studentData.guardianInfo.mobile || "N/A"}
+                  </Typography>
+                </Grid>
+                <Grid item xs={6}>
+                  <Typography variant="body2" color="text.secondary">
+                    Address
+                  </Typography>
+                  <Typography variant="body1" fontWeight="medium">
+                    {studentData.guardianInfo.address || "N/A"}
+                  </Typography>
+                </Grid>
+              </>
+            )}
+          </Grid>
+        </Paper>
+      </Grid>
+
+      {/* RIGHT COLUMN - Academic, Address, Previous School, Documents */}
+      <Grid item xs={12} md={6}>
+        {/* Academic Information */}
+        <Paper
+          elevation={0}
+          sx={{
+            p: 3,
+            borderRadius: 2,
+            border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+            mb: 3,
           }}
         >
           <Typography
@@ -295,7 +455,7 @@ const StudentOverview = ({ student }: { student: any }) => {
                 Section
               </Typography>
               <Typography variant="body1" fontWeight="medium">
-                {sections.length > 0 ? sections.join(", ") : "N/A"}
+                {sections}
               </Typography>
             </Grid>
             <Grid item xs={6}>
@@ -327,216 +487,272 @@ const StudentOverview = ({ student }: { student: any }) => {
                 sx={{ fontWeight: "medium" }}
               />
             </Grid>
-            <Grid item xs={6}>
-              <Typography
-                variant="subtitle2"
-                color="text.secondary"
-                sx={{ display: "flex", alignItems: "center" }}
-              >
-                <Badge fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} /> Smart
-                ID Card
-              </Typography>
-              <Typography variant="body1" fontWeight="medium">
-                {studentData.smartIdCard || "N/A"}
-              </Typography>
-            </Grid>
-            <Grid item xs={6}>
-              <Typography
-                variant="subtitle2"
-                color="text.secondary"
-                sx={{ display: "flex", alignItems: "center" }}
-              >
-                <CalendarMonth
-                  fontSize="small"
-                  sx={{ mr: 0.5, opacity: 0.7 }}
-                />{" "}
-                Last Updated
-              </Typography>
-              <Typography variant="body1" fontWeight="medium">
-                {formatDate(studentData.updatedAt)}
-              </Typography>
-            </Grid>
-          </Grid>
-
-          <Typography
-            variant="h6"
-            gutterBottom
-            sx={{ mt: 4, display: "flex", alignItems: "center" }}
-          >
-            <People sx={{ mr: 1, color: theme.palette.primary.main }} />{" "}
-            Guardian Information
-          </Typography>
-          <Divider sx={{ mb: 2 }} />
-          <Grid container spacing={2}>
-            <Grid item xs={6}>
-              <Typography
-                variant="subtitle2"
-                color="text.secondary"
-                sx={{ display: "flex", alignItems: "center" }}
-              >
-                <FamilyRestroom
-                  fontSize="small"
-                  sx={{ mr: 0.5, opacity: 0.7 }}
-                />{" "}
-                Father's Name
-              </Typography>
-              <Typography variant="body1" fontWeight="medium">
-                {studentData.fatherName || "N/A"}
-              </Typography>
-            </Grid>
-            <Grid item xs={6}>
-              <Typography
-                variant="subtitle2"
-                color="text.secondary"
-                sx={{ display: "flex", alignItems: "center" }}
-              >
-                <ContactPhone fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} />{" "}
-                Father's Mobile
-              </Typography>
-              <Typography variant="body1" fontWeight="medium">
-                {studentData.fatherMobile || "N/A"}
-              </Typography>
-            </Grid>
-            <Grid item xs={6}>
-              <Typography
-                variant="subtitle2"
-                color="text.secondary"
-                sx={{ display: "flex", alignItems: "center" }}
-              >
-                <Person fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} />{" "}
-                Mother's Name
-              </Typography>
-              <Typography variant="body1" fontWeight="medium">
-                {studentData.motherName || "N/A"}
-              </Typography>
-            </Grid>
-            <Grid item xs={6}>
-              <Typography
-                variant="subtitle2"
-                color="text.secondary"
-                sx={{ display: "flex", alignItems: "center" }}
-              >
-                <ContactPhone fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} />{" "}
-                Mother's Mobile
-              </Typography>
-              <Typography variant="body1" fontWeight="medium">
-                {studentData.motherMobile || "N/A"}
-              </Typography>
-            </Grid>
-          </Grid>
-
-          <Typography
-            variant="h6"
-            gutterBottom
-            sx={{ mt: 4, display: "flex", alignItems: "center" }}
-          >
-            <School sx={{ mr: 1, color: theme.palette.primary.main }} />{" "}
-            Financial Summary
-          </Typography>
-          <Divider sx={{ mb: 2 }} />
-          <Grid container spacing={2}>
-            <Grid item xs={6}>
-              <Typography variant="subtitle2" color="text.secondary">
-                Total Fees
-              </Typography>
-              <Typography variant="body1" fontWeight="medium">
-                ৳{totalFees.toFixed(2)}
-              </Typography>
-            </Grid>
-            <Grid item xs={6}>
-              <Typography variant="subtitle2" color="text.secondary">
-                Total Paid
-              </Typography>
-              <Typography
-                variant="body1"
-                fontWeight="medium"
-                color="success.main"
-              >
-                ৳{totalPaid.toFixed(2)}
-              </Typography>
-            </Grid>
-            <Grid item xs={6}>
-              <Typography variant="subtitle2" color="text.secondary">
-                Advance Balance
-              </Typography>
-              <Typography variant="body1" fontWeight="medium" color="info.main">
-                ৳{studentData.advanceBalance?.toFixed(2) || "0.00"}
-              </Typography>
-            </Grid>
-            <Grid item xs={6}>
-              <Typography variant="subtitle2" color="text.secondary">
-                Current Balance
-              </Typography>
-              <Typography
-                variant="body1"
-                fontWeight="medium"
-                color={balance >= 0 ? "error.main" : "success.main"}
-              >
-                ৳{balance.toFixed(2)}
-              </Typography>
-            </Grid>
-          </Grid>
-
-          <Typography
-            variant="h6"
-            gutterBottom
-            sx={{ mt: 4, display: "flex", alignItems: "center" }}
-          >
-            <LocalLibrary sx={{ mr: 1, color: theme.palette.primary.main }} />{" "}
-            Subject Progress
-          </Typography>
-          <Divider sx={{ mb: 2 }} />
-          {sampleSubjects.slice(0, 3).map((subject, index) => (
-            <Box key={index} sx={{ mb: 2 }}>
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  mb: 0.5,
-                  alignItems: "center",
-                }}
-              >
+            {studentData.smartIdCard && (
+              <Grid item xs={6}>
                 <Typography
-                  variant="body2"
+                  variant="subtitle2"
+                  color="text.secondary"
                   sx={{ display: "flex", alignItems: "center" }}
                 >
-                  <Book fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} />{" "}
-                  {subject.name}
+                  <Badge fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} />{" "}
+                  Smart ID Card
                 </Typography>
-                <Typography variant="body2" fontWeight="medium">
-                  {subject.progress}%
+                <Typography variant="body1" fontWeight="medium">
+                  {studentData.smartIdCard}
                 </Typography>
-              </Box>
-              <LinearProgress
-                variant="determinate"
-                value={subject.progress}
-                color={
-                  subject.progress >= 90
-                    ? "success"
-                    : subject.progress >= 70
-                      ? "primary"
-                      : subject.progress >= 50
-                        ? "warning"
-                        : "error"
-                }
-                sx={{ height: 8, borderRadius: 1 }}
-              />
+              </Grid>
+            )}
+            {studentData.activeSession &&
+              studentData.activeSession.length > 0 && (
+                <Grid item xs={12}>
+                  <Typography
+                    variant="subtitle2"
+                    color="text.secondary"
+                    sx={{ display: "flex", alignItems: "center" }}
+                  >
+                    <CalendarMonth
+                      fontSize="small"
+                      sx={{ mr: 0.5, opacity: 0.7 }}
+                    />{" "}
+                    Active Session
+                  </Typography>
+                  <Typography variant="body1" fontWeight="medium">
+                    {studentData.activeSession.join(", ")}
+                  </Typography>
+                </Grid>
+              )}
+          </Grid>
+        </Paper>
+
+        {/* Address Information */}
+        <Paper
+          elevation={0}
+          sx={{
+            p: 3,
+            borderRadius: 2,
+            border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+            mb: 3,
+          }}
+        >
+          <Typography
+            variant="h6"
+            gutterBottom
+            sx={{ display: "flex", alignItems: "center" }}
+          >
+            <Home sx={{ mr: 1, color: theme.palette.primary.main }} /> Address
+            Information
+          </Typography>
+          <Divider sx={{ mb: 2 }} />
+
+          {studentData.sameAsPermanent !== undefined && (
+            <Box sx={{ mb: 3 }}>
+              <Typography
+                variant="subtitle2"
+                color="text.secondary"
+                sx={{ display: "flex", alignItems: "center", mb: 1 }}
+              >
+                <LocationOn fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} />{" "}
+                Same as Permanent Address
+              </Typography>
+              <Typography variant="body1" fontWeight="medium">
+                {studentData.sameAsPermanent ? "Yes" : "No"}
+              </Typography>
             </Box>
-          ))}
-          <Button
-            variant="text"
-            size="small"
+          )}
+
+          {/* Present Address */}
+          {studentData.presentAddress && (
+            <Box sx={{ mb: 3 }}>
+              <Typography
+                variant="subtitle2"
+                color="text.secondary"
+                sx={{ display: "flex", alignItems: "center", mb: 1 }}
+              >
+                <Home fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} /> Present
+                Address
+              </Typography>
+              <Grid container spacing={1}>
+                {studentData.presentAddress.village && (
+                  <Grid item xs={12}>
+                    <Typography variant="body2">
+                      <strong>Village:</strong>{" "}
+                      {studentData.presentAddress.village}
+                    </Typography>
+                  </Grid>
+                )}
+                {studentData.presentAddress.policeStation && (
+                  <Grid item xs={12}>
+                    <Typography variant="body2">
+                      <strong>Police Station:</strong>{" "}
+                      {studentData.presentAddress.policeStation}
+                    </Typography>
+                  </Grid>
+                )}
+                {studentData.presentAddress.postOffice && (
+                  <Grid item xs={12}>
+                    <Typography variant="body2">
+                      <strong>Post Office:</strong>{" "}
+                      {studentData.presentAddress.postOffice}
+                    </Typography>
+                  </Grid>
+                )}
+                {studentData.presentAddress.postCode && (
+                  <Grid item xs={12}>
+                    <Typography variant="body2">
+                      <strong>Post Code:</strong>{" "}
+                      {studentData.presentAddress.postCode}
+                    </Typography>
+                  </Grid>
+                )}
+                {studentData.presentAddress.district && (
+                  <Grid item xs={12}>
+                    <Typography variant="body2">
+                      <strong>District:</strong>{" "}
+                      {studentData.presentAddress.district}
+                    </Typography>
+                  </Grid>
+                )}
+              </Grid>
+            </Box>
+          )}
+
+          {/* Permanent Address */}
+          {studentData.permanentAddress && !studentData.sameAsPermanent && (
+            <Box>
+              <Typography
+                variant="subtitle2"
+                color="text.secondary"
+                sx={{ display: "flex", alignItems: "center", mb: 1 }}
+              >
+                <LocationOn fontSize="small" sx={{ mr: 0.5, opacity: 0.7 }} />{" "}
+                Permanent Address
+              </Typography>
+              <Grid container spacing={1}>
+                {studentData.permanentAddress.village && (
+                  <Grid item xs={12}>
+                    <Typography variant="body2">
+                      <strong>Village:</strong>{" "}
+                      {studentData.permanentAddress.village}
+                    </Typography>
+                  </Grid>
+                )}
+                {studentData.permanentAddress.policeStation && (
+                  <Grid item xs={12}>
+                    <Typography variant="body2">
+                      <strong>Police Station:</strong>{" "}
+                      {studentData.permanentAddress.policeStation}
+                    </Typography>
+                  </Grid>
+                )}
+                {studentData.permanentAddress.postOffice && (
+                  <Grid item xs={12}>
+                    <Typography variant="body2">
+                      <strong>Post Office:</strong>{" "}
+                      {studentData.permanentAddress.postOffice}
+                    </Typography>
+                  </Grid>
+                )}
+                {studentData.permanentAddress.postCode && (
+                  <Grid item xs={12}>
+                    <Typography variant="body2">
+                      <strong>Post Code:</strong>{" "}
+                      {studentData.permanentAddress.postCode}
+                    </Typography>
+                  </Grid>
+                )}
+                {studentData.permanentAddress.district && (
+                  <Grid item xs={12}>
+                    <Typography variant="body2">
+                      <strong>District:</strong>{" "}
+                      {studentData.permanentAddress.district}
+                    </Typography>
+                  </Grid>
+                )}
+              </Grid>
+            </Box>
+          )}
+        </Paper>
+
+        {/* Previous School */}
+        {studentData.previousSchool && (
+          <Paper
+            elevation={0}
             sx={{
-              mt: 1,
-              color: theme.palette.primary.main,
-              "&:hover": {
-                backgroundColor: alpha(theme.palette.primary.main, 0.1),
-              },
+              p: 3,
+              borderRadius: 2,
+              border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+              mb: 3,
             }}
           >
-            View All Subjects
-          </Button>
-        </Paper>
+            <Typography
+              variant="h6"
+              gutterBottom
+              sx={{ display: "flex", alignItems: "center" }}
+            >
+              <School sx={{ mr: 1, color: theme.palette.primary.main }} />{" "}
+              Previous School
+            </Typography>
+            <Divider sx={{ mb: 2 }} />
+            <Grid container spacing={1}>
+              {studentData.previousSchool.institution && (
+                <Grid item xs={12}>
+                  <Typography variant="body2">
+                    <strong>Institution:</strong>{" "}
+                    {studentData.previousSchool.institution}
+                  </Typography>
+                </Grid>
+              )}
+              {studentData.previousSchool.address && (
+                <Grid item xs={12}>
+                  <Typography variant="body2">
+                    <strong>Address:</strong>{" "}
+                    {studentData.previousSchool.address}
+                  </Typography>
+                </Grid>
+              )}
+            </Grid>
+          </Paper>
+        )}
+
+        {/* Documents */}
+        {studentData.documents && (
+          <Paper
+            elevation={0}
+            sx={{
+              p: 3,
+              borderRadius: 2,
+              border: `1px solid ${alpha(theme.palette.primary.main, 0.1)}`,
+            }}
+          >
+            <Typography
+              variant="h6"
+              gutterBottom
+              sx={{ display: "flex", alignItems: "center" }}
+            >
+              <Assignment sx={{ mr: 1, color: theme.palette.primary.main }} />{" "}
+              Documents
+            </Typography>
+            <Divider sx={{ mb: 2 }} />
+            <Grid container spacing={1}>
+              {Object.entries(studentData.documents).map(([key, value]) => (
+                <Grid item xs={12} sm={6} key={key}>
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    {value ? (
+                      <CheckCircle fontSize="small" color="success" />
+                    ) : (
+                      <Cancel fontSize="small" color="error" />
+                    )}
+                    <Typography variant="body2">
+                      {key
+                        .replace(/([A-Z])/g, " $1")
+                        .replace(/^./, (str) => str.toUpperCase())}
+                    </Typography>
+                  </Box>
+                </Grid>
+              ))}
+            </Grid>
+          </Paper>
+        )}
       </Grid>
     </Grid>
   );
