@@ -63,7 +63,6 @@ interface BulkPaymentModalProps {
   };
   fees: Fee[];
   refetch?: () => void;
-
   onPaymentCompleted?: (receiptData: any) => void;
 }
 
@@ -281,12 +280,16 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
           },
         );
 
+        // Attempt to refresh data via parent refetch (if provided)
         if (refetch) refetch();
         if (onPaymentCompleted) onPaymentCompleted(receiptData);
 
+        // Fallback: reload the page after modal closes to guarantee UI update
         setTimeout(() => {
           handleReset();
           onClose();
+          // Reload the page to ensure all data is fresh
+          window.location.reload();
         }, 1500);
       } else {
         toast.error(result.message || "Payment failed");

@@ -35,6 +35,7 @@ import { getStatusColor } from "./Utils";
 import DueStudentFee from "./DueStudentFee";
 import PaidStudentFee from "./PaidStudentFee";
 import { PageProps, TabPanelProps } from "@/interface/student";
+import { LoadingState } from "@/components/common/LoadingState";
 
 function TabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
@@ -56,11 +57,14 @@ const StudentProfile = ({ params }: PageProps) => {
   const { id } = params;
   const theme = useTheme();
   const [tabValue, setTabValue] = useState(0);
-  const { data: singleStudent } = useGetSingleStudentQuery({ id });
+  const { data: singleStudent, isLoading } = useGetSingleStudentQuery({ id });
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
   console.log("Fetched student data:", singleStudent);
+  if (isLoading) {
+    return <LoadingState />;
+  }
   return (
     <Container maxWidth="xl" sx={{ p: { xs: "4px" } }}>
       <Card sx={{ mb: 3, overflow: "visible" }}>
