@@ -87,21 +87,9 @@
 // import PrintModal from "../../student/profile/__components/PrintModal";
 // import AddFeeModal from "../../student/profile/__components/AddFeeModal";
 // import PaymentModal from "../../student/profile/__components/PaymentModal";
+// import { MONTHS } from "@/constant/month";
 
-// const MONTHS = [
-//   "January",
-//   "February",
-//   "March",
-//   "April",
-//   "May",
-//   "June",
-//   "July",
-//   "August",
-//   "September",
-//   "October",
-//   "November",
-//   "December",
-// ];
+// const CURRENT_MONTH = MONTHS[new Date().getMonth()];
 
 // const fadeInSlideUp = {
 //   animation: "fadeInSlideUp 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) both",
@@ -387,6 +375,100 @@
 //     return options;
 //   };
 
+<<<<<<< HEAD
+=======
+//   // Reload fee items for all existing fee categories based on current selectAllFees mode
+//   const reloadAllFeeItems = useCallback(() => {
+//     const fees = watch("fees") || [];
+//     fees.forEach((fee: any, index: number) => {
+//       if (
+//         fee.category &&
+//         fee.category.length > 0 &&
+//         fee.className &&
+//         fee.className.length > 0
+//       ) {
+//         const selectedClassName = Array.isArray(fee.className)
+//           ? fee.className[0]?.label || fee.className[0]
+//           : fee.className;
+//         const categoryName = Array.isArray(fee.category)
+//           ? fee.category[0]?.label || fee.category[0]
+//           : fee.category;
+
+//         const matchingEntries =
+//           feeCategoryData?.data?.data?.filter(
+//             (item: any) =>
+//               item.className === selectedClassName &&
+//               item.categoryName === categoryName,
+//           ) || [];
+
+//         const allFeeItems: any[] = [];
+//         matchingEntries.forEach((entry: any) => {
+//           if (entry.feeItems && Array.isArray(entry.feeItems))
+//             allFeeItems.push(...entry.feeItems);
+//           else if (entry.feeType) allFeeItems.push(entry);
+//         });
+
+//         if (allFeeItems.length > 0) {
+//           const feeItems: any[] = [];
+//           allFeeItems.forEach((item: any) => {
+//             const typeLabel =
+//               typeof item.feeType === "string"
+//                 ? item.feeType
+//                 : item.feeType?.value || "";
+
+//             const isAdmissionFee = typeLabel
+//               .toLowerCase()
+//               .includes("admission fee");
+
+//             if (selectAllFees || isAdmissionFee) {
+//               feeItems.push({
+//                 feeType:
+//                   typeof item.feeType === "string"
+//                     ? { label: item.feeType, value: item.feeType }
+//                     : item.feeType,
+//                 amount: item.amount,
+//                 advanceAmount: "",
+//                 isSelected: true,
+//                 discount: item.discount || 0,
+//                 isMonthly: typeLabel.toLowerCase().includes("monthly"),
+//                 discountRangeStart: "",
+//                 discountRangeEnd: "",
+//                 discountRangeAmount: 0,
+//                 _tempId: Date.now() + Math.random(),
+//               });
+//             }
+//           });
+
+//           setValue(`fees.${index}.feeItems`, feeItems);
+//           const totalAmount = feeItems.reduce(
+//             (sum: number, item: any) => sum + (item.amount || 0),
+//             0,
+//           );
+//           setValue(`fees.${index}.feeAmount`, totalAmount.toString());
+//         } else {
+//           setValue(`fees.${index}.feeItems`, []);
+//           setValue(`fees.${index}.feeAmount`, "");
+//         }
+//       }
+//     });
+//   }, [watch, setValue, feeCategoryData, selectAllFees]);
+
+//   // Handle switch toggle - reload all fee items immediately
+//   const handleSelectAllFeesToggle = (
+//     e: React.ChangeEvent<HTMLInputElement>,
+//   ) => {
+//     const newValue = e.target.checked;
+//     setSelectAllFees(newValue);
+//     // Use setTimeout to ensure state is updated before reload
+//     setTimeout(() => reloadAllFeeItems(), 0);
+//     toast.success(
+//       newValue
+//         ? "Switched to All Fees mode"
+//         : "Switched to Admission Only mode",
+//     );
+//   };
+
+>>>>>>> 151d80f38fefc4d84dcc6315d4122e4e48bdc7cf
 //   useEffect(() => {
 //     if (selectedStudent && studentData?.data) {
 //       const student = studentData.data.find(
@@ -584,6 +666,7 @@
 //     );
 //   };
 
+<<<<<<< HEAD
 //   useEffect(() => {
 //     const fees = watch("fees") || [];
 
@@ -667,6 +750,8 @@
 //     }
 //   }, [selectAllFees, watch, setValue, feeCategoryData]);
 
+=======
+>>>>>>> 151d80f38fefc4d84dcc6315d4122e4e48bdc7cf
 //   const categoryOptions = getCategoryOptions();
 
 //   return (
@@ -713,7 +798,7 @@
 //             </Typography>
 //             <Switch
 //               checked={selectAllFees}
-//               onChange={(e) => setSelectAllFees(e.target.checked)}
+//               onChange={handleSelectAllFeesToggle}
 //               color="info"
 //               size="small"
 //             />
@@ -735,7 +820,6 @@
 //           const feeClassName = watch(`fees.${index}.className`);
 //           const feeCategory = watch(`fees.${index}.category`);
 //           const feeItems = watch(`fees.${index}.feeItems`) || [];
-//           const feeAmount = parseFloat(watch(`fees.${index}.feeAmount`) || 0);
 //           const isClassSelected = mainClassName && mainClassName.length > 0;
 //           const classNameStr = Array.isArray(feeClassName)
 //             ? feeClassName[0]?.label || feeClassName[0]
@@ -806,7 +890,7 @@
 //                     letterSpacing: 1,
 //                   }}
 //                 >
-//                   Fee Category #{index + 1}
+//                   Fee Category
 //                 </Typography>
 //               </Box>
 
@@ -875,7 +959,11 @@
 //                       fontWeight="bold"
 //                       sx={{ color: "primary.main" }}
 //                     >
+<<<<<<< HEAD
 //                       📋 Fee Items ({feeItems.length} items)
+=======
+//                       Fee Items
+>>>>>>> 151d80f38fefc4d84dcc6315d4122e4e48bdc7cf
 //                     </Typography>
 //                     <Button
 //                       size="small"
@@ -1013,6 +1101,7 @@
 //                                       display: "flex",
 //                                       alignItems: "center",
 //                                       gap: 1,
+//                                       flexWrap: "wrap",
 //                                     }}
 //                                   >
 //                                     <CraftInputWithIcon
@@ -1024,10 +1113,8 @@
 //                                       disabled
 //                                       value={
 //                                         typeof item.feeType === "string"
-//                                           ? item.feeType
-//                                           : item.feeType?.label ||
-//                                             item.feeType?.value ||
-//                                             ""
+//                                           ? `${item.feeType} (${CURRENT_MONTH})`
+//                                           : `${item.feeType?.label || item.feeType?.value || ""} (${CURRENT_MONTH})`
 //                                       }
 //                                       InputProps={{
 //                                         startAdornment: (
@@ -1039,13 +1126,6 @@
 //                                           </InputAdornment>
 //                                         ),
 //                                       }}
-//                                     />
-//                                     <Chip
-//                                       label="×12"
-//                                       size="small"
-//                                       color="info"
-//                                       variant="outlined"
-//                                       sx={{ fontSize: "0.65rem", height: 20 }}
 //                                     />
 //                                   </Box>
 //                                 ) : (
@@ -1201,15 +1281,6 @@
 //                                       ),
 //                                     }}
 //                                   >
-//                                     <Typography
-//                                       variant="caption"
-//                                       color="info.main"
-//                                       fontWeight="bold"
-//                                       sx={{ mb: 1 }}
-//                                     >
-//                                       Apply Discount to Specific Months (all 12
-//                                       months will be updated):
-//                                     </Typography>
 //                                     <Box
 //                                       sx={{
 //                                         display: "flex",
@@ -1350,7 +1421,10 @@
 //   );
 // };
 
+<<<<<<< HEAD
 // // --- STEPS COMPONENTS --- (unchanged, same as original)
+=======
+>>>>>>> 151d80f38fefc4d84dcc6315d4122e4e48bdc7cf
 // const StudentInformationStep = () => (
 //   <Box sx={{ ...fadeInSlideUp }}>
 //     <Grid container spacing={3}>
@@ -2211,11 +2285,14 @@
 //   );
 // };
 
-// // --- FEE STEP ---
 // const FeeStep = ({ classOptions, feeCategoryData, studentData }: any) => {
 //   const theme = useTheme();
 //   const { watch, setValue } = useFormContext();
+<<<<<<< HEAD
 //   const [paidAmount, setPaidAmount] = useState<string>("");
+=======
+//   const [isPaidAmountEdited, setIsPaidAmountEdited] = useState(false);
+>>>>>>> 151d80f38fefc4d84dcc6315d4122e4e48bdc7cf
 
 //   const paymentOptions = [
 //     { label: "Cash", value: "cash" },
@@ -2254,7 +2331,8 @@
 //     const totalFees = calculateTotalFees();
 //     const totalItemDiscounts = calculateTotalItemDiscounts();
 //     const netPayable = totalFees - totalItemDiscounts;
-//     const paidAmountNum = parseFloat(paidAmount) || 0;
+//     const formPaidAmount = parseFloat(watch("paidAmount") || "0");
+//     const paidAmountNum = isPaidAmountEdited ? formPaidAmount : totalFees;
 //     const dueAmount = Math.max(0, netPayable - paidAmountNum);
 //     return {
 //       totalFees,
@@ -2269,13 +2347,27 @@
 //   const summary = calculateSummary();
 
 //   useEffect(() => {
+//     if (!isPaidAmountEdited && summary.totalFees > 0) {
+//       setValue("paidAmount", summary.totalFees);
+//     }
+//   }, [summary.totalFees, isPaidAmountEdited, setValue]);
+
+//   useEffect(() => {
 //     setValue("totalAmount", summary.yearlyTotal);
 //     setValue("monthlyAmount", summary.totalFees);
 //     setValue("totalDiscount", summary.totalItemDiscounts);
 //     setValue("netPayable", summary.netPayable);
 //     setValue("dueAmount", summary.dueAmount);
-//     setValue("paidAmount", summary.paidAmount);
-//   }, [summary, setValue]);
+//     if (!isPaidAmountEdited) {
+//       setValue("paidAmount", summary.paidAmount);
+//     }
+//   }, [summary, setValue, isPaidAmountEdited]);
+
+//   const handlePaidAmountChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+//     const value = e.target.value;
+//     setIsPaidAmountEdited(true);
+//     setValue("paidAmount", parseFloat(value) || 0);
+//   };
 
 //   return (
 //     <Box sx={{ ...fadeInSlideUp }}>
@@ -2298,6 +2390,7 @@
 //         <CardContent sx={{ p: 4 }}>
 //           <Grid container spacing={3}>
 //             <Grid item xs={12}>
+<<<<<<< HEAD
 //               <Box
 //                 sx={{
 //                   display: "flex",
@@ -2317,6 +2410,8 @@
 //             </Grid>
 
 //             <Grid item xs={12}>
+=======
+>>>>>>> 151d80f38fefc4d84dcc6315d4122e4e48bdc7cf
 //               <Typography
 //                 variant="subtitle2"
 //                 color="text.secondary"
@@ -2333,6 +2428,7 @@
 //                     type="number"
 //                     fullWidth
 //                     size="small"
+<<<<<<< HEAD
 //                     value={paidAmount || summary.totalFees.toLocaleString()}
 //                     onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
 //                       const value = e.target.value;
@@ -2342,6 +2438,9 @@
 //                         parseFloat(value) || summary.totalFees.toLocaleString(),
 //                       );
 //                     }}
+=======
+//                     onChange={handlePaidAmountChange}
+>>>>>>> 151d80f38fefc4d84dcc6315d4122e4e48bdc7cf
 //                     InputProps={{
 //                       startAdornment: (
 //                         <InputAdornment position="start">
@@ -2414,7 +2513,7 @@
 //                   )}
 //                   <Grid item xs={6}>
 //                     <Typography variant="body2" color="text.secondary">
-//                       Net Payable (Monthly):
+//                       Net Payable :
 //                     </Typography>
 //                   </Grid>
 //                   <Grid item xs={6} sx={{ textAlign: "right" }}>
@@ -2466,9 +2565,6 @@
 //   );
 // };
 
-// // ─────────────────────────────────────────────────────────────────────────────
-// // TRANSFORM FUNCTIONS
-// // ─────────────────────────────────────────────────────────────────────────────
 // const transformApplicationToFormData = (
 //   application: any,
 //   classOptions: any[],
@@ -2484,6 +2580,8 @@
 //   const guardianInfo = parentInfo.guardian || {};
 //   const documents = application.documents || {};
 //   const academicInfo = application.academicInfo || {};
+//   const familyEnvironment = application.familyEnvironment || {};
+//   const behaviorSkills = application.behaviorSkills || {};
 
 //   const formatDate = (dateString: string) => {
 //     if (!dateString) return null;
@@ -2510,6 +2608,7 @@
 //   const formattedClass = formatClassForForm(studentInfo.class);
 
 //   return {
+//     // ... existing fields
 //     studentId: application.applicationId || "",
 //     studentNameBangla: studentInfo.nameBangla || "",
 //     studentPhoto: studentInfo.studentPhoto || "",
@@ -2522,6 +2621,8 @@
 //     nidBirth: studentInfo.nidBirth || "",
 //     bloodGroup: studentInfo.bloodGroup || "",
 //     nationality: studentInfo.nationality || "Bangladeshi",
+//     age: studentInfo.age || 0,
+//     department: studentInfo.department || "",
 //     className: formattedClass,
 //     studentDepartment: studentInfo.department || "academic",
 //     rollNumber: "",
@@ -2541,6 +2642,7 @@
 //     motherNid: "",
 //     motherProfession: motherInfo.profession || "",
 //     motherIncome: 0,
+//     // Address fields
 //     village: presentAddress.village || "",
 //     postOffice: presentAddress.postOffice || "",
 //     postCode: presentAddress.postCode || "",
@@ -2557,12 +2659,34 @@
 //     guardianVillage: "",
 //     formerInstitution: academicInfo.previousSchool || "",
 //     formerVillage: "",
+//     // Documents
 //     birthCertificate: documents.birthCertificate || false,
 //     transferCertificate: documents.transferCertificate || false,
 //     characterCertificate: documents.characterCertificate || false,
 //     markSheet: documents.markSheet || false,
 //     photographs: documents.photographs || false,
 //     termsAccepted: application.termsAccepted || false,
+//     // NEW: Family environment and behavior skills
+//     familyEnvironment: {
+//       halalIncome: familyEnvironment.halalIncome || "",
+//       parentsPrayer: familyEnvironment.parentsPrayer || "",
+//       addiction: familyEnvironment.addiction || "",
+//       tv: familyEnvironment.tv || "",
+//       quranRecitation: familyEnvironment.quranRecitation || "",
+//       purdah: familyEnvironment.purdah || "",
+//     },
+//     behaviorSkills: {
+//       mobileUsage: behaviorSkills.mobileUsage || "",
+//       generalBehavior: behaviorSkills.generalBehavior || "",
+//       obedience: behaviorSkills.obedience || "",
+//       elderBehavior: behaviorSkills.elderBehavior || "",
+//       youngerBehavior: behaviorSkills.youngerBehavior || "",
+//       lyingStubbornness: behaviorSkills.lyingStubbornness || "",
+//       studyInterest: behaviorSkills.studyInterest || "",
+//       religiousInterest: behaviorSkills.religiousInterest || "",
+//       angerControl: behaviorSkills.angerControl || "",
+//     },
+//     // Fee related
 //     fees: [
 //       { category: [], className: formattedClass, feeItems: [], feeAmount: "" },
 //     ],
@@ -2802,13 +2926,20 @@
 //     totalAmount: data.totalAmount || 0,
 //     totalDiscount: data.totalDiscount || 0,
 //     netPayable: data.netPayable || 0,
+<<<<<<< HEAD
 //     paidAmount: 0,
+=======
+//     paidAmount: data.paidAmount || 0,
+>>>>>>> 151d80f38fefc4d84dcc6315d4122e4e48bdc7cf
 //     dueAmount: data.dueAmount || 0,
 //     advanceBalance: data.advanceBalance || 0,
 //   };
 // };
 
+<<<<<<< HEAD
 // // --- MAIN COMPONENT ---
+=======
+>>>>>>> 151d80f38fefc4d84dcc6315d4122e4e48bdc7cf
 // const EnrollmentForm = ({ applicationId, admissionApplications }: any) => {
 //   const theme = useTheme();
 //   const limit = 200;
@@ -2991,7 +3122,7 @@
 //     setOpenPrintModal(false);
 //     setOpenAddFeeModal(false);
 //     setOpenPaymentModal(false);
-//     router.push(`/dashboard/enrollments/list`);
+//     router.push(`/dashboard/student/list`);
 //   };
 
 //   const handleSubmit = async (data: any) => {
@@ -3011,14 +3142,6 @@
 //       }
 //       if (!submitData.className || submitData.className.length === 0) {
 //         toast.error("Class selection is required");
-//         setSubmitting(false);
-//         return;
-//       }
-//       if (
-//         !submitData.fees ||
-//         !submitData.fees.some((f: any) => f.feeItems && f.feeItems.length > 0)
-//       ) {
-//         toast.error("Please add at least one fee category with items");
 //         setSubmitting(false);
 //         return;
 //       }
@@ -3043,11 +3166,14 @@
 //           ? ""
 //           : submitData.studentPhoto || "";
 
+<<<<<<< HEAD
 //       // ─────────────────────────────────────────────────────────────────────
 //       // FIXED: Send fee items as-is with isMonthly flag intact.
 //       // Do NOT expand monthly fees into 12 entries here.
 //       // The backend is responsible for generating monthly fee records.
 //       // ─────────────────────────────────────────────────────────────────────
+=======
+>>>>>>> 151d80f38fefc4d84dcc6315d4122e4e48bdc7cf
 //       const fees: any[] = [];
 
 //       if (submitData.fees && Array.isArray(submitData.fees)) {
@@ -3067,7 +3193,10 @@
 //               const isSelected = item.isSelected !== false;
 //               if (!feeTypeStr.trim() || !isSelected) return;
 
+<<<<<<< HEAD
 //               // Send isMonthly=true items as-is — backend handles month expansion
+=======
+>>>>>>> 151d80f38fefc4d84dcc6315d4122e4e48bdc7cf
 //               processedFeeItems.push({
 //                 feeType: feeTypeStr,
 //                 amount: parseFloat(String(item.amount)) || 0,
@@ -3175,8 +3304,15 @@
 //         paidAmount: totalPaidAmount,
 //         paymentMethod: paymentMethodValue,
 //         collectedBy: "Admin",
+
+<<<<<<< HEAD
+=======
+//         // ===== NEW FIELDS =====
+//         familyEnvironment: submitData.familyEnvironment,
+//         behaviorSkills: submitData.behaviorSkills,
 //       };
 
+>>>>>>> 151d80f38fefc4d84dcc6315d4122e4e48bdc7cf
 //       let res;
 //       if (id) {
 //         res = await updateEnrollment({ id, data: finalSubmitData }).unwrap();
@@ -3529,7 +3665,7 @@
 //               >
 //                 Print Receipt
 //               </Button>
-//               <Button
+//               {/* <Button
 //                 variant="contained"
 //                 onClick={() => {
 //                   setOpenSuccessModal(false);
@@ -3539,7 +3675,7 @@
 //                 sx={{ borderRadius: 2, px: 3, bgcolor: "primary.main" }}
 //               >
 //                 Add Additional Fee
-//               </Button>
+//               </Button> */}
 //             </Box>
 //             <Button variant="text" onClick={handleFinishProcess}>
 //               Close & Go to List
@@ -3552,6 +3688,16 @@
 //           setOpen={setOpenPrintModal}
 //           receipt={enrolledStudentData?.data?.receipt}
 //           student={enrolledStudentData?.data?.student || enrolledStudentData}
+<<<<<<< HEAD
+=======
+//           onClose={() => {
+//             console.log("Navigating to student list");
+//             // Use window.location.href for reliable navigation
+//             setTimeout(() => {
+//               window.location.href = "/dashboard/student/list";
+//             }, 100);
+//           }}
+>>>>>>> 151d80f38fefc4d84dcc6315d4122e4e48bdc7cf
 //         />
 //         <AddFeeModal
 //           open={openAddFeeModal}

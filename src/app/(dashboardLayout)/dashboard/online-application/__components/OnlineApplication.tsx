@@ -353,8 +353,6 @@ export default function AdmissionApplicationList({
 
   const totalCount = data?.meta?.total ?? tableData.length;
 
-  // ─── Handlers ─────────────────────────────────────────────────────────────
-
   const handleView = useCallback((row: ApplicationRow) => {
     setModalLoading(true);
     setSelectedApplication((row as any).original);
@@ -410,9 +408,6 @@ export default function AdmissionApplicationList({
     [deleteAdmissionApplication, refetch],
   );
 
-  // ══════════════════════════════════════════════════════════════════════════
-  // ✅ FIXED handleDownloadPDF — log the mapped data so you can debug
-  // ══════════════════════════════════════════════════════════════════════════
   const handleDownloadPDF = useCallback(async (row: ApplicationRow) => {
     Swal.fire({
       title: "Generating PDF...",
@@ -674,8 +669,6 @@ export default function AdmissionApplicationList({
     [handleBulkAction],
   );
 
-  // ─── Columns ──────────────────────────────────────────────────────────────
-
   const columns: Column[] = useMemo(() => {
     const cols: Column[] = [
       {
@@ -737,7 +730,7 @@ export default function AdmissionApplicationList({
         minWidth: isMobile ? 70 : 100,
         sortable: true,
         filterable: true,
-        filterOptions: classFilterOptions, // now using the sorted options
+        filterOptions: classFilterOptions,
         render: (row: ApplicationRow) => (
           <Typography
             variant="body2"
@@ -779,8 +772,6 @@ export default function AdmissionApplicationList({
     }
     return cols;
   }, [isMobile, isTablet, classFilterOptions]);
-
-  // ─── Row Actions ──────────────────────────────────────────────────────────
 
   const rowActions: RowAction[] = useMemo(() => {
     const baseActions: RowAction[] = [
@@ -894,19 +885,7 @@ export default function AdmissionApplicationList({
         },
       ];
     } else {
-      return [
-        ...baseActions,
-        {
-          label: "View Enrollment",
-          icon: <School fontSize="small" />,
-          onClick: (row: ApplicationRow) => {
-            router.push(`/dashboard/enrollments/${row._id}`);
-          },
-          tooltip: "View enrollment details",
-          color: "info",
-          inMenu: true,
-        },
-      ];
+      return [...baseActions];
     }
   }, [
     type,
@@ -921,10 +900,7 @@ export default function AdmissionApplicationList({
     handleRestore,
     handleEnroll,
     handleDownloadPDF,
-    router,
   ]);
-
-  // ─── Bulk Actions ─────────────────────────────────────────────────────────
 
   const bulkActions: BulkAction[] = useMemo(() => {
     if (type === "pending") {

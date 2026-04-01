@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
 import CraftTable, { Column, RowAction } from "@/components/Table";
@@ -7,11 +8,7 @@ import { Box, Typography } from "@mui/material";
 import React, { useState } from "react";
 import ReceiptDetailsDialog from "./ReceiptDetailModal";
 import PrintModal from "./PrintModal";
-
-interface ReceiptHistoryProps {
-  studentId: string;
-  studentName: string;
-}
+import { ReceiptHistoryProps } from "@/interface/student";
 
 const ReceiptHistory: React.FC<ReceiptHistoryProps> = ({
   studentId,
@@ -56,24 +53,7 @@ const ReceiptHistory: React.FC<ReceiptHistoryProps> = ({
     }
   };
 
-  const getPaymentMethodIcon = (method: string) => {
-    switch (method?.toLowerCase()) {
-      case "cash":
-        return "💰";
-      case "bkash":
-        return "📱";
-      case "nagad":
-        return "💳";
-      case "bank":
-        return "🏦";
-      case "card":
-        return "💳";
-      default:
-        return "💵";
-    }
-  };
-
-  const handleDeleteReceipt = () => { };
+  const handleDeleteReceipt = () => {};
 
   const handlePrintReceipt = () => {
     // This can be called from ReceiptDetailsDialog
@@ -82,7 +62,7 @@ const ReceiptHistory: React.FC<ReceiptHistoryProps> = ({
     }
   };
 
-  const handleDownloadReceipt = () => { };
+  const handleDownloadReceipt = () => {};
 
   const handleViewReceipt = (receipt: any) => {
     setSelectedReceipt(receipt);
@@ -93,8 +73,6 @@ const ReceiptHistory: React.FC<ReceiptHistoryProps> = ({
     setSelectedReceipt(receipt);
     setShowPrintDialog(true);
   };
-
-  const handleDownloadRowReceipt = () => { };
 
   const handleRefresh = () => {
     refetch();
@@ -148,7 +126,6 @@ const ReceiptHistory: React.FC<ReceiptHistoryProps> = ({
       type: "text",
       render: (row: any) => (
         <Box display="flex" alignItems="center" gap={1}>
-          <Typography>{getPaymentMethodIcon(row.paymentMethod)}</Typography>
           <Typography variant="body2">
             {row.paymentMethod?.toUpperCase()}
           </Typography>
@@ -252,7 +229,7 @@ const ReceiptHistory: React.FC<ReceiptHistoryProps> = ({
               ?.slice(0, 2)
               .map(
                 (fee: any) =>
-                  `${fee.feeType}: ৳${fee.paidAmount?.toLocaleString()}`
+                  `${fee.feeType}: ৳${fee.paidAmount?.toLocaleString()}`,
               )
               .join(", ")}
           </Typography>
@@ -283,14 +260,14 @@ const ReceiptHistory: React.FC<ReceiptHistoryProps> = ({
       tooltip: "Print",
       alwaysShow: true,
     },
-    {
-      label: "Download",
-      icon: <Download fontSize="small" />,
-      onClick: handleDownloadRowReceipt,
-      color: "success",
-      tooltip: "Download",
-      inMenu: false,
-    },
+    // {
+    //   label: "Download",
+    //   icon: <Download fontSize="small" />,
+    //   onClick: handleDownloadRowReceipt,
+    //   color: "success",
+    //   tooltip: "Download",
+    //   inMenu: false,
+    // },
     {
       label: "Delete",
       icon: <Delete fontSize="small" />,

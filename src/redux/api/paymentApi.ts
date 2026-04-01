@@ -1,6 +1,6 @@
 import { baseApi } from "./baseApi";
 
-const paymentApi = baseApi.injectEndpoints({
+export const paymentApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     createBulkPayment: build.mutation({
       query: (data) => ({
@@ -26,6 +26,7 @@ const paymentApi = baseApi.injectEndpoints({
   overrideExisting: false,
 });
 
+// Export hooks for usage in components
 export const {
   useCreateBulkPaymentMutation,
   useGenerateReceiptQuery,

@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import CraftTable, { Column, RowAction } from "@/components/Table";
-import { Download, Print, Visibility } from "@mui/icons-material";
+import { Visibility } from "@mui/icons-material";
 import {
   Box,
   Card,
@@ -10,7 +10,9 @@ import {
   useTheme,
 } from "@mui/material";
 import { useEffect, useState } from "react";
+
 import ReceiptViewer, { ReceiptData } from "./ReceiptViewer";
+import PaymentDetailsModal from "./PaymentDetailsModal";
 
 const PaymentHistory = ({ singleStudent }: any) => {
   const theme = useTheme();
@@ -22,6 +24,10 @@ const PaymentHistory = ({ singleStudent }: any) => {
   const [selectedReceiptData, setSelectedReceiptData] =
     useState<ReceiptData | null>(null);
   const [selectedPaymentId, setSelectedPaymentId] = useState<string>("");
+
+  // State for payment details modal
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
+  const [selectedPayment, setSelectedPayment] = useState<any>(null);
 
   useEffect(() => {
     if (!payments || !Array.isArray(payments)) {
@@ -62,11 +68,15 @@ const PaymentHistory = ({ singleStudent }: any) => {
     }
   }, [payments]);
 
-  const handlePrintReceipt = () => {};
+  const handleViewDetails = (payment: any) => {
+    setSelectedPayment(payment);
+    setDetailsModalOpen(true);
+  };
 
-  const handleDownloadReceipt = () => {};
-
-  const handleViewDetails = () => {};
+  const handleCloseDetailsModal = () => {
+    setDetailsModalOpen(false);
+    setSelectedPayment(null);
+  };
 
   const handleCloseReceiptViewer = () => {
     setReceiptViewerOpen(false);
@@ -112,14 +122,7 @@ const PaymentHistory = ({ singleStudent }: any) => {
       filterable: true,
       type: "text",
     },
-    {
-      id: "student",
-      label: "Student",
-      minWidth: 180,
-      sortable: true,
-      filterable: true,
-      type: "text",
-    },
+
     {
       id: "feeType",
       label: "Fee Type",
@@ -169,55 +172,15 @@ const PaymentHistory = ({ singleStudent }: any) => {
         });
       },
     },
-    {
-      id: "collectedBy",
-      label: "Collected By",
-      minWidth: 140,
-      sortable: true,
-      filterable: true,
-      type: "text",
-    },
-    {
-      id: "status",
-      label: "Status",
-      minWidth: 120,
-      sortable: true,
-      filterable: true,
-      type: "status",
-      format: (value: string) => {
-        const statusColors: any = {
-          completed: "success",
-          paid: "success",
-          partial: "warning",
-          pending: "warning",
-          unpaid: "error",
-        };
-        return statusColors[value] || "default";
-      },
-    },
   ];
 
   const rowActions: RowAction[] = [
     {
       label: "View Details",
       icon: <Visibility fontSize="small" />,
-      onClick: () => handleViewDetails(),
+      onClick: (row) => handleViewDetails(row), // <-- pass the row to modal
       color: "info",
       tooltip: "View payment details",
-    },
-    {
-      label: "Download Receipt",
-      icon: <Download fontSize="small" />,
-      onClick: () => handleDownloadReceipt(),
-      color: "primary",
-      tooltip: "Download payment receipt",
-    },
-    {
-      label: "Print Receipt",
-      icon: <Print fontSize="small" />,
-      onClick: () => handlePrintReceipt(),
-      color: "secondary",
-      tooltip: "Print payment receipt",
     },
   ];
 
@@ -339,6 +302,12 @@ const PaymentHistory = ({ singleStudent }: any) => {
         onAdd={handleAddPayment}
       />
 
+      <PaymentDetailsModal
+        open={detailsModalOpen}
+        onClose={handleCloseDetailsModal}
+        payment={selectedPayment}
+        student={singleStudent?.data}
+      />
       {selectedReceiptData && (
         <ReceiptViewer
           open={receiptViewerOpen}

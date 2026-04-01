@@ -9,8 +9,6 @@ import {
   Payment,
   Visibility,
   Warning as WarningIcon,
-  Edit,
-  CheckCircle,
   History,
 } from "@mui/icons-material";
 import { Box, Button, Chip, Typography, Tooltip } from "@mui/material";
@@ -21,19 +19,8 @@ import BulkPaymentModal from "./BulkPaymentModal";
 import LateFeeCustomizationModal from "./LateFeeCustomizationModal";
 import FeeSummaryCards from "./FeeSummaryCards";
 import PrintModal from "./PrintModal";
-
-interface StudentFeeProps {
-  studentFees: any[];
-  loading?: boolean;
-  onView?: (fee: any) => void;
-  onEdit?: (fee: any) => void;
-  onDelete?: (fee: any) => void;
-  onDownload?: (fee: any) => void;
-  onPay?: (fee: any) => void;
-  onAddFee?: (feeData: any) => void;
-  student?: any;
-  refetch?: () => void;
-}
+import { StudentFeeProps } from "@/interface/student";
+import ViewFeeModal from "./ViewFeeModal";
 
 const DueStudentFee = ({
   studentFees,
@@ -56,7 +43,14 @@ const DueStudentFee = ({
     totalCustomized: 0,
     totalOverdue: 0,
   });
+  const [viewModalOpen, setViewModalOpen] = useState(false);
 
+  const handleView = (fee: any) => {
+    setSelectedFee(fee);
+    setViewModalOpen(true);
+  };
+
+  console.log("Received studentFees:", studentFees);
   // State for print modal
   const [printModalOpen, setPrintModalOpen] = useState(false);
   const [selectedReceipt, setSelectedReceipt] = useState<any>(null);
@@ -235,14 +229,7 @@ const DueStudentFee = ({
       sortable: true,
       filterable: true,
     },
-    {
-      id: "month",
-      label: "Month",
-      minWidth: 120,
-      sortable: true,
-      filterable: true,
-      type: "text",
-    },
+
     {
       id: "amount",
       label: "Total Amount",
@@ -271,25 +258,7 @@ const DueStudentFee = ({
         </Typography>
       ),
     },
-    {
-      id: "waiver",
-      label: "Waiver",
-      minWidth: 100,
-      align: "right",
-      sortable: true,
-      type: "number",
-      format: (value: number) =>
-        value > 0 ? `-৳${value?.toLocaleString()}` : "৳0",
-      render: (row: any) => (
-        <Typography
-          color={row.waiver > 0 ? "error" : "text.secondary"}
-          variant="body2"
-          fontWeight={row.waiver > 0 ? "bold" : "normal"}
-        >
-          {row.waiver > 0 ? `-৳${row.waiver?.toLocaleString()}` : "৳0"}
-        </Typography>
-      ),
-    },
+
     {
       id: "netAmount",
       label: "Net Amount",
@@ -331,183 +300,7 @@ const DueStudentFee = ({
         </Typography>
       ),
     },
-    {
-      id: "dueDate",
-      label: "Due Date",
-      minWidth: 120,
-      sortable: true,
-      type: "date",
-      format: (value: string) => {
-        if (!value) return "N/A";
-        try {
-          return new Date(value).toLocaleDateString();
-        } catch {
-          return "Invalid Date";
-        }
-      },
-      render: (row: any) => {
-        const today = new Date();
-        const dueDate = row.dueDate ? new Date(row.dueDate) : null;
-        const isOverdue = dueDate && dueDate < today;
 
-        return (
-          <Box>
-            <Typography
-              variant="body2"
-              color={isOverdue ? "error" : "text.primary"}
-              fontWeight={isOverdue ? "bold" : "normal"}
-            >
-              {row.dueDate ? new Date(row.dueDate).toLocaleDateString() : "N/A"}
-            </Typography>
-            {isOverdue && (
-              <Chip
-                label="Overdue"
-                size="small"
-                color="error"
-                variant="outlined"
-                sx={{ mt: 0.5, height: 20, fontSize: "0.625rem" }}
-              />
-            )}
-          </Box>
-        );
-      },
-    },
-    {
-      id: "lateFee",
-      label: "Late Fee",
-      minWidth: 130,
-      align: "right",
-      sortable: true,
-      render: (row: any) => {
-        if (row.isLateFeeRecord) return null;
-
-        return (
-          <Box>
-            {row.lateFeeAmount > 0 ? (
-              <>
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "flex-end",
-                    gap: 0.5,
-                  }}
-                >
-                  <Typography
-                    variant="body2"
-                    color="warning.main"
-                    fontWeight="bold"
-                    sx={{
-                      textDecoration: row.lateFeeCustomized
-                        ? "underline"
-                        : "none",
-                      textDecorationStyle: "dotted",
-                    }}
-                  >
-                    ৳{row.lateFeeAmount?.toLocaleString()}
-                  </Typography>
-                  {row.lateFeeCustomized && (
-                    <Tooltip title="Customized">
-                      <Edit sx={{ fontSize: 14, color: "success.main" }} />
-                    </Tooltip>
-                  )}
-                </Box>
-                <Typography
-                  variant="caption"
-                  color="text.secondary"
-                  sx={{ fontSize: "0.625rem", display: "block" }}
-                >
-                  {row.lateFeeDays || 0} days @ ৳{row.lateFeePerDay || 100}/day
-                </Typography>
-                {row.lateFeeApplied && (
-                  <Typography
-                    variant="caption"
-                    color="text.secondary"
-                    sx={{ fontSize: "0.625rem" }}
-                  >
-                    Applied:{" "}
-                    {row.lateFeeAppliedDate
-                      ? new Date(row.lateFeeAppliedDate).toLocaleDateString()
-                      : ""}
-                  </Typography>
-                )}
-              </>
-            ) : (
-              <Typography variant="body2" color="text.disabled">
-                ৳0
-              </Typography>
-            )}
-          </Box>
-        );
-      },
-    },
-    {
-      id: "lateFeeStatus",
-      label: "Late Status",
-      minWidth: 120,
-      align: "center",
-      render: (row: any) => {
-        if (row.isLateFeeRecord) return null;
-
-        const today = new Date();
-        const dueDate = row.dueDate ? new Date(row.dueDate) : null;
-        const isOverdue = dueDate && dueDate < today;
-
-        if (row.lateFeeAmount > 0) {
-          return (
-            <Chip
-              label={row.lateFeeCustomized ? "Customized" : "Late Fee Applied"}
-              size="small"
-              color={row.lateFeeCustomized ? "success" : "warning"}
-              variant={row.lateFeeCustomized ? "filled" : "outlined"}
-              sx={{ height: 24, fontWeight: "bold" }}
-              icon={row.lateFeeCustomized ? <CheckCircle /> : undefined}
-            />
-          );
-        } else if (isOverdue) {
-          return (
-            <Chip
-              label="Overdue"
-              size="small"
-              color="error"
-              variant="outlined"
-              sx={{ height: 24 }}
-            />
-          );
-        } else {
-          return (
-            <Chip
-              label="Due Soon"
-              size="small"
-              color="warning"
-              variant="outlined"
-              sx={{ height: 24 }}
-            />
-          );
-        }
-      },
-    },
-    {
-      id: "advanceUsed",
-      label: "Advance Used",
-      minWidth: 120,
-      align: "right",
-      sortable: true,
-      type: "number",
-      format: (value: number) => `৳${value?.toLocaleString()}`,
-    },
-    {
-      id: "paymentMethod",
-      label: "Payment Method",
-      minWidth: 130,
-      sortable: true,
-      filterable: true,
-      type: "text",
-      format: (value: string) => {
-        if (!value) return "N/A";
-        return value.charAt(0).toUpperCase() + value.slice(1);
-      },
-    },
     {
       id: "status",
       label: "Status",
@@ -567,7 +360,7 @@ const DueStudentFee = ({
     {
       label: "View Details",
       icon: <Visibility fontSize="small" />,
-      onClick: (row) => onView?.(row),
+      onClick: (row) => handleView(row),
       color: "info",
       tooltip: "View fee details",
     },
@@ -758,6 +551,12 @@ const DueStudentFee = ({
         open={printModalOpen}
         setOpen={handleClosePrintModal}
         receipt={selectedReceipt}
+      />
+      <ViewFeeModal
+        open={viewModalOpen}
+        onClose={() => setViewModalOpen(false)}
+        fee={selectedFee}
+        student={student}
       />
     </Box>
   );

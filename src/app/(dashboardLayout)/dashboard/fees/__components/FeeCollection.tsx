@@ -3,49 +3,29 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import CraftTable, { Column, RowAction } from "@/components/Table";
 import { useGetDueFeesQuery } from "@/redux/api/feesApi";
-import { Payment, Visibility } from "@mui/icons-material";
-import {
-  Box,
-  Button,
-  Card,
-  CardContent,
-  Chip,
-  CircularProgress,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogTitle,
-  Grid,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Typography,
-  useMediaQuery,
-  useTheme,
-} from "@mui/material";
-import { useEffect, useMemo, useState } from "react";
-import { toast } from "react-hot-toast";
-import PaymentModal from "../../student/profile/__components/PaymentModal";
-import BulkPaymentModal from "../../student/profile/__components/BulkPaymentModal";
-import PrintModal from "../../student/profile/__components/PrintModal";
 import {
   Fee,
   StudentTableRow,
   StudentWithFees,
   Summary,
 } from "@/types/feeCollection";
-
-const getClassNameFromId = (classId: string): string => {
-  const classMap: Record<string, string> = {
-    "69692956177ba8ddf04a2d86": "Five",
-    "6969295d177ba8ddf04a2d8c": "Six",
-    "69692935177ba8ddf04a2d67": "Seven",
-  };
-  return classMap[classId] || "";
-};
+import { Payment, Visibility } from "@mui/icons-material";
+import {
+  Box,
+  Card,
+  CardContent,
+  Chip,
+  Typography,
+  useMediaQuery,
+  useTheme,
+} from "@mui/material";
+import { useEffect, useMemo, useState } from "react";
+import { toast } from "react-hot-toast";
+import BulkPaymentModal from "../../student/profile/__components/BulkPaymentModal";
+import PaymentModal from "../../student/profile/__components/PaymentModal";
+import PrintModal from "../../student/profile/__components/PrintModal";
+import StudentFeeDetailsModal from "./StudentFeeDetailsModal";
+import LoadingSpinner from "@/components/LoadingSpinner";
 
 const FeeCollection = () => {
   const theme = useTheme();
@@ -75,6 +55,8 @@ const FeeCollection = () => {
     year: year.toString(),
     class: classFilter,
   });
+
+  console.log("student due fee ", dueFeesData);
 
   // ---------- Process API data ----------
   useEffect(() => {
@@ -112,8 +94,19 @@ const FeeCollection = () => {
         }
 
         const studentEntry = studentsMap.get(studentId)!;
+        // Get the class ID from enrollment
         const classId = fee.enrollment?.className?.[0] || "";
-        const className = classId ? getClassNameFromId(classId) : "";
+
+        // Find the class name from the student's className array
+        let className = "";
+        if (classId && fee.student.className) {
+          const classObj = fee.student.className.find(
+            (c: any) => c._id === classId,
+          );
+          if (classObj) {
+            className = classObj.className;
+          }
+        }
 
         studentEntry.fees.push({
           _id: fee._id,
@@ -256,6 +249,14 @@ const FeeCollection = () => {
     handleClosePaymentModal();
   };
 
+  // Handler for Bulk Payment from the details modal
+  const handleBulkPaymentFromView = () => {
+    if (selectedStudent) {
+      handleOpenBulkPayment(selectedStudent);
+      setViewDetailsModalOpen(false);
+    }
+  };
+
   const getStudentColumns = (): Column[] => {
     const baseColumns: Column[] = [
       {
@@ -272,13 +273,7 @@ const FeeCollection = () => {
         sortable: true,
         filterable: true,
       },
-      {
-        id: "rollNumber",
-        label: "Roll",
-        minWidth: 100,
-        sortable: true,
-        filterable: true,
-      },
+
       {
         id: "mobile",
         label: "Mobile",
@@ -326,13 +321,7 @@ const FeeCollection = () => {
             </Typography>
           ),
         },
-        {
-          id: "feesCount",
-          label: "# Fees",
-          minWidth: 80,
-          align: "center",
-          sortable: true,
-        },
+
         {
           id: "overallStatus",
           label: "Status",
@@ -402,16 +391,7 @@ const FeeCollection = () => {
   ];
 
   if (isLoading) {
-    return (
-      <Box
-        display="flex"
-        justifyContent="center"
-        alignItems="center"
-        minHeight="200px"
-      >
-        <CircularProgress />
-      </Box>
-    );
+    return <LoadingSpinner />;
   }
 
   return (
@@ -419,9 +399,7 @@ const FeeCollection = () => {
       <Typography variant="h4" gutterBottom fontWeight="bold">
         Due Fees Collection
       </Typography>
-      <Typography variant="body1" color="text.secondary" sx={{ mb: 3 }}>
-        Manage and collect pending fees from students
-      </Typography>
+
       <Box sx={{ p: { xs: 1, sm: 2, md: 3 }, height: "100%", width: "100%" }}>
         {studentTableData.length > 0 ? (
           <CraftTable
@@ -462,182 +440,18 @@ const FeeCollection = () => {
         )}
       </Box>
 
-      {/* Student Details Modal (unchanged) */}
-      <Dialog
+      {/* Student Fee Details Modal (using reusable CraftModal) */}
+      <StudentFeeDetailsModal
         open={viewDetailsModalOpen}
         onClose={() => setViewDetailsModalOpen(false)}
-        maxWidth="lg"
-        fullWidth
-      >
-        <DialogTitle>
-          Fee Details - {selectedStudent?.student.name}
-          <Button
-            variant="contained"
-            color="success"
-            startIcon={<Payment />}
-            onClick={() => {
-              if (selectedStudent) {
-                handleOpenBulkPayment(selectedStudent);
-                setViewDetailsModalOpen(false);
-              }
-            }}
-            sx={{ ml: 2 }}
-          >
-            Bulk Payment
-          </Button>
-        </DialogTitle>
-        <DialogContent>
-          {selectedStudent && (
-            <Box sx={{ mt: 2 }}>
-              <Grid container spacing={3} sx={{ mb: 3 }}>
-                <Grid item xs={12} md={6}>
-                  <Typography variant="h6" gutterBottom>
-                    Student Information
-                  </Typography>
-                  <Typography>
-                    <strong>Name:</strong> {selectedStudent.student.name}
-                  </Typography>
-                  <Typography>
-                    <strong>Student ID:</strong>{" "}
-                    {selectedStudent.student.studentId}
-                  </Typography>
-                  <Typography>
-                    <strong>Mobile:</strong> {selectedStudent.student.mobile}
-                  </Typography>
-                </Grid>
-                <Grid item xs={12} md={6}>
-                  <Typography variant="h6" gutterBottom>
-                    Academic Information
-                  </Typography>
-                  <Typography>
-                    <strong>Roll Number:</strong>{" "}
-                    {selectedStudent.enrollment.rollNumber}
-                  </Typography>
-                  <Typography>
-                    <strong>Class:</strong> {selectedStudent.fees[0]?.class}
-                  </Typography>
-                </Grid>
-              </Grid>
-
-              <Box
-                sx={{
-                  mb: 3,
-                  p: 2,
-                  backgroundColor: "grey.50",
-                  borderRadius: 1,
-                }}
-              >
-                <Typography variant="h6" gutterBottom>
-                  Fee Summary
-                </Typography>
-                <Grid container spacing={2}>
-                  <Grid item xs={6} md={3}>
-                    <Typography>
-                      <strong>Total Amount:</strong>
-                    </Typography>
-                    <Typography variant="h6">
-                      ৳{selectedStudent.totalAmount.toFixed(2)}
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={6} md={3}>
-                    <Typography>
-                      <strong>Paid Amount:</strong>
-                    </Typography>
-                    <Typography variant="h6" color="success.main">
-                      ৳{selectedStudent.totalPaid.toFixed(2)}
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={6} md={3}>
-                    <Typography>
-                      <strong>Due Amount:</strong>
-                    </Typography>
-                    <Typography variant="h6" color="error.main">
-                      ৳{selectedStudent.totalDue.toFixed(2)}
-                    </Typography>
-                  </Grid>
-                  <Grid item xs={6} md={3}>
-                    <Typography>
-                      <strong>Total Fees:</strong>
-                    </Typography>
-                    <Typography variant="h6">
-                      {selectedStudent.fees.length}
-                    </Typography>
-                  </Grid>
-                </Grid>
-              </Box>
-
-              <Typography variant="h6" gutterBottom>
-                Fee Breakdown
-              </Typography>
-              <TableContainer sx={{ overflowX: "auto" }}>
-                <Table>
-                  <TableHead>
-                    <TableRow>
-                      <TableCell>
-                        <strong>Fee Type</strong>
-                      </TableCell>
-                      <TableCell>
-                        <strong>Month</strong>
-                      </TableCell>
-                      <TableCell>
-                        <strong>Class</strong>
-                      </TableCell>
-                      <TableCell align="right">
-                        <strong>Amount</strong>
-                      </TableCell>
-                      <TableCell align="right">
-                        <strong>Paid</strong>
-                      </TableCell>
-                      <TableCell align="right">
-                        <strong>Due</strong>
-                      </TableCell>
-                      <TableCell>
-                        <strong>Status</strong>
-                      </TableCell>
-                    </TableRow>
-                  </TableHead>
-                  <TableBody>
-                    {selectedStudent.fees.map((fee) => (
-                      <TableRow key={fee._id}>
-                        <TableCell>{fee.feeType}</TableCell>
-                        <TableCell>{fee.month}</TableCell>
-                        <TableCell>{fee.class}</TableCell>
-                        <TableCell align="right">
-                          ৳{fee.amount.toFixed(2)}
-                        </TableCell>
-                        <TableCell align="right">
-                          ৳{fee.paidAmount.toFixed(2)}
-                        </TableCell>
-                        <TableCell align="right">
-                          <Typography color="error.main" fontWeight="bold">
-                            ৳{fee.dueAmount.toFixed(2)}
-                          </Typography>
-                        </TableCell>
-                        <TableCell>
-                          <Chip
-                            label={fee.status.toUpperCase()}
-                            size="small"
-                            color={
-                              fee.status === "paid"
-                                ? "success"
-                                : fee.status === "partial"
-                                  ? "warning"
-                                  : "error"
-                            }
-                          />
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </TableContainer>
-            </Box>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setViewDetailsModalOpen(false)}>Close</Button>
-        </DialogActions>
-      </Dialog>
+        student={selectedStudent?.student}
+        enrollment={selectedStudent?.enrollment}
+        fees={selectedStudent?.fees || []}
+        totalAmount={selectedStudent?.totalAmount || 0}
+        totalPaid={selectedStudent?.totalPaid || 0}
+        totalDue={selectedStudent?.totalDue || 0}
+        onBulkPayment={handleBulkPaymentFromView}
+      />
 
       {/* Bulk Payment Modal */}
       {selectedStudentForBulk && (
@@ -658,15 +472,11 @@ const FeeCollection = () => {
           onPaymentCompleted={handleBulkPaymentCompleted}
         />
       )}
-
-      {/* Print Modal (directly after payment) */}
       <PrintModal
         open={printModalOpen}
         setOpen={handleClosePrintModal}
         receipt={selectedReceipt}
       />
-
-      {/* Single Payment Modal */}
       <PaymentModal
         open={paymentModalOpen}
         onClose={handleClosePaymentModal}

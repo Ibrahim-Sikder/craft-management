@@ -52,6 +52,8 @@ import {
   Print,
   Assignment,
   FileCopy,
+  WhatsApp,
+  School as EducationIcon,
 } from "@mui/icons-material";
 import {
   Alert,
@@ -1696,6 +1698,36 @@ const ParentGuardianStep = () => (
           size="medium"
           margin="none"
           fullWidth
+          label="WhatsApp"
+          name="fatherWhatsapp"
+          placeholder="WhatsApp Number"
+          InputProps={{
+            startAdornment: (
+              <WhatsApp sx={{ color: "text.secondary", mr: 1 }} />
+            ),
+          }}
+        />
+      </Grid>
+      <Grid item xs={12} md={4}>
+        <CraftInputWithIcon
+          size="medium"
+          margin="none"
+          fullWidth
+          label="Education"
+          name="fatherEducation"
+          placeholder="Education"
+          InputProps={{
+            startAdornment: (
+              <EducationIcon sx={{ color: "text.secondary", mr: 1 }} />
+            ),
+          }}
+        />
+      </Grid>
+      <Grid item xs={12} md={4}>
+        <CraftInputWithIcon
+          size="medium"
+          margin="none"
+          fullWidth
           label={
             <span>
               Mother's Name English <span style={{ color: "red" }}>*</span>
@@ -1785,6 +1817,36 @@ const ParentGuardianStep = () => (
           size="medium"
           margin="none"
           fullWidth
+          label="WhatsApp"
+          name="motherWhatsapp"
+          placeholder="WhatsApp Number"
+          InputProps={{
+            startAdornment: (
+              <WhatsApp sx={{ color: "text.secondary", mr: 1 }} />
+            ),
+          }}
+        />
+      </Grid>
+      <Grid item xs={12} md={4}>
+        <CraftInputWithIcon
+          size="medium"
+          margin="none"
+          fullWidth
+          label="Education"
+          name="motherEducation"
+          placeholder="Education"
+          InputProps={{
+            startAdornment: (
+              <EducationIcon sx={{ color: "text.secondary", mr: 1 }} />
+            ),
+          }}
+        />
+      </Grid>
+      <Grid item xs={12} md={4}>
+        <CraftInputWithIcon
+          size="medium"
+          margin="none"
+          fullWidth
           label="Guardian Name"
           name="guardianName"
           placeholder="Guardian Name"
@@ -1816,6 +1878,34 @@ const ParentGuardianStep = () => (
           placeholder="01XXXXXXXXX"
           InputProps={{
             startAdornment: <Phone sx={{ color: "text.secondary", mr: 1 }} />,
+          }}
+        />
+      </Grid>
+      <Grid item xs={12} md={4}>
+        <CraftInputWithIcon
+          size="medium"
+          margin="none"
+          fullWidth
+          label="WhatsApp"
+          name="guardianWhatsapp"
+          placeholder="WhatsApp Number"
+          InputProps={{
+            startAdornment: (
+              <WhatsApp sx={{ color: "text.secondary", mr: 1 }} />
+            ),
+          }}
+        />
+      </Grid>
+      <Grid item xs={12} md={4}>
+        <CraftInputWithIcon
+          size="medium"
+          margin="none"
+          fullWidth
+          label="Profession"
+          name="guardianProfession"
+          placeholder="Profession"
+          InputProps={{
+            startAdornment: <Work sx={{ color: "text.secondary", mr: 1 }} />,
           }}
         />
       </Grid>
@@ -2445,6 +2535,8 @@ const transformApplicationToFormData = (
   const guardianInfo = parentInfo.guardian || {};
   const documents = application.documents || {};
   const academicInfo = application.academicInfo || {};
+  const familyEnvironment = application.familyEnvironment || {};
+  const behaviorSkills = application.behaviorSkills || {};
 
   const formatDate = (dateString: string) => {
     if (!dateString) return null;
@@ -2483,6 +2575,8 @@ const transformApplicationToFormData = (
     nidBirth: studentInfo.nidBirth || "",
     bloodGroup: studentInfo.bloodGroup || "",
     nationality: studentInfo.nationality || "Bangladeshi",
+    age: studentInfo.age || 0,
+    department: studentInfo.department || "",
     className: formattedClass,
     studentDepartment: studentInfo.department || "academic",
     rollNumber: "",
@@ -2493,15 +2587,25 @@ const transformApplicationToFormData = (
     fatherName: fatherInfo.nameEnglish || "",
     fatherNameBangla: fatherInfo.nameBangla || "",
     fatherMobile: fatherInfo.mobile || "",
-    fatherNid: "",
+    fatherNid: fatherInfo.nid || "",
     fatherProfession: fatherInfo.profession || "",
-    fatherIncome: 0,
+    fatherIncome: fatherInfo.income || 0,
+    fatherWhatsapp: fatherInfo.whatsapp || "",
+    fatherEducation: fatherInfo.education || "",
     motherName: motherInfo.nameEnglish || "",
     motherNameBangla: motherInfo.nameBangla || "",
     motherMobile: motherInfo.mobile || "",
-    motherNid: "",
+    motherNid: motherInfo.nid || "",
     motherProfession: motherInfo.profession || "",
-    motherIncome: 0,
+    motherIncome: motherInfo.income || 0,
+    motherWhatsapp: motherInfo.whatsapp || "",
+    motherEducation: motherInfo.education || "",
+    guardianName: guardianInfo.nameEnglish || "",
+    guardianRelation: guardianInfo.relation || "",
+    guardianMobile: guardianInfo.mobile || "",
+    guardianWhatsapp: guardianInfo.whatsapp || "",
+    guardianProfession: guardianInfo.profession || "",
+    guardianVillage: guardianInfo.address || "",
     village: presentAddress.village || "",
     postOffice: presentAddress.postOffice || "",
     postCode: presentAddress.postCode || "",
@@ -2512,10 +2616,6 @@ const transformApplicationToFormData = (
     permPostCode: permanentAddress.postCode || "",
     permPoliceStation: permanentAddress.policeStation || "",
     permDistrict: permanentAddress.district || "",
-    guardianName: guardianInfo.nameEnglish || "",
-    guardianRelation: guardianInfo.relation || "",
-    guardianMobile: guardianInfo.mobile || "",
-    guardianVillage: "",
     formerInstitution: academicInfo.previousSchool || "",
     formerVillage: "",
     birthCertificate: documents.birthCertificate || false,
@@ -2524,6 +2624,25 @@ const transformApplicationToFormData = (
     markSheet: documents.markSheet || false,
     photographs: documents.photographs || false,
     termsAccepted: application.termsAccepted || false,
+    familyEnvironment: {
+      halalIncome: familyEnvironment.halalIncome || "",
+      parentsPrayer: familyEnvironment.parentsPrayer || "",
+      addiction: familyEnvironment.addiction || "",
+      tv: familyEnvironment.tv || "",
+      quranRecitation: familyEnvironment.quranRecitation || "",
+      purdah: familyEnvironment.purdah || "",
+    },
+    behaviorSkills: {
+      mobileUsage: behaviorSkills.mobileUsage || "",
+      generalBehavior: behaviorSkills.generalBehavior || "",
+      obedience: behaviorSkills.obedience || "",
+      elderBehavior: behaviorSkills.elderBehavior || "",
+      youngerBehavior: behaviorSkills.youngerBehavior || "",
+      lyingStubbornness: behaviorSkills.lyingStubbornness || "",
+      studyInterest: behaviorSkills.studyInterest || "",
+      religiousInterest: behaviorSkills.religiousInterest || "",
+      angerControl: behaviorSkills.angerControl || "",
+    },
     fees: [
       { category: [], className: formattedClass, feeItems: [], feeAmount: "" },
     ],
@@ -2974,6 +3093,7 @@ const EnrollmentForm = ({ applicationId, admissionApplications }: any) => {
         setSubmitting(false);
         return;
       }
+<<<<<<< HEAD
       // if (
       //   !submitData.fees ||
       //   !submitData.fees.some((f: any) => f.feeItems && f.feeItems.length > 0)
@@ -2982,6 +3102,8 @@ const EnrollmentForm = ({ applicationId, admissionApplications }: any) => {
       //   setSubmitting(false);
       //   return;
       // }
+=======
+>>>>>>> 151d80f38fefc4d84dcc6315d4122e4e48bdc7cf
 
       const classNameArray = submitData.className
         .map((cls: any) => cls.value || cls)
@@ -3053,11 +3175,11 @@ const EnrollmentForm = ({ applicationId, admissionApplications }: any) => {
         });
       }
 
-      if (fees.length === 0) {
-        toast.error("Please configure fee items before submitting");
-        setSubmitting(false);
-        return;
-      }
+      // if (fees.length === 0) {
+      //   toast.error("Please configure fee items before submitting");
+      //   setSubmitting(false);
+      //   return;
+      // }
 
       const totalPaidAmount = parseFloat(String(submitData.paidAmount)) || 0;
 
@@ -3086,12 +3208,22 @@ const EnrollmentForm = ({ applicationId, admissionApplications }: any) => {
         fatherNid: submitData.fatherNid || "",
         fatherProfession: submitData.fatherProfession || "",
         fatherIncome: Number(submitData.fatherIncome) || 0,
+        fatherWhatsapp: submitData.fatherWhatsapp || "",
+        fatherEducation: submitData.fatherEducation || "",
         motherName: submitData.motherName || "",
         motherNameBangla: submitData.motherNameBangla || "",
         motherMobile: submitData.motherMobile || "",
         motherNid: submitData.motherNid || "",
         motherProfession: submitData.motherProfession || "",
         motherIncome: Number(submitData.motherIncome) || 0,
+        motherWhatsapp: submitData.motherWhatsapp || "",
+        motherEducation: submitData.motherEducation || "",
+        guardianName: submitData.guardianName || "",
+        guardianRelation: submitData.guardianRelation || "",
+        guardianMobile: submitData.guardianMobile || "",
+        guardianWhatsapp: submitData.guardianWhatsapp || "",
+        guardianProfession: submitData.guardianProfession || "",
+        guardianVillage: submitData.guardianVillage || "",
         presentAddress: {
           village: submitData.village || "",
           postOffice: submitData.postOffice || "",
@@ -3105,12 +3237,6 @@ const EnrollmentForm = ({ applicationId, admissionApplications }: any) => {
           postCode: submitData.permPostCode || "",
           policeStation: submitData.permPoliceStation || "",
           district: submitData.permDistrict || "",
-        },
-        guardianInfo: {
-          name: submitData.guardianName || "",
-          relation: submitData.guardianRelation || "",
-          mobile: submitData.guardianMobile || "",
-          address: submitData.guardianVillage || "",
         },
         previousSchool: {
           institution: submitData.formerInstitution || "",
@@ -3129,6 +3255,8 @@ const EnrollmentForm = ({ applicationId, admissionApplications }: any) => {
         paidAmount: totalPaidAmount,
         paymentMethod: paymentMethodValue,
         collectedBy: "Admin",
+        familyEnvironment: submitData.familyEnvironment,
+        behaviorSkills: submitData.behaviorSkills,
       };
 
       let res;
@@ -3483,6 +3611,7 @@ const EnrollmentForm = ({ applicationId, admissionApplications }: any) => {
               >
                 Print Receipt
               </Button>
+<<<<<<< HEAD
               {/* <Button
                 variant="contained"
                 onClick={() => {
@@ -3494,6 +3623,8 @@ const EnrollmentForm = ({ applicationId, admissionApplications }: any) => {
               >
                 Add Additional Fee
               </Button> */}
+=======
+>>>>>>> 151d80f38fefc4d84dcc6315d4122e4e48bdc7cf
             </Box>
             <Button variant="text" onClick={handleFinishProcess}>
               Close & Go to List
@@ -3506,8 +3637,16 @@ const EnrollmentForm = ({ applicationId, admissionApplications }: any) => {
           setOpen={setOpenPrintModal}
           receipt={enrolledStudentData?.data?.receipt}
           student={enrolledStudentData?.data?.student || enrolledStudentData}
+<<<<<<< HEAD
           afterClose={() => {
             router.push("/dashboard/student/list");
+=======
+          onClose={() => {
+            console.log("Navigating to student list");
+            setTimeout(() => {
+              window.location.href = "/dashboard/student/list";
+            }, 100);
+>>>>>>> 151d80f38fefc4d84dcc6315d4122e4e48bdc7cf
           }}
         />
         <AddFeeModal

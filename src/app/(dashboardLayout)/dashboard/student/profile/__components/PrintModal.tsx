@@ -8,20 +8,34 @@ import { useEffect, useRef } from "react";
 import { useReactToPrint } from "react-to-print";
 import { useRouter } from "next/navigation";
 
+<<<<<<< HEAD
 const PrintModal = ({ open, setOpen, receipt, afterClose }: any) => {
   const router = useRouter();
   const componentRef = useRef<HTMLDivElement | null>(null);
   const afterCloseCalledRef = useRef(false);
+=======
+const PrintModal = ({
+  open,
+  setOpen,
+  receipt,
+  onClose, // called when modal is closed (by any means)
+}: any) => {
+  const componentRef = useRef<HTMLDivElement | null>(null);
+>>>>>>> 151d80f38fefc4d84dcc6315d4122e4e48bdc7cf
   const printTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (open) {
+<<<<<<< HEAD
       afterCloseCalledRef.current = false;
+=======
+>>>>>>> 151d80f38fefc4d84dcc6315d4122e4e48bdc7cf
       if (printTimeoutRef.current) clearTimeout(printTimeoutRef.current);
     }
   }, [open]);
 
   const handleClose = () => {
+<<<<<<< HEAD
     if (!afterCloseCalledRef.current) {
       afterCloseCalledRef.current = true;
       if (afterClose) afterClose();
@@ -37,13 +51,28 @@ const PrintModal = ({ open, setOpen, receipt, afterClose }: any) => {
       router.push("/dashboard/student/list");
     }
   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
+=======
+    console.log("PrintModal handleClose"); // debugging
+    setOpen(false);
+    // Clear any pending timeout to avoid double navigation
+    if (printTimeoutRef.current) {
+      clearTimeout(printTimeoutRef.current);
+      printTimeoutRef.current = null;
+    }
+    if (onClose) onClose(); // call parent's navigation callback
+  };
+>>>>>>> 151d80f38fefc4d84dcc6315d4122e4e48bdc7cf
 
   const handlePrint = useReactToPrint({
     contentRef: componentRef,
     documentTitle: `Money Receipt - ${receipt?.receiptNo || "Unknown"}`,
     onAfterPrint: () => {
       if (printTimeoutRef.current) clearTimeout(printTimeoutRef.current);
+<<<<<<< HEAD
       handleClose();
+=======
+      handleClose(); // close after print
+>>>>>>> 151d80f38fefc4d84dcc6315d4122e4e48bdc7cf
     },
     pageStyle: `
       @page {
@@ -65,10 +94,16 @@ const PrintModal = ({ open, setOpen, receipt, afterClose }: any) => {
 
   const handlePrintWithSafety = () => {
     handlePrint();
+<<<<<<< HEAD
     printTimeoutRef.current = setTimeout(() => {
       if (!afterCloseCalledRef.current) {
         handleClose();
       }
+=======
+    // Fallback in case onAfterPrint doesn't fire (e.g., user cancels print)
+    printTimeoutRef.current = setTimeout(() => {
+      handleClose();
+>>>>>>> 151d80f38fefc4d84dcc6315d4122e4e48bdc7cf
     }, 5000);
   };
 
