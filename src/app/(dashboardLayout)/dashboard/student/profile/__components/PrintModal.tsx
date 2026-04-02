@@ -4,7 +4,7 @@
 import CraftModal from "@/components/Shared/Modal";
 import { Description, MapRounded, Phone } from "@mui/icons-material";
 import { Box, Button, Typography } from "@mui/material";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useMemo } from "react";
 import { useReactToPrint } from "react-to-print";
 
 const PrintModal = ({
@@ -121,17 +121,63 @@ const PrintModal = ({
     "ডিসে.",
   ];
 
-  const getPaymentMonthIndex = () => {
-    if (!receipt?.paymentDate) return -1;
-    try {
-      return new Date(receipt.paymentDate).getMonth();
-    } catch {
-      return -1;
+  // English month names for comparison
+  const englishMonths = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+
+  // Function to extract month from fee description
+  const extractMonthFromFeeType = (feeType: string) => {
+    // Check for pattern like "Monthly Fee - May" or "Monthly Fee - June"
+    const monthlyFeeMatch = feeType.match(/Monthly Fee - (\w+)/i);
+    if (monthlyFeeMatch) {
+      const monthName = monthlyFeeMatch[1];
+      const monthIndex = englishMonths.findIndex(
+        (m) => m.toLowerCase() === monthName.toLowerCase(),
+      );
+      if (monthIndex !== -1) return monthIndex;
     }
+
+    // Check if feeType contains any month name
+    for (let i = 0; i < englishMonths.length; i++) {
+      if (feeType.toLowerCase().includes(englishMonths[i].toLowerCase())) {
+        return i;
+      }
+    }
+
+    return -1;
   };
 
-  const isMonthSelected = (monthIndex: number) =>
-    monthIndex === getPaymentMonthIndex();
+  // Get all months that appear in the fees
+  const getSelectedMonths = useMemo(() => {
+    const fees = getDisplayFees();
+    const selectedMonths = new Set<number>();
+
+    fees.forEach((fee: any) => {
+      const feeType = fee.feeType || fee.name || "";
+      const monthIndex = extractMonthFromFeeType(feeType);
+      if (monthIndex !== -1) {
+        selectedMonths.add(monthIndex);
+      }
+    });
+
+    return selectedMonths;
+  }, [receipt?.fees]);
+
+  const isMonthSelected = (monthIndex: number) => {
+    return getSelectedMonths.has(monthIndex);
+  };
 
   const getClassName = () => {
     const className = receipt?.className || receipt?.studentClass;

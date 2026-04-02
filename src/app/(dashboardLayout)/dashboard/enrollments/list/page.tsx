@@ -155,13 +155,16 @@ export default function EnrollmentsPage() {
 
     return enrollmentData.data.data.map((enrollment: any) => {
       const className = enrollment.className
-        ? Array.isArray(enrollment.className)
-          ? enrollment.className
-              .map((cls: any) =>
-                typeof cls === "object" ? cls.className : cls,
-              )
-              .join(", ")
-          : enrollment.className
+        ? typeof enrollment.className === "object" &&
+          enrollment.className.className
+          ? enrollment.className.className
+          : Array.isArray(enrollment.className)
+            ? enrollment.className
+                .map((cls: any) =>
+                  typeof cls === "object" ? cls.className : cls,
+                )
+                .join(", ")
+            : enrollment.className
         : "N/A";
 
       const studentName =
@@ -179,12 +182,25 @@ export default function EnrollmentsPage() {
         enrollment.fatherName ||
         enrollment.fatherNameBangla ||
         enrollment.student?.fatherName ||
+        enrollment.parentInfo?.father?.nameEnglish ||
         "N/A";
 
-      const { total, paid, due, discount, waiver } = calculateTotalFees(
-        enrollment.fees || [],
-      );
-      const paymentStatus = getPaymentStatus(enrollment.fees || []);
+      // ✅ IMPORTANT: Get fees from student.fees if enrollment.fees is empty
+      const feesData =
+        enrollment.fees?.length > 0
+          ? enrollment.fees
+          : enrollment.student?.fees || [];
+
+      const { total, paid, due, discount, waiver } =
+        calculateTotalFees(feesData);
+      const paymentStatus = getPaymentStatus(feesData);
+
+      // Get parent info from the correct location
+      const parentInfo =
+        enrollment.parentInfo || enrollment.student?.parentInfo || {};
+      const father = parentInfo.father || {};
+      const mother = parentInfo.mother || {};
+      const guardian = parentInfo.guardian || {};
 
       return {
         id: enrollment._id,
@@ -193,28 +209,43 @@ export default function EnrollmentsPage() {
         studentName,
         studentNameBangla:
           enrollment.nameBangla || enrollment.student?.nameBangla || "",
-        fatherName,
-        fatherNameBangla: enrollment.fatherNameBangla || "",
-        motherName:
-          enrollment.motherName || enrollment.motherNameBangla || "N/A",
-        motherNameBangla: enrollment.motherNameBangla || "",
+        fatherName: father.nameEnglish || enrollment.fatherName || "N/A",
+        fatherNameBangla:
+          father.nameBangla || enrollment.fatherNameBangla || "",
+        motherName: mother.nameEnglish || enrollment.motherName || "N/A",
+        motherNameBangla:
+          mother.nameBangla || enrollment.motherNameBangla || "",
         fatherIncome:
-          enrollment.fatherIncome || enrollment.student?.fatherIncome || 0,
+          father.income ||
+          enrollment.fatherIncome ||
+          enrollment.student?.fatherIncome ||
+          0,
         motherIncome:
-          enrollment.motherIncome || enrollment.student?.motherIncome || 0,
-        fatherNid: enrollment.fatherNid || "N/A",
-        motherNid: enrollment.motherNid || "N/A",
-        mobileNo: enrollment.mobileNo || enrollment.student?.mobile || "N/A",
-        guardianInfo: enrollment.guardianInfo ||
-          enrollment.student?.guardianInfo || {
-            name: "N/A",
-            relation: "N/A",
-            mobile: "N/A",
-          },
+          mother.income ||
+          enrollment.motherIncome ||
+          enrollment.student?.motherIncome ||
+          0,
+        fatherNid: father.nid || enrollment.fatherNid || "N/A",
+        motherNid: mother.nid || enrollment.motherNid || "N/A",
+        mobileNo:
+          enrollment.mobileNo ||
+          enrollment.student?.mobile ||
+          father.mobile ||
+          "N/A",
+        guardianInfo: guardian || {
+          name: "N/A",
+          relation: "N/A",
+          mobile: "N/A",
+        },
         birthDate: enrollment.birthDate
           ? new Date(enrollment.birthDate).toLocaleDateString()
-          : "N/A",
-        nationality: enrollment.nationality || "Bangladeshi",
+          : enrollment.student?.birthDate
+            ? new Date(enrollment.student.birthDate).toLocaleDateString()
+            : "N/A",
+        nationality:
+          enrollment.nationality ||
+          enrollment.student?.nationality ||
+          "Bangladeshi",
         className,
         studentDepartment:
           enrollment.studentDepartment ||
@@ -225,28 +256,50 @@ export default function EnrollmentsPage() {
         status: enrollment.status || "active",
         paymentStatus,
         admissionType: enrollment.admissionType || "admission",
-        presentAddress: enrollment.presentAddress || {
-          policeStation: "N/A",
-          district: "N/A",
-        },
-        permanentAddress: enrollment.permanentAddress || {
-          policeStation: "N/A",
-          district: "N/A",
-        },
-        documents: enrollment.documents || {},
-        termsAccepted: enrollment.termsAccepted || false,
+        presentAddress: enrollment.presentAddress ||
+          enrollment.student?.presentAddress || {
+            policeStation: "N/A",
+            district: "N/A",
+          },
+        permanentAddress: enrollment.permanentAddress ||
+          enrollment.student?.permanentAddress || {
+            policeStation: "N/A",
+            district: "N/A",
+          },
+        documents: enrollment.documents || enrollment.student?.documents || {},
+        termsAccepted:
+          enrollment.termsAccepted ||
+          enrollment.student?.termsAccepted ||
+          false,
         totalFees: total,
         paidAmount: paid,
         dueAmount: due,
         discountAmount: discount,
         waiverAmount: waiver,
-        fees: enrollment.fees || [],
+        fees: feesData,
         rawData: enrollment,
+        // Add additional fields for the details modal
+        student: enrollment.student,
+        parentInfo: parentInfo,
+        familyEnvironment:
+          enrollment.familyEnvironment ||
+          enrollment.student?.familyEnvironment ||
+          {},
+        behaviorSkills:
+          enrollment.behaviorSkills || enrollment.student?.behaviorSkills || {},
+        previousSchool:
+          enrollment.previousSchool || enrollment.student?.previousSchool || {},
+        bloodGroup:
+          enrollment.bloodGroup || enrollment.student?.bloodGroup || "N/A",
+        birthRegistrationNo:
+          enrollment.birthRegistrationNo ||
+          enrollment.student?.birthRegistrationNo ||
+          "N/A",
       };
     });
   }, [enrollmentData]);
 
-  // ✅ FIXED: class filter options sorted by ALL_CLASSES order
+  //  FIXED: class filter options sorted by ALL_CLASSES order
   const classFilterOptions = useMemo(() => {
     const seen = new Set<string>();
     const opts: { label: string; value: string }[] = [];

@@ -37,10 +37,13 @@ import {
   alpha,
   useTheme,
 } from "@mui/material";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { FieldValues, useFieldArray, useFormContext } from "react-hook-form";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { FieldValues, useFormContext } from "react-hook-form";
 import toast from "react-hot-toast";
 
+// ─────────────────────────────────────────────
+// Constants
+// ─────────────────────────────────────────────
 const MONTHS = [
   "January",
   "February",
@@ -55,53 +58,102 @@ const MONTHS = [
   "November",
   "December",
 ];
+const CURRENT_MONTH = MONTHS[new Date().getMonth()];
 
-const CustomCraftInput = ({ onKeyDown, ...props }: any) => {
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    if (onKeyDown) onKeyDown(e);
-  };
-  return <CraftInput onKeyDown={handleKeyDown} {...props} />;
+// ─────────────────────────────────────────────
+// Helpers: prevent Enter from submitting form
+// ─────────────────────────────────────────────
+const stopEnter = (e: React.KeyboardEvent) => {
+  if (e.key === "Enter") {
+    e.preventDefault();
+    e.stopPropagation();
+  }
 };
 
-const CustomCraftIntAutoCompleteWithIcon = ({ onKeyDown, ...props }: any) => {
-  const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-    if (onKeyDown) onKeyDown(e);
-  };
-  return (
-    <div onKeyDown={handleKeyDown}>
-      <CraftIntAutoCompleteWithIcon {...props} />
-    </div>
-  );
-};
+const CustomCraftInput = ({ onKeyDown, ...props }: any) => (
+  <CraftInput
+    onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
+      stopEnter(e);
+      onKeyDown?.(e);
+    }}
+    {...props}
+  />
+);
 
+const CustomCraftIntAutoCompleteWithIcon = ({ onKeyDown, ...props }: any) => (
+  <div
+    onKeyDown={(e) => {
+      stopEnter(e);
+      onKeyDown?.(e);
+    }}
+  >
+    <CraftIntAutoCompleteWithIcon {...props} />
+  </div>
+);
+
+// ─────────────────────────────────────────────
+// Types
+// ─────────────────────────────────────────────
+interface FeeItem {
+  id: string;
+  feeType: string; // always a plain string — never an object
+  amount: number;
+  discount: number;
+  discountType: "flat" | "percentage";
+  advanceAmount: number;
+  isSelected: boolean;
+  isMonthly: boolean;
+  isCustom: boolean;
+  discountRangeStart: string;
+  discountRangeEnd: string;
+  discountRangeAmount: number;
+}
+
+interface FeeGroup {
+  id: string;
+  categoryName: string;
+  feeItems: FeeItem[];
+}
+
+const makeItem = (partial: Partial<FeeItem> = {}): FeeItem => ({
+  id: `${Date.now()}_${Math.random()}`,
+  feeType: "",
+  amount: 0,
+  discount: 0,
+  discountType: "flat",
+  advanceAmount: 0,
+  isSelected: true,
+  isMonthly: false,
+  isCustom: false,
+  discountRangeStart: "",
+  discountRangeEnd: "",
+  discountRangeAmount: 0,
+  ...partial,
+});
+
+const makeGroup = (): FeeGroup => ({
+  id: `group_${Date.now()}_${Math.random()}`,
+  categoryName: "",
+  feeItems: [],
+});
+
+const calcTotal = (items: FeeItem[]) =>
+  items.reduce((s, i) => s + (i.amount || 0), 0);
+
+// ─────────────────────────────────────────────
+// Range Discount Section (pure UI, no RHF)
+// ─────────────────────────────────────────────
 const RangeDiscountSection = ({
-  feeIndex,
-  itemIndex,
   item,
-  onApplyRangeDiscount,
+  onApply,
 }: {
-  feeIndex: number;
-  itemIndex: number;
-  item: any;
-  onApplyRangeDiscount: (
-    fi: number,
-    ii: number,
-    s: string,
-    e: string,
-    a: number,
-  ) => void;
+  item: FeeItem;
+  onApply: (start: string, end: string, amt: number) => void;
 }) => {
-  const [rangeStart, setRangeStart] = useState("");
-  const [rangeEnd, setRangeEnd] = useState("");
-  const [rangeAmt, setRangeAmt] = useState(0);
+  const [rangeStart, setRangeStart] = useState(item.discountRangeStart || "");
+  const [rangeEnd, setRangeEnd] = useState(item.discountRangeEnd || "");
+  const [rangeAmt, setRangeAmt] = useState(item.discountRangeAmount || 0);
+
   return (
     <Grid item xs={12} sx={{ mt: 1 }}>
       <Paper
@@ -177,15 +229,7 @@ const RangeDiscountSection = ({
           <Button
             size="small"
             variant="contained"
-            onClick={() =>
-              onApplyRangeDiscount(
-                feeIndex,
-                itemIndex,
-                rangeStart,
-                rangeEnd,
-                rangeAmt,
-              )
-            }
+            onClick={() => onApply(rangeStart, rangeEnd, rangeAmt)}
             sx={{ fontSize: "0.75rem", py: 0.5 }}
           >
             Set Range
@@ -206,37 +250,254 @@ const RangeDiscountSection = ({
   );
 };
 
-// ── Dynamic Fee Fields ────────────────────────────────────────
+// ─────────────────────────────────────────────
+// FeeItemRow — fully uncontrolled inputs via refs
+// This is the KEY fix: we use uncontrolled <input> refs so typing
+// never triggers a re-render that clears the field.
+// ─────────────────────────────────────────────
+const FeeItemRow = ({
+  item,
+  feeTypeOptions,
+  selectedClass,
+  selectedMonth,
+  hideMonthlyFee,
+  hideAdmissionFee,
+  onRemove,
+  onFieldChange,
+  onRangeDiscount,
+}: {
+  item: FeeItem;
+  feeTypeOptions: { label: string; value: string }[];
+  selectedClass: string;
+  selectedMonth: string;
+  hideMonthlyFee: boolean;
+  hideAdmissionFee: boolean;
+  onRemove: () => void;
+  onFieldChange: (field: keyof FeeItem, val: any) => void;
+  onRangeDiscount: (start: string, end: string, amt: number) => void;
+}) => {
+  const theme = useTheme();
+  const amountRef = useRef<HTMLInputElement>(null);
+  const discountRef = useRef<HTMLInputElement>(null);
+  const advanceRef = useRef<HTMLInputElement>(null);
+
+  // Sync ref values when item changes from outside (e.g., initial load)
+  useEffect(() => {
+    if (amountRef.current && document.activeElement !== amountRef.current)
+      amountRef.current.value = String(item.amount || "");
+  }, [item.amount]);
+
+  useEffect(() => {
+    if (discountRef.current && document.activeElement !== discountRef.current)
+      discountRef.current.value = String(item.discount || "");
+  }, [item.discount]);
+
+  useEffect(() => {
+    if (advanceRef.current && document.activeElement !== advanceRef.current)
+      advanceRef.current.value = String(item.advanceAmount || "");
+  }, [item.advanceAmount]);
+
+  if (hideMonthlyFee && item.isMonthly) return null;
+  if (hideAdmissionFee && item.feeType === "Admission Fee") return null;
+
+  const feeLabel = item.isMonthly
+    ? `${item.feeType} - ${selectedMonth || CURRENT_MONTH}`
+    : item.feeType;
+
+  return (
+    <Grid item xs={12}>
+      <Grid
+        container
+        spacing={2}
+        alignItems="center"
+        sx={{
+          mb: 1,
+          bgcolor: item.isMonthly
+            ? alpha(theme.palette.info.light, 0.15)
+            : "transparent",
+          p: 0.5,
+          borderRadius: 1,
+        }}
+      >
+        {/* Fee Type */}
+        <Grid item xs={4}>
+          {item.isMonthly ? (
+            <TextField
+              fullWidth
+              size="small"
+              disabled
+              value={feeLabel}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Description color="disabled" sx={{ fontSize: 16 }} />
+                  </InputAdornment>
+                ),
+              }}
+            />
+          ) : (
+            // KEY FIX: use a plain uncontrolled TextField for fee type
+            // so typing never triggers parent re-render / clear
+            <TextField
+              fullWidth
+              size="small"
+              defaultValue={item.feeType}
+              placeholder="Type fee name or select…"
+              disabled={!selectedClass}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Description color="disabled" sx={{ fontSize: 16 }} />
+                  </InputAdornment>
+                ),
+              }}
+              onBlur={(e) => {
+                const val = e.target.value.trim();
+                if (val !== item.feeType) {
+                  onFieldChange("feeType", val);
+                  onFieldChange(
+                    "isMonthly",
+                    val.toLowerCase().includes("monthly"),
+                  );
+                  onFieldChange("isCustom", true);
+                }
+              }}
+              onKeyDown={stopEnter}
+            />
+          )}
+        </Grid>
+
+        {/* Amount */}
+        <Grid item xs={2.5}>
+          <TextField
+            fullWidth
+            size="small"
+            type="number"
+            inputRef={amountRef}
+            defaultValue={item.amount || ""}
+            placeholder="0"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Typography variant="body2" color="text.secondary">
+                    ৳
+                  </Typography>
+                </InputAdornment>
+              ),
+            }}
+            onBlur={(e) => {
+              const val = parseFloat(e.target.value) || 0;
+              if (val !== item.amount) onFieldChange("amount", val);
+            }}
+            onKeyDown={stopEnter}
+          />
+        </Grid>
+
+        {/* Discount */}
+        <Grid item xs={2.5}>
+          <TextField
+            fullWidth
+            size="small"
+            type="number"
+            inputRef={discountRef}
+            defaultValue={item.discount || ""}
+            placeholder="0"
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Typography variant="body2" color="text.secondary">
+                    ৳
+                  </Typography>
+                </InputAdornment>
+              ),
+            }}
+            onBlur={(e) => {
+              const val = parseFloat(e.target.value) || 0;
+              if (val !== item.discount) onFieldChange("discount", val);
+            }}
+            onKeyDown={stopEnter}
+          />
+        </Grid>
+
+        {/* Advance */}
+        <Grid item xs={2}>
+          <TextField
+            fullWidth
+            size="small"
+            type="number"
+            inputRef={advanceRef}
+            defaultValue={item.advanceAmount || ""}
+            placeholder="0"
+            disabled={!selectedClass || !item.amount}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Typography variant="body2" color="text.secondary">
+                    ৳
+                  </Typography>
+                </InputAdornment>
+              ),
+            }}
+            onBlur={(e) => {
+              const val = parseFloat(e.target.value) || 0;
+              if (val !== item.advanceAmount)
+                onFieldChange("advanceAmount", val);
+            }}
+            onKeyDown={stopEnter}
+          />
+        </Grid>
+
+        {/* Delete */}
+        <Grid item xs={1} sx={{ display: "flex", justifyContent: "center" }}>
+          <Tooltip title="Remove">
+            <IconButton
+              size="small"
+              onClick={onRemove}
+              sx={{ color: "error.main" }}
+            >
+              <Delete fontSize="small" />
+            </IconButton>
+          </Tooltip>
+        </Grid>
+
+        {/* Range Discount — only for monthly items */}
+        {item.isMonthly && !hideMonthlyFee && (
+          <RangeDiscountSection item={item} onApply={onRangeDiscount} />
+        )}
+      </Grid>
+    </Grid>
+  );
+};
+
+// ─────────────────────────────────────────────
+// DynamicFeeFields — manages groups via useState
+// (not useFieldArray) so RHF watch() can't clear state
+// ─────────────────────────────────────────────
 const DynamicFeeFields = ({
   selectedClass,
   feeCategories,
   selectedMonth,
+  onGroupsChange, // callback to sync groups up to parent for submit
 }: {
   selectedClass: string;
   feeCategories: FeeCategory[];
   studentAdvanceBalance: number;
   enrollmentId?: string;
   selectedMonth?: string;
+  onGroupsChange: (groups: FeeGroup[]) => void;
 }) => {
   const theme = useTheme();
-  const { control, watch, setValue, getValues } = useFormContext();
-  const { fields, append, remove, replace } = useFieldArray({
-    control,
-    name: "fees",
-  });
+  const [groups, setGroups] = useState<FeeGroup[]>([makeGroup()]);
   const [hideAdmissionFee, setHideAdmissionFee] = useState(false);
   const [hideMonthlyFee, setHideMonthlyFee] = useState(false);
 
-  const isAdmissionFee = (feeType: string) => feeType === "Admission Fee";
-  const isMonthlyFee = (feeType: string) =>
-    feeType.toLowerCase().includes("monthly");
+  // Keep parent in sync whenever groups change
+  useEffect(() => {
+    onGroupsChange(groups);
+  }, [groups, onGroupsChange]);
 
-  const calcTotal = (items: any[]) =>
-    !Array.isArray(items)
-      ? 0
-      : items.reduce((s, i) => s + (parseFloat(i.amount) || 0), 0);
-
-  const getCategoryOptions = () => {
+  // ── Category options ──────────────────────────
+  const categoryOptions = useMemo(() => {
     if (!selectedClass || !feeCategories.length) return [];
     return Array.from(
       new Set(
@@ -244,271 +505,175 @@ const DynamicFeeFields = ({
           .filter((c) => c.className === selectedClass)
           .map((c) => c.categoryName),
       ),
-    ).map((cat) => ({
-      label: cat || "General",
-      name: cat || "General",
-      value: cat || "General",
-    }));
-  };
+    ).map((cat) => ({ label: cat || "General", value: cat || "General" }));
+  }, [selectedClass, feeCategories]);
 
-  const getFeeTypeOptions = useCallback(
-    (cls: string) => {
-      if (!feeCategories.length) return [];
-      const types = new Set<string>();
-      feeCategories.forEach((c) => {
-        if (c.className === cls)
-          (c.feeItems || []).forEach((i) => {
-            if (hideAdmissionFee && i.feeType === "Admission Fee") return;
-            if (hideMonthlyFee && i.feeType.toLowerCase().includes("monthly"))
-              return;
-            types.add(i.feeType);
-          });
+  // ── Fee type options ──────────────────────────
+  const feeTypeOptions = useMemo(() => {
+    if (!feeCategories.length) return [];
+    const types = new Set<string>();
+    feeCategories.forEach((c) => {
+      if (c.className !== selectedClass) return;
+      (c.feeItems || []).forEach((i) => {
+        if (hideAdmissionFee && i.feeType === "Admission Fee") return;
+        if (hideMonthlyFee && i.feeType.toLowerCase().includes("monthly"))
+          return;
+        types.add(i.feeType);
       });
-      return Array.from(types).map((t) => ({ label: t, value: t }));
-    },
-    [feeCategories, hideAdmissionFee, hideMonthlyFee],
-  );
+    });
+    return Array.from(types).map((t) => ({ label: t, value: t }));
+  }, [feeCategories, selectedClass, hideAdmissionFee, hideMonthlyFee]);
 
-  // Handle toggles — when UN-hiding, restore items from category definition
-  const restoreItemsForAllGroups = useCallback(
-    (restoreAdmission: boolean, restoreMonthly: boolean) => {
-      const currentFields = getValues("fees");
-      if (!currentFields || !Array.isArray(currentFields)) return;
-
-      currentFields.forEach((group: any, idx: number) => {
-        const catName = group.categoryName;
-        if (!catName) return;
-
-        const currentItems: any[] = group.feeItems || [];
-
-        // Get all items from the category definition (without any toggle filter)
-        const allStandardItems: any[] = [];
-        feeCategories
-          .filter(
-            (c) => c.className === selectedClass && c.categoryName === catName,
-          )
-          .forEach((c) => {
-            (c.feeItems || []).forEach((item) => {
-              allStandardItems.push({
-                feeType: item.feeType,
-                amount: item.amount || 0,
-                discount: 0,
-                discountType: "flat",
-                advanceAmount: 0,
-                isSelected: true,
-                isMonthly: item.feeType.toLowerCase().includes("monthly"),
-                discountRangeStart: "",
-                discountRangeEnd: "",
-                discountRangeAmount: 0,
-                id: `${Date.now()}_${Math.random()}_${item.feeType}`,
-                isCustom: false,
-              });
-            });
-          });
-
-        // Find items that are currently missing (were hidden) and should be restored
-        const itemsToAdd = allStandardItems.filter((stdItem) => {
-          const stdFeeType = stdItem.feeType;
-          const isAdmission = stdFeeType === "Admission Fee";
-          const isMonthly = stdFeeType.toLowerCase().includes("monthly");
-
-          // Only restore items that match what we're restoring
-          if (!restoreAdmission && isAdmission) return false;
-          if (!restoreMonthly && isMonthly) return false;
-
-          // Check if it already exists in current items
-          const alreadyExists = currentItems.some((ci: any) => {
-            const ciType =
-              typeof ci.feeType === "string"
-                ? ci.feeType
-                : ci.feeType?.value || ci.feeType?.label || "";
-            return ciType === stdFeeType;
-          });
-
-          return !alreadyExists;
-        });
-
-        if (itemsToAdd.length > 0) {
-          // Preserve existing items, append newly restored ones
-          const merged = [...currentItems, ...itemsToAdd];
-          setValue(`fees.${idx}.feeItems`, merged);
-          setValue(`fees.${idx}.feeAmount`, calcTotal(merged).toString());
-        }
-      });
-    },
-    [getValues, setValue, feeCategories, selectedClass],
-  );
-
-  // Handle Admission Fee toggle
-  const handleAdmissionToggle = useCallback((_: any, checked: boolean) => {
-    setHideAdmissionFee(checked);
-  }, []);
-
-  // Handle Monthly Fee toggle
-  const handleMonthlyToggle = useCallback((_: any, checked: boolean) => {
-    setHideMonthlyFee(checked);
-  }, []);
-
-  // When hideAdmissionFee changes
-  useEffect(() => {
-    if (fields.length === 0) return;
-    if (hideAdmissionFee) {
-      // Filter out admission fee items from existing items
-      const currentFields = getValues("fees");
-      if (!currentFields || !Array.isArray(currentFields)) return;
-      currentFields.forEach((group: any, idx: number) => {
-        const currentItems: any[] = group.feeItems || [];
-        if (!currentItems.length) return;
-        const filtered = currentItems.filter((item: any) => {
-          const feeTypeStr =
-            typeof item.feeType === "string"
-              ? item.feeType
-              : item.feeType?.value || item.feeType?.label || "";
-          return feeTypeStr !== "Admission Fee";
-        });
-        setValue(`fees.${idx}.feeItems`, filtered);
-        setValue(`fees.${idx}.feeAmount`, calcTotal(filtered).toString());
-      });
-    } else {
-      // Restore admission fee items
-      restoreItemsForAllGroups(true, false);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hideAdmissionFee]);
-
-  // When hideMonthlyFee changes
-  useEffect(() => {
-    if (fields.length === 0) return;
-    if (hideMonthlyFee) {
-      // Filter out monthly fee items from existing items
-      const currentFields = getValues("fees");
-      if (!currentFields || !Array.isArray(currentFields)) return;
-      currentFields.forEach((group: any, idx: number) => {
-        const currentItems: any[] = group.feeItems || [];
-        if (!currentItems.length) return;
-        const filtered = currentItems.filter((item: any) => {
-          const feeTypeStr =
-            typeof item.feeType === "string"
-              ? item.feeType
-              : item.feeType?.value || item.feeType?.label || "";
-          return !feeTypeStr.toLowerCase().includes("monthly");
-        });
-        setValue(`fees.${idx}.feeItems`, filtered);
-        setValue(`fees.${idx}.feeAmount`, calcTotal(filtered).toString());
-      });
-    } else {
-      // Restore monthly fee items
-      restoreItemsForAllGroups(false, true);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hideMonthlyFee]);
-
-  const handleCategoryChange = useCallback(
-    (index: number, sel: any) => {
-      const catVal = Array.isArray(sel) ? sel[0]?.label || sel[0] : sel;
-      if (!catVal || !selectedClass) return;
-      // Store the selected category name
-      setValue(`fees.${index}.categoryName`, catVal);
-
-      // Generate items from category, respecting current toggle state
-      const allItems: any[] = [];
+  // ── Build items from a category ───────────────
+  const buildItemsFromCategory = useCallback(
+    (
+      catName: string,
+      skipAdmission = false,
+      skipMonthly = false,
+    ): FeeItem[] => {
+      const items: FeeItem[] = [];
       feeCategories
         .filter(
-          (c) => c.className === selectedClass && c.categoryName === catVal,
+          (c) => c.className === selectedClass && c.categoryName === catName,
         )
         .forEach((c) => {
-          (c.feeItems || []).forEach((item) => {
-            // Respect current toggles when loading
-            if (hideAdmissionFee && item.feeType === "Admission Fee") return;
-            if (
-              hideMonthlyFee &&
-              item.feeType.toLowerCase().includes("monthly")
-            )
+          (c.feeItems || []).forEach((fi) => {
+            if (skipAdmission && fi.feeType === "Admission Fee") return;
+            if (skipMonthly && fi.feeType.toLowerCase().includes("monthly"))
               return;
-            allItems.push({
-              feeType: item.feeType,
-              amount: item.amount || 0,
-              discount: 0,
-              discountType: "flat",
-              advanceAmount: 0,
-              isSelected: true,
-              isMonthly: item.feeType.toLowerCase().includes("monthly"),
-              discountRangeStart: "",
-              discountRangeEnd: "",
-              discountRangeAmount: 0,
-              id: `${Date.now()}_${Math.random()}_${item.feeType}`,
-              isCustom: false,
-            });
+            items.push(
+              makeItem({
+                feeType: fi.feeType,
+                amount: fi.amount || 0,
+                isMonthly: fi.feeType.toLowerCase().includes("monthly"),
+              }),
+            );
           });
         });
-
-      setValue(`fees.${index}.feeItems`, allItems);
-      setValue(`fees.${index}.feeAmount`, calcTotal(allItems).toString());
-      toast.success(`${allItems.length} fee items loaded`);
+      return items;
     },
-    [selectedClass, feeCategories, hideAdmissionFee, hideMonthlyFee, setValue],
+    [feeCategories, selectedClass],
   );
 
-  const removeFeeItem = useCallback(
-    (fi: number, ii: number) => {
-      const items = [...(getValues(`fees.${fi}.feeItems`) || [])];
-      items.splice(ii, 1);
-      setValue(`fees.${fi}.feeItems`, items);
-      setValue(`fees.${fi}.feeAmount`, calcTotal(items).toString());
+  // ── Toggle: Hide Admission Fee ────────────────
+  const handleAdmissionToggle = useCallback(
+    (_: any, checked: boolean) => {
+      setHideAdmissionFee(checked);
+      setGroups((prev) =>
+        prev.map((g) => {
+          if (!g.categoryName) return g;
+          const updated = checked
+            ? g.feeItems.filter((i) => i.feeType !== "Admission Fee")
+            : buildItemsFromCategory(g.categoryName, false, hideMonthlyFee);
+          return { ...g, feeItems: updated };
+        }),
+      );
     },
-    [getValues, setValue],
+    [buildItemsFromCategory, hideMonthlyFee],
   );
 
-  const handleFeeTypeChange = useCallback(
-    (fi: number, ii: number, val: any) => {
-      const items = [...(getValues(`fees.${fi}.feeItems`) || [])];
-      if (!items[ii]) return;
-      const feeTypeValue = typeof val === "string" ? val : val?.value || "";
-      items[ii] = {
-        ...items[ii],
-        feeType: feeTypeValue,
-        isMonthly: feeTypeValue.toLowerCase().includes("monthly"),
-        isCustom: true,
-      };
-      if (val && feeCategories.length > 0) {
-        const found = feeCategories
-          .find((c) => c.className === selectedClass)
-          ?.feeItems?.find((f) => f.feeType === feeTypeValue);
-        if (found?.amount) items[ii].amount = found.amount;
-      }
-      setValue(`fees.${fi}.feeItems`, items);
-      setValue(`fees.${fi}.feeAmount`, calcTotal(items).toString());
+  // ── Toggle: Hide Monthly Fee ──────────────────
+  const handleMonthlyToggle = useCallback(
+    (_: any, checked: boolean) => {
+      setHideMonthlyFee(checked);
+      setGroups((prev) =>
+        prev.map((g) => {
+          if (!g.categoryName) return g;
+          const updated = checked
+            ? g.feeItems.filter((i) => !i.isMonthly)
+            : buildItemsFromCategory(g.categoryName, hideAdmissionFee, false);
+          return { ...g, feeItems: updated };
+        }),
+      );
     },
-    [feeCategories, selectedClass, getValues, setValue],
+    [buildItemsFromCategory, hideAdmissionFee],
   );
 
-  const handleFieldChange = useCallback(
-    (fi: number, ii: number, field: string, val: any) => {
-      const items = [...(getValues(`fees.${fi}.feeItems`) || [])];
-      if (items[ii]) {
-        items[ii][field] = val;
-        items[ii].isCustom = true;
-        setValue(`fees.${fi}.feeItems`, items);
-        setValue(`fees.${fi}.feeAmount`, calcTotal(items).toString());
-      }
+  // ── Category selected ─────────────────────────
+  const handleCategoryChange = useCallback(
+    (groupId: string, catName: string) => {
+      if (!catName || !selectedClass) return;
+      const items = buildItemsFromCategory(
+        catName,
+        hideAdmissionFee,
+        hideMonthlyFee,
+      );
+      setGroups((prev) =>
+        prev.map((g) =>
+          g.id === groupId
+            ? { ...g, categoryName: catName, feeItems: items }
+            : g,
+        ),
+      );
+      toast.success(`${items.length} fee items loaded`);
     },
-    [getValues, setValue],
+    [selectedClass, buildItemsFromCategory, hideAdmissionFee, hideMonthlyFee],
   );
 
-  const handleAdvanceChange = useCallback(
-    (fi: number, ii: number, val: string) => {
-      const items = [...(getValues(`fees.${fi}.feeItems`) || [])];
-      if (items[ii]) {
-        items[ii].advanceAmount = parseFloat(val) || 0;
-        items[ii].isCustom = true;
-        setValue(`fees.${fi}.feeItems`, items);
-      }
+  // ── Item-level mutations ──────────────────────
+  const updateItem = useCallback(
+    (groupId: string, itemId: string, field: keyof FeeItem, val: any) => {
+      setGroups((prev) =>
+        prev.map((g) =>
+          g.id !== groupId
+            ? g
+            : {
+                ...g,
+                feeItems: g.feeItems.map((i) =>
+                  i.id !== itemId ? i : { ...i, [field]: val, isCustom: true },
+                ),
+              },
+        ),
+      );
     },
-    [getValues, setValue],
+    [],
   );
 
-  const handleRangeDiscount = useCallback(
-    (fi: number, ii: number, start: string, end: string, amt: number) => {
+  const updateItemField = useCallback(
+    (groupId: string, itemId: string, updates: Partial<FeeItem>) => {
+      setGroups((prev) =>
+        prev.map((g) =>
+          g.id !== groupId
+            ? g
+            : {
+                ...g,
+                feeItems: g.feeItems.map((i) =>
+                  i.id !== itemId ? i : { ...i, ...updates, isCustom: true },
+                ),
+              },
+        ),
+      );
+    },
+    [],
+  );
+
+  const removeItem = useCallback((groupId: string, itemId: string) => {
+    setGroups((prev) =>
+      prev.map((g) =>
+        g.id !== groupId
+          ? g
+          : { ...g, feeItems: g.feeItems.filter((i) => i.id !== itemId) },
+      ),
+    );
+  }, []);
+
+  const addCustomItem = useCallback((groupId: string) => {
+    const newItem = makeItem({ isCustom: true });
+    setGroups((prev) =>
+      prev.map((g) =>
+        g.id !== groupId ? g : { ...g, feeItems: [...g.feeItems, newItem] },
+      ),
+    );
+  }, []);
+
+  const applyRangeDiscount = useCallback(
+    (
+      groupId: string,
+      itemId: string,
+      start: string,
+      end: string,
+      amt: number,
+    ) => {
       if (!start || !end) {
         toast.error("Please select start and end month");
         return;
@@ -517,38 +682,44 @@ const DynamicFeeFields = ({
         toast.error("Please enter a valid discount amount");
         return;
       }
-      setValue(`fees.${fi}.feeItems.${ii}.discountRangeStart`, start);
-      setValue(`fees.${fi}.feeItems.${ii}.discountRangeEnd`, end);
-      setValue(`fees.${fi}.feeItems.${ii}.discountRangeAmount`, amt);
+      setGroups((prev) =>
+        prev.map((g) =>
+          g.id !== groupId
+            ? g
+            : {
+                ...g,
+                feeItems: g.feeItems.map((i) =>
+                  i.id !== itemId
+                    ? i
+                    : {
+                        ...i,
+                        discountRangeStart: start,
+                        discountRangeEnd: end,
+                        discountRangeAmount: amt,
+                      },
+                ),
+              },
+        ),
+      );
       toast.success(`Discount set: ${start} to ${end} (৳${amt}/month)`);
     },
-    [setValue],
+    [],
   );
 
-  const addFeeField = useCallback(() => {
-    append({
-      category: [],
-      className: selectedClass,
-      feeItems: [],
-      feeAmount: "",
-      selectionMode: "admission",
-      categoryName: "",
-    });
-  }, [append, selectedClass]);
-
-  const removeFeeField = useCallback(
-    (i: number) => {
-      if (fields.length > 1) {
-        remove(i);
-      } else {
+  // ── Group add / remove ────────────────────────
+  const addGroup = useCallback(
+    () => setGroups((prev) => [...prev, makeGroup()]),
+    [],
+  );
+  const removeGroup = useCallback((groupId: string) => {
+    setGroups((prev) => {
+      if (prev.length <= 1) {
         toast.error("At least one fee entry is required");
+        return prev;
       }
-    },
-    [fields.length, remove],
-  );
-
-  const categoryOptions = getCategoryOptions();
-  const feeTypeOptions = getFeeTypeOptions(selectedClass);
+      return prev.filter((g) => g.id !== groupId);
+    });
+  }, []);
 
   return (
     <Card
@@ -561,6 +732,7 @@ const DynamicFeeFields = ({
         background: "#fff",
       }}
     >
+      {/* Header */}
       <Box
         sx={{
           p: 2.5,
@@ -598,7 +770,7 @@ const DynamicFeeFields = ({
             sx={{ mr: 0 }}
           />
           <Button
-            onClick={addFeeField}
+            onClick={addGroup}
             size="medium"
             variant="contained"
             disabled={!selectedClass}
@@ -610,435 +782,264 @@ const DynamicFeeFields = ({
       </Box>
 
       <CardContent sx={{ p: 3 }}>
-        {fields.map((field, index) => {
-          const feeCategory = watch(`fees.${index}.category`);
-          const feeItems = watch(`fees.${index}.feeItems`) || [];
-          const feeAmount = parseFloat(watch(`fees.${index}.feeAmount`) || 0);
-          const selectionMode =
-            watch(`fees.${index}.selectionMode`) || "admission";
-
-          return (
-            <Box
-              key={field.id}
-              sx={{
-                mb: 3,
-                p: 3,
-                borderRadius: 2,
-                background: alpha(theme.palette.background.paper, 0.5),
-                border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                position: "relative",
-              }}
-            >
-              {index > 0 && (
-                <Tooltip title="Remove Fee Category">
-                  <IconButton
-                    onClick={() => removeFeeField(index)}
-                    sx={{
-                      position: "absolute",
-                      top: 8,
-                      right: 8,
-                      color: "text.disabled",
-                      width: 24,
-                      height: 24,
-                      "&:hover": {
-                        color: "error.main",
-                        bgcolor: alpha(theme.palette.error.main, 0.1),
-                      },
-                    }}
-                  >
-                    <Delete fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              )}
-
-              <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
-                <Box
+        {groups.map((group, index) => (
+          <Box
+            key={group.id}
+            sx={{
+              mb: 3,
+              p: 3,
+              borderRadius: 2,
+              background: alpha(theme.palette.background.paper, 0.5),
+              border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+              position: "relative",
+            }}
+          >
+            {index > 0 && (
+              <Tooltip title="Remove Fee Category">
+                <IconButton
+                  onClick={() => removeGroup(group.id)}
                   sx={{
-                    width: 8,
-                    height: 8,
-                    borderRadius: "50%",
-                    bgcolor: theme.palette.primary.main,
-                    mr: 1.5,
-                  }}
-                />
-                <Typography
-                  variant="subtitle2"
-                  fontWeight="bold"
-                  color="text.secondary"
-                  sx={{
-                    textTransform: "uppercase",
-                    fontSize: "0.75rem",
-                    letterSpacing: 1,
+                    position: "absolute",
+                    top: 8,
+                    right: 8,
+                    color: "text.disabled",
+                    width: 24,
+                    height: 24,
+                    "&:hover": {
+                      color: "error.main",
+                      bgcolor: alpha(theme.palette.error.main, 0.1),
+                    },
                   }}
                 >
-                  Fee Category #{index + 1}
-                </Typography>
-              </Box>
+                  <Delete fontSize="small" />
+                </IconButton>
+              </Tooltip>
+            )}
 
-              <Grid container spacing={2.5} sx={{ mb: 3 }}>
-                <Grid item xs={12} md={4}>
-                  <CraftInput
-                    name={`fees.${index}.className`}
-                    margin="none"
-                    label="Class"
-                    fullWidth
-                    size="small"
-                    value={selectedClass}
-                    disabled
-                    InputProps={{
-                      startAdornment: (
-                        <InputAdornment position="start">
-                          <Class sx={{ color: "text.secondary" }} />
-                        </InputAdornment>
-                      ),
-                    }}
-                  />
-                </Grid>
-                <Grid item xs={12} md={4}>
-                  <CustomCraftIntAutoCompleteWithIcon
-                    name={`fees.${index}.category`}
-                    label={
-                      <span>
-                        Category <span style={{ color: "red" }}>*</span>
-                      </span>
-                    }
-                    margin="none"
-                    size="small"
-                    placeholder={
-                      selectedClass ? "Select Category" : "Select class first"
-                    }
-                    options={categoryOptions.map((o) => ({
-                      label: String(o.label),
-                      value: String(o.value),
-                      name: String(o.name),
-                    }))}
-                    fullWidth
-                    multiple
-                    icon={<CalendarMonth color="primary" />}
-                    disabled={!selectedClass}
-                    onChange={(_: any, value: any) =>
-                      handleCategoryChange(index, value)
-                    }
-                  />
-                </Grid>
-              </Grid>
-
-              {feeCategory && feeCategory.length > 0 ? (
-                feeItems.length > 0 ? (
-                  <Box sx={{ mb: 3 }}>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        mb: 2,
-                      }}
-                    >
-                      <Typography
-                        variant="subtitle1"
-                        fontWeight="bold"
-                        sx={{ color: "primary.main" }}
-                      >
-                        📋 Fee Items ({feeItems.length} items)
-                      </Typography>
-                      <Button
-                        size="small"
-                        variant="outlined"
-                        onClick={() => {
-                          const newItem = {
-                            feeType: "",
-                            amount: 0,
-                            discount: 0,
-                            discountType: "flat",
-                            advanceAmount: 0,
-                            isSelected: true,
-                            isMonthly: false,
-                            discountRangeStart: "",
-                            discountRangeEnd: "",
-                            discountRangeAmount: 0,
-                            id: Date.now(),
-                            isCustom: true,
-                          };
-                          setValue(`fees.${index}.feeItems`, [
-                            ...feeItems,
-                            newItem,
-                          ]);
-                        }}
-                      >
-                        <Add fontSize="small" /> Add Custom Item
-                      </Button>
-                    </Box>
-
-                    <Paper
-                      elevation={0}
-                      sx={{
-                        p: 2,
-                        bgcolor: alpha(theme.palette.background.paper, 0.7),
-                        border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-                        borderRadius: 1,
-                      }}
-                    >
-                      <Grid container spacing={2}>
-                        {/* Header */}
-                        <Grid item xs={12}>
-                          <Grid
-                            container
-                            spacing={2}
-                            sx={{
-                              mb: 1,
-                              pb: 1,
-                              borderBottom: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
-                            }}
-                          >
-                            <Grid item xs={4}>
-                              <Typography
-                                variant="caption"
-                                fontWeight="bold"
-                                color="text.secondary"
-                              >
-                                FEE TYPE
-                              </Typography>
-                            </Grid>
-                            <Grid item xs={2.5}>
-                              <Typography
-                                variant="caption"
-                                fontWeight="bold"
-                                color="text.secondary"
-                              >
-                                AMOUNT
-                              </Typography>
-                            </Grid>
-                            <Grid item xs={2.5}>
-                              <Typography
-                                variant="caption"
-                                fontWeight="bold"
-                                color="text.secondary"
-                              >
-                                DISCOUNT
-                              </Typography>
-                            </Grid>
-                            <Grid item xs={2}>
-                              <Typography
-                                variant="caption"
-                                fontWeight="bold"
-                                color="text.secondary"
-                              >
-                                ADVANCE
-                              </Typography>
-                            </Grid>
-                            <Grid item xs={1} />
-                          </Grid>
-                        </Grid>
-
-                        {/* Rows */}
-                        {feeItems.map((item: any, itemIndex: number) => {
-                          // Resolve feeType string for isMonthly check in render
-                          const feeTypeStr =
-                            typeof item.feeType === "string"
-                              ? item.feeType
-                              : item.feeType?.value ||
-                                item.feeType?.label ||
-                                "";
-                          const isMonthlyItem =
-                            item.isMonthly ||
-                            feeTypeStr.toLowerCase().includes("monthly");
-
-                          // If hideMonthlyFee toggle is ON, don't render monthly items
-                          // (they should already be filtered out, but guard here too)
-                          if (hideMonthlyFee && isMonthlyItem) return null;
-                          // If hideAdmissionFee toggle is ON, don't render admission fee items
-                          if (
-                            hideAdmissionFee &&
-                            feeTypeStr === "Admission Fee"
-                          )
-                            return null;
-
-                          return (
-                            <Grid item xs={12} key={item.id || itemIndex}>
-                              <Grid
-                                container
-                                spacing={2}
-                                alignItems="center"
-                                sx={{
-                                  mb: 1,
-                                  bgcolor: isMonthlyItem
-                                    ? alpha(theme.palette.info.light, 0.15)
-                                    : "transparent",
-                                  p: 0.5,
-                                  borderRadius: 1,
-                                }}
-                              >
-                                <Grid item xs={4}>
-                                  <CustomCraftIntAutoCompleteWithIcon
-                                    name={`fees.${index}.feeItems.${itemIndex}.feeType`}
-                                    label=""
-                                    options={feeTypeOptions}
-                                    size="small"
-                                    fullWidth
-                                    placeholder="Select Fee Type"
-                                    multiple={false}
-                                    freeSolo
-                                    icon={
-                                      <Description
-                                        color="disabled"
-                                        sx={{ fontSize: 16 }}
-                                      />
-                                    }
-                                    disabled={!selectedClass}
-                                    isOptionEqualToValue={(o: any, v: any) => {
-                                      if (!o || !v) return false;
-                                      return (
-                                        (typeof o === "string"
-                                          ? o
-                                          : o.value) ===
-                                        (typeof v === "string" ? v : v.value)
-                                      );
-                                    }}
-                                    onChange={(e: any, val: any) =>
-                                      handleFeeTypeChange(index, itemIndex, val)
-                                    }
-                                  />
-                                </Grid>
-                                <Grid item xs={2.5}>
-                                  <CustomCraftInput
-                                    name={`fees.${index}.feeItems.${itemIndex}.amount`}
-                                    label=""
-                                    fullWidth
-                                    size="small"
-                                    type="number"
-                                    InputProps={{
-                                      startAdornment: (
-                                        <InputAdornment position="start">
-                                          <Typography
-                                            variant="body2"
-                                            color="text.secondary"
-                                          >
-                                            ৳
-                                          </Typography>
-                                        </InputAdornment>
-                                      ),
-                                    }}
-                                    onChange={(e: any) =>
-                                      handleFieldChange(
-                                        index,
-                                        itemIndex,
-                                        "amount",
-                                        parseFloat(e.target.value) || 0,
-                                      )
-                                    }
-                                  />
-                                </Grid>
-                                <Grid item xs={2.5}>
-                                  <CustomCraftInput
-                                    name={`fees.${index}.feeItems.${itemIndex}.discount`}
-                                    label=""
-                                    fullWidth
-                                    size="small"
-                                    type="number"
-                                    placeholder="0"
-                                    InputProps={{
-                                      startAdornment: (
-                                        <InputAdornment position="start">
-                                          <Typography
-                                            variant="body2"
-                                            color="text.secondary"
-                                          >
-                                            ৳
-                                          </Typography>
-                                        </InputAdornment>
-                                      ),
-                                    }}
-                                    onChange={(e: any) =>
-                                      handleFieldChange(
-                                        index,
-                                        itemIndex,
-                                        "discount",
-                                        parseFloat(e.target.value) || 0,
-                                      )
-                                    }
-                                  />
-                                </Grid>
-                                <Grid item xs={2}>
-                                  <CustomCraftInput
-                                    name={`fees.${index}.feeItems.${itemIndex}.advanceAmount`}
-                                    label=""
-                                    fullWidth
-                                    size="small"
-                                    type="number"
-                                    disabled={!selectedClass || !item.amount}
-                                    InputProps={{
-                                      startAdornment: (
-                                        <InputAdornment position="start">
-                                          <Typography
-                                            variant="body2"
-                                            color="text.secondary"
-                                          >
-                                            ৳
-                                          </Typography>
-                                        </InputAdornment>
-                                      ),
-                                    }}
-                                    onChange={(e: any) =>
-                                      handleAdvanceChange(
-                                        index,
-                                        itemIndex,
-                                        e.target.value,
-                                      )
-                                    }
-                                  />
-                                </Grid>
-                                <Grid
-                                  item
-                                  xs={1}
-                                  sx={{
-                                    display: "flex",
-                                    justifyContent: "center",
-                                  }}
-                                >
-                                  <Tooltip title="Remove">
-                                    <IconButton
-                                      size="small"
-                                      onClick={() =>
-                                        removeFeeItem(index, itemIndex)
-                                      }
-                                      sx={{ color: "error.main" }}
-                                    >
-                                      <Delete fontSize="small" />
-                                    </IconButton>
-                                  </Tooltip>
-                                </Grid>
-                                {/* Range discount section — only shown for monthly items
-                                    and only when hideMonthlyFee is OFF */}
-                                {isMonthlyItem && !hideMonthlyFee && (
-                                  <RangeDiscountSection
-                                    feeIndex={index}
-                                    itemIndex={itemIndex}
-                                    item={item}
-                                    onApplyRangeDiscount={handleRangeDiscount}
-                                  />
-                                )}
-                              </Grid>
-                            </Grid>
-                          );
-                        })}
-                      </Grid>
-                    </Paper>
-                  </Box>
-                ) : (
-                  <Box
-                    sx={{ textAlign: "center", py: 3, color: "text.disabled" }}
-                  >
-                    <Typography variant="body2">
-                      No fee items found for this category
-                    </Typography>
-                  </Box>
-                )
-              ) : null}
+            <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
+              <Box
+                sx={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: "50%",
+                  bgcolor: theme.palette.primary.main,
+                  mr: 1.5,
+                }}
+              />
+              <Typography
+                variant="subtitle2"
+                fontWeight="bold"
+                color="text.secondary"
+                sx={{
+                  textTransform: "uppercase",
+                  fontSize: "0.75rem",
+                  letterSpacing: 1,
+                }}
+              >
+                Fee Category #{index + 1}
+              </Typography>
             </Box>
-          );
-        })}
 
-        {fields.length === 0 && (
+            <Grid container spacing={2.5} sx={{ mb: 3 }}>
+              <Grid item xs={12} md={4}>
+                <TextField
+                  label="Class"
+                  size="small"
+                  fullWidth
+                  disabled
+                  value={selectedClass}
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <Class sx={{ color: "text.secondary" }} />
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Grid>
+              <Grid item xs={12} md={4}>
+                {/* 
+                  KEY FIX: pass value as a plain string to a normal Select,
+                  not to CraftIntAutoCompleteWithIcon whose internal state
+                  conflicts with RHF and causes clears.
+                */}
+                <TextField
+                  select
+                  label="Category"
+                  size="small"
+                  fullWidth
+                  value={group.categoryName}
+                  disabled={!selectedClass}
+                  onChange={(e) =>
+                    handleCategoryChange(group.id, e.target.value)
+                  }
+                  InputProps={{
+                    startAdornment: (
+                      <InputAdornment position="start">
+                        <CalendarMonth color="primary" />
+                      </InputAdornment>
+                    ),
+                  }}
+                >
+                  <MenuItem value="" disabled>
+                    Select Category
+                  </MenuItem>
+                  {categoryOptions.map((o) => (
+                    <MenuItem key={o.value} value={o.value}>
+                      {o.label}
+                    </MenuItem>
+                  ))}
+                </TextField>
+              </Grid>
+            </Grid>
+
+            {group.categoryName ? (
+              group.feeItems.length > 0 ? (
+                <Box sx={{ mb: 3 }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                      mb: 2,
+                    }}
+                  >
+                    <Typography
+                      variant="subtitle1"
+                      fontWeight="bold"
+                      sx={{ color: "primary.main" }}
+                    >
+                      📋 Fee Items (
+                      {
+                        group.feeItems.filter(
+                          (i) =>
+                            !(hideMonthlyFee && i.isMonthly) &&
+                            !(
+                              hideAdmissionFee && i.feeType === "Admission Fee"
+                            ),
+                        ).length
+                      }{" "}
+                      items)
+                    </Typography>
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      onClick={() => addCustomItem(group.id)}
+                    >
+                      <Add fontSize="small" /> Add Custom Item
+                    </Button>
+                  </Box>
+
+                  <Paper
+                    elevation={0}
+                    sx={{
+                      p: 2,
+                      bgcolor: alpha(theme.palette.background.paper, 0.7),
+                      border: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
+                      borderRadius: 1,
+                    }}
+                  >
+                    <Grid container spacing={2}>
+                      {/* Table Header */}
+                      <Grid item xs={12}>
+                        <Grid
+                          container
+                          spacing={2}
+                          sx={{
+                            mb: 1,
+                            pb: 1,
+                            borderBottom: `1px solid ${alpha(theme.palette.divider, 0.2)}`,
+                          }}
+                        >
+                          {[
+                            "FEE TYPE",
+                            "AMOUNT",
+                            "DISCOUNT",
+                            "ADVANCE",
+                            "",
+                          ].map((h, i) => (
+                            <Grid
+                              item
+                              xs={
+                                i === 4
+                                  ? 1
+                                  : i === 3
+                                    ? 2
+                                    : i < 2
+                                      ? i === 0
+                                        ? 4
+                                        : 2.5
+                                      : 2.5
+                              }
+                              key={h + i}
+                            >
+                              <Typography
+                                variant="caption"
+                                fontWeight="bold"
+                                color="text.secondary"
+                              >
+                                {h}
+                              </Typography>
+                            </Grid>
+                          ))}
+                        </Grid>
+                      </Grid>
+
+                      {/* Rows */}
+                      {group.feeItems.map((item) => (
+                        <FeeItemRow
+                          key={item.id}
+                          item={item}
+                          feeTypeOptions={feeTypeOptions}
+                          selectedClass={selectedClass}
+                          selectedMonth={selectedMonth || CURRENT_MONTH}
+                          hideMonthlyFee={hideMonthlyFee}
+                          hideAdmissionFee={hideAdmissionFee}
+                          onRemove={() => removeItem(group.id, item.id)}
+                          onFieldChange={(field, val) => {
+                            if (field === "feeType") {
+                              updateItemField(group.id, item.id, {
+                                feeType: val,
+                                isMonthly: String(val)
+                                  .toLowerCase()
+                                  .includes("monthly"),
+                                isCustom: true,
+                              });
+                            } else {
+                              updateItem(group.id, item.id, field, val);
+                            }
+                          }}
+                          onRangeDiscount={(s, e, a) =>
+                            applyRangeDiscount(group.id, item.id, s, e, a)
+                          }
+                        />
+                      ))}
+                    </Grid>
+                  </Paper>
+                </Box>
+              ) : (
+                <Box
+                  sx={{ textAlign: "center", py: 3, color: "text.disabled" }}
+                >
+                  <Typography variant="body2">
+                    No fee items found for this category
+                  </Typography>
+                  <Button
+                    size="small"
+                    variant="outlined"
+                    sx={{ mt: 1 }}
+                    onClick={() => addCustomItem(group.id)}
+                    startIcon={<Add />}
+                  >
+                    Add Custom Item
+                  </Button>
+                </Box>
+              )
+            ) : null}
+          </Box>
+        ))}
+
+        {groups.length === 0 && (
           <Box sx={{ textAlign: "center", py: 4, color: "text.disabled" }}>
             <Payment sx={{ fontSize: 48, mb: 1, opacity: 0.5 }} />
             <Typography variant="body2">
@@ -1047,7 +1048,7 @@ const DynamicFeeFields = ({
                 : "No fee categories added yet"}
             </Typography>
             <Button
-              onClick={addFeeField}
+              onClick={addGroup}
               variant="outlined"
               sx={{ mt: 2 }}
               startIcon={<Add />}
@@ -1062,6 +1063,9 @@ const DynamicFeeFields = ({
   );
 };
 
+// ─────────────────────────────────────────────
+// AddFeeModal
+// ─────────────────────────────────────────────
 const AddFeeModal = ({ open, setOpen, student, refetch }: AddFeeModalProps) => {
   const theme = useTheme();
   const [createFee, { isLoading }] = useCreateFeeMutation();
@@ -1074,6 +1078,12 @@ const AddFeeModal = ({ open, setOpen, student, refetch }: AddFeeModalProps) => {
     new Date().toLocaleString("default", { month: "long" }),
   );
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
+
+  // Groups are owned by DynamicFeeFields state; parent gets a ref copy for submit
+  const feeGroupsRef = useRef<FeeGroup[]>([]);
+  const handleGroupsChange = useCallback((groups: FeeGroup[]) => {
+    feeGroupsRef.current = groups;
+  }, []);
 
   const formattedClassOptions = useMemo(
     () =>
@@ -1128,93 +1138,117 @@ const AddFeeModal = ({ open, setOpen, student, refetch }: AddFeeModalProps) => {
       toast.error("Student information not found");
       return;
     }
-
     if (!selectedClass) {
       toast.error("Please select a class");
       return;
     }
 
-    const fees = data.fees || [];
-    if (!fees.length) {
+    const groups = feeGroupsRef.current;
+    if (!groups.length) {
       toast.error("Please add at least one fee category");
       return;
     }
 
     const monthRaw = data.month;
-    let month: string;
+    let selectedMonthStr: string;
     if (typeof monthRaw === "object" && monthRaw !== null) {
-      month = String(
+      selectedMonthStr = String(
         monthRaw?.value ||
           monthRaw?.label ||
           `${selectedMonth}-${new Date().getFullYear()}`,
       );
     } else if (typeof monthRaw === "string" && monthRaw.trim()) {
-      month = monthRaw.trim();
+      selectedMonthStr = monthRaw.trim();
     } else {
-      month = `${selectedMonth}-${new Date().getFullYear()}`;
+      selectedMonthStr = `${selectedMonth}-${new Date().getFullYear()}`;
     }
 
-    const academicYear: string = String(
-      data.academicYear || getCurrentAcademicYear(),
-    );
+    const selectedMonthName = selectedMonthStr.split("-")[0];
+    const currentMonthIndex = MONTHS.indexOf(selectedMonthName);
+    const academicYear = String(data.academicYear || getCurrentAcademicYear());
 
     setIsSubmitting(true);
     const createdFees: any[] = [];
 
     try {
-      for (const feeGroup of fees) {
-        if (!feeGroup.feeItems || !Array.isArray(feeGroup.feeItems)) {
-          console.warn("⚠️ Skipping feeGroup — no feeItems:", feeGroup);
-          continue;
-        }
+      for (const group of groups) {
+        if (!group.feeItems?.length) continue;
 
-        for (const item of feeGroup.feeItems) {
-          const amount = parseFloat(item.amount) || 0;
-          if (amount <= 0) {
-            console.warn("⚠️ Skipping item — amount is 0:", item);
-            continue;
-          }
+        for (const item of group.feeItems) {
+          const amount = item.amount || 0;
+          if (amount <= 0) continue;
 
-          let feeType: string = "";
-          if (typeof item.feeType === "string") {
-            feeType = item.feeType.trim();
-          } else if (
-            typeof item.feeType === "object" &&
-            item.feeType !== null
-          ) {
-            feeType = String(
-              item.feeType?.value || item.feeType?.label || "",
-            ).trim();
-          }
-
+          const feeType = item.feeType.trim();
           if (!feeType) {
-            toast.error("Please select a fee type for all items");
+            toast.error("Please fill in the fee type for all items");
             setIsSubmitting(false);
             return;
           }
 
-          let actualDiscount = parseFloat(item.discount) || 0;
-          if (item.discountType === "percentage") {
+          let actualDiscount = item.discount || 0;
+          if (item.discountType === "percentage")
             actualDiscount = (amount * actualDiscount) / 100;
-          }
           actualDiscount = Math.min(actualDiscount, amount);
 
-          const feePayload = {
-            student: studentId,
-            amount,
-            feeType,
-            academicYear,
-            enrollment: student.enrollment?._id || null,
-            class: selectedClass,
-            month,
-            discount: actualDiscount,
-            waiver: 0,
-            paidAmount: 0,
-            advanceUsed: 0,
-            isCurrentMonth: true,
-          };
-          const result = await createFee({ studentId, ...feePayload }).unwrap();
-          createdFees.push(result);
+          if (item.isMonthly || feeType.toLowerCase().includes("monthly")) {
+            const yr = new Date().getFullYear();
+            const rangeStartIdx = item.discountRangeStart
+              ? MONTHS.indexOf(item.discountRangeStart)
+              : -1;
+            const rangeEndIdx = item.discountRangeEnd
+              ? MONTHS.indexOf(item.discountRangeEnd)
+              : -1;
+            const rangeDiscountAmt = item.discountRangeAmount || 0;
+
+            for (let mi = currentMonthIndex; mi < MONTHS.length; mi++) {
+              const monthLabel = `${MONTHS[mi]}-${yr}`;
+              const monthlyFeeType = `${feeType} - ${MONTHS[mi]}`;
+              let monthDiscount = actualDiscount;
+              if (
+                rangeStartIdx !== -1 &&
+                rangeEndIdx !== -1 &&
+                mi >= rangeStartIdx &&
+                mi <= rangeEndIdx
+              ) {
+                monthDiscount = rangeDiscountAmt;
+              }
+              const finalAmount = Math.max(0, amount - monthDiscount);
+              const result = await createFee({
+                studentId,
+                student: studentId,
+                amount: finalAmount,
+                feeType: monthlyFeeType,
+                academicYear,
+                enrollment: student.enrollment?._id || null,
+                class: selectedClass,
+                month: monthLabel,
+                discount: monthDiscount,
+                waiver: 0,
+                paidAmount: 0,
+                advanceUsed: 0,
+                isCurrentMonth: MONTHS[mi] === selectedMonthName,
+              }).unwrap();
+              createdFees.push(result);
+            }
+          } else {
+            const finalAmount = Math.max(0, amount - actualDiscount);
+            const result = await createFee({
+              studentId,
+              student: studentId,
+              amount: finalAmount,
+              feeType,
+              academicYear,
+              enrollment: student.enrollment?._id || null,
+              class: selectedClass,
+              month: selectedMonthStr,
+              discount: actualDiscount,
+              waiver: 0,
+              paidAmount: 0,
+              advanceUsed: 0,
+              isCurrentMonth: true,
+            }).unwrap();
+            createdFees.push(result);
+          }
         }
       }
 
@@ -1228,10 +1262,7 @@ const AddFeeModal = ({ open, setOpen, student, refetch }: AddFeeModalProps) => {
       toast.success(`${createdFees.length} fee(s) created successfully!`);
       if (refetch) refetch();
       setOpen(false);
-
-      setTimeout(() => {
-        window.location.reload();
-      }, 1000);
+      setTimeout(() => window.location.reload(), 1000);
     } catch (error: any) {
       console.error("❌ API Error:", JSON.stringify(error, null, 2));
       toast.error(
@@ -1248,29 +1279,15 @@ const AddFeeModal = ({ open, setOpen, student, refetch }: AddFeeModalProps) => {
     academicYear: getCurrentAcademicYear(),
     month: `${selectedMonth}-${new Date().getFullYear()}`,
     className: selectedClass,
-    fees: [
-      {
-        category: [],
-        className: selectedClass,
-        feeItems: [],
-        feeAmount: "",
-        selectionMode: "admission",
-        categoryName: "",
-      },
-    ],
     paymentMethod: { label: "Cash", value: "cash" },
     paidAmount: 0,
-    totalFees: 0,
-    totalDiscount: 0,
-    totalAdvance: 0,
-    netPayable: 0,
-    dueAmount: 0,
   };
 
   return (
     <CraftModal open={open} setOpen={setOpen} title="Add New Fees" size="xl">
       <CraftForm onSubmit={handleSubmit} defaultValues={defaultFormValues}>
         <Grid container spacing={3}>
+          {/* Student Info */}
           <Grid item xs={12}>
             <Alert severity="info" sx={{ borderRadius: 2 }}>
               <Typography variant="body2" fontWeight="bold">
@@ -1299,6 +1316,7 @@ const AddFeeModal = ({ open, setOpen, student, refetch }: AddFeeModalProps) => {
             </Alert>
           </Grid>
 
+          {/* Month */}
           <Grid item xs={12} md={6}>
             <CustomCraftIntAutoCompleteWithIcon
               name="month"
@@ -1316,6 +1334,7 @@ const AddFeeModal = ({ open, setOpen, student, refetch }: AddFeeModalProps) => {
             />
           </Grid>
 
+          {/* Academic Year */}
           <Grid item xs={12} md={6}>
             <CustomCraftInput
               name="academicYear"
@@ -1333,6 +1352,7 @@ const AddFeeModal = ({ open, setOpen, student, refetch }: AddFeeModalProps) => {
             />
           </Grid>
 
+          {/* Dynamic Fee Fields */}
           <Grid item xs={12}>
             <DynamicFeeFields
               selectedClass={selectedClass}
@@ -1340,19 +1360,23 @@ const AddFeeModal = ({ open, setOpen, student, refetch }: AddFeeModalProps) => {
               studentAdvanceBalance={studentAdvanceBalance}
               enrollmentId={enrollmentId}
               selectedMonth={selectedMonth}
+              onGroupsChange={handleGroupsChange}
             />
           </Grid>
 
+          {/* Submit */}
           <Grid item xs={12}>
             <Button
               type="submit"
               variant="contained"
               fullWidth
+              size="large"
               disabled={isLoading || isSubmitting || !selectedClass}
               startIcon={
-                isLoading || isSubmitting ? <CircularProgress size={20} /> : ""
+                isLoading || isSubmitting ? (
+                  <CircularProgress size={20} />
+                ) : undefined
               }
-              size="large"
               sx={{
                 py: 1.5,
                 background: "linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%)",

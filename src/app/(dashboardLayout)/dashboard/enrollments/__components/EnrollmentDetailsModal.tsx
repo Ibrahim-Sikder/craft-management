@@ -16,6 +16,8 @@ import {
   Person,
   Phone,
   School,
+  Psychology, // Added icon for behavior
+  Home, // Added icon for family environment
 } from "@mui/icons-material";
 import {
   Avatar,
@@ -69,7 +71,7 @@ function TabPanel(props: TabPanelProps) {
 interface EnrollmentDetailsModalProps {
   open: boolean;
   setOpen: (open: boolean) => void;
-  enrollment: any; // flattened row with rawData
+  enrollment: any;
   activeTab: number;
   onTabChange: (tab: number) => void;
   onEdit: (enrollment: any) => void;
@@ -87,27 +89,26 @@ const EnrollmentDetailsModal: React.FC<EnrollmentDetailsModalProps> = ({
 }) => {
   if (!enrollment) return null;
 
-  // Helper to safely get nested student data
-  const student = enrollment.student || enrollment.rawData?.student || {};
+  // --- Data Extraction & Helpers ---
+  const rawData = enrollment.rawData || {};
+  const student = enrollment.student || rawData.student || {};
 
-  // ----- Data extraction helpers -----
+  // Helper to get value prioritizing rawData, then root, then student object
   const getValue = (field: string, fallback: any = "N/A") => {
-    return enrollment[field] ?? student[field] ?? fallback;
+    return rawData[field] ?? enrollment[field] ?? student[field] ?? fallback;
+  };
+
+  // Helper to format keys (e.g., "fatherName" -> "Father Name")
+  const formatKey = (str: string) => {
+    return str.replace(/([A-Z])/g, " $1").replace(/^./, (s) => s.toUpperCase());
   };
 
   const getClassName = () => {
-    // className can be an array of class objects or a string
-    if (
-      Array.isArray(enrollment.className) &&
-      enrollment.className.length > 0
-    ) {
-      const first = enrollment.className[0];
-      return first.className || first.label || first.name || "N/A";
+    const cls = rawData.className || enrollment.className;
+    if (Array.isArray(cls) && cls.length > 0) {
+      return cls[0].className || cls[0].label || cls[0].name || "N/A";
     }
-    if (typeof enrollment.className === "string") return enrollment.className;
-    if (enrollment.rawData?.className?.[0]?.className) {
-      return enrollment.rawData.className[0].className;
-    }
+    if (typeof cls === "string") return cls;
     return "N/A";
   };
 
@@ -124,7 +125,7 @@ const EnrollmentDetailsModal: React.FC<EnrollmentDetailsModalProps> = ({
     }
   };
 
-  // ----- Fee calculations -----
+  // --- Fee Calculations ---
   const fees = enrollment.fees || [];
   const totalFees = fees.reduce(
     (sum: number, f: any) => sum + (f.amount || 0),
@@ -177,7 +178,7 @@ const EnrollmentDetailsModal: React.FC<EnrollmentDetailsModalProps> = ({
     }
   };
 
-  // ----- Address display -----
+  // --- Address ---
   const formatAddress = (addr: any) => {
     if (!addr || typeof addr !== "object") return "N/A";
     const parts = [
@@ -190,7 +191,14 @@ const EnrollmentDetailsModal: React.FC<EnrollmentDetailsModalProps> = ({
     return parts.join(", ") || "N/A";
   };
 
-  // ----- Handle close -----
+  // --- Nested Data Structures ---
+  const parentInfo = rawData.parentInfo || enrollment.parentInfo || {};
+  const father = parentInfo.father || {};
+  const mother = parentInfo.mother || {};
+  const guardian = parentInfo.guardian || {};
+  const familyEnv = rawData.familyEnvironment || {};
+  const behaviorSkills = rawData.behaviorSkills || {};
+
   const handleClose = () => setOpen(false);
 
   return (
@@ -310,15 +318,6 @@ const EnrollmentDetailsModal: React.FC<EnrollmentDetailsModalProps> = ({
                       secondary={getValue("bloodGroup")}
                     />
                   </ListItem>
-                  <ListItem>
-                    <ListItemIcon>
-                      <Person fontSize="small" />
-                    </ListItemIcon>
-                    <ListItemText
-                      primary="Nationality"
-                      secondary={getValue("nationality", "Bangladeshi")}
-                    />
-                  </ListItem>
                 </List>
               </Paper>
             </Grid>
@@ -392,19 +391,32 @@ const EnrollmentDetailsModal: React.FC<EnrollmentDetailsModalProps> = ({
                       sx={{ ml: 1 }}
                     />
                   </Box>
-                  <Box>
-                    <Typography variant="caption" color="text.secondary">
-                      Department
-                    </Typography>
-                    <Chip
-                      label={getValue("studentDepartment", "academic")}
-                      color="secondary"
-                      size="small"
-                      sx={{ ml: 1 }}
-                    />
-                  </Box>
                 </Box>
               </Paper>
+
+              {/* Behavioral Skills Section */}
+              {Object.keys(behaviorSkills).length > 0 && (
+                <Paper sx={{ p: 2, mt: 2 }}>
+                  <Box display="flex" alignItems="center" gap={1} mb={1}>
+                    <Psychology color="primary" fontSize="small" />
+                    <Typography variant="subtitle2" color="text.secondary">
+                      Behavioral Skills
+                    </Typography>
+                  </Box>
+                  <Grid container spacing={1}>
+                    {Object.entries(behaviorSkills).map(([key, value]) => (
+                      <Grid item xs={6} key={key}>
+                        <Typography variant="caption" color="text.secondary">
+                          {formatKey(key)}
+                        </Typography>
+                        <Typography variant="body2" fontWeight="500">
+                          {String(value)}
+                        </Typography>
+                      </Grid>
+                    ))}
+                  </Grid>
+                </Paper>
+              )}
             </Grid>
           </Grid>
         </TabPanel>
@@ -412,6 +424,7 @@ const EnrollmentDetailsModal: React.FC<EnrollmentDetailsModalProps> = ({
         {/* ========== FAMILY TAB ========== */}
         <TabPanel value={activeTab} index={1}>
           <Grid container spacing={3}>
+            {/* Father Information */}
             <Grid item xs={12} md={6}>
               <Paper sx={{ p: 2 }}>
                 <Typography
@@ -425,43 +438,64 @@ const EnrollmentDetailsModal: React.FC<EnrollmentDetailsModalProps> = ({
                   <ListItem>
                     <ListItemText
                       primary="Name"
-                      secondary={getValue("fatherName")}
+                      secondary={father.nameEnglish || getValue("fatherName")}
                     />
                   </ListItem>
                   <ListItem>
                     <ListItemText
                       primary="Name (Bangla)"
-                      secondary={getValue("fatherNameBangla")}
+                      secondary={
+                        father.nameBangla || getValue("fatherNameBangla")
+                      }
                     />
                   </ListItem>
                   <ListItem>
                     <ListItemText
                       primary="Mobile"
-                      secondary={getValue("fatherMobile")}
+                      secondary={father.mobile || getValue("fatherMobile")}
+                    />
+                  </ListItem>
+                  <ListItem>
+                    <ListItemText
+                      primary="WhatsApp"
+                      secondary={father.whatsapp}
                     />
                   </ListItem>
                   <ListItem>
                     <ListItemText
                       primary="NID"
-                      secondary={getValue("fatherNid")}
+                      secondary={father.nid || getValue("fatherNid")}
                     />
                   </ListItem>
                   <ListItem>
                     <ListItemText
                       primary="Profession"
-                      secondary={getValue("fatherProfession")}
+                      secondary={
+                        father.profession || getValue("fatherProfession")
+                      }
+                    />
+                  </ListItem>
+                  <ListItem>
+                    <ListItemText
+                      primary="Education"
+                      secondary={father.education}
                     />
                   </ListItem>
                   <ListItem>
                     <ListItemText
                       primary="Income"
-                      secondary={`৳${getValue("fatherIncome", 0).toLocaleString()}`}
+                      secondary={
+                        father.income
+                          ? `৳${Number(father.income).toLocaleString()}`
+                          : `৳${Number(getValue("fatherIncome", 0)).toLocaleString()}`
+                      }
                     />
                   </ListItem>
                 </List>
               </Paper>
             </Grid>
 
+            {/* Mother Information */}
             <Grid item xs={12} md={6}>
               <Paper sx={{ p: 2 }}>
                 <Typography
@@ -475,44 +509,65 @@ const EnrollmentDetailsModal: React.FC<EnrollmentDetailsModalProps> = ({
                   <ListItem>
                     <ListItemText
                       primary="Name"
-                      secondary={getValue("motherName")}
+                      secondary={mother.nameEnglish || getValue("motherName")}
                     />
                   </ListItem>
                   <ListItem>
                     <ListItemText
                       primary="Name (Bangla)"
-                      secondary={getValue("motherNameBangla")}
+                      secondary={
+                        mother.nameBangla || getValue("motherNameBangla")
+                      }
                     />
                   </ListItem>
                   <ListItem>
                     <ListItemText
                       primary="Mobile"
-                      secondary={getValue("motherMobile")}
+                      secondary={mother.mobile || getValue("motherMobile")}
+                    />
+                  </ListItem>
+                  <ListItem>
+                    <ListItemText
+                      primary="WhatsApp"
+                      secondary={mother.whatsapp}
                     />
                   </ListItem>
                   <ListItem>
                     <ListItemText
                       primary="NID"
-                      secondary={getValue("motherNid")}
+                      secondary={mother.nid || getValue("motherNid")}
                     />
                   </ListItem>
                   <ListItem>
                     <ListItemText
                       primary="Profession"
-                      secondary={getValue("motherProfession")}
+                      secondary={
+                        mother.profession || getValue("motherProfession")
+                      }
+                    />
+                  </ListItem>
+                  <ListItem>
+                    <ListItemText
+                      primary="Education"
+                      secondary={mother.education}
                     />
                   </ListItem>
                   <ListItem>
                     <ListItemText
                       primary="Income"
-                      secondary={`৳${getValue("motherIncome", 0).toLocaleString()}`}
+                      secondary={
+                        mother.income
+                          ? `৳${Number(mother.income).toLocaleString()}`
+                          : `৳${Number(getValue("motherIncome", 0)).toLocaleString()}`
+                      }
                     />
                   </ListItem>
                 </List>
               </Paper>
             </Grid>
 
-            {(enrollment.guardianInfo?.name || student.guardianInfo?.name) && (
+            {/* Guardian Information */}
+            {(guardian.nameEnglish || guardian.mobile) && (
               <Grid item xs={12}>
                 <Paper sx={{ p: 2 }}>
                   <Typography
@@ -522,44 +577,63 @@ const EnrollmentDetailsModal: React.FC<EnrollmentDetailsModalProps> = ({
                   >
                     Guardian Information
                   </Typography>
-                  <List dense>
-                    <ListItem>
-                      <ListItemText
-                        primary="Name"
-                        secondary={
-                          enrollment.guardianInfo?.name ||
-                          student.guardianInfo?.name
-                        }
-                      />
-                    </ListItem>
-                    <ListItem>
-                      <ListItemText
-                        primary="Relation"
-                        secondary={
-                          enrollment.guardianInfo?.relation ||
-                          student.guardianInfo?.relation
-                        }
-                      />
-                    </ListItem>
-                    <ListItem>
-                      <ListItemText
-                        primary="Mobile"
-                        secondary={
-                          enrollment.guardianInfo?.mobile ||
-                          student.guardianInfo?.mobile
-                        }
-                      />
-                    </ListItem>
-                    <ListItem>
-                      <ListItemText
-                        primary="Address"
-                        secondary={
-                          enrollment.guardianInfo?.address ||
-                          student.guardianInfo?.address
-                        }
-                      />
-                    </ListItem>
-                  </List>
+                  <Grid container spacing={2}>
+                    <Grid item xs={12} sm={6} md={3}>
+                      <Typography variant="caption">Name</Typography>
+                      <Typography variant="body2">
+                        {guardian.nameEnglish || guardian.nameBangla || "N/A"}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={12} sm={6} md={3}>
+                      <Typography variant="caption">Relation</Typography>
+                      <Typography variant="body2">
+                        {guardian.relation || "N/A"}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={12} sm={6} md={3}>
+                      <Typography variant="caption">Mobile</Typography>
+                      <Typography variant="body2">
+                        {guardian.mobile || "N/A"}
+                      </Typography>
+                    </Grid>
+                    <Grid item xs={12} sm={6} md={3}>
+                      <Typography variant="caption">Profession</Typography>
+                      <Typography variant="body2">
+                        {guardian.profession || "N/A"}
+                      </Typography>
+                    </Grid>
+                  </Grid>
+                </Paper>
+              </Grid>
+            )}
+
+            {/* Family Environment */}
+            {Object.keys(familyEnv).length > 0 && (
+              <Grid item xs={12}>
+                <Paper sx={{ p: 2 }}>
+                  <Box display="flex" alignItems="center" gap={1} mb={1}>
+                    <Home color="primary" fontSize="small" />
+                    <Typography
+                      variant="subtitle2"
+                      color="text.secondary"
+                      gutterBottom
+                    >
+                      Family Environment
+                    </Typography>
+                  </Box>
+                  <Grid container spacing={2}>
+                    {Object.entries(familyEnv).map(([key, value]) => (
+                      <Grid item xs={6} sm={4} md={3} key={key}>
+                        <Chip
+                          label={`${formatKey(key)}: ${value}`}
+                          size="small"
+                          variant="outlined"
+                          color={value === "Yes" ? "success" : "default"}
+                          sx={{ width: "100%", justifyContent: "flex-start" }}
+                        />
+                      </Grid>
+                    ))}
+                  </Grid>
                 </Paper>
               </Grid>
             )}
@@ -648,7 +722,8 @@ const EnrollmentDetailsModal: React.FC<EnrollmentDetailsModalProps> = ({
                 </List>
               </Grid>
 
-              {enrollment.previousSchool?.institution && (
+              {(rawData.previousSchool?.institution ||
+                enrollment.previousSchool?.institution) && (
                 <Grid item xs={12}>
                   <Typography
                     variant="subtitle2"
@@ -661,13 +736,20 @@ const EnrollmentDetailsModal: React.FC<EnrollmentDetailsModalProps> = ({
                     <ListItem>
                       <ListItemText
                         primary="Institution"
-                        secondary={enrollment.previousSchool.institution}
+                        secondary={
+                          rawData.previousSchool?.institution ||
+                          enrollment.previousSchool?.institution
+                        }
                       />
                     </ListItem>
                     <ListItem>
                       <ListItemText
                         primary="Address"
-                        secondary={enrollment.previousSchool.address || "N/A"}
+                        secondary={
+                          rawData.previousSchool?.address ||
+                          enrollment.previousSchool?.address ||
+                          "N/A"
+                        }
                       />
                     </ListItem>
                   </List>
