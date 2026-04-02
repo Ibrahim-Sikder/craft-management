@@ -18,10 +18,7 @@ import {
   useUpdateEnrollmentMutation,
 } from "@/redux/api/enrollmentApi";
 import { useGetAllStudentsQuery } from "@/redux/api/studentApi";
-import {
-  useGetAllAdmissionApplicationsQuery,
-  useGetSingleAdmissionApplicationQuery,
-} from "@/redux/api/admissionApplication";
+import { useGetAllAdmissionApplicationsQuery } from "@/redux/api/admissionApplication";
 import {
   AccessTime,
   AccountCircle,
@@ -2660,6 +2657,8 @@ const transformApplicationToFormData = (
     advanceBalance: 0,
   };
 };
+// ─── শুধু এই function টা replace করুন EnrollmentForm.tsx এ ───────────────────
+// বাকি সব code একই থাকবে
 
 const transformEnrollmentDataToForm = (
   enrollmentData: any,
@@ -2669,45 +2668,44 @@ const transformEnrollmentDataToForm = (
   if (!enrollmentData?.data) return null;
   const data = enrollmentData.data;
 
+  // ── data.student থেকে parent info নেওয়া হচ্ছে ──
+  // API response এ parentInfo আছে দুই জায়গায়:
+  //   1. data.parentInfo           (enrollment level)
+  //   2. data.student.parentInfo   (student level — এটাই সব data ধরে)
+  const parentInfo = data.parentInfo || data.student?.parentInfo || {};
+  const fatherInfo = parentInfo.father || {};
+  const motherInfo = parentInfo.mother || {};
+  const guardianInfo = parentInfo.guardian || {};
+
+  // ── class format helper ───────────────────────────────────────────────────
   const formatClassForForm = (classData: any) => {
     if (!classData || classData.length === 0) return [];
     if (Array.isArray(classData)) {
       return classData.map((cls: any) => {
+        // cls হতে পারে object {_id, className} অথবা plain string
         const classId = cls._id || cls;
         const classNameValue = cls.className || cls;
-        let matchedClass = classOptions?.find(
-          (option: any) => option.value === classId,
-        );
-        if (!matchedClass)
-          matchedClass = classOptions?.find(
-            (option: any) => option.label === classNameValue,
-          );
-        if (!matchedClass)
-          matchedClass = {
+        let matched = classOptions?.find((o: any) => o.value === classId);
+        if (!matched)
+          matched = classOptions?.find((o: any) => o.label === classNameValue);
+        if (!matched)
+          matched = {
             label: classNameValue,
             name: classNameValue,
             value: classId,
           };
-        return matchedClass;
+        return matched;
       });
-    } else {
-      const classId = classData._id || classData;
-      const classNameValue = classData.className || classData;
-      let matchedClass = classOptions?.find(
-        (option: any) => option.value === classId,
-      );
-      if (!matchedClass)
-        matchedClass = classOptions?.find(
-          (option: any) => option.label === classNameValue,
-        );
-      if (!matchedClass)
-        matchedClass = {
-          label: classNameValue,
-          name: classNameValue,
-          value: classId,
-        };
-      return [matchedClass];
     }
+    // single object
+    const classId = classData._id || classData;
+    const classNameValue = classData.className || classData;
+    let matched = classOptions?.find((o: any) => o.value === classId);
+    if (!matched)
+      matched = classOptions?.find((o: any) => o.label === classNameValue);
+    if (!matched)
+      matched = { label: classNameValue, name: classNameValue, value: classId };
+    return [matched];
   };
 
   const formatDate = (dateString: string) => {
@@ -2719,17 +2717,38 @@ const transformEnrollmentDataToForm = (
     }
   };
 
+  // ── className: enrollment এ object, student এ populated object ────────────
+  // data.className = { _id, className, ... }  (single object, not array)
+  // so wrap in array for formatClassForForm
+  const rawClassName = data.className
+    ? Array.isArray(data.className)
+      ? data.className
+      : [data.className]
+    : data.student?.className
+      ? Array.isArray(data.student.className)
+        ? data.student.className
+        : [data.student.className]
+      : [];
+
+  const formattedClass = formatClassForForm(rawClassName);
+
+  // ── fees: data.student.fees has the full fee array ─────────────────────────
+  // data.fees = []  (empty at enrollment level)
+  // data.student.fees = [{feeType, amount, ...}, ...]
   const MONTH_SET = new Set(MONTHS);
   const uniqueFeeItemsMap = new Map<string, any>();
 
-  if (data.fees && Array.isArray(data.fees)) {
+  const feesArray: any[] = data.student?.fees || data.fees || [];
+
+  if (feesArray.length > 0) {
     const feeGroups = new Map<string, any[]>();
 
-    data.fees.forEach((fee: any) => {
+    feesArray.forEach((fee: any) => {
       let baseFeeType: string = fee.feeType || "";
       let isMonthlyFee = false;
-      let month = null;
+      let month: string | null = null;
 
+      // detect "Monthly Fee - April" pattern
       const dashIdx = baseFeeType.lastIndexOf(" - ");
       if (dashIdx !== -1) {
         const possibleMonth = baseFeeType.slice(dashIdx + 3);
@@ -2741,9 +2760,12 @@ const transformEnrollmentDataToForm = (
       }
 
       if (!feeGroups.has(baseFeeType)) feeGroups.set(baseFeeType, []);
-      feeGroups
-        .get(baseFeeType)!
-        .push({ ...fee, originalFeeType: fee.feeType, month, isMonthlyFee });
+      feeGroups.get(baseFeeType)!.push({
+        ...fee,
+        originalFeeType: fee.feeType,
+        month,
+        isMonthlyFee,
+      });
     });
 
     feeGroups.forEach((fees, baseFeeType) => {
@@ -2755,6 +2777,7 @@ const transformEnrollmentDataToForm = (
       let baseDiscount = firstFee.discount || 0;
 
       if (isMonthlyGroup && fees.length > 1) {
+        // find most common discount (= base discount)
         const discountCounts: { [key: number]: number } = {};
         fees.forEach((f) => {
           const d = f.discount || 0;
@@ -2762,11 +2785,12 @@ const transformEnrollmentDataToForm = (
         });
         let maxCount = 0;
         Object.entries(discountCounts).forEach(([discount, count]) => {
-          if (count > maxCount) {
-            maxCount = count;
+          if ((count as number) > maxCount) {
+            maxCount = count as number;
             baseDiscount = parseFloat(discount);
           }
         });
+        // find range months (months with different discount)
         const rangeMonths: string[] = [];
         fees.forEach((f) => {
           if ((f.discount || 0) !== baseDiscount && f.month)
@@ -2776,10 +2800,8 @@ const transformEnrollmentDataToForm = (
           rangeMonths.sort((a, b) => MONTHS.indexOf(a) - MONTHS.indexOf(b));
           discountRangeStart = rangeMonths[0];
           discountRangeEnd = rangeMonths[rangeMonths.length - 1];
-          const rangeMonthFee = fees.find(
-            (f) => f.month === discountRangeStart,
-          );
-          discountRangeAmount = rangeMonthFee?.discount || 0;
+          discountRangeAmount =
+            fees.find((f) => f.month === discountRangeStart)?.discount || 0;
         }
       }
 
@@ -2799,14 +2821,44 @@ const transformEnrollmentDataToForm = (
   }
 
   const uniqueFeeItems = Array.from(uniqueFeeItemsMap.values());
-  const formattedClass = formatClassForForm(data.className);
+
+  // ── guardian info: check both enrollment and student level ────────────────
+  const guardianName =
+    data.guardianName ||
+    guardianInfo.nameEnglish ||
+    data.student?.guardianInfo?.name ||
+    "";
+  const guardianRelation =
+    data.guardianRelation ||
+    guardianInfo.relation ||
+    data.student?.guardianInfo?.relation ||
+    "";
+  const guardianMobile =
+    data.guardianMobile ||
+    guardianInfo.mobile ||
+    data.student?.guardianInfo?.mobile ||
+    "";
+  const guardianWhatsapp =
+    data.guardianWhatsapp ||
+    guardianInfo.whatsapp ||
+    data.student?.guardianInfo?.whatsapp ||
+    "";
+  const guardianProfession =
+    data.guardianProfession ||
+    guardianInfo.profession ||
+    data.student?.guardianInfo?.profession ||
+    "";
+  const guardianVillage =
+    data.guardianVillage ||
+    guardianInfo.address ||
+    data.student?.guardianInfo?.address ||
+    "";
 
   return {
+    // ── Student basic ──────────────────────────────────────────────────────
     studentId: data.studentId || data.student?.studentId || "",
     studentNameBangla: data.nameBangla || data.student?.nameBangla || "",
     studentPhoto: data.studentPhoto || data.student?.studentPhoto || "",
-    fatherNameBangla: data.fatherNameBangla || data.student?.fatherName || "",
-    motherNameBangla: data.motherNameBangla || data.student?.motherName || "",
     studentName: data.studentName || data.student?.name || "",
     mobileNo: data.mobileNo || data.student?.mobile || "",
     session: data.session || new Date().getFullYear().toString(),
@@ -2820,59 +2872,131 @@ const transformEnrollmentDataToForm = (
     bloodGroup: data.bloodGroup || data.student?.bloodGroup || "",
     nationality: data.nationality || "Bangladeshi",
     className: formattedClass,
-    studentDepartment: data.studentDepartment || "hifz",
-    rollNumber: data.roll || data.student?.studentClassRoll || "",
+    studentDepartment:
+      data.studentDepartment || data.student?.studentDepartment || "hifz",
+    rollNumber:
+      data.roll || data.rollNumber || data.student?.studentClassRoll || "",
     section: data.section || data.student?.section?.[0] || "",
     group: data.group || data.student?.batch || "",
     optionalSubject: data.optionalSubject || "",
-    shift: data.shift || "",
+    shift: data.shift || data.student?.session || "",
     admissionType: data.admissionType || "",
-    fatherName: data.fatherName || data.student?.fatherName || "",
-    fatherMobile: data.fatherMobile || "",
-    fatherNid: data.fatherNid || "",
-    fatherProfession: data.fatherProfession || "",
-    fatherIncome: data.fatherIncome || data.student?.fatherIncome || 0,
-    motherName: data.motherName || data.student?.motherName || "",
-    motherMobile: data.motherMobile || "",
-    motherNid: data.motherNid || "",
-    motherProfession: data.motherProfession || "",
-    motherIncome: data.motherIncome || data.student?.motherIncome || 0,
-    village: data.presentAddress?.village || "",
-    postOffice: data.presentAddress?.postOffice || "",
-    postCode: data.presentAddress?.postCode || "",
-    policeStation: data.presentAddress?.policeStation || "",
-    district: data.presentAddress?.district || "",
-    permVillage: data.permanentAddress?.village || "",
-    permPostOffice: data.permanentAddress?.postOffice || "",
-    permPostCode: data.permanentAddress?.postCode || "",
-    permPoliceStation: data.permanentAddress?.policeStation || "",
-    permDistrict: data.permanentAddress?.district || "",
-    guardianName:
-      data.guardianInfo?.name || data.student?.guardianInfo?.name || "",
-    guardianRelation:
-      data.guardianInfo?.relation || data.student?.guardianInfo?.relation || "",
-    guardianMobile:
-      data.guardianInfo?.mobile || data.student?.guardianInfo?.mobile || "",
-    guardianVillage:
-      data.guardianInfo?.address || data.student?.guardianInfo?.address || "",
-    formerInstitution: data.previousSchool?.institution || "",
-    formerVillage: data.previousSchool?.address || "",
-    birthCertificate: data.documents?.birthCertificate || false,
-    transferCertificate: data.documents?.transferCertificate || false,
-    characterCertificate: data.documents?.characterCertificate || false,
-    markSheet: data.documents?.markSheet || false,
-    photographs: data.documents?.photographs || false,
-    termsAccepted: data.termsAccepted || false,
+
+    // ── Father ────────────────────────────────────────────────────────────
+    fatherName: data.fatherName || fatherInfo.nameEnglish || "",
+    fatherNameBangla: data.fatherNameBangla || fatherInfo.nameBangla || "",
+    fatherMobile: data.fatherMobile || fatherInfo.mobile || "",
+    fatherNid: data.fatherNid || fatherInfo.nid || "",
+    fatherProfession: data.fatherProfession || fatherInfo.profession || "",
+    fatherIncome: data.fatherIncome || fatherInfo.income || 0,
+    fatherWhatsapp: data.fatherWhatsapp || fatherInfo.whatsapp || "",
+    fatherEducation: data.fatherEducation || fatherInfo.education || "",
+
+    // ── Mother ────────────────────────────────────────────────────────────
+    motherName: data.motherName || motherInfo.nameEnglish || "",
+    motherNameBangla: data.motherNameBangla || motherInfo.nameBangla || "",
+    motherMobile: data.motherMobile || motherInfo.mobile || "",
+    motherNid: data.motherNid || motherInfo.nid || "",
+    motherProfession: data.motherProfession || motherInfo.profession || "",
+    motherIncome: data.motherIncome || motherInfo.income || 0,
+    motherWhatsapp: data.motherWhatsapp || motherInfo.whatsapp || "",
+    motherEducation: data.motherEducation || motherInfo.education || "",
+
+    // ── Guardian ──────────────────────────────────────────────────────────
+    guardianName,
+    guardianRelation,
+    guardianMobile,
+    guardianWhatsapp,
+    guardianProfession,
+    guardianVillage,
+
+    // ── Address ───────────────────────────────────────────────────────────
+    village:
+      data.presentAddress?.village ||
+      data.student?.presentAddress?.village ||
+      "",
+    postOffice:
+      data.presentAddress?.postOffice ||
+      data.student?.presentAddress?.postOffice ||
+      "",
+    postCode:
+      data.presentAddress?.postCode ||
+      data.student?.presentAddress?.postCode ||
+      "",
+    policeStation:
+      data.presentAddress?.policeStation ||
+      data.student?.presentAddress?.policeStation ||
+      "",
+    district:
+      data.presentAddress?.district ||
+      data.student?.presentAddress?.district ||
+      "",
+
+    permVillage:
+      data.permanentAddress?.village ||
+      data.student?.permanentAddress?.village ||
+      "",
+    permPostOffice:
+      data.permanentAddress?.postOffice ||
+      data.student?.permanentAddress?.postOffice ||
+      "",
+    permPostCode:
+      data.permanentAddress?.postCode ||
+      data.student?.permanentAddress?.postCode ||
+      "",
+    permPoliceStation:
+      data.permanentAddress?.policeStation ||
+      data.student?.permanentAddress?.policeStation ||
+      "",
+    permDistrict:
+      data.permanentAddress?.district ||
+      data.student?.permanentAddress?.district ||
+      "",
+
+    // ── Previous school ───────────────────────────────────────────────────
+    formerInstitution:
+      data.previousSchool?.institution ||
+      data.student?.previousSchool?.institution ||
+      "",
+    formerVillage:
+      data.previousSchool?.address ||
+      data.student?.previousSchool?.address ||
+      "",
+
+    // ── Documents ─────────────────────────────────────────────────────────
+    birthCertificate:
+      data.documents?.birthCertificate ??
+      data.student?.documents?.birthCertificate ??
+      false,
+    transferCertificate:
+      data.documents?.transferCertificate ??
+      data.student?.documents?.transferCertificate ??
+      false,
+    characterCertificate:
+      data.documents?.characterCertificate ??
+      data.student?.documents?.characterCertificate ??
+      false,
+    markSheet:
+      data.documents?.markSheet ?? data.student?.documents?.markSheet ?? false,
+    photographs:
+      data.documents?.photographs ??
+      data.student?.documents?.photographs ??
+      false,
+    termsAccepted: data.termsAccepted ?? data.student?.termsAccepted ?? false,
+
+    // ── Fees ──────────────────────────────────────────────────────────────
     fees: [
       {
         category: [],
         className: formattedClass,
         feeItems: uniqueFeeItems,
         feeAmount: uniqueFeeItems
-          .reduce((sum, item) => sum + item.amount, 0)
+          .reduce((sum, item) => sum + (item.amount || 0), 0)
           .toString(),
       },
     ],
+
+    // ── Payment summary ───────────────────────────────────────────────────
     admissionFee: data.admissionFee || data.student?.admissionFee || 0,
     monthlyFee: data.monthlyFee || data.student?.monthlyFee || 0,
     discountAmount: data.discountAmount || 0,
@@ -2884,7 +3008,7 @@ const transformEnrollmentDataToForm = (
     netPayable: data.netPayable || 0,
     paidAmount: data.paidAmount || 0,
     dueAmount: data.dueAmount || 0,
-    advanceBalance: data.advanceBalance || 0,
+    advanceBalance: data.advanceBalance || data.student?.advanceBalance || 0,
   };
 };
 
@@ -2913,6 +3037,8 @@ const EnrollmentForm = ({ applicationId, admissionApplications }: any) => {
     page: page + 1,
     searchTerm,
   });
+
+  console.log("studentData", singleEnrollment);
 
   const [submitting, setSubmitting] = useState(false);
   const [defaultValues, setDefaultValues] = useState<any>(null);

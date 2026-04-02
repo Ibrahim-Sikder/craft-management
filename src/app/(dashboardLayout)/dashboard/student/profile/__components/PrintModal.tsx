@@ -4,41 +4,39 @@
 import CraftModal from "@/components/Shared/Modal";
 import { Description, MapRounded, Phone } from "@mui/icons-material";
 import { Box, Button, Typography } from "@mui/material";
-import { useEffect, useRef, useMemo } from "react";
+import { useRef, useMemo } from "react";
 import { useReactToPrint } from "react-to-print";
 
 const PrintModal = ({
   open,
   setOpen,
   receipt,
-  onClose, // called when modal is closed (by any means)
+  student,
+  onClose, // optional: called only when navigating away (e.g., from EnrollmentForm)
 }: any) => {
   const componentRef = useRef<HTMLDivElement | null>(null);
-  const printTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  useEffect(() => {
-    if (open) {
-      if (printTimeoutRef.current) clearTimeout(printTimeoutRef.current);
-    }
-  }, [open]);
+  // Whether this modal was opened from a context that wants navigation on close
+  // (EnrollmentForm passes onClose, FeeCollection does not)
+  const hasNavigationCallback = typeof onClose === "function";
 
   const handleClose = () => {
-    console.log("PrintModal handleClose"); // debugging
     setOpen(false);
-    // Clear any pending timeout to avoid double navigation
-    if (printTimeoutRef.current) {
-      clearTimeout(printTimeoutRef.current);
-      printTimeoutRef.current = null;
+    // Only trigger navigation callback if the caller explicitly provided one
+    if (hasNavigationCallback) {
+      onClose();
     }
-    if (onClose) onClose(); // call parent's navigation callback
   };
 
   const handlePrint = useReactToPrint({
     contentRef: componentRef,
     documentTitle: `Money Receipt - ${receipt?.receiptNo || "Unknown"}`,
     onAfterPrint: () => {
-      if (printTimeoutRef.current) clearTimeout(printTimeoutRef.current);
-      handleClose(); // close after print
+      // After printing: if the caller wants navigation, do it; otherwise just close modal
+      setOpen(false);
+      if (hasNavigationCallback) {
+        onClose();
+      }
     },
     pageStyle: `
       @page {
@@ -58,12 +56,9 @@ const PrintModal = ({
     `,
   });
 
-  const handlePrintWithSafety = () => {
+  // No setTimeout fallback — it caused auto-close when printing from FeeCollection
+  const handlePrintClick = () => {
     handlePrint();
-    // Fallback in case onAfterPrint doesn't fire (e.g., user cancels print)
-    printTimeoutRef.current = setTimeout(() => {
-      handleClose();
-    }, 5000);
   };
 
   const formatDate = (dateString: string) => {
@@ -121,7 +116,6 @@ const PrintModal = ({
     "ডিসে.",
   ];
 
-  // English month names for comparison
   const englishMonths = [
     "January",
     "February",
@@ -137,9 +131,7 @@ const PrintModal = ({
     "December",
   ];
 
-  // Function to extract month from fee description
   const extractMonthFromFeeType = (feeType: string) => {
-    // Check for pattern like "Monthly Fee - May" or "Monthly Fee - June"
     const monthlyFeeMatch = feeType.match(/Monthly Fee - (\w+)/i);
     if (monthlyFeeMatch) {
       const monthName = monthlyFeeMatch[1];
@@ -148,39 +140,33 @@ const PrintModal = ({
       );
       if (monthIndex !== -1) return monthIndex;
     }
-
-    // Check if feeType contains any month name
     for (let i = 0; i < englishMonths.length; i++) {
       if (feeType.toLowerCase().includes(englishMonths[i].toLowerCase())) {
         return i;
       }
     }
-
     return -1;
   };
 
-  // Get all months that appear in the fees
   const getSelectedMonths = useMemo(() => {
     const fees = getDisplayFees();
     const selectedMonths = new Set<number>();
-
     fees.forEach((fee: any) => {
       const feeType = fee.feeType || fee.name || "";
       const monthIndex = extractMonthFromFeeType(feeType);
-      if (monthIndex !== -1) {
-        selectedMonths.add(monthIndex);
-      }
+      if (monthIndex !== -1) selectedMonths.add(monthIndex);
     });
-
     return selectedMonths;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [receipt?.fees]);
 
-  const isMonthSelected = (monthIndex: number) => {
-    return getSelectedMonths.has(monthIndex);
-  };
+  const isMonthSelected = (monthIndex: number) =>
+    getSelectedMonths.has(monthIndex);
 
   const getClassName = () => {
-    const className = receipt?.className || receipt?.studentClass;
+    // Try receipt first, then fall back to student prop
+    const className =
+      receipt?.className || receipt?.studentClass || student?.className;
     if (!className) return "N/A";
     if (typeof className === "string") return className;
     if (Array.isArray(className)) {
@@ -197,8 +183,15 @@ const PrintModal = ({
     return "N/A";
   };
 
-  const getStudentName = () => receipt?.studentName || receipt?.name || "N/A";
-  const getRoll = () => receipt?.rollNumber || receipt?.studentRoll || "N/A";
+  const getStudentName = () =>
+    receipt?.studentName ||
+    receipt?.name ||
+    student?.studentName ||
+    student?.name ||
+    "N/A";
+
+  const getRoll = () =>
+    receipt?.rollNumber || receipt?.studentRoll || student?.rollNumber || "N/A";
 
   if (!receipt) {
     return (
@@ -479,7 +472,7 @@ const PrintModal = ({
         <div className="printInvoiceBtnGroup flex gap-2 mt-4 justify-center no-print">
           <Button
             variant="contained"
-            onClick={handlePrintWithSafety}
+            onClick={handlePrintClick}
             startIcon={<Description />}
           >
             Print

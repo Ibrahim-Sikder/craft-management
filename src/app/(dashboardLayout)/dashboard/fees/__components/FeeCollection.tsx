@@ -477,6 +477,12 @@ const FeeCollection = () => {
         open={printModalOpen}
         setOpen={handleClosePrintModal}
         receipt={selectedReceipt}
+        onClose={() => {
+          console.log("Navigating to student list");
+          setTimeout(() => {
+            window.location.href = "/dashboard/student/list";
+          }, 100);
+        }}
       />
       <PaymentModal
         open={paymentModalOpen}
