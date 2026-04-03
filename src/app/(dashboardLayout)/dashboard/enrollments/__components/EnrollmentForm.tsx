@@ -3216,17 +3216,6 @@ const EnrollmentForm = ({ applicationId, admissionApplications }: any) => {
         setSubmitting(false);
         return;
       }
-<<<<<<< HEAD
-      // if (
-      //   !submitData.fees ||
-      //   !submitData.fees.some((f: any) => f.feeItems && f.feeItems.length > 0)
-      // ) {
-      //   toast.error("Please add at least one fee category with items");
-      //   setSubmitting(false);
-      //   return;
-      // }
-=======
->>>>>>> 151d80f38fefc4d84dcc6315d4122e4e48bdc7cf
 
       const classNameArray = submitData.className
         .map((cls: any) => cls.value || cls)
@@ -3734,20 +3723,6 @@ const EnrollmentForm = ({ applicationId, admissionApplications }: any) => {
               >
                 Print Receipt
               </Button>
-<<<<<<< HEAD
-              {/* <Button
-                variant="contained"
-                onClick={() => {
-                  setOpenSuccessModal(false);
-                  setOpenAddFeeModal(true);
-                }}
-                startIcon={<Payment />}
-                sx={{ borderRadius: 2, px: 3, bgcolor: "primary.main" }}
-              >
-                Add Additional Fee
-              </Button> */}
-=======
->>>>>>> 151d80f38fefc4d84dcc6315d4122e4e48bdc7cf
             </Box>
             <Button variant="text" onClick={handleFinishProcess}>
               Close & Go to List
@@ -3760,16 +3735,11 @@ const EnrollmentForm = ({ applicationId, admissionApplications }: any) => {
           setOpen={setOpenPrintModal}
           receipt={enrolledStudentData?.data?.receipt}
           student={enrolledStudentData?.data?.student || enrolledStudentData}
-<<<<<<< HEAD
-          afterClose={() => {
-            router.push("/dashboard/student/list");
-=======
           onClose={() => {
             console.log("Navigating to student list");
             setTimeout(() => {
               window.location.href = "/dashboard/student/list";
             }, 100);
->>>>>>> 151d80f38fefc4d84dcc6315d4122e4e48bdc7cf
           }}
         />
         <AddFeeModal
