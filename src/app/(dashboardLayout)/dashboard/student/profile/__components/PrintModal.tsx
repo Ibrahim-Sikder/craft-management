@@ -6,14 +6,7 @@ import { Description, MapRounded, Phone } from "@mui/icons-material";
 import { Box, Button, Typography } from "@mui/material";
 import { useRef, useMemo } from "react";
 import { useReactToPrint } from "react-to-print";
-import { useRouter } from "next/navigation";
 
-<<<<<<< HEAD
-const PrintModal = ({ open, setOpen, receipt, afterClose }: any) => {
-  const router = useRouter();
-  const componentRef = useRef<HTMLDivElement | null>(null);
-  const afterCloseCalledRef = useRef(false);
-=======
 const PrintModal = ({
   open,
   setOpen,
@@ -22,30 +15,28 @@ const PrintModal = ({
   onClose, // optional: called only when navigating away (e.g., from EnrollmentForm)
 }: any) => {
   const componentRef = useRef<HTMLDivElement | null>(null);
-  const printTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  useEffect(() => {
-    if (open) {
-      if (printTimeoutRef.current) clearTimeout(printTimeoutRef.current);
-    }
-  }, [open]);
+  // Whether this modal was opened from a context that wants navigation on close
+  // (EnrollmentForm passes onClose, FeeCollection does not)
+  const hasNavigationCallback = typeof onClose === "function";
 
   const handleClose = () => {
-    console.log("PrintModal handleClose"); // debugging
     setOpen(false);
     // Only trigger navigation callback if the caller explicitly provided one
     if (hasNavigationCallback) {
       onClose();
     }
   };
->>>>>>> 151d80f38fefc4d84dcc6315d4122e4e48bdc7cf
 
   const handlePrint = useReactToPrint({
     contentRef: componentRef,
     documentTitle: `Money Receipt - ${receipt?.receiptNo || "Unknown"}`,
     onAfterPrint: () => {
-      if (printTimeoutRef.current) clearTimeout(printTimeoutRef.current);
-      handleClose(); // close after print
+      // After printing: if the caller wants navigation, do it; otherwise just close modal
+      setOpen(false);
+      if (hasNavigationCallback) {
+        onClose();
+      }
     },
     pageStyle: `
       @page {
@@ -68,10 +59,6 @@ const PrintModal = ({
   // No setTimeout fallback — it caused auto-close when printing from FeeCollection
   const handlePrintClick = () => {
     handlePrint();
-    // Fallback in case onAfterPrint doesn't fire (e.g., user cancels print)
-    printTimeoutRef.current = setTimeout(() => {
-      handleClose();
-    }, 5000);
   };
 
   const formatDate = (dateString: string) => {
