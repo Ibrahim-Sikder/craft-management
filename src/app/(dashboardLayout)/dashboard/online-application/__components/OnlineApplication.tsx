@@ -284,7 +284,7 @@ export default function AdmissionApplicationList({
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedApplication, setSelectedApplication] = useState<any>(null);
   const [modalLoading, setModalLoading] = useState(false);
-
+  console.log("selectedApplication", selectedApplication);
   useEffect(() => {
     setRowsPerPage(isMobile ? 5 : isTablet ? 8 : 10);
   }, [isMobile, isTablet]);
@@ -371,7 +371,7 @@ export default function AdmissionApplicationList({
         Swal.fire("Error", "Application ID not found", "error");
         return;
       }
-      // from = current page type (pending, approved, rejected, enrolled)
+
       router.push(
         `/dashboard/online-application/edit?id=${row._id}&from=${type}`,
       );

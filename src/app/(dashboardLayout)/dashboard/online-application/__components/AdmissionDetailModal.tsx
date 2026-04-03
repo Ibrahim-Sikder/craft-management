@@ -60,7 +60,7 @@ const Transition = React.forwardRef(function Transition(props: any, ref) {
 });
 
 // Status chip component
-const StatusChip = ({ status }: { status: string }) => {
+const StatusChip = ({ status }: { status?: string }) => {
   const statusConfig: Record<
     string,
     {
@@ -91,7 +91,8 @@ const StatusChip = ({ status }: { status: string }) => {
     },
   };
 
-  const config = statusConfig[status?.toLowerCase()] || statusConfig.pending;
+  const config =
+    statusConfig[status?.toLowerCase() || "pending"] || statusConfig.pending;
 
   return (
     <Chip
@@ -108,7 +109,7 @@ const StatusChip = ({ status }: { status: string }) => {
 };
 
 // Department chip
-const DepartmentChip = ({ department }: { department: string }) => {
+const DepartmentChip = ({ department }: { department?: string }) => {
   const departmentColors: Record<string, string> = {
     hifz: "#8B5CF6",
     academic: "#3B82F6",
@@ -125,21 +126,21 @@ const DepartmentChip = ({ department }: { department: string }) => {
 
   return (
     <Chip
-      label={departmentLabels[department] || department}
+      label={departmentLabels[department || ""] || department || "N/A"}
       size="small"
       sx={{
-        backgroundColor: `${departmentColors[department] || "#6B7280"}20`,
-        color: departmentColors[department] || "#6B7280",
+        backgroundColor: `${departmentColors[department || ""] || "#6B7280"}20`,
+        color: departmentColors[department || ""] || "#6B7280",
         fontWeight: 600,
         borderRadius: "8px",
-        border: `1px solid ${departmentColors[department] || "#6B7280"}30`,
+        border: `1px solid ${departmentColors[department || ""] || "#6B7280"}30`,
       }}
     />
   );
 };
 
 // Gender icon component
-const GenderIcon = ({ gender }: { gender: string }) => {
+const GenderIcon = ({ gender }: { gender?: string }) => {
   switch (gender?.toLowerCase()) {
     case "male":
       return <Male sx={{ color: "#3B82F6" }} />;
@@ -151,7 +152,8 @@ const GenderIcon = ({ gender }: { gender: string }) => {
 };
 
 // Date formatter
-const formatDate = (date: string | Date) => {
+const formatDate = (date?: string | Date) => {
+  if (!date) return "N/A";
   try {
     return format(new Date(date), "dd MMM yyyy", { locale: bn });
   } catch {
@@ -166,7 +168,7 @@ const InfoRow = ({
   icon,
 }: {
   label: string;
-  value: any;
+  value?: any;
   icon?: React.ReactNode;
 }) => (
   <TableRow>
@@ -183,7 +185,7 @@ const InfoRow = ({
 );
 
 // Document Item Component
-const DocumentItem = ({ label, value }: { label: string; value: boolean }) => (
+const DocumentItem = ({ label, value }: { label: string; value?: boolean }) => (
   <Box
     sx={{
       display: "flex",
@@ -230,7 +232,7 @@ export const AdmissionDetailModal = ({
 
   if (!application) return null;
 
-  // Destructure all possible fields from the application object
+  // Destructure all possible fields from the application object with optional chaining
   const {
     applicationId,
     _id,
@@ -252,7 +254,7 @@ export const AdmissionDetailModal = ({
     termsAccepted = false,
   } = application;
 
-  // Student info
+  // Student info with optional chaining
   const {
     nameBangla,
     nameEnglish,
@@ -266,17 +268,17 @@ export const AdmissionDetailModal = ({
     class: studentClass,
     session,
     studentPhoto,
-  } = studentInfo;
+  } = studentInfo || {};
 
-  // Academic info
-  const { previousSchool, previousClass, gpa } = academicInfo;
+  // Academic info with optional chaining
+  const { previousSchool, previousClass, gpa } = academicInfo || {};
 
-  // Parent info
-  const { father = {}, mother = {}, guardian = {} } = parentInfo;
+  // Parent info with optional chaining
+  const { father = {}, mother = {}, guardian = {} } = parentInfo || {};
 
-  // Address
-  const presentAddress = address.present || {};
-  const permanentAddress = address.permanent || {};
+  // Address with optional chaining
+  const presentAddress = address?.present || {};
+  const permanentAddress = address?.permanent || {};
 
   // Use values (prefer from studentInfo, fallback to top level)
   const displayNameBangla = nameBangla || topNameBangla;
@@ -286,28 +288,32 @@ export const AdmissionDetailModal = ({
   const displayMobile = topMobile;
   const displayFatherMobile = topFatherMobile;
 
-  // For documents display
+  // For documents display with optional chaining
   const documentList = [
-    { key: "photographs", label: "ছবি", value: documents.photographs || false },
+    {
+      key: "photographs",
+      label: "ছবি",
+      value: documents?.photographs || false,
+    },
     {
       key: "birthCertificate",
       label: "জন্ম নিবন্ধন সনদ",
-      value: documents.birthCertificate || false,
+      value: documents?.birthCertificate || false,
     },
     {
       key: "markSheet",
       label: "মার্কশিট",
-      value: documents.markSheet || false,
+      value: documents?.markSheet || false,
     },
     {
       key: "transferCertificate",
       label: "ট্রান্সফার সার্টিফিকেট",
-      value: documents.transferCertificate || false,
+      value: documents?.transferCertificate || false,
     },
     {
       key: "characterCertificate",
       label: "চরিত্র সনদপত্র",
-      value: documents.characterCertificate || false,
+      value: documents?.characterCertificate || false,
     },
   ];
 
@@ -364,10 +370,11 @@ export const AdmissionDetailModal = ({
                   WebkitTextFillColor: "transparent",
                 }}
               >
-                {displayNameBangla || displayNameEnglish}
+                {displayNameBangla || displayNameEnglish || "N/A"}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Application ID: {applicationId || _id?.slice(-6).toUpperCase()}
+                Application ID:{" "}
+                {applicationId || _id?.slice(-6).toUpperCase() || "N/A"}
               </Typography>
             </Box>
           </Box>
@@ -445,12 +452,12 @@ export const AdmissionDetailModal = ({
                       />
                       <InfoRow
                         label="লিঙ্গ"
-                        value={gender}
+                        value={gender || "N/A"}
                         icon={<GenderIcon gender={gender} />}
                       />
                       <InfoRow
                         label="রক্তের গ্রুপ"
-                        value={bloodGroup}
+                        value={bloodGroup || "N/A"}
                         icon={
                           <Bloodtype
                             fontSize="small"
@@ -460,7 +467,7 @@ export const AdmissionDetailModal = ({
                       />
                       <InfoRow
                         label="জাতীয়তা"
-                        value={nationality}
+                        value={nationality || "N/A"}
                         icon={
                           <Flag
                             fontSize="small"
@@ -470,7 +477,7 @@ export const AdmissionDetailModal = ({
                       />
                       <InfoRow
                         label="এনআইডি/জন্ম নিবন্ধন"
-                        value={nidBirth}
+                        value={nidBirth || "N/A"}
                         icon={
                           <Fingerprint
                             fontSize="small"
@@ -550,14 +557,17 @@ export const AdmissionDetailModal = ({
                           />
                         </TableCell>
                       </TableRow>
-                      <InfoRow label="সেশন" value={session || academicYear} />
+                      <InfoRow
+                        label="সেশন"
+                        value={session || academicYear || "N/A"}
+                      />
                       <InfoRow
                         label="পূর্ববর্তী প্রতিষ্ঠান"
-                        value={previousSchool}
+                        value={previousSchool || "N/A"}
                       />
                       <InfoRow
                         label="পূর্ববর্তী শ্রেণি"
-                        value={previousClass}
+                        value={previousClass || "N/A"}
                       />
                       <TableRow>
                         <TableCell
@@ -617,19 +627,19 @@ export const AdmissionDetailModal = ({
                 >
                   <Table size="small">
                     <TableBody>
-                      <InfoRow label="নাম (বাংলা)" value={father.nameBangla} />
+                      <InfoRow label="নাম (বাংলা)" value={father?.nameBangla} />
                       <InfoRow
                         label="নাম (ইংরেজি)"
-                        value={father.nameEnglish}
+                        value={father?.nameEnglish}
                       />
-                      <InfoRow label="পেশা" value={father.profession} />
+                      <InfoRow label="পেশা" value={father?.profession} />
                       <InfoRow
                         label="শিক্ষাগত যোগ্যতা"
-                        value={father.education}
+                        value={father?.education}
                       />
                       <InfoRow
                         label="মোবাইল"
-                        value={father.mobile || displayFatherMobile}
+                        value={father?.mobile || displayFatherMobile}
                         icon={
                           <LocalPhone
                             fontSize="small"
@@ -639,7 +649,7 @@ export const AdmissionDetailModal = ({
                       />
                       <InfoRow
                         label="WhatsApp"
-                        value={father.whatsapp}
+                        value={father?.whatsapp}
                         icon={
                           <WhatsAppIcon
                             fontSize="small"
@@ -689,19 +699,19 @@ export const AdmissionDetailModal = ({
                 >
                   <Table size="small">
                     <TableBody>
-                      <InfoRow label="নাম (বাংলা)" value={mother.nameBangla} />
+                      <InfoRow label="নাম (বাংলা)" value={mother?.nameBangla} />
                       <InfoRow
                         label="নাম (ইংরেজি)"
-                        value={mother.nameEnglish}
+                        value={mother?.nameEnglish}
                       />
-                      <InfoRow label="পেশা" value={mother.profession} />
+                      <InfoRow label="পেশা" value={mother?.profession} />
                       <InfoRow
                         label="শিক্ষাগত যোগ্যতা"
-                        value={mother.education}
+                        value={mother?.education}
                       />
                       <InfoRow
                         label="মোবাইল"
-                        value={mother.mobile}
+                        value={mother?.mobile}
                         icon={
                           <LocalPhone
                             fontSize="small"
@@ -711,7 +721,7 @@ export const AdmissionDetailModal = ({
                       />
                       <InfoRow
                         label="WhatsApp"
-                        value={mother.whatsapp}
+                        value={mother?.whatsapp}
                         icon={
                           <WhatsAppIcon
                             fontSize="small"
@@ -727,7 +737,7 @@ export const AdmissionDetailModal = ({
           </Grid>
 
           {/* Guardian's Information (if exists) */}
-          {guardian.nameBangla && (
+          {guardian?.nameBangla && (
             <Grid item xs={12} md={6}>
               <Card
                 variant="outlined"
@@ -764,17 +774,17 @@ export const AdmissionDetailModal = ({
                       <TableBody>
                         <InfoRow
                           label="নাম (বাংলা)"
-                          value={guardian.nameBangla}
+                          value={guardian?.nameBangla}
                         />
                         <InfoRow
                           label="নাম (ইংরেজি)"
-                          value={guardian.nameEnglish}
+                          value={guardian?.nameEnglish}
                         />
-                        <InfoRow label="পেশা" value={guardian.profession} />
-                        <InfoRow label="সম্পর্ক" value={guardian.relation} />
+                        <InfoRow label="পেশা" value={guardian?.profession} />
+                        <InfoRow label="সম্পর্ক" value={guardian?.relation} />
                         <InfoRow
                           label="মোবাইল"
-                          value={guardian.mobile}
+                          value={guardian?.mobile}
                           icon={
                             <LocalPhone
                               fontSize="small"
@@ -784,7 +794,7 @@ export const AdmissionDetailModal = ({
                         />
                         <InfoRow
                           label="WhatsApp"
-                          value={guardian.whatsapp}
+                          value={guardian?.whatsapp}
                           icon={
                             <WhatsAppIcon
                               fontSize="small"
@@ -792,7 +802,7 @@ export const AdmissionDetailModal = ({
                             />
                           }
                         />
-                        <InfoRow label="ঠিকানা" value={guardian.address} />
+                        <InfoRow label="ঠিকানা" value={guardian?.address} />
                       </TableBody>
                     </Table>
                   </TableContainer>
@@ -833,17 +843,17 @@ export const AdmissionDetailModal = ({
                   <Map color="primary" fontSize="small" sx={{ mt: 0.5 }} />
                   <Box>
                     <Typography variant="body2">
-                      {presentAddress.village || "N/A"},
+                      {presentAddress?.village || "N/A"},
                       <br />
-                      {presentAddress.postOffice || "N/A"}
-                      {presentAddress.postCode
+                      {presentAddress?.postOffice || "N/A"}
+                      {presentAddress?.postCode
                         ? `- ${presentAddress.postCode}`
                         : ""}
                     </Typography>
                     <Typography variant="body2" sx={{ mt: 1 }}>
-                      থানা: {presentAddress.policeStation || "N/A"}
+                      থানা: {presentAddress?.policeStation || "N/A"}
                       <br />
-                      জেলা: {presentAddress.district || "N/A"}
+                      জেলা: {presentAddress?.district || "N/A"}
                     </Typography>
                   </Box>
                 </Box>
@@ -883,17 +893,17 @@ export const AdmissionDetailModal = ({
                   <Map color="info" fontSize="small" sx={{ mt: 0.5 }} />
                   <Box>
                     <Typography variant="body2">
-                      {permanentAddress.village || "N/A"},
+                      {permanentAddress?.village || "N/A"},
                       <br />
-                      {permanentAddress.postOffice || "N/A"}
-                      {permanentAddress.postCode
+                      {permanentAddress?.postOffice || "N/A"}
+                      {permanentAddress?.postCode
                         ? `- ${permanentAddress.postCode}`
                         : ""}
                     </Typography>
                     <Typography variant="body2" sx={{ mt: 1 }}>
-                      থানা: {permanentAddress.policeStation || "N/A"}
+                      থানা: {permanentAddress?.policeStation || "N/A"}
                       <br />
-                      জেলা: {permanentAddress.district || "N/A"}
+                      জেলা: {permanentAddress?.district || "N/A"}
                     </Typography>
                   </Box>
                 </Box>
@@ -938,24 +948,27 @@ export const AdmissionDetailModal = ({
                     <TableBody>
                       <InfoRow
                         label="হালাল আয়"
-                        value={familyEnvironment.halalIncome}
+                        value={familyEnvironment?.halalIncome}
                       />
                       <InfoRow
                         label="মা-বাবার নামাজ"
-                        value={familyEnvironment.parentsPrayer}
+                        value={familyEnvironment?.parentsPrayer}
                       />
                       <InfoRow
                         label="নেশা/অনিষ্টকর অভ্যাস"
-                        value={familyEnvironment.addiction}
+                        value={familyEnvironment?.addiction}
                       />
-                      <InfoRow label="টিভি দেখা" value={familyEnvironment.tv} />
+                      <InfoRow
+                        label="টিভি দেখা"
+                        value={familyEnvironment?.tv}
+                      />
                       <InfoRow
                         label="কুরআন তিলাওয়াত"
-                        value={familyEnvironment.quranRecitation}
+                        value={familyEnvironment?.quranRecitation}
                       />
                       <InfoRow
                         label="পর্দা পালন"
-                        value={familyEnvironment.purdah}
+                        value={familyEnvironment?.purdah}
                       />
                     </TableBody>
                   </Table>
@@ -1001,39 +1014,39 @@ export const AdmissionDetailModal = ({
                     <TableBody>
                       <InfoRow
                         label="মোবাইল ব্যবহার"
-                        value={behaviorSkills.mobileUsage}
+                        value={behaviorSkills?.mobileUsage}
                       />
                       <InfoRow
                         label="সাধারণ আচরণ"
-                        value={behaviorSkills.generalBehavior}
+                        value={behaviorSkills?.generalBehavior}
                       />
                       <InfoRow
                         label="আনুগত্য"
-                        value={behaviorSkills.obedience}
+                        value={behaviorSkills?.obedience}
                       />
                       <InfoRow
                         label="বড়দের সাথে ব্যবহার"
-                        value={behaviorSkills.elderBehavior}
+                        value={behaviorSkills?.elderBehavior}
                       />
                       <InfoRow
                         label="ছোটদের সাথে ব্যবহার"
-                        value={behaviorSkills.youngerBehavior}
+                        value={behaviorSkills?.youngerBehavior}
                       />
                       <InfoRow
                         label="মিথ্যা/একগুঁয়েমি"
-                        value={behaviorSkills.lyingStubbornness}
+                        value={behaviorSkills?.lyingStubbornness}
                       />
                       <InfoRow
                         label="পড়াশোনায় আগ্রহ"
-                        value={behaviorSkills.studyInterest}
+                        value={behaviorSkills?.studyInterest}
                       />
                       <InfoRow
                         label="ধর্মীয় আগ্রহ"
-                        value={behaviorSkills.religiousInterest}
+                        value={behaviorSkills?.religiousInterest}
                       />
                       <InfoRow
                         label="রাগ নিয়ন্ত্রণ"
-                        value={behaviorSkills.angerControl}
+                        value={behaviorSkills?.angerControl}
                       />
                     </TableBody>
                   </Table>
