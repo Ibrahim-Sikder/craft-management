@@ -1245,7 +1245,7 @@ const DynamicFeeFields = ({
                                             parseFloat(e.target.value),
                                           )
                                         }
-                                        sx={{ width: 80 }}
+                                        sx={{ width: 150 }}
                                       />
                                       <Button
                                         size="small"
@@ -2732,9 +2732,6 @@ const transformEnrollmentDataToForm = (
 
   const formattedClass = formatClassForForm(rawClassName);
 
-  // ── fees: data.student.fees has the full fee array ─────────────────────────
-  // data.fees = []  (empty at enrollment level)
-  // data.student.fees = [{feeType, amount, ...}, ...]
   const MONTH_SET = new Set(MONTHS);
   const uniqueFeeItemsMap = new Map<string, any>();
 
