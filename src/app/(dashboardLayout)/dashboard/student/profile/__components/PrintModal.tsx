@@ -4,7 +4,7 @@
 import CraftModal from "@/components/Shared/Modal";
 import { Description, MapRounded, Phone } from "@mui/icons-material";
 import { Box, Button, Typography } from "@mui/material";
-import { useEffect, useRef } from "react";
+import { useRef, useMemo } from "react";
 import { useReactToPrint } from "react-to-print";
 import { useRouter } from "next/navigation";
 
@@ -18,48 +18,25 @@ const PrintModal = ({
   open,
   setOpen,
   receipt,
-  onClose, // called when modal is closed (by any means)
+  student,
+  onClose, // optional: called only when navigating away (e.g., from EnrollmentForm)
 }: any) => {
   const componentRef = useRef<HTMLDivElement | null>(null);
->>>>>>> 151d80f38fefc4d84dcc6315d4122e4e48bdc7cf
   const printTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     if (open) {
-<<<<<<< HEAD
-      afterCloseCalledRef.current = false;
-=======
->>>>>>> 151d80f38fefc4d84dcc6315d4122e4e48bdc7cf
       if (printTimeoutRef.current) clearTimeout(printTimeoutRef.current);
     }
   }, [open]);
 
   const handleClose = () => {
-<<<<<<< HEAD
-    if (!afterCloseCalledRef.current) {
-      afterCloseCalledRef.current = true;
-      if (afterClose) afterClose();
-    }
-    setOpen(false);
-    router.push("/dashboard/student/list");
-  };
-
-  useEffect(() => {
-    if (!open && !afterCloseCalledRef.current) {
-      afterCloseCalledRef.current = true;
-      if (afterClose) afterClose();
-      router.push("/dashboard/student/list");
-    }
-  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
-=======
     console.log("PrintModal handleClose"); // debugging
     setOpen(false);
-    // Clear any pending timeout to avoid double navigation
-    if (printTimeoutRef.current) {
-      clearTimeout(printTimeoutRef.current);
-      printTimeoutRef.current = null;
+    // Only trigger navigation callback if the caller explicitly provided one
+    if (hasNavigationCallback) {
+      onClose();
     }
-    if (onClose) onClose(); // call parent's navigation callback
   };
 >>>>>>> 151d80f38fefc4d84dcc6315d4122e4e48bdc7cf
 
@@ -68,11 +45,7 @@ const PrintModal = ({
     documentTitle: `Money Receipt - ${receipt?.receiptNo || "Unknown"}`,
     onAfterPrint: () => {
       if (printTimeoutRef.current) clearTimeout(printTimeoutRef.current);
-<<<<<<< HEAD
-      handleClose();
-=======
       handleClose(); // close after print
->>>>>>> 151d80f38fefc4d84dcc6315d4122e4e48bdc7cf
     },
     pageStyle: `
       @page {
@@ -92,18 +65,12 @@ const PrintModal = ({
     `,
   });
 
-  const handlePrintWithSafety = () => {
+  // No setTimeout fallback — it caused auto-close when printing from FeeCollection
+  const handlePrintClick = () => {
     handlePrint();
-<<<<<<< HEAD
-    printTimeoutRef.current = setTimeout(() => {
-      if (!afterCloseCalledRef.current) {
-        handleClose();
-      }
-=======
     // Fallback in case onAfterPrint doesn't fire (e.g., user cancels print)
     printTimeoutRef.current = setTimeout(() => {
       handleClose();
->>>>>>> 151d80f38fefc4d84dcc6315d4122e4e48bdc7cf
     }, 5000);
   };
 
@@ -162,20 +129,57 @@ const PrintModal = ({
     "ডিসে.",
   ];
 
-  const getPaymentMonthIndex = () => {
-    if (!receipt?.paymentDate) return -1;
-    try {
-      return new Date(receipt.paymentDate).getMonth();
-    } catch {
-      return -1;
+  const englishMonths = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+
+  const extractMonthFromFeeType = (feeType: string) => {
+    const monthlyFeeMatch = feeType.match(/Monthly Fee - (\w+)/i);
+    if (monthlyFeeMatch) {
+      const monthName = monthlyFeeMatch[1];
+      const monthIndex = englishMonths.findIndex(
+        (m) => m.toLowerCase() === monthName.toLowerCase(),
+      );
+      if (monthIndex !== -1) return monthIndex;
     }
+    for (let i = 0; i < englishMonths.length; i++) {
+      if (feeType.toLowerCase().includes(englishMonths[i].toLowerCase())) {
+        return i;
+      }
+    }
+    return -1;
   };
 
+  const getSelectedMonths = useMemo(() => {
+    const fees = getDisplayFees();
+    const selectedMonths = new Set<number>();
+    fees.forEach((fee: any) => {
+      const feeType = fee.feeType || fee.name || "";
+      const monthIndex = extractMonthFromFeeType(feeType);
+      if (monthIndex !== -1) selectedMonths.add(monthIndex);
+    });
+    return selectedMonths;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [receipt?.fees]);
+
   const isMonthSelected = (monthIndex: number) =>
-    monthIndex === getPaymentMonthIndex();
+    getSelectedMonths.has(monthIndex);
 
   const getClassName = () => {
-    const className = receipt?.className || receipt?.studentClass;
+    // Try receipt first, then fall back to student prop
+    const className =
+      receipt?.className || receipt?.studentClass || student?.className;
     if (!className) return "N/A";
     if (typeof className === "string") return className;
     if (Array.isArray(className)) {
@@ -192,8 +196,15 @@ const PrintModal = ({
     return "N/A";
   };
 
-  const getStudentName = () => receipt?.studentName || receipt?.name || "N/A";
-  const getRoll = () => receipt?.rollNumber || receipt?.studentRoll || "N/A";
+  const getStudentName = () =>
+    receipt?.studentName ||
+    receipt?.name ||
+    student?.studentName ||
+    student?.name ||
+    "N/A";
+
+  const getRoll = () =>
+    receipt?.rollNumber || receipt?.studentRoll || student?.rollNumber || "N/A";
 
   if (!receipt) {
     return (
@@ -474,7 +485,7 @@ const PrintModal = ({
         <div className="printInvoiceBtnGroup flex gap-2 mt-4 justify-center no-print">
           <Button
             variant="contained"
-            onClick={handlePrintWithSafety}
+            onClick={handlePrintClick}
             startIcon={<Description />}
           >
             Print

@@ -18,8 +18,8 @@ import CraftModal from "@/components/Shared/Modal";
 interface StudentFeeDetailsModalProps {
   open: boolean;
   onClose: () => void;
-  student: any; // contains _id, name, studentId, mobile
-  enrollment: any; // contains rollNumber
+  student: any;
+  enrollment: any;
   fees: any[];
   totalAmount: number;
   totalPaid: number;
@@ -34,7 +34,6 @@ const StudentFeeDetailsModal = ({
   enrollment,
   fees,
   totalAmount,
-  totalPaid,
   totalDue,
   onBulkPayment,
 }: StudentFeeDetailsModalProps) => {
@@ -49,7 +48,6 @@ const StudentFeeDetailsModal = ({
       onClose={onClose}
     >
       <Box sx={{ p: 1 }}>
-        {/* Bulk Payment Button (optional) */}
         <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
           <Button
             variant="contained"
@@ -112,14 +110,7 @@ const StudentFeeDetailsModal = ({
                 {formatCurrency(totalAmount)}
               </Typography>
             </Grid>
-            <Grid item xs={6} md={3}>
-              <Typography>
-                <strong>Paid Amount:</strong>
-              </Typography>
-              <Typography variant="h6" color="success.main">
-                {formatCurrency(totalPaid)}
-              </Typography>
-            </Grid>
+
             <Grid item xs={6} md={3}>
               <Typography>
                 <strong>Due Amount:</strong>

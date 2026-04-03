@@ -66,24 +66,34 @@ const FeeCollection = () => {
       const totalPaid = data.data?.totalPaid || 0;
       const totalFees = data.data?.totalFees || 0;
 
-      const studentsMap = new Map<string, StudentWithFees>();
+      const studentsMap = new Map<string, any>();
 
       dueFees.forEach((fee: any) => {
         const studentId = fee.student._id;
 
         if (!studentsMap.has(studentId)) {
+          // Get class name from student.className array
+          let className = "";
+          if (fee.student.className && Array.isArray(fee.student.className)) {
+            const classObj = fee.student.className[0];
+            if (classObj && typeof classObj === "object") {
+              className = classObj.className || "";
+            } else if (typeof classObj === "string") {
+              className = classObj;
+            }
+          }
+
           studentsMap.set(studentId, {
             student: {
               _id: fee.student._id,
               studentId: fee.student.studentId,
               name: fee.student.nameBangla || fee.student.name || "",
-              mobile: fee.enrollment?.mobileNo || fee.student.mobile || "",
+              mobile: fee.student.mobile || "",
             },
             enrollment: {
-              _id: fee.enrollment._id,
-              rollNumber:
-                fee.enrollment?.rollNumber || fee.enrollment?.roll || "",
-              className: fee.enrollment?.className,
+              _id: studentId, // Use student ID as fallback since enrollment might not exist
+              rollNumber: "",
+              className: className,
             },
             fees: [],
             totalDue: 0,
@@ -94,19 +104,10 @@ const FeeCollection = () => {
         }
 
         const studentEntry = studentsMap.get(studentId)!;
-        // Get the class ID from enrollment
-        const classId = fee.enrollment?.className?.[0] || "";
 
-        // Find the class name from the student's className array
-        let className = "";
-        if (classId && fee.student.className) {
-          const classObj = fee.student.className.find(
-            (c: any) => c._id === classId,
-          );
-          if (classObj) {
-            className = classObj.className;
-          }
-        }
+        // Get class name from the fee data or student
+        const className =
+          fee.class || fee.student.className?.[0]?.className || "";
 
         studentEntry.fees.push({
           _id: fee._id,
@@ -476,6 +477,12 @@ const FeeCollection = () => {
         open={printModalOpen}
         setOpen={handleClosePrintModal}
         receipt={selectedReceipt}
+        onClose={() => {
+          console.log("Navigating to student list");
+          setTimeout(() => {
+            window.location.href = "/dashboard/student/list";
+          }, 100);
+        }}
       />
       <PaymentModal
         open={paymentModalOpen}

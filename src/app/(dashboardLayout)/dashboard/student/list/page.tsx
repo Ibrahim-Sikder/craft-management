@@ -72,7 +72,6 @@ const StudentList = () => {
 
   const { data: metaData } = useGetAllMetaQuery({});
 
-  // Fetch all students (high limit to allow client‑side filtering/pagination)
   const {
     data: studentData,
     isLoading,
@@ -114,7 +113,6 @@ const StudentList = () => {
     });
   }, [students]);
 
-  // Build class filter options dynamically from the data (only classes that appear)
   const classFilterOptions = useMemo(() => {
     const seen = new Set<string>();
     const options: { value: string; label: string }[] = [];
@@ -358,15 +356,15 @@ const StudentList = () => {
       color: "info",
       tooltip: "View Details",
     },
-    {
-      label: "Edit",
-      icon: <Edit fontSize="small" />,
-      onClick: (row: any) => {
-        window.location.href = `/dashboard/student/update/${row._id}`;
-      },
-      color: "primary",
-      tooltip: "Edit Student",
-    },
+    // {
+    //   label: "Edit",
+    //   icon: <Edit fontSize="small" />,
+    //   onClick: (row: any) => {
+    //     window.location.href = `/dashboard/student/update/${row._id}`;
+    //   },
+    //   color: "primary",
+    //   tooltip: "Edit Student",
+    // },
     {
       label: "Delete",
       icon: <Delete fontSize="small" />,

@@ -284,7 +284,7 @@ export default function AdmissionApplicationList({
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedApplication, setSelectedApplication] = useState<any>(null);
   const [modalLoading, setModalLoading] = useState(false);
-
+  console.log("selectedApplication", selectedApplication);
   useEffect(() => {
     setRowsPerPage(isMobile ? 5 : isTablet ? 8 : 10);
   }, [isMobile, isTablet]);
@@ -371,7 +371,7 @@ export default function AdmissionApplicationList({
         Swal.fire("Error", "Application ID not found", "error");
         return;
       }
-      // from = current page type (pending, approved, rejected, enrolled)
+
       router.push(
         `/dashboard/online-application/edit?id=${row._id}&from=${type}`,
       );
@@ -1007,8 +1007,7 @@ export default function AdmissionApplicationList({
         title: "Pending Applications",
         subtitle: "These applications are waiting for review",
         chipLabel: `Total Pending: ${totalCount}`,
-        btnLabel: "New Application",
-        btnRoute: "/dashboard/online-application/new",
+
         BtnIcon: School,
       },
       approved: {
@@ -1118,16 +1117,6 @@ export default function AdmissionApplicationList({
             variant="filled"
             sx={{ fontWeight: 600 }}
           />
-          <Button
-            variant="contained"
-            color={color}
-            size="small"
-            startIcon={<BtnIcon />}
-            onClick={() => router.push(btnRoute)}
-            sx={{ borderRadius: 2, textTransform: "none", fontWeight: 600 }}
-          >
-            {btnLabel}
-          </Button>
         </Box>
       </Paper>
     );

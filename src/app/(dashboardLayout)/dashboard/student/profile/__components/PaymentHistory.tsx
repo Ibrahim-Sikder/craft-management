@@ -1,18 +1,11 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import CraftTable, { Column, RowAction } from "@/components/Table";
 import { Visibility } from "@mui/icons-material";
-import {
-  Box,
-  Card,
-  CardContent,
-  Chip,
-  Typography,
-  useTheme,
-} from "@mui/material";
+import { Box, Typography, useTheme } from "@mui/material";
 import { useEffect, useState } from "react";
 
-import ReceiptViewer, { ReceiptData } from "./ReceiptViewer";
 import PaymentDetailsModal from "./PaymentDetailsModal";
+import ReceiptViewer, { ReceiptData } from "./ReceiptViewer";
 
 const PaymentHistory = ({ singleStudent }: any) => {
   const theme = useTheme();
@@ -82,26 +75,6 @@ const PaymentHistory = ({ singleStudent }: any) => {
     setReceiptViewerOpen(false);
     setSelectedReceiptData(null);
     setSelectedPaymentId("");
-  };
-
-  const summary = {
-    totalPayments: processedPayments.length,
-    totalAmount: processedPayments.reduce(
-      (sum, payment) => sum + (payment.amountPaid || 0),
-      0,
-    ),
-    completedPayments: processedPayments.filter(
-      (payment) => payment.status === "completed" || payment.status === "paid",
-    ).length,
-    partialPayments: processedPayments.filter(
-      (payment) => payment.status === "partial",
-    ).length,
-    pendingPayments: processedPayments.filter(
-      (payment) => payment.status === "pending",
-    ).length,
-    unpaidPayments: processedPayments.filter(
-      (payment) => payment.status === "unpaid",
-    ).length,
   };
 
   const columns: Column[] = [
@@ -178,7 +151,7 @@ const PaymentHistory = ({ singleStudent }: any) => {
     {
       label: "View Details",
       icon: <Visibility fontSize="small" />,
-      onClick: (row) => handleViewDetails(row), // <-- pass the row to modal
+      onClick: (row) => handleViewDetails(row),
       color: "info",
       tooltip: "View payment details",
     },
@@ -212,71 +185,8 @@ const PaymentHistory = ({ singleStudent }: any) => {
         Payment History
       </Typography>
 
-      <Box sx={{ mb: 4 }}>
-        <Card
-          variant="outlined"
-          sx={{
-            borderRadius: 3,
-            background: `linear-gradient(135deg, ${theme.palette.background.paper} 0%, ${theme.palette.background.default} 100%)`,
-            border: `1px solid ${theme.palette.divider}`,
-          }}
-        >
-          <CardContent>
-            <Typography variant="h6" gutterBottom fontWeight="600">
-              Payment Summary
-            </Typography>
-
-            <Box
-              sx={{ display: "flex", flexWrap: "wrap", gap: 4, mt: 2, mb: 2 }}
-            >
-              <Box sx={{ display: "flex", flexDirection: "column" }}>
-                <Typography variant="body2" color="text.secondary">
-                  Total Payments
-                </Typography>
-                <Typography variant="h5" fontWeight="bold">
-                  {summary.totalPayments}
-                </Typography>
-              </Box>
-
-              <Box sx={{ display: "flex", flexDirection: "column" }}>
-                <Typography variant="body2" color="text.secondary">
-                  Total Amount
-                </Typography>
-                <Typography variant="h5" fontWeight="bold" color="primary.main">
-                  ৳{summary.totalAmount.toLocaleString()}
-                </Typography>
-              </Box>
-            </Box>
-
-            <Box sx={{ display: "flex", flexWrap: "wrap", gap: 2, mt: 2 }}>
-              <Chip
-                label={`${summary.completedPayments} Paid`}
-                color="success"
-                variant="outlined"
-              />
-              <Chip
-                label={`${summary.partialPayments} Partial`}
-                color="warning"
-                variant="outlined"
-              />
-              <Chip
-                label={`${summary.pendingPayments} Pending`}
-                color="warning"
-                variant="outlined"
-              />
-              <Chip
-                label={`${summary.unpaidPayments} Unpaid`}
-                color="error"
-                variant="outlined"
-              />
-            </Box>
-          </CardContent>
-        </Card>
-      </Box>
-
       <CraftTable
         title="Payment Transactions"
-        subtitle={`${processedPayments.length} payment records found`}
         columns={columns}
         data={processedPayments}
         loading={isLoading}
