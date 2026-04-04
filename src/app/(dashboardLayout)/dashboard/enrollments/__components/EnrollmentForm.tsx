@@ -1012,7 +1012,7 @@ const DynamicFeeFields = ({
                               fontWeight="bold"
                               color="text.secondary"
                             >
-                              PAY NOW
+                              Advance
                             </Typography>
                           </Grid>
                           <Grid item xs={1}></Grid>
