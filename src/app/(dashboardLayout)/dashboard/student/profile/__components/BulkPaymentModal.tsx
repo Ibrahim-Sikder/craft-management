@@ -285,11 +285,17 @@ const BulkPaymentModal: React.FC<BulkPaymentModalProps> = ({
         if (onPaymentCompleted) onPaymentCompleted(receiptData);
 
         // Fallback: reload the page after modal closes to guarantee UI update
+        // setTimeout(() => {
+        //   handleReset();
+        //   onClose();
+        //   // Reload the page to ensure all data is fresh
+        //   window.location.reload();
+        // }, 1500);
         setTimeout(() => {
           handleReset();
           onClose();
           // Reload the page to ensure all data is fresh
-          window.location.reload();
+          // window.location.reload();
         }, 1500);
       } else {
         toast.error(result.message || "Payment failed");

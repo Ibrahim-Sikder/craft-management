@@ -8,6 +8,7 @@ import {
   CircularProgress,
   alpha,
   useTheme,
+  useMediaQuery,
 } from "@mui/material";
 import { Balance } from "@mui/icons-material";
 import { GlassCard } from "@/style/customStyle";
@@ -20,23 +21,45 @@ export const EquationCheck = ({
   loading = false,
 }: any) => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
 
   return (
     <GlassCard
       sx={{
-        mb: 3,
+        mb: { xs: 2, sm: 3 },
         background: isValid
           ? `linear-gradient(135deg, ${alpha(theme.palette.success.main, 0.1)} 0%, ${alpha(theme.palette.success.main, 0.03)} 100%)`
           : `linear-gradient(135deg, ${alpha(theme.palette.error.main, 0.1)} 0%, ${alpha(theme.palette.error.main, 0.03)} 100%)`,
-        border: `1px solid ${isValid ? alpha(theme.palette.success.main, 0.2) : alpha(theme.palette.error.main, 0.2)}`,
+        border: `1px solid ${
+          isValid
+            ? alpha(theme.palette.success.main, 0.2)
+            : alpha(theme.palette.error.main, 0.2)
+        }`,
       }}
     >
-      <CardContent sx={{ p: 3 }}>
-        <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
+      <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+        {/* Header */}
+        <Box
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            mb: { xs: 1.5, sm: 2 },
+            flexWrap: "wrap",
+            gap: 1,
+          }}
+        >
           <Balance
-            sx={{ mr: 1.5, color: isValid ? "success.main" : "error.main" }}
+            sx={{
+              mr: 1,
+              color: isValid ? "success.main" : "error.main",
+              fontSize: { xs: 20, sm: 24 },
+            }}
           />
-          <Typography variant="h6" component="div">
+          <Typography
+            variant={isMobile ? "subtitle1" : "h6"}
+            component="div"
+            sx={{ fontWeight: 700, flexGrow: 1 }}
+          >
             Accounting Equation Check
           </Typography>
           {!loading && (
@@ -44,7 +67,10 @@ export const EquationCheck = ({
               label={isValid ? "Balanced" : "Not Balanced"}
               color={isValid ? "success" : "error"}
               size="small"
-              sx={{ ml: 2, fontWeight: 600 }}
+              sx={{
+                fontWeight: 600,
+                fontSize: { xs: "0.7rem", sm: "0.75rem" },
+              }}
             />
           )}
         </Box>
@@ -66,44 +92,76 @@ export const EquationCheck = ({
           </Box>
         ) : (
           <>
-            <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+            <Typography
+              variant="body2"
+              color="text.secondary"
+              sx={{
+                mb: { xs: 1.5, sm: 2 },
+                fontSize: { xs: "0.78rem", sm: "0.875rem" },
+              }}
+            >
               The fundamental accounting equation:{" "}
               <strong>Assets = Liabilities + Equity</strong>
             </Typography>
+
+            {/* Equation Values — responsive sizes */}
             <Box
               sx={{
                 display: "flex",
                 flexWrap: "wrap",
                 alignItems: "center",
                 justifyContent: "center",
-                gap: 1,
+                gap: { xs: 0.5, sm: 1 },
+                py: { xs: 1, sm: 0 },
               }}
             >
               <Typography
-                variant="h6"
-                sx={{ fontWeight: 800, color: "primary.main" }}
+                sx={{
+                  fontWeight: 800,
+                  color: "primary.main",
+                  fontSize: { xs: "1.1rem", sm: "1.25rem", md: "1.5rem" },
+                }}
               >
                 ৳{assets?.toLocaleString()}
               </Typography>
-              <Typography variant="h6" sx={{ mx: 1, fontWeight: 700 }}>
+              <Typography
+                sx={{
+                  mx: { xs: 0.5, sm: 1 },
+                  fontWeight: 700,
+                  fontSize: { xs: "1.1rem", sm: "1.25rem", md: "1.5rem" },
+                }}
+              >
                 =
               </Typography>
               <Typography
-                variant="h6"
-                sx={{ fontWeight: 800, color: "warning.main" }}
+                sx={{
+                  fontWeight: 800,
+                  color: "warning.main",
+                  fontSize: { xs: "1.1rem", sm: "1.25rem", md: "1.5rem" },
+                }}
               >
                 ৳{liabilities?.toLocaleString()}
               </Typography>
-              <Typography variant="h6" sx={{ mx: 1, fontWeight: 700 }}>
+              <Typography
+                sx={{
+                  mx: { xs: 0.5, sm: 1 },
+                  fontWeight: 700,
+                  fontSize: { xs: "1.1rem", sm: "1.25rem", md: "1.5rem" },
+                }}
+              >
                 +
               </Typography>
               <Typography
-                variant="h6"
-                sx={{ fontWeight: 800, color: "secondary.main" }}
+                sx={{
+                  fontWeight: 800,
+                  color: "secondary.main",
+                  fontSize: { xs: "1.1rem", sm: "1.25rem", md: "1.5rem" },
+                }}
               >
                 ৳{equity?.toLocaleString()}
               </Typography>
             </Box>
+
             {!isValid && (
               <Typography
                 variant="caption"
@@ -113,6 +171,7 @@ export const EquationCheck = ({
                   display: "block",
                   textAlign: "center",
                   fontWeight: 600,
+                  fontSize: { xs: "0.7rem", sm: "0.75rem" },
                 }}
               >
                 There is a discrepancy in the accounting equation that needs
