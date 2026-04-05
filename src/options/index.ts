@@ -180,6 +180,7 @@ export const classOrder = [
   "Hifz",
   "Sunani",
 ];
+
 export const designations = [
   "Principal",
   "Vice Principal",

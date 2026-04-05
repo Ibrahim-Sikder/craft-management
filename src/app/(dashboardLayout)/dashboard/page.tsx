@@ -234,13 +234,7 @@ export default function DashboardHome() {
       color: "#1976D2",
       path: "/dashboard/student/list",
     },
-    {
-      title: "Attendance",
-      description: "Manage, Send SMS",
-      icon: <EventNote />,
-      color: "#FFA000",
-      path: "/dashboard/attendance",
-    },
+
     {
       title: "Communications",
       description: "Notice, Feedback",
@@ -262,27 +256,7 @@ export default function DashboardHome() {
       color: "#009688",
       path: "/dashboard/fees/list",
     },
-    {
-      title: "Homework",
-      description: "Assign & Manage",
-      icon: <Assignment />,
-      color: "#FF9800",
-      path: "/dashboard/home-work",
-    },
-    {
-      title: "Examinations",
-      description: "Grading, Exams",
-      icon: <FactCheck />,
-      color: "#673AB7",
-      path: "/dashboard/exams",
-    },
-    {
-      title: "Results",
-      description: "View, Download",
-      icon: <EmojiEvents />,
-      color: "#0097A7",
-      path: "/dashboard/results",
-    },
+
     {
       title: "Accounting",
       description: "Income, Expense",
@@ -290,61 +264,13 @@ export default function DashboardHome() {
       color: "#2E7D32",
       path: "/dashboard/accounting/income",
     },
-    {
-      title: "Payroll",
-      description: "Salary Management",
-      icon: <Work />,
-      color: "#1565C0",
-      path: "/dashboard/payroll",
-    },
-    {
-      title: "Donation",
-      description: "Donor List",
-      icon: <VolunteerActivism />,
-      color: "#FF5722",
-      path: "/dashboard/donation",
-    },
-    {
-      title: "Certificate",
-      description: "Create, Update",
-      icon: <WorkspacePremium />,
-      color: "#FFC107",
-      path: "/dashboard/certificate",
-    },
-    {
-      title: "Print",
-      description: "ID Card, Admit Card",
-      icon: <LocalPrintshop />,
-      color: "#F44336",
-      path: "/dashboard/print",
-    },
-    {
-      title: "SMS",
-      description: "Send SMS",
-      icon: <Sms />,
-      color: "#3F51B5",
-      path: "/dashboard/sms",
-    },
-    {
-      title: "Department",
-      description: "Faculty & Dept",
-      icon: <Apartment />,
-      color: "#607D8B",
-      path: "/dashboard/department",
-    },
+
     {
       title: "User Mgmt",
       description: "Users & Permissions",
       icon: <AdminPanelSettings />,
       color: "#546E7A",
       path: "/dashboard/user-management",
-    },
-    {
-      title: "Settings",
-      description: "Database, Security",
-      icon: <Settings />,
-      color: "#37474F",
-      path: "/dashboard/database-backup",
     },
   ];
 

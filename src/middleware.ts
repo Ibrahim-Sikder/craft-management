@@ -4,7 +4,7 @@ import { jwtDecode } from "jwt-decode";
 import type { NextRequest } from "next/server";
 import { NextResponse } from "next/server";
 
-const AuthRoutes = ["/", "/login", "/register"]; // Add all public routes here
+const AuthRoutes = ["/", "/login", "/register"];
 
 const roleBasedPrivateRoutes = {
   admin: [/^\/dashboard(\/.*)?$/],

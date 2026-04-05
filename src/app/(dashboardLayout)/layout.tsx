@@ -238,7 +238,6 @@ const CustomSidebar: React.FC<{ children: React.ReactNode }> = ({
             </Badge>
           </IconButton>
 
-          {/* ✅ Profile + Logout */}
           <IconButton
             sx={{ ml: 1 }}
             color="inherit"

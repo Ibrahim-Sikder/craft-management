@@ -47,17 +47,6 @@ import {
   Description,
 } from "@mui/icons-material";
 import TeacherOverview from "../_components/TeacherOverview";
-import ClassStudent from "../_components/ClassStudent";
-import TeacherPerformance from "../_components/TeacherPerformance";
-import TeacherSchedule from "../_components/TeacherSchedule";
-import AssignmentGrading from "../_components/AssignmentGrading";
-import CommunicationTab from "../_components/CommunicationTab";
-import TeacherResource from "../_components/TeacherResource";
-import TeacherAchivement from "../_components/TeacherAchivement";
-import TeacherAttendance from "../_components/TeacherAttendance";
-import ReportGenerator from "../_components/ReportGenerator";
-import StudentAnalytics from "../_components/StudentAnalytics";
-import ProfileSetting from "../_components/ProfileSetting";
 import { useGetSingleTeacherQuery } from "@/redux/api/teacherApi";
 import { formatDate } from "@/utils/formateDate";
 
@@ -718,34 +707,6 @@ export default function TeacherProfile({ params }: PageProps) {
         </Box>
       </Paper>
 
-      {/* Notification Bar */}
-      <Paper
-        elevation={2}
-        sx={{
-          p: 2,
-          mb: 4,
-          borderRadius: 2,
-          display: "flex",
-          alignItems: "center",
-          background: `linear-gradient(to right, ${alpha(theme.palette.warning.light, 0.2)}, ${alpha(theme.palette.warning.light, 0.05)})`,
-          border: `1px solid ${alpha(theme.palette.warning.main, 0.3)}`,
-        }}
-      >
-        <Notifications sx={{ color: theme.palette.warning.main, mr: 2 }} />
-        <Box sx={{ flex: 1 }}>
-          <Typography variant="body1" fontWeight="medium">
-            3 pending assignments to grade • Parent-Teacher Conference on
-            October 15
-          </Typography>
-        </Box>
-        <IconButton size="small" sx={{ ml: 1 }}>
-          <Mail />
-        </IconButton>
-        <IconButton size="small" sx={{ ml: 1 }}>
-          <Download />
-        </IconButton>
-      </Paper>
-
       {/* Navigation Tabs */}
       <Box
         sx={{
@@ -766,28 +727,6 @@ export default function TeacherProfile({ params }: PageProps) {
           variant="scrollable"
           scrollButtons="auto"
           aria-label="teacher profile tabs"
-          sx={{
-            "& .MuiTab-root": {
-              minHeight: 64,
-              textTransform: "none",
-              fontSize: "0.95rem",
-              fontWeight: 500,
-              transition: "all 0.3s ease",
-              "&:hover": {
-                color: theme.palette.primary.main,
-                opacity: 1,
-              },
-            },
-            "& .Mui-selected": {
-              fontWeight: 600,
-              background: alpha(theme.palette.primary.main, 0.08),
-              borderRadius: "8px 8px 0 0",
-            },
-            "& .MuiTabs-indicator": {
-              height: 3,
-              borderRadius: "3px 3px 0 0",
-            },
-          }}
         >
           <Tab
             icon={<Info />}
@@ -795,122 +734,12 @@ export default function TeacherProfile({ params }: PageProps) {
             iconPosition="start"
             {...getTabProps(0)}
           />
-          <Tab
-            icon={<Class />}
-            label={isSmall ? "" : "Classes & Students"}
-            iconPosition="start"
-            {...getTabProps(1)}
-          />
-          <Tab
-            icon={<Assessment />}
-            label={isSmall ? "" : "Performance"}
-            iconPosition="start"
-            {...getTabProps(2)}
-          />
-          <Tab
-            icon={<Schedule />}
-            label={isSmall ? "" : "Schedule"}
-            iconPosition="start"
-            {...getTabProps(3)}
-          />
-          <Tab
-            icon={<Assignment />}
-            label={isSmall ? "" : "Assignments"}
-            iconPosition="start"
-            {...getTabProps(4)}
-          />
-          <Tab
-            icon={<People />}
-            label={isSmall ? "" : "Communication"}
-            iconPosition="start"
-            {...getTabProps(5)}
-          />
-          <Tab
-            icon={<MenuBook />}
-            label={isSmall ? "" : "Resources"}
-            iconPosition="start"
-            {...getTabProps(6)}
-          />
-          <Tab
-            icon={<EmojiEvents />}
-            label={isSmall ? "" : "Achievements"}
-            iconPosition="start"
-            {...getTabProps(7)}
-          />
-          <Tab
-            icon={<CalendarMonth />}
-            label={isSmall ? "" : "Attendance"}
-            iconPosition="start"
-            {...getTabProps(8)}
-          />
-          <Tab
-            icon={<Description />}
-            label={isSmall ? "" : "Reports"}
-            iconPosition="start"
-            {...getTabProps(9)}
-          />
-          <Tab
-            icon={<QueryStats />}
-            label={isSmall ? "" : "Analytics"}
-            iconPosition="start"
-            {...getTabProps(10)}
-          />
-          <Tab
-            icon={<Settings />}
-            label={isSmall ? "" : "Settings"}
-            iconPosition="start"
-            {...getTabProps(11)}
-          />
         </Tabs>
       </Box>
 
       {/* Tab Panels */}
       <TabPanel value={tabValue} index={0}>
         <TeacherOverview teacher={singleTeacher?.data} />
-      </TabPanel>
-
-      <TabPanel value={tabValue} index={1}>
-        <ClassStudent />
-      </TabPanel>
-
-      <TabPanel value={tabValue} index={2}>
-        <TeacherPerformance />
-      </TabPanel>
-
-      <TabPanel value={tabValue} index={3}>
-        <TeacherSchedule />
-      </TabPanel>
-
-      <TabPanel value={tabValue} index={4}>
-        <AssignmentGrading />
-      </TabPanel>
-
-      <TabPanel value={tabValue} index={5}>
-        <CommunicationTab />
-      </TabPanel>
-
-      <TabPanel value={tabValue} index={6}>
-        <TeacherResource />
-      </TabPanel>
-
-      <TabPanel value={tabValue} index={7}>
-        <TeacherAchivement />
-      </TabPanel>
-
-      <TabPanel value={tabValue} index={8}>
-        <TeacherAttendance />
-      </TabPanel>
-
-      <TabPanel value={tabValue} index={9}>
-        <ReportGenerator />
-      </TabPanel>
-
-      <TabPanel value={tabValue} index={10}>
-        <StudentAnalytics />
-      </TabPanel>
-
-      <TabPanel value={tabValue} index={11}>
-        <ProfileSetting />
       </TabPanel>
     </Container>
   );

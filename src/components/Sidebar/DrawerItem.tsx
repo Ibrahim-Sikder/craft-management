@@ -6,7 +6,6 @@ import {
   AdminPanelSettings,
   Analytics,
   Assessment,
-  Assignment,
   AttachMoney,
   AutoDelete,
   AutoStories,
@@ -19,21 +18,15 @@ import {
   Class,
   ClassOutlined,
   CloudSync,
-  CloudUpload,
   CollectionsBookmark,
   CreditCard,
   Dashboard,
-  DateRange,
   Description,
   DeveloperBoard,
   DoneAllSharp,
   EditNote,
-  EmojiEvents,
-  EventNote,
-  FactCheck,
   Feedback,
   FormatListBulleted,
-  Grading,
   Group,
   HowToReg,
   ImportContacts,
@@ -41,28 +34,22 @@ import {
   LibraryBooks,
   ListAlt,
   NotificationAdd,
-  PendingActions,
   Payment,
+  PendingActions,
   PeopleAlt,
   PersonAdd,
-  PictureAsPdf,
   PlaylistAddCheck,
   PostAdd,
-  Quiz,
   Receipt,
   ReceiptLong,
-  Restore,
   Restaurant,
+  Restore,
   Savings,
   School as SchoolIcon,
   SchoolOutlined,
-  Score,
   Settings,
-  Sms,
   Storage,
   Subject,
-  TableChart,
-  TableRows,
   TrackChanges,
   TrendingDown,
   TrendingUp,
@@ -97,7 +84,7 @@ export const navigationItems: NavigationItem[] = [
         <Web />
       </ColorfulIcon>
     ),
-    roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+    roles: ["admin", "super_admin"],
     children: [
       {
         title: "Sections",
@@ -152,7 +139,7 @@ export const navigationItems: NavigationItem[] = [
       },
     ],
   },
-  // Admissions Section - Grouped under one main Admissions menu
+
   {
     title: "Admissions",
     icon: (
@@ -160,7 +147,7 @@ export const navigationItems: NavigationItem[] = [
         <EditNote />
       </ColorfulIcon>
     ),
-    roles: ["admin", "super_admin"],
+    roles: ["admin", "super_admin", "teacher"],
     children: [
       {
         title: "All Enrollments",
@@ -223,7 +210,7 @@ export const navigationItems: NavigationItem[] = [
       </ColorfulIcon>
     ),
     path: "/dashboard/enrollments/list",
-    roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+    roles: ["admin", "super_admin", "teacher"],
   },
   {
     title: "Pending Admissions",
@@ -233,7 +220,7 @@ export const navigationItems: NavigationItem[] = [
       </ColorfulIcon>
     ),
     path: "/dashboard/online-application/pending",
-    roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+    roles: ["admin", "super_admin", "teacher"],
   },
   {
     title: "Approved Admissions",
@@ -243,7 +230,7 @@ export const navigationItems: NavigationItem[] = [
       </ColorfulIcon>
     ),
     path: "/dashboard/online-application/approved",
-    roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+    roles: ["admin", "super_admin", "teacher"],
   },
   {
     title: "Enrolled Applications",
@@ -253,7 +240,7 @@ export const navigationItems: NavigationItem[] = [
       </ColorfulIcon>
     ),
     path: "/dashboard/online-application/enrolled",
-    roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+    roles: ["admin", "super_admin", "teacher"],
   },
   {
     title: "Rejected Admissions",
@@ -263,7 +250,7 @@ export const navigationItems: NavigationItem[] = [
       </ColorfulIcon>
     ),
     path: "/dashboard/online-application/rejected",
-    roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+    roles: ["admin", "super_admin", "teacher"],
   },
   {
     title: "Discount Student",
@@ -273,7 +260,7 @@ export const navigationItems: NavigationItem[] = [
       </ColorfulIcon>
     ),
     path: "/dashboard/student/discount",
-    roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+    roles: ["admin", "super_admin", "teacher"],
   },
   {
     title: "Academic",
@@ -282,7 +269,7 @@ export const navigationItems: NavigationItem[] = [
         <SchoolIcon />
       </ColorfulIcon>
     ),
-    roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+    roles: ["admin", "super_admin", "teacher"],
     children: [
       {
         title: "Sections",
@@ -354,7 +341,7 @@ export const navigationItems: NavigationItem[] = [
         <AutoStories />
       </ColorfulIcon>
     ),
-    roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+    roles: ["admin", "super_admin", "teacher"],
     children: [
       {
         title: "Classes",
@@ -445,7 +432,7 @@ export const navigationItems: NavigationItem[] = [
         <ImportContacts />
       </ColorfulIcon>
     ),
-    roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+    roles: ["admin", "super_admin", "teacher"],
     children: [
       {
         title: "Daily Report List",
@@ -496,7 +483,7 @@ export const navigationItems: NavigationItem[] = [
         <ImportContacts />
       </ColorfulIcon>
     ),
-    roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+    roles: ["admin", "super_admin", "teacher"],
     children: [
       {
         title: "Daily Report List",
@@ -547,7 +534,7 @@ export const navigationItems: NavigationItem[] = [
         <CollectionsBookmark />
       </ColorfulIcon>
     ),
-    roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+    roles: ["admin", "super_admin", "teacher"],
     children: [
       {
         title: "Daily Report List",
@@ -599,7 +586,7 @@ export const navigationItems: NavigationItem[] = [
         <Group />
       </ColorfulIcon>
     ),
-    roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+    roles: ["admin", "super_admin", "teacher"],
     children: [
       {
         title: "Teachers",
@@ -729,18 +716,7 @@ export const navigationItems: NavigationItem[] = [
       },
     ],
   },
-  // Attendance
-  {
-    title: "Attendance",
-    icon: (
-      <ColorfulIcon color="#FFA000">
-        <EventNote />
-      </ColorfulIcon>
-    ),
-    path: "/dashboard/attendance",
-    roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
-  },
-  // Communications
+
   {
     title: "Communications",
     icon: (
@@ -748,7 +724,7 @@ export const navigationItems: NavigationItem[] = [
         <Campaign />
       </ColorfulIcon>
     ),
-    roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+    roles: ["admin", "super_admin"],
     children: [
       {
         title: "Notice Board",
@@ -790,7 +766,7 @@ export const navigationItems: NavigationItem[] = [
         <Restaurant />
       </ColorfulIcon>
     ),
-    roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+    roles: ["admin", "super_admin"],
     children: [
       {
         path: "/dashboard/daily-meal-report",
@@ -822,7 +798,7 @@ export const navigationItems: NavigationItem[] = [
         <Payment />
       </ColorfulIcon>
     ),
-    roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
+    roles: ["admin", "super_admin"],
     children: [
       {
         path: "/dashboard/fees/list",
@@ -997,151 +973,7 @@ export const navigationItems: NavigationItem[] = [
       },
     ],
   },
-  // Homework
-  {
-    title: "Homework",
-    icon: (
-      <ColorfulIcon color="#FF9800">
-        <Assignment />
-      </ColorfulIcon>
-    ),
-    path: "/dashboard/home-work",
-    roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
-  },
-  // Examinations
-  {
-    title: "Examinations",
-    icon: (
-      <ColorfulIcon color="#673AB7">
-        <FactCheck />
-      </ColorfulIcon>
-    ),
-    roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
-    children: [
-      {
-        path: "/dashboard/grading/list",
-        title: "Grading Systems",
-        icon: (
-          <ColorfulIcon color="#673AB7">
-            <Grading />
-          </ColorfulIcon>
-        ),
-        roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
-      },
-      {
-        path: "/dashboard/exam/exam-categories",
-        title: "Exam Categories",
-        icon: (
-          <ColorfulIcon color="#673AB7">
-            <Category />
-          </ColorfulIcon>
-        ),
-        roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
-      },
-      {
-        path: "/dashboard/exams",
-        title: "Exams",
-        icon: (
-          <ColorfulIcon color="#673AB7">
-            <Quiz />
-          </ColorfulIcon>
-        ),
-        roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
-      },
-      {
-        path: "/dashboard/exam-routines",
-        title: "Exam Routines",
-        icon: (
-          <ColorfulIcon color="#673AB7">
-            <DateRange />
-          </ColorfulIcon>
-        ),
-        roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
-      },
-    ],
-  },
-  // result
-  {
-    title: "Results",
-    icon: (
-      <ColorfulIcon color="#0097A7">
-        <EmojiEvents />
-      </ColorfulIcon>
-    ),
-    roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
-    children: [
-      {
-        path: "/dashboard/results",
-        title: "View Results",
-        icon: (
-          <ColorfulIcon color="#0097A7">
-            <Score />
-          </ColorfulIcon>
-        ),
-        roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
-      },
-      {
-        path: "/dashboard/combined-results",
-        title: "Combined Results",
-        icon: (
-          <ColorfulIcon color="#0097A7">
-            <TableRows />
-          </ColorfulIcon>
-        ),
-        roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
-      },
-      {
-        path: "/dashboard/upload-results",
-        title: "Upload Results",
-        icon: (
-          <ColorfulIcon color="#0097A7">
-            <CloudUpload />
-          </ColorfulIcon>
-        ),
-        roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
-      },
-      {
-        path: "/dashboard/subject-marks",
-        title: "Subject Marks",
-        icon: (
-          <ColorfulIcon color="#0097A7">
-            <Subject />
-          </ColorfulIcon>
-        ),
-        roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
-      },
-      {
-        path: "/dashboard/excel-marks",
-        title: "Excel Marks",
-        icon: (
-          <ColorfulIcon color="#0097A7">
-            <TableChart />
-          </ColorfulIcon>
-        ),
-        roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
-      },
-      {
-        path: "/dashboard/download-marksheet",
-        title: "Download Marksheet",
-        icon: (
-          <ColorfulIcon color="#0097A7">
-            <PictureAsPdf />
-          </ColorfulIcon>
-        ),
-        roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
-      },
-      {
-        path: "/dashboard/send-sms",
-        title: "Send Result SMS",
-        icon: (
-          <ColorfulIcon color="#0097A7">
-            <Sms />
-          </ColorfulIcon>
-        ),
-        roles: ["admin", "teacher", "student", "super_admin", "class_teacher"],
-      },
-    ],
-  },
+
   {
     title: "User Management",
     icon: (

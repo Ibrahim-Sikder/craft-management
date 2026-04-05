@@ -2,6 +2,15 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
+import {
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogContentText,
+  DialogTitle,
+} from "@mui/material";
+import FileDownloadIcon from "@mui/icons-material/FileDownload";
+import CraftTable, { Column, RowAction } from "@/components/Table";
 
 import type React from "react";
 import { useState } from "react";
@@ -9,33 +18,23 @@ import {
   Box,
   Container,
   Typography,
-  TextField,
   Button,
-  Paper,
-  Grid,
-  InputAdornment,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
   Fade,
-  Tooltip,
-  IconButton,
   alpha,
-  CardMedia,
-  CardContent,
-  Avatar,
   Chip,
+  Avatar,
+  Stack,
 } from "@mui/material";
 
 import {
   Add as AddIcon,
-  Search as SearchIcon,
   Edit as EditIcon,
   Delete as DeleteIcon,
-  Refresh as RefreshIcon,
-  School,
+  School as SchoolIcon,
+  Class as ClassIcon,
+  Group as GroupIcon,
+  Book as BookIcon,
+  Person as PersonIcon,
 } from "@mui/icons-material";
 
 import Link from "next/link";
@@ -44,9 +43,6 @@ import {
   useGetAllClassesQuery,
 } from "@/redux/api/classApi";
 import { theme } from "@/lib/Theme/Theme";
-import Loader from "@/app/loading";
-import { motion } from "framer-motion";
-import { DepartmentChip, StyledCard } from "@/style/customStyle";
 
 const departmentColors: Record<string, string> = {
   Languages: "#3a7bd5",
@@ -62,11 +58,12 @@ const departmentColors: Record<string, string> = {
 
 export default function ClassesListPage() {
   const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(30);
+  const [rowsPerPage, setRowsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedClass, setSelectedClass] = useState<any | null>(null);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteClass] = useDeleteClassMutation();
+
   const {
     data: classData,
     isLoading,
@@ -81,8 +78,8 @@ export default function ClassesListPage() {
     refetch();
   };
 
-  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchTerm(event.target.value);
+  const handleSearchChange = (term: string) => {
+    setSearchTerm(term);
     setPage(0);
   };
 
@@ -103,7 +100,192 @@ export default function ClassesListPage() {
     setDeleteDialogOpen(false);
   };
 
+  const handleAddClass = () => {
+    // Navigate to add class page
+  };
+
+  const handleExport = () => {
+    console.log("Export data");
+  };
+
+  const handlePrint = () => {
+    window.print();
+  };
+
   const classes = classData?.data?.classes || [];
+  const totalCount = classData?.data?.meta?.total || 0;
+
+  // Define table columns
+  const columns: Column[] = [
+    {
+      id: "className",
+      label: "Class Name",
+      minWidth: 180,
+      sortable: true,
+      render: (row: any) => (
+        <Stack direction="row" spacing={2} alignItems="center">
+          <Avatar
+            sx={{
+              width: 48,
+              height: 48,
+              bgcolor:
+                departmentColors[row.className] ||
+                departmentColors["Not Specified"],
+              border: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+            }}
+          >
+            {row.className?.charAt(0) || "C"}
+          </Avatar>
+          <Box>
+            <Typography variant="body1" fontWeight={600}>
+              {row.className}
+            </Typography>
+            <Typography variant="caption" color="text.secondary">
+              Class Code: {row.classCode || "N/A"}
+            </Typography>
+          </Box>
+        </Stack>
+      ),
+    },
+    {
+      id: "sections",
+      label: "Sections",
+      minWidth: 150,
+      sortable: false,
+      render: (row: any) => (
+        <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
+          {row.sections?.map((section: any, idx: number) => (
+            <Chip
+              key={idx}
+              label={section.name || `Section ${idx + 1}`}
+              size="small"
+              sx={{
+                bgcolor: alpha(theme.palette.info.main, 0.1),
+                color: theme.palette.info.main,
+                fontWeight: 500,
+              }}
+            />
+          ))}
+          {(!row.sections || row.sections.length === 0) && (
+            <Typography variant="body2" color="text.secondary">
+              No sections
+            </Typography>
+          )}
+        </Stack>
+      ),
+    },
+    {
+      id: "classTeacher",
+      label: "Class Teacher",
+      minWidth: 180,
+      sortable: true,
+      render: (row: any) => (
+        <Stack direction="row" spacing={1} alignItems="center">
+          <PersonIcon fontSize="small" color="action" />
+          <Typography variant="body2">
+            {row.classTeacher?.name || row.teacherName || "Not Assigned"}
+          </Typography>
+        </Stack>
+      ),
+    },
+    {
+      id: "totalStudents",
+      label: "Students",
+      minWidth: 100,
+      align: "center",
+      sortable: true,
+      render: (row: any) => (
+        <Stack
+          direction="row"
+          spacing={1}
+          alignItems="center"
+          justifyContent="center"
+        >
+          <GroupIcon fontSize="small" color="primary" />
+          <Typography variant="body2" fontWeight={600}>
+            {row.totalStudents || row.studentCount || 0}
+          </Typography>
+        </Stack>
+      ),
+    },
+    {
+      id: "totalSubjects",
+      label: "Subjects",
+      minWidth: 100,
+      align: "center",
+      sortable: true,
+      render: (row: any) => (
+        <Stack
+          direction="row"
+          spacing={1}
+          alignItems="center"
+          justifyContent="center"
+        >
+          <BookIcon fontSize="small" color="secondary" />
+          <Typography variant="body2" fontWeight={600}>
+            {row.totalSubjects || row.subjectCount || 0}
+          </Typography>
+        </Stack>
+      ),
+    },
+    {
+      id: "totalTeachers",
+      label: "Teachers",
+      minWidth: 100,
+      align: "center",
+      sortable: true,
+      render: (row: any) => (
+        <Stack
+          direction="row"
+          spacing={1}
+          alignItems="center"
+          justifyContent="center"
+        >
+          <SchoolIcon fontSize="small" color="success" />
+          <Typography variant="body2" fontWeight={600}>
+            {row.totalTeachers || row.teacherCount || 0}
+          </Typography>
+        </Stack>
+      ),
+    },
+  ];
+
+  // Define row actions
+  const rowActions: RowAction[] = [
+    {
+      label: "Edit",
+      icon: <EditIcon fontSize="small" />,
+      onClick: (row: any) => {
+        window.location.href = `/dashboard/classes/class/update?id=${row._id}`;
+      },
+      tooltip: "Edit Class",
+      color: "warning",
+    },
+    {
+      label: "Delete",
+      icon: <DeleteIcon fontSize="small" />,
+      onClick: (row: any) => {
+        setSelectedClass(row);
+        setDeleteDialogOpen(true);
+      },
+      tooltip: "Delete Class",
+      color: "error",
+    },
+  ];
+
+  // Format data for table
+  const formattedClasses = classes.map((classItem: any) => ({
+    ...classItem,
+    id: classItem._id,
+    className: classItem.className,
+    sections: classItem.sections,
+    classTeacher: classItem.classTeacher,
+    totalStudents: classItem.totalStudents || classItem.studentCount || 0,
+    totalSubjects: classItem.totalSubjects || classItem.subjectCount || 0,
+    totalTeachers: classItem.totalTeachers || classItem.teacherCount || 0,
+    status: classItem.status || "Active",
+    classCode: classItem.classCode,
+  }));
 
   return (
     <>
@@ -118,310 +300,60 @@ export default function ClassesListPage() {
         <Container maxWidth="xl" sx={{ mt: 0, mb: 8, borderRadius: 2 }}>
           <Fade in={true} timeout={800}>
             <Box>
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  mb: 3,
-                  flexWrap: "wrap",
-                  gap: 2,
-                  paddingTop: 2,
+              <CraftTable
+                title="Class Management"
+                columns={columns}
+                data={formattedClasses}
+                loading={isLoading}
+                rowActions={rowActions}
+                searchable={true}
+                filterable={true}
+                sortable={true}
+                pagination={true}
+                selectable={true}
+                onRefresh={handleRefresh}
+                onExport={handleExport}
+                onPrint={handlePrint}
+                onAdd={handleAddClass}
+                onSearchChange={handleSearchChange}
+                idField="_id"
+                defaultSortColumn="className"
+                defaultSortDirection="asc"
+                rowsPerPage={rowsPerPage}
+                page={page}
+                onPageChange={(newPage) => setPage(newPage)}
+                onRowsPerPageChange={(newRowsPerPage) => {
+                  setRowsPerPage(newRowsPerPage);
+                  setPage(0);
                 }}
-              >
-                <Typography
-                  variant="h4"
-                  component="h1"
-                  sx={{ fontWeight: 700, color: "text.primary" }}
-                >
-                  Classes
-                </Typography>
-                <Box sx={{ display: "flex", gap: 2 }}>
-                  <Button
-                    variant="outlined"
-                    startIcon={<RefreshIcon />}
-                    onClick={handleRefresh}
-                    sx={{ borderRadius: 2 }}
-                  >
-                    Refresh
-                  </Button>
-                  <Button
-                    variant="contained"
-                    color="primary"
-                    startIcon={<AddIcon />}
-                    component={Link}
-                    href="/dashboard/classes/class/new"
-                    sx={{
-                      borderRadius: 2,
-                      boxShadow: "0px 4px 10px rgba(99, 102, 241, 0.2)",
-                    }}
-                  >
-                    Add New Class
-                  </Button>
-                </Box>
-              </Box>
-              <Paper elevation={0} sx={{ mb: 4, overflow: "hidden" }}>
-                <Box
-                  sx={{ p: 3, borderBottom: "1px solid rgba(0, 0, 0, 0.06)" }}
-                >
-                  <Grid container spacing={2} alignItems="center">
-                    <Grid item xs={12} md={6}>
-                      <TextField
-                        fullWidth
-                        placeholder="Search classes by name, code or teacher..."
-                        variant="outlined"
-                        value={searchTerm}
-                        onChange={handleSearchChange}
-                        InputProps={{
-                          startAdornment: (
-                            <InputAdornment position="start">
-                              <SearchIcon color="action" />
-                            </InputAdornment>
-                          ),
-                          sx: {
-                            borderRadius: 2,
-                            bgcolor: "background.paper",
-                            "& .MuiOutlinedInput-notchedOutline": {
-                              borderColor: "rgba(0, 0, 0, 0.1)",
-                            },
-                          },
-                        }}
-                      />
-                    </Grid>
-                  </Grid>
-                </Box>
-
-                {isLoading ? (
-                  <Loader />
-                ) : (
-                  <>
-                    <Grid container spacing={3}>
-                      {classes.map((classItem: any, index: any) => (
-                        <Grid
-                          item
-                          xs={12}
-                          sm={6}
-                          md={4}
-                          lg={3}
-                          key={classItem.id}
-                        >
-                          <motion.div
-                            initial={{ opacity: 0, y: 20 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            transition={{ duration: 0.4, delay: index * 0.05 }}
-                          >
-                            <StyledCard>
-                              <Box sx={{ position: "relative" }}>
-                                <CardMedia
-                                  component="div"
-                                  sx={{
-                                    height: 100,
-                                    backgroundColor:
-                                      departmentColors[classItem.className] ||
-                                      departmentColors["Not Specified"],
-                                    position: "relative",
-                                  }}
-                                />
-                                <Box
-                                  sx={{
-                                    position: "absolute",
-                                    top: 50,
-                                    left: "50%",
-                                    transform: "translateX(-50%)",
-                                    zIndex: 1,
-                                  }}
-                                >
-                                  <Avatar
-                                    src={classItem.className}
-                                    sx={{
-                                      width: 80,
-                                      height: 80,
-                                      border: "4px solid white",
-                                    }}
-                                  >
-                                    {classItem.className.charAt(0)}
-                                  </Avatar>
-                                </Box>
-                              </Box>
-                              <CardContent sx={{ pt: 5, pb: 2 }}>
-                                <Box sx={{ textAlign: "center", mb: 2 }}>
-                                  <Typography
-                                    variant="h6"
-                                    fontWeight={600}
-                                    gutterBottom
-                                  >
-                                    {classItem.className}
-                                  </Typography>
-
-                                  {classItem.sections.map((section: any) => (
-                                    <Typography
-                                      variant="body2"
-                                      color="text.secondary"
-                                      gutterBottom
-                                    >
-                                      Section: {section?.name ?? "No Section"}
-                                    </Typography>
-                                  ))}
-                                  <div>
-                                    Class Teacher:
-                                    <Chip
-                                      label={classItem.className}
-                                      size="small"
-                                      sx={{
-                                        bgcolor: alpha(
-                                          theme.palette.secondary.main,
-                                          0.08,
-                                        ),
-                                        color: theme.palette.secondary.main,
-                                        fontWeight: 500,
-                                        borderRadius: 1,
-                                        "& .MuiChip-label": { px: 1 },
-                                      }}
-                                    />
-                                  </div>
-                                  <div>
-                                    Class Teacher:
-                                    <DepartmentChip
-                                      label={classItem.className}
-                                      size="small"
-                                      sx={{
-                                        backgroundColor: alpha(
-                                          departmentColors[classItem.name] ||
-                                            departmentColors["Not Specified"],
-                                          0.1,
-                                        ),
-                                        color:
-                                          departmentColors[classItem.name] ||
-                                          departmentColors["Not Specified"],
-                                      }}
-                                    />
-                                  </div>
-                                </Box>
-                                <Box sx={{ mb: 2 }}>
-                                  <Box
-                                    sx={{
-                                      display: "flex",
-                                      alignItems: "center",
-                                      mb: 1,
-                                    }}
-                                  >
-                                    <School
-                                      fontSize="small"
-                                      sx={{ color: "text.secondary", mr: 1 }}
-                                    />
-                                    <Typography
-                                      variant="body2"
-                                      color="text.secondary"
-                                    >
-                                      Total Student: {classItem.className}
-                                    </Typography>
-                                  </Box>
-                                  <Box
-                                    sx={{
-                                      display: "flex",
-                                      alignItems: "center",
-                                      mb: 1,
-                                    }}
-                                  >
-                                    <School
-                                      fontSize="small"
-                                      sx={{ color: "text.secondary", mr: 1 }}
-                                    />
-                                    <Typography
-                                      variant="body2"
-                                      color="text.secondary"
-                                    >
-                                      Total Subjects: {classItem.className}
-                                    </Typography>
-                                  </Box>
-                                  <Box
-                                    sx={{
-                                      display: "flex",
-                                      alignItems: "center",
-                                      mb: 1,
-                                    }}
-                                  >
-                                    <School
-                                      fontSize="small"
-                                      sx={{ color: "text.secondary", mr: 1 }}
-                                    />
-                                    <Typography
-                                      variant="body2"
-                                      color="text.secondary"
-                                    >
-                                      Total Teacher: {classItem.className}
-                                    </Typography>
-                                  </Box>
-                                </Box>
-                              </CardContent>
-                              <Box
-                                sx={{
-                                  position: "absolute",
-                                  top: 8,
-                                  right: 8,
-                                  zIndex: 1,
-                                }}
-                              >
-                                <Tooltip title="Edit Class">
-                                  <IconButton
-                                    component={Link}
-                                    href={`/dashboard/classes/class/update?id=${classItem._id}`}
-                                    size="small"
-                                    sx={{
-                                      color: "warning.main",
-                                      bgcolor: alpha(
-                                        theme.palette.warning.main,
-                                        0.1,
-                                      ),
-                                      mr: 1,
-                                      "&:hover": {
-                                        bgcolor: alpha(
-                                          theme.palette.warning.main,
-                                          0.2,
-                                        ),
-                                      },
-                                    }}
-                                  >
-                                    <EditIcon fontSize="small" />
-                                  </IconButton>
-                                </Tooltip>
-                                <Tooltip title="Delete Class">
-                                  <IconButton
-                                    size="small"
-                                    onClick={(e) => {
-                                      setSelectedClass(classItem);
-                                      setDeleteDialogOpen(true);
-                                    }}
-                                    sx={{
-                                      color: "error.main",
-                                      bgcolor: alpha(
-                                        theme.palette.error.main,
-                                        0.1,
-                                      ),
-                                      "&:hover": {
-                                        bgcolor: alpha(
-                                          theme.palette.error.main,
-                                          0.2,
-                                        ),
-                                      },
-                                    }}
-                                  >
-                                    <DeleteIcon fontSize="small" />
-                                  </IconButton>
-                                </Tooltip>
-                              </Box>
-                            </StyledCard>
-                          </motion.div>
-                        </Grid>
-                      ))}
-                    </Grid>
-                  </>
-                )}
-              </Paper>
+                emptyStateMessage="No classes found matching your search criteria"
+                showRowNumbers={true}
+                rowNumberHeader="SN"
+                actionColumnWidth={100}
+                actionMenuLabel="Actions"
+                elevation={2}
+                borderRadius={3}
+                dense={false}
+                striped={true}
+                hover={true}
+                stickyHeader={true}
+                maxHeight="70vh"
+                serverSideSorting={false}
+                bulkActions={[
+                  {
+                    label: "Export Selected",
+                    icon: <FileDownloadIcon />,
+                    onClick: (selectedRows) => {
+                      console.log("Exporting selected classes:", selectedRows);
+                    },
+                  },
+                ]}
+              />
             </Box>
           </Fade>
         </Container>
       </Box>
+
       {/* Delete Confirmation Dialog */}
       <Dialog
         open={deleteDialogOpen}
@@ -441,8 +373,9 @@ export default function ClassesListPage() {
         </DialogTitle>
         <DialogContent>
           <DialogContentText>
-            Are you sure you want to delete the class &#34;
-            {selectedClass?.className}&#34;? This action cannot be undone.
+            Are you sure you want to delete the class
+            {selectedClass?.className}? This action cannot be undone. All
+            sections and student records may be affected.
           </DialogContentText>
         </DialogContent>
         <DialogActions sx={{ px: 3, pb: 3 }}>

@@ -67,6 +67,7 @@ import type { FieldValues } from "react-hook-form";
 import toast from "react-hot-toast";
 import TodayLesson from "./TodayLesson";
 import TodayTask from "./TodayTask";
+import { sortClassOptions } from "@/options/classReport";
 
 type StudentEvaluation = {
   studentId: string;
@@ -817,7 +818,6 @@ export default function ClassReportForm({ id }: any) {
     }
   };
 
-  // Handle Today's Lesson dialog
   const handleOpenTodayLessonDialog = () => {
     setTodayLessonDialogOpen(true);
   };
@@ -861,7 +861,6 @@ export default function ClassReportForm({ id }: any) {
       );
 
     if (isMobile) {
-      // Prevent zoom on input focus for iOS
       const viewport = document.querySelector('meta[name="viewport"]');
       if (viewport) {
         viewport.setAttribute(
@@ -870,7 +869,6 @@ export default function ClassReportForm({ id }: any) {
         );
       }
 
-      // Add mobile-specific styles
       const style = document.createElement("style");
       style.textContent = `
         .MuiAutocomplete-popper {
@@ -1051,7 +1049,7 @@ export default function ClassReportForm({ id }: any) {
                               fullWidth
                               freeSolo
                               multiple={false}
-                              options={classOptions}
+                              options={sortClassOptions(classOptions)}
                               onChange={handleClassChange}
                               forcePopupIcon={false}
                               clearOnBlur={false}

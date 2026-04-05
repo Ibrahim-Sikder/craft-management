@@ -4,7 +4,6 @@
 "use client";
 
 import React from "react";
-
 import { useState, useMemo, useEffect } from "react";
 import {
   Box,
@@ -43,6 +42,7 @@ import {
   Switch,
   FormControlLabel,
   Badge,
+  Stack,
 } from "@mui/material";
 import {
   Add as AddIcon,
@@ -74,9 +74,6 @@ import {
   useDeleteClassReportMutation,
   useGetAllClassReportsQuery,
 } from "@/redux/api/classReportApi";
-import { useGetAllClassesQuery } from "@/redux/api/classApi";
-import { useGetAllSubjectsQuery } from "@/redux/api/subjectApi";
-import { useGetAllTeachersQuery } from "@/redux/api/teacherApi";
 import ClassReportDetailsModal from "../_components/ClassReportDetailsModal";
 import toast from "react-hot-toast";
 import DateRangePicker from "../new/_components/DateRangePicker";
@@ -84,27 +81,10 @@ import Link from "next/link";
 import { DateRangeIcon } from "@mui/x-date-pickers";
 import Loader from "@/app/loading";
 import { useAcademicOption } from "@/hooks/useAcademicOption";
-
-type Filters = {
-  classes: string;
-  subjects: string;
-  teachers: string;
-  date: string;
-  hour: string;
-  lessonEvaluation: string;
-  handwriting: string;
-  startDate: string;
-  endDate: string;
-  hasComments: boolean; // NEW: Comments filter
-};
-
-interface IDateRange {
-  startDate: Date | null;
-  endDate: Date | null;
-}
+import { Filters, IDateRange } from "@/types/classReport";
+import { sortClassOptions } from "@/options/classReport";
 
 export default function ClassReportList() {
-  // State - Fixed pagination state management
   const [page, setPage] = useState(1);
   const [rowsPerPage, setRowsPerPage] = useState(5);
   const [searchTerm, setSearchTerm] = useState("");
@@ -160,9 +140,7 @@ export default function ClassReportList() {
       endDate: filters.endDate,
       hasComments: filters.hasComments,
     },
-    {
-      refetchOnMountOrArgChange: true,
-    },
+    { refetchOnMountOrArgChange: true },
   );
 
   useEffect(() => {
@@ -171,11 +149,12 @@ export default function ClassReportList() {
 
   const theme = customTheme;
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"), { noSsr: true });
+  const isTablet = useMediaQuery(theme.breakpoints.down("md"), { noSsr: true });
 
-  const reports = useMemo(() => {
-    return classReport?.data?.reports || [];
-  }, [classReport]);
-
+  const reports = useMemo(
+    () => classReport?.data?.reports || [],
+    [classReport],
+  );
   const totalCount = classReport?.data?.meta?.total || 0;
   const totalPages = Math.ceil(totalCount / rowsPerPage);
   const commentsStats = classReport?.data?.meta?.commentsStats || {
@@ -186,6 +165,8 @@ export default function ClassReportList() {
 
   const { teacherOptions, subjectOptions, classOptions } = useAcademicOption();
 
+  console.log("class option this ", classOptions);
+
   const hourOptions = ["১ম", "২য়", "৩য়", "৪র্থ", "৫ম", "৬ষ্ঠ", "৭ম", "৮ম"];
   const lessonEvaluationOptions = [
     "পড়া শিখেছে",
@@ -194,13 +175,9 @@ export default function ClassReportList() {
     "অনুপস্থিত",
   ];
   const handleWrittenOptions = ["লিখেছে", "আংশিক লিখেছে", "লিখেনি", "কাজ নেই"];
-  const handleDateRangePickerOpen = () => {
-    setDateRangePickerOpen(true);
-  };
 
-  const handleDateRangePickerClose = () => {
-    setDateRangePickerOpen(false);
-  };
+  const handleDateRangePickerOpen = () => setDateRangePickerOpen(true);
+  const handleDateRangePickerClose = () => setDateRangePickerOpen(false);
 
   const handleDateRangeApply = (range: IDateRange) => {
     setSelectedDateRange(range);
@@ -209,33 +186,26 @@ export default function ClassReportList() {
       startDate: range.startDate ? format(range.startDate, "yyyy-MM-dd") : "",
       endDate: range.endDate ? format(range.endDate, "yyyy-MM-dd") : "",
     }));
-
     if (range.startDate && range.endDate) {
       toast.success(
         `Date range applied: ${format(range.startDate, "dd MMM yyyy")} - ${format(range.endDate, "dd MMM yyyy")}`,
       );
     }
-
     setPage(1);
     refetch();
   };
 
   const handleClearDateRange = () => {
     setSelectedDateRange({ startDate: null, endDate: null });
-    setFilters((prev) => ({
-      ...prev,
-      startDate: "",
-      endDate: "",
-    }));
+    setFilters((prev) => ({ ...prev, startDate: "", endDate: "" }));
     toast.success("Date range filter cleared");
     setPage(1);
     refetch();
   };
 
   const formatDateRangeDisplay = () => {
-    if (!selectedDateRange.startDate || !selectedDateRange.endDate) {
+    if (!selectedDateRange.startDate || !selectedDateRange.endDate)
       return "Select date range";
-    }
     return `${format(selectedDateRange.startDate, "dd MMM yyyy")} - ${format(selectedDateRange.endDate, "dd MMM yyyy")}`;
   };
 
@@ -243,14 +213,10 @@ export default function ClassReportList() {
     setRefreshKey((prev) => prev + 1);
     refetch();
   };
-
   const handleChangePage = (
-    event: React.ChangeEvent<unknown>,
+    _event: React.ChangeEvent<unknown>,
     newPage: number,
-  ) => {
-    setPage(newPage);
-  };
-
+  ) => setPage(newPage);
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(event.target.value);
     setPage(1);
@@ -260,25 +226,17 @@ export default function ClassReportList() {
     filterName: keyof Filters,
     value: string | boolean,
   ) => {
-    setFilters((prev) => ({
-      ...prev,
-      [filterName]: value,
-    }));
+    setFilters((prev) => ({ ...prev, [filterName]: value }));
     setPage(1);
     refetch();
   };
 
-  // NEW: Handle comments filter toggle
   const handleCommentsFilterToggle = (
     event: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const isChecked = event.target.checked;
-    setFilters((prev) => ({
-      ...prev,
-      hasComments: isChecked,
-    }));
+    setFilters((prev) => ({ ...prev, hasComments: isChecked }));
     setPage(1);
-
     if (isChecked) {
       toast.success(
         `Showing only records with comments (${commentsStats.totalComments} total)`,
@@ -286,7 +244,6 @@ export default function ClassReportList() {
     } else {
       toast.success("Comments filter cleared - showing all records");
     }
-
     refetch();
   };
 
@@ -310,7 +267,6 @@ export default function ClassReportList() {
     if (selectedReport) {
       try {
         await deleteClassReport(selectedReport._id).unwrap();
-
         setDeleteDialogOpen(false);
         setSelectedReport(null);
         refetch();
@@ -321,9 +277,7 @@ export default function ClassReportList() {
     setDeleteDialogOpen(false);
   };
 
-  const handleDeleteCancel = () => {
-    setDeleteDialogOpen(false);
-  };
+  const handleDeleteCancel = () => setDeleteDialogOpen(false);
 
   const handleClearFilters = () => {
     setFilters({
@@ -370,10 +324,7 @@ export default function ClassReportList() {
     }
   };
 
-  const filteredReports = useMemo(() => {
-    const filtered = [...reports];
-    return filtered;
-  }, [reports]);
+  const filteredReports = useMemo(() => [...reports], [reports]);
 
   const sortedReports = useMemo(() => {
     return [...filteredReports].sort((a, b) => {
@@ -406,10 +357,7 @@ export default function ClassReportList() {
     borderRadius: 3,
     background:
       selectedDateRange.startDate || selectedDateRange.endDate
-        ? `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(
-            theme.palette.secondary.main,
-            0.05,
-          )} 100%)`
+        ? `linear-gradient(135deg, ${alpha(theme.palette.primary.main, 0.08)} 0%, ${alpha(theme.palette.secondary.main, 0.05)} 100%)`
         : "background.paper",
     border:
       selectedDateRange.startDate || selectedDateRange.endDate
@@ -421,6 +369,66 @@ export default function ClassReportList() {
       transform: "translateY(-2px)",
     },
   };
+
+  // ── Filter select helper ──
+  const FilterCard = ({ icon, label, name, options, value }: any) => (
+    <Card variant="outlined" sx={{ borderRadius: 2, height: "100%" }}>
+      <CardContent
+        sx={{
+          p: { xs: 1.5, sm: 2 },
+          "&:last-child": { pb: { xs: 1.5, sm: 2 } },
+        }}
+      >
+        <Box
+          sx={{ display: "flex", alignItems: "center", mb: { xs: 1, sm: 1.5 } }}
+        >
+          {React.cloneElement(icon, {
+            sx: {
+              color: "primary.main",
+              mr: 0.75,
+              fontSize: { xs: 16, sm: 20 },
+            },
+          })}
+          <Typography
+            variant="subtitle2"
+            fontWeight={600}
+            sx={{ fontSize: { xs: "0.72rem", sm: "0.85rem" } }}
+          >
+            {label}
+          </Typography>
+        </Box>
+        <FormControl fullWidth size="small">
+          <InputLabel sx={{ fontSize: { xs: "0.72rem", sm: "0.85rem" } }}>
+            Select {label}
+          </InputLabel>
+          <Select
+            value={value}
+            label={`Select ${label}`}
+            onChange={(e: SelectChangeEvent) =>
+              handleFilterChange(name, e.target.value)
+            }
+            sx={{ fontSize: { xs: "0.72rem", sm: "0.85rem" } }}
+          >
+            <MenuItem
+              value=""
+              sx={{ fontSize: { xs: "0.72rem", sm: "0.85rem" } }}
+            >
+              All {label}s
+            </MenuItem>
+            {options?.map((opt: any) => (
+              <MenuItem
+                key={opt.value ?? opt}
+                value={opt.value ?? opt}
+                sx={{ fontSize: { xs: "0.72rem", sm: "0.85rem" } }}
+              >
+                {opt.label ?? opt}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl>
+      </CardContent>
+    </Card>
+  );
 
   return (
     <ThemeProvider theme={theme}>
@@ -434,22 +442,55 @@ export default function ClassReportList() {
       >
         <Container
           maxWidth="xl"
-          sx={{ mt: 0, mb: 8, borderRadius: 2, p: { xs: 1, md: "8px" } }}
+          sx={{
+            mt: 0,
+            mb: 8,
+            borderRadius: 2,
+            p: { xs: 1, sm: 1.5, md: "8px" },
+          }}
         >
           <Fade in={true} timeout={800}>
             <div>
-              <div className="flex justify-between items-center mb-6 flex-wrap gap-4 pt-4">
-                <h1 className="text-2xl font-bold text-gray-900">
+              {/* ── Header ── */}
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: { xs: "flex-start", sm: "center" },
+                  mb: { xs: 2, sm: 3 },
+                  flexWrap: "wrap",
+                  gap: { xs: 1.5, sm: 2 },
+                  pt: { xs: 1.5, sm: 2 },
+                }}
+              >
+                <Typography
+                  variant="h5"
+                  fontWeight={700}
+                  sx={{
+                    fontSize: { xs: "1.1rem", sm: "1.35rem", md: "1.6rem" },
+                  }}
+                >
                   Class Reports
-                </h1>
-                <div className="flex gap-4">
+                </Typography>
+                <Stack
+                  direction="row"
+                  spacing={{ xs: 1, sm: 1.5 }}
+                  flexWrap="wrap"
+                >
                   <Button
                     variant="outlined"
                     startIcon={<RefreshIcon />}
                     onClick={handleRefresh}
-                    sx={{ borderRadius: 2 }}
+                    size={isMobile ? "small" : "medium"}
+                    sx={{
+                      borderRadius: 2,
+                      fontSize: { xs: "0.72rem", sm: "0.875rem" },
+                      px: { xs: 1.5, sm: 2 },
+                      display: { xs: "none", md: "flex" },
+                    }}
                   >
-                    Refresh
+                    {isMobile ? "" : "Refresh"}
+                    {isMobile && <RefreshIcon fontSize="small" />}
                   </Button>
                   <Button
                     variant="contained"
@@ -457,45 +498,51 @@ export default function ClassReportList() {
                     startIcon={<AddIcon />}
                     component={Link}
                     href="/dashboard/classes/report/new"
+                    size={isMobile ? "small" : "medium"}
                     sx={{
                       borderRadius: 2,
-                      boxShadow: "0px 4px 10px rgba(99, 102, 241, 0.2)",
+                      boxShadow: "0px 4px 10px rgba(99,102,241,0.2)",
+                      fontSize: { xs: "0.72rem", sm: "0.875rem" },
+                      px: { xs: 1.5, sm: 2 },
                     }}
                   >
-                    Add New Report
+                    {isMobile ? "Add" : "Add New Report"}
                   </Button>
-                </div>
-              </div>
+                </Stack>
+              </Box>
 
-              {/* Enhanced Pagination Info with Comments Stats */}
               <Box
                 sx={{
                   mb: 2,
                   display: "flex",
-                  justifyContent: "space-between",
+                  flexWrap: "wrap",
+                  justifyContent: { xs: "flex-start", sm: "space-between" },
                   alignItems: "center",
+                  gap: 1,
                 }}
               >
-                <Typography variant="body2" color="text.secondary">
-                  Showing {reports.length} reports with student evaluations
-                  (Page {page} of {totalPages})
-                </Typography>
-                <Box sx={{ display: "flex", gap: 2, alignItems: "center" }}>
+                <Stack
+                  direction="row"
+                  spacing={1}
+                  flexWrap="wrap"
+                  alignItems="center"
+                >
                   <Typography
                     variant="body2"
                     color="secondary.main"
                     fontWeight={600}
+                    sx={{ fontSize: { xs: "0.68rem", sm: "0.8rem" } }}
                   >
-                    Total Reports: {totalCount}
+                    Total: {totalCount}
                   </Typography>
                   <Typography
                     variant="body2"
                     color="primary.main"
                     fontWeight={600}
+                    sx={{ fontSize: { xs: "0.68rem", sm: "0.8rem" } }}
                   >
-                    Limit: {rowsPerPage} per page
+                    {rowsPerPage}/page
                   </Typography>
-                  {/* NEW: Comments Statistics Display */}
                   <Badge
                     badgeContent={commentsStats.totalComments}
                     color="warning"
@@ -503,280 +550,118 @@ export default function ClassReportList() {
                   >
                     <Chip
                       icon={<CommentIcon />}
-                      label={`${commentsStats.reportsWithComments} Reports with Comments`}
+                      label={
+                        isMobile
+                          ? `${commentsStats.reportsWithComments} w/ Comments`
+                          : `${commentsStats.reportsWithComments} Reports with Comments`
+                      }
                       size="small"
                       color="warning"
                       variant="outlined"
+                      sx={{ fontSize: { xs: "0.62rem", sm: "0.75rem" } }}
                     />
                   </Badge>
-                </Box>
+                </Stack>
               </Box>
 
-              {/* Filter Cards */}
-              <Box sx={{ mb: 4 }}>
-                <div className="grid grid-cols-1 md:grid-cols-5 gap-[6px]">
-                  {/* Class Filter */}
-                  <Grid item xs={12} sm={6} md={1}>
-                    <Card variant="outlined" sx={{ borderRadius: 2 }}>
-                      <CardContent>
-                        <Box
-                          sx={{ display: "flex", alignItems: "center", mb: 2 }}
-                        >
-                          <ClassIcon sx={{ color: "primary.main", mr: 1 }} />
-                          <Typography variant="subtitle1" fontWeight={600}>
-                            Class
-                          </Typography>
-                        </Box>
-                        <FormControl fullWidth size="small">
-                          <InputLabel id="class-filter-label">
-                            Select Class
-                          </InputLabel>
-                          <Select
-                            labelId="class-filter-label"
-                            id="class-filter"
-                            value={filters.classes}
-                            label="Select Class"
-                            onChange={(e: SelectChangeEvent) =>
-                              handleFilterChange("classes", e.target.value)
-                            }
-                          >
-                            <MenuItem value="">All Classes</MenuItem>
-                            {classOptions?.length > 0 &&
-                              classOptions.map((option: any) => (
-                                <MenuItem
-                                  key={option.value}
-                                  value={option.value}
-                                >
-                                  {option.label}
-                                </MenuItem>
-                              ))}
-                          </Select>
-                        </FormControl>
-                      </CardContent>
-                    </Card>
+              {/* ── Filter Grid ── */}
+              <Box sx={{ mb: { xs: 2, sm: 3 } }}>
+                <Grid container spacing={{ xs: 1, sm: 1.5 }}>
+                  <Grid item xs={6} sm={4} md={2}>
+                    <FilterCard
+                      icon={<ClassIcon />}
+                      label="Class"
+                      name="classes"
+                      options={sortClassOptions(classOptions)}
+                      value={filters.classes}
+                    />
                   </Grid>
 
-                  {/* Subject Filter */}
-                  <Grid item xs={12} sm={6} md={2}>
-                    <Card variant="outlined" sx={{ borderRadius: 2 }}>
-                      <CardContent>
-                        <Box
-                          sx={{ display: "flex", alignItems: "center", mb: 2 }}
-                        >
-                          <BookIcon sx={{ color: "primary.main", mr: 1 }} />
-                          <Typography variant="subtitle1" fontWeight={600}>
-                            Subject
-                          </Typography>
-                        </Box>
-                        <FormControl fullWidth size="small">
-                          <InputLabel id="subject-filter-label">
-                            Select Subject
-                          </InputLabel>
-                          <Select
-                            labelId="subject-filter-label"
-                            id="subject-filter"
-                            value={filters.subjects}
-                            label="Select Subject"
-                            onChange={(e: SelectChangeEvent) =>
-                              handleFilterChange("subjects", e.target.value)
-                            }
-                          >
-                            <MenuItem value="">All Subjects</MenuItem>
-                            {subjectOptions?.length > 0 &&
-                              subjectOptions.map((option: any) => (
-                                <MenuItem
-                                  key={option.value}
-                                  value={option.value}
-                                >
-                                  {option.label}
-                                </MenuItem>
-                              ))}
-                          </Select>
-                        </FormControl>
-                      </CardContent>
-                    </Card>
+                  <Grid item xs={6} sm={4} md={2}>
+                    <FilterCard
+                      icon={<BookIcon />}
+                      label="Subject"
+                      name="subjects"
+                      options={subjectOptions}
+                      value={filters.subjects}
+                    />
+                  </Grid>
+                  <Grid item xs={6} sm={4} md={2}>
+                    <FilterCard
+                      icon={<PersonIcon />}
+                      label="Teacher"
+                      name="teachers"
+                      options={teacherOptions}
+                      value={filters.teachers}
+                    />
+                  </Grid>
+                  <Grid item xs={6} sm={4} md={2}>
+                    <FilterCard
+                      icon={<AccessTimeIcon />}
+                      label="Hour"
+                      name="hour"
+                      options={hourOptions}
+                      value={filters.hour}
+                    />
+                  </Grid>
+                  <Grid item xs={6} sm={4} md={2}>
+                    <FilterCard
+                      icon={<AccessTimeIcon />}
+                      label="Lesson"
+                      name="lessonEvaluation"
+                      options={lessonEvaluationOptions}
+                      value={filters.lessonEvaluation}
+                    />
+                  </Grid>
+                  <Grid item xs={6} sm={4} md={2}>
+                    <FilterCard
+                      icon={<AccessTimeIcon />}
+                      label="Hand Written"
+                      name="handwriting"
+                      options={handleWrittenOptions}
+                      value={filters.handwriting}
+                    />
                   </Grid>
 
-                  {/* Teacher Filter */}
-                  <Grid item xs={12} sm={6} md={2}>
-                    <Card variant="outlined" sx={{ borderRadius: 2 }}>
-                      <CardContent>
-                        <Box
-                          sx={{ display: "flex", alignItems: "center", mb: 2 }}
-                        >
-                          <PersonIcon sx={{ color: "primary.main", mr: 1 }} />
-                          <Typography variant="subtitle1" fontWeight={600}>
-                            Teacher
-                          </Typography>
-                        </Box>
-                        <FormControl fullWidth size="small">
-                          <InputLabel id="teacher-filter-label">
-                            Select Teacher
-                          </InputLabel>
-                          <Select
-                            labelId="teacher-filter-label"
-                            id="teacher-filter"
-                            value={filters.teachers}
-                            label="Select Teacher"
-                            onChange={(e: SelectChangeEvent) =>
-                              handleFilterChange("teachers", e.target.value)
-                            }
-                          >
-                            <MenuItem value="">All Teachers</MenuItem>
-                            {teacherOptions?.length > 0 &&
-                              teacherOptions.map((option: any) => (
-                                <MenuItem
-                                  key={option.value}
-                                  value={option.value}
-                                >
-                                  {option.label}
-                                </MenuItem>
-                              ))}
-                          </Select>
-                        </FormControl>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-
-                  {/* Hour Filter */}
-                  <Grid item xs={12} sm={6} md={1}>
-                    <Card variant="outlined" sx={{ borderRadius: 2 }}>
-                      <CardContent>
-                        <Box
-                          sx={{ display: "flex", alignItems: "center", mb: 2 }}
-                        >
-                          <AccessTimeIcon
-                            sx={{ color: "primary.main", mr: 1 }}
-                          />
-                          <Typography variant="subtitle1" fontWeight={600}>
-                            Hour
-                          </Typography>
-                        </Box>
-                        <FormControl fullWidth size="small">
-                          <InputLabel id="hour-filter-label">
-                            Select Hour
-                          </InputLabel>
-                          <Select
-                            labelId="hour-filter-label"
-                            id="hour-filter"
-                            value={filters.hour}
-                            label="Select Hour"
-                            onChange={(e: SelectChangeEvent) =>
-                              handleFilterChange("hour", e.target.value)
-                            }
-                          >
-                            <MenuItem value="">All Hours</MenuItem>
-                            {hourOptions.map((hour) => (
-                              <MenuItem key={hour} value={hour}>
-                                {hour}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        </FormControl>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-
-                  {/* Lesson Evaluation Filter */}
-                  <Grid item xs={12} sm={6} md={2}>
-                    <Card variant="outlined" sx={{ borderRadius: 2 }}>
-                      <CardContent>
-                        <Box
-                          sx={{ display: "flex", alignItems: "center", mb: 2 }}
-                        >
-                          <AccessTimeIcon
-                            sx={{ color: "primary.main", mr: 1 }}
-                          />
-                          <Typography variant="subtitle1" fontWeight={600}>
-                            Lesson
-                          </Typography>
-                        </Box>
-                        <FormControl fullWidth size="small">
-                          <InputLabel id="lesson-evaluation-filter-label">
-                            Select Option
-                          </InputLabel>
-                          <Select
-                            labelId="lesson-evaluation-filter-label"
-                            id="lesson-evaluation-filter"
-                            value={filters.lessonEvaluation}
-                            label="Select Option"
-                            onChange={(e: SelectChangeEvent) =>
-                              handleFilterChange(
-                                "lessonEvaluation",
-                                e.target.value,
-                              )
-                            }
-                          >
-                            <MenuItem value="">All Options</MenuItem>
-                            {lessonEvaluationOptions.map((option) => (
-                              <MenuItem key={option} value={option}>
-                                {option}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        </FormControl>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-
-                  {/* Handwriting Filter */}
-                  <Grid item xs={12} sm={6} md={2}>
-                    <Card variant="outlined" sx={{ borderRadius: 2 }}>
-                      <CardContent>
-                        <Box
-                          sx={{ display: "flex", alignItems: "center", mb: 2 }}
-                        >
-                          <AccessTimeIcon
-                            sx={{ color: "primary.main", mr: 1 }}
-                          />
-                          <Typography variant="subtitle1" fontWeight={600}>
-                            Hand Written
-                          </Typography>
-                        </Box>
-                        <FormControl fullWidth size="small">
-                          <InputLabel id="handwriting-filter-label">
-                            Select Option
-                          </InputLabel>
-                          <Select
-                            labelId="handwriting-filter-label"
-                            id="handwriting-filter"
-                            value={filters.handwriting}
-                            label="Select Option"
-                            onChange={(e: SelectChangeEvent) =>
-                              handleFilterChange("handwriting", e.target.value)
-                            }
-                          >
-                            <MenuItem value="">All Options</MenuItem>
-                            {handleWrittenOptions.map((option) => (
-                              <MenuItem key={option} value={option}>
-                                {option}
-                              </MenuItem>
-                            ))}
-                          </Select>
-                        </FormControl>
-                      </CardContent>
-                    </Card>
-                  </Grid>
-
-                  {/* Enhanced Date Range Filter */}
-                  <Grid item xs={12} sm={6} md={6} lg={3}>
+                  {/* Date Range */}
+                  <Grid item xs={12} sm={6} md={4}>
                     <Card variant="outlined" sx={cardStyle}>
-                      <CardContent sx={{ p: 3 }}>
+                      <CardContent
+                        sx={{
+                          p: { xs: 1.5, sm: 2 },
+                          "&:last-child": { pb: { xs: 1.5, sm: 2 } },
+                        }}
+                      >
                         <Box
-                          sx={{ display: "flex", alignItems: "center", mb: 2 }}
+                          sx={{
+                            display: "flex",
+                            alignItems: "center",
+                            mb: { xs: 1, sm: 1.5 },
+                          }}
                         >
                           <DateRangeIcon
-                            sx={{ color: "primary.main", mr: 1 }}
+                            sx={{
+                              color: "primary.main",
+                              mr: 0.75,
+                              fontSize: { xs: 16, sm: 20 },
+                            }}
                           />
-                          <Typography variant="subtitle1" fontWeight={600}>
-                            Date
+                          <Typography
+                            variant="subtitle2"
+                            fontWeight={600}
+                            sx={{ fontSize: { xs: "0.72rem", sm: "0.85rem" } }}
+                          >
+                            Date Range
                           </Typography>
                         </Box>
                         <Button
                           variant="outlined"
-                          startIcon={<DateRange />}
+                          startIcon={
+                            <DateRange sx={{ fontSize: { xs: 14, sm: 18 } }} />
+                          }
                           onClick={handleDateRangePickerOpen}
                           fullWidth
+                          size="small"
                           sx={{
                             borderRadius: 2,
                             textTransform: "none",
@@ -786,143 +671,189 @@ export default function ClassReportList() {
                               : "text.secondary",
                             borderColor: selectedDateRange.startDate
                               ? "primary.main"
-                              : "rgba(0, 0, 0, 0.23)",
-                            fontSize: "0.875rem",
-                            py: 1.5,
-                            "&:hover": {
-                              transform: "translateY(-1px)",
-                              boxShadow: `0 4px 12px ${alpha(theme.palette.primary.main, 0.2)}`,
-                            },
-                            transition: "all 0.2s ease",
+                              : "rgba(0,0,0,0.23)",
+                            fontSize: { xs: "0.68rem", sm: "0.8rem" },
+                            py: { xs: 0.75, sm: 1 },
                           }}
                         >
-                          {formatDateRangeDisplay()}
+                          {isMobile && formatDateRangeDisplay().length > 22
+                            ? formatDateRangeDisplay().slice(0, 20) + "…"
+                            : formatDateRangeDisplay()}
                         </Button>
                       </CardContent>
                     </Card>
                   </Grid>
 
-                  {/* Comments Filter */}
-                  <Grid item xs={12} sm={6} md={6} lg={3}>
+                  {/* Comments toggle */}
+                  <Grid item xs={12} sm={6} md={4}>
                     <Card variant="outlined" sx={cardStyle}>
-                      <CardContent sx={{ p: 3 }}>
-                        <Box
-                          sx={{ display: "flex", alignItems: "center", mb: 2 }}
-                        >
-                          <CommentIcon sx={{ color: "warning.main", mr: 1 }} />
-                          <Typography variant="subtitle1" fontWeight={600}>
-                            Comments
-                          </Typography>
-                        </Box>
+                      <CardContent
+                        sx={{
+                          p: { xs: 1.5, sm: 2 },
+                          "&:last-child": { pb: { xs: 1.5, sm: 2 } },
+                        }}
+                      >
                         <Box
                           sx={{
                             display: "flex",
-                            flexDirection: "column",
-                            gap: 1,
+                            alignItems: "center",
+                            mb: { xs: 1, sm: 1.5 },
                           }}
                         >
-                          <FormControlLabel
-                            control={
-                              <Switch
-                                checked={filters.hasComments}
-                                onChange={handleCommentsFilterToggle}
-                                color="warning"
-                                size="small"
-                              />
-                            }
-                            label={
-                              <Typography variant="body2" fontWeight={500}>
-                                {filters.hasComments
-                                  ? "Show Only Comments"
-                                  : "Show All Records"}
-                              </Typography>
-                            }
+                          <CommentIcon
+                            sx={{
+                              color: "warning.main",
+                              mr: 0.75,
+                              fontSize: { xs: 16, sm: 20 },
+                            }}
                           />
+                          <Typography
+                            variant="subtitle2"
+                            fontWeight={600}
+                            sx={{ fontSize: { xs: "0.72rem", sm: "0.85rem" } }}
+                          >
+                            Comments
+                          </Typography>
                         </Box>
+                        <FormControlLabel
+                          control={
+                            <Switch
+                              checked={filters.hasComments}
+                              onChange={handleCommentsFilterToggle}
+                              color="warning"
+                              size="small"
+                            />
+                          }
+                          label={
+                            <Typography
+                              variant="body2"
+                              fontWeight={500}
+                              sx={{ fontSize: { xs: "0.68rem", sm: "0.8rem" } }}
+                            >
+                              {filters.hasComments
+                                ? "Comments Only"
+                                : "Show All"}
+                            </Typography>
+                          }
+                        />
                       </CardContent>
                     </Card>
                   </Grid>
-                </div>
+                </Grid>
 
-                {/* Search and Actions */}
-                <Box sx={{ mt: 2, display: "flex", gap: 2, flexWrap: "wrap" }}>
+                {/* Search + action row */}
+                <Stack
+                  direction={{ xs: "column", sm: "row" }}
+                  spacing={1}
+                  sx={{ mt: { xs: 1.5, sm: 2 } }}
+                  alignItems={{ sm: "center" }}
+                >
                   <TextField
-                    placeholder="Search by Student Name or Comments..."
+                    placeholder="Search by student name or comments..."
                     variant="outlined"
                     value={searchTerm}
                     onChange={handleSearchChange}
                     size="small"
-                    sx={{ flexGrow: 1 }}
+                    fullWidth
                     InputProps={{
                       startAdornment: (
                         <InputAdornment position="start">
-                          <SearchIcon color="action" />
+                          <SearchIcon color="action" fontSize="small" />
                         </InputAdornment>
                       ),
                       sx: {
                         borderRadius: 2,
+                        fontSize: { xs: "0.8rem", sm: "0.875rem" },
                       },
                     }}
                   />
-                  <Button
-                    variant="outlined"
-                    color="inherit"
-                    onClick={handleClearFilters}
-                    sx={{
-                      borderColor: "rgba(0, 0, 0, 0.12)",
-                      color: "text.secondary",
-                    }}
-                    startIcon={<FilterListIcon />}
-                  >
-                    Clear All Filters
-                  </Button>
-                  {!isMobile && (
-                    <>
-                      <Button
-                        variant="outlined"
-                        color="inherit"
-                        startIcon={<DownloadIcon />}
-                        sx={{
-                          borderColor: "rgba(0, 0, 0, 0.12)",
-                          color: "text.secondary",
-                        }}
-                      >
-                        Export
-                      </Button>
-                      <Button
-                        variant="outlined"
-                        color="inherit"
-                        startIcon={<PrintIcon />}
-                        sx={{
-                          borderColor: "rgba(0, 0, 0, 0.12)",
-                          color: "text.secondary",
-                        }}
-                      >
-                        Print
-                      </Button>
-                    </>
-                  )}
-                </Box>
+                  <Stack direction="row" spacing={1} flexShrink={0}>
+                    <Button
+                      variant="outlined"
+                      color="inherit"
+                      onClick={handleClearFilters}
+                      size="small"
+                      startIcon={<FilterListIcon fontSize="small" />}
+                      sx={{
+                        borderColor: "rgba(0,0,0,0.12)",
+                        color: "text.secondary",
+                        whiteSpace: "nowrap",
+                        fontSize: { xs: "0.72rem", sm: "0.8rem" },
+                      }}
+                    >
+                      {isMobile ? "Clear" : "Clear All Filters"}
+                    </Button>
+                    {!isMobile && (
+                      <>
+                        <Button
+                          variant="outlined"
+                          color="inherit"
+                          startIcon={<DownloadIcon />}
+                          size="small"
+                          sx={{
+                            borderColor: "rgba(0,0,0,0.12)",
+                            color: "text.secondary",
+                          }}
+                        >
+                          Export
+                        </Button>
+                        <Button
+                          variant="outlined"
+                          color="inherit"
+                          startIcon={<PrintIcon />}
+                          size="small"
+                          sx={{
+                            borderColor: "rgba(0,0,0,0.12)",
+                            color: "text.secondary",
+                          }}
+                        >
+                          Print
+                        </Button>
+                      </>
+                    )}
+                  </Stack>
+                </Stack>
               </Box>
 
+              {/* ── Table ── */}
               <Paper elevation={0} sx={{ mb: 4, overflow: "hidden" }}>
                 {isLoading ? (
                   <Loader />
                 ) : (
                   <>
-                    <div className="max-[320px]:block max-[320px]:w-[250px] max-[375px]:block max-[375px]:w-[300px] max-[425px]:block max-[425px]:w-[380px] max-[800px]:border max-[800px]:border-gray-300 max-[800px]:rounded   max-[800px]:block max-[800px]:max-w-[100vw] max-[800px]:relative max-[800px]:whitespace-nowrap max-[800px]:overflow-x-auto">
+                    <Box
+                      sx={{
+                        border: { xs: "1px solid", sm: "none" },
+                        borderColor: { xs: "divider" },
+                        borderRadius: { xs: 1, sm: 0 },
+                        overflowX: "auto",
+                        WebkitOverflowScrolling: "touch",
+                        maxWidth: "100vw",
+                        position: "relative",
+                      }}
+                    >
                       <Table
                         sx={{
-                          minWidth: 900,
-                          "@media (min-width: 900px)": {
-                            width: "100%",
-                            minWidth: "100%",
-                            tableLayout: {
-                              sm: "auto",
-                              md: "fixed",
-                              lg: "fixed",
+                          minWidth: 860,
+                          "& .MuiTableCell-root": {
+                            py: { xs: 1, sm: 1.5 },
+                            px: { xs: 1, sm: 1.5, md: 2 },
+                            fontSize: {
+                              xs: "0.7rem",
+                              sm: "0.8rem",
+                              md: "0.875rem",
                             },
-                            px: 10,
+                          },
+                          "& .MuiTableHead-root .MuiTableCell-root": {
+                            fontWeight: 600,
+                            color: theme.palette.primary.main,
+                            borderBottom: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
+                            whiteSpace: "nowrap",
+                            fontSize: {
+                              xs: "0.68rem",
+                              sm: "0.78rem",
+                              md: "0.85rem",
+                            },
                           },
                         }}
                       >
@@ -933,15 +864,9 @@ export default function ClassReportList() {
                                 theme.palette.primary.main,
                                 0.05,
                               ),
-                              "& th": {
-                                fontWeight: 600,
-                                color: theme.palette.primary.main,
-                                borderBottom: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-                                py: 2,
-                              },
                             }}
                           >
-                            <TableCell width="6%">
+                            <TableCell width="7%">
                               <Box
                                 sx={{
                                   display: "flex",
@@ -962,16 +887,18 @@ export default function ClassReportList() {
                                     sx={{ display: "inline-flex", ml: 0.5 }}
                                   >
                                     {order === "asc" ? (
-                                      <ArrowUpwardIcon fontSize="small" />
+                                      <ArrowUpwardIcon sx={{ fontSize: 14 }} />
                                     ) : (
-                                      <ArrowDownwardIcon fontSize="small" />
+                                      <ArrowDownwardIcon
+                                        sx={{ fontSize: 14 }}
+                                      />
                                     )}
                                   </Box>
                                 )}
                               </Box>
                             </TableCell>
-                            <TableCell>Student Name</TableCell>
-                            <TableCell width="5%">
+                            <TableCell>Student</TableCell>
+                            <TableCell width="6%">
                               <Box
                                 sx={{
                                   display: "flex",
@@ -992,30 +919,33 @@ export default function ClassReportList() {
                                     sx={{ display: "inline-flex", ml: 0.5 }}
                                   >
                                     {order === "asc" ? (
-                                      <ArrowUpwardIcon fontSize="small" />
+                                      <ArrowUpwardIcon sx={{ fontSize: 14 }} />
                                     ) : (
-                                      <ArrowDownwardIcon fontSize="small" />
+                                      <ArrowDownwardIcon
+                                        sx={{ fontSize: 14 }}
+                                      />
                                     )}
                                   </Box>
                                 )}
                               </Box>
                             </TableCell>
-                            <TableCell width="10%">Subject</TableCell>
-                            <TableCell width="10%">Teacher</TableCell>
-                            <TableCell width="4%">Hour</TableCell>
-                            <TableCell width="8%">Attendance</TableCell>
+                            <TableCell width="9%">Subject</TableCell>
+                            <TableCell width="9%">Teacher</TableCell>
+                            <TableCell width="5%">Hour</TableCell>
+                            <TableCell width="8%">Attend.</TableCell>
                             <TableCell width="9%">Lesson</TableCell>
-                            <TableCell width="8%">Homework</TableCell>
-                            <TableCell width="6%">Signature</TableCell>
+                            <TableCell width="8%">HW</TableCell>
+                            <TableCell width="5%" align="center">
+                              Sign
+                            </TableCell>
                             <TableCell width="10%">Comments</TableCell>
-                            <TableCell>Actions</TableCell>
+                            <TableCell width="9%">Actions</TableCell>
                           </TableRow>
                         </TableHead>
                         <TableBody>
                           {sortedReports.length > 0 ? (
                             sortedReports.map((report: any) => {
                               const isExpanded = expandedReport === report._id;
-
                               return (
                                 <React.Fragment key={report._id}>
                                   {report.studentEvaluations?.map(
@@ -1041,26 +971,16 @@ export default function ClassReportList() {
                                             "&:hover": {
                                               bgcolor: alpha(
                                                 theme.palette.primary.main,
-                                                0.05,
+                                                0.04,
                                               ),
                                             },
                                             borderBottom: `1px solid ${alpha(theme.palette.divider, 0.7)}`,
                                             "&:last-child td": {
                                               borderBottom: 0,
                                             },
-                                            // Enhanced styling for rows with comments
                                             ...(hasComment && {
-                                              background: `linear-gradient(90deg, ${alpha(
-                                                theme.palette.warning.light,
-                                                0.08,
-                                              )} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
+                                              background: `linear-gradient(90deg, ${alpha(theme.palette.warning.light, 0.08)} 0%, ${alpha(theme.palette.background.paper, 0.3)} 100%)`,
                                               borderLeft: `3px solid ${theme.palette.warning.main}`,
-                                              "&:hover": {
-                                                background: `linear-gradient(90deg, ${alpha(
-                                                  theme.palette.warning.light,
-                                                  0.12,
-                                                )} 0%, ${alpha(theme.palette.background.paper, 0.4)} 100%)`,
-                                              },
                                             }),
                                             ...(isAbsent && {
                                               opacity: 0.5,
@@ -1069,38 +989,43 @@ export default function ClassReportList() {
                                                 theme.palette.grey[300],
                                                 0.4,
                                               ),
-                                              "&:hover": {
-                                                bgcolor: alpha(
-                                                  theme.palette.grey[300],
-                                                  0.4,
-                                                ),
-                                              },
                                             }),
                                           }}
                                         >
-                                          <TableCell sx={{ py: 1.5 }}>
+                                          <TableCell>
                                             <Typography
                                               variant="body2"
                                               fontWeight={500}
+                                              sx={{
+                                                fontSize: {
+                                                  xs: "0.68rem",
+                                                  sm: "0.78rem",
+                                                },
+                                                whiteSpace: "nowrap",
+                                              }}
                                             >
                                               {report.date
                                                 ? formatDate(report.date)
                                                 : "N/A"}
                                             </Typography>
                                           </TableCell>
-                                          <TableCell sx={{ py: 1.5 }}>
+                                          <TableCell>
                                             <Typography
                                               variant="body2"
                                               fontWeight={500}
                                               sx={{
+                                                fontSize: {
+                                                  xs: "0.68rem",
+                                                  sm: "0.78rem",
+                                                },
                                                 color:
                                                   theme.palette.text.primary,
                                               }}
                                             >
-                                              {student?.name || "Not available"}
+                                              {student?.name || "N/A"}
                                             </Typography>
                                           </TableCell>
-                                          <TableCell sx={{ py: 1.5 }}>
+                                          <TableCell>
                                             <Box
                                               sx={{
                                                 display: "inline-flex",
@@ -1110,17 +1035,21 @@ export default function ClassReportList() {
                                                 ),
                                                 color:
                                                   theme.palette.primary.main,
-                                                px: 1.5,
-                                                py: 0.5,
+                                                px: { xs: 0.75, sm: 1 },
+                                                py: 0.25,
                                                 borderRadius: 1,
                                                 fontWeight: 600,
-                                                fontSize: "0.8125rem",
+                                                fontSize: {
+                                                  xs: "0.65rem",
+                                                  sm: "0.75rem",
+                                                },
+                                                whiteSpace: "nowrap",
                                               }}
                                             >
                                               {report.classes}
                                             </Box>
                                           </TableCell>
-                                          <TableCell sx={{ py: 1.5 }}>
+                                          <TableCell>
                                             <Chip
                                               label={report?.subjects}
                                               size="small"
@@ -1133,20 +1062,32 @@ export default function ClassReportList() {
                                                   theme.palette.secondary.main,
                                                 fontWeight: 500,
                                                 borderRadius: 1,
-                                                "& .MuiChip-label": { px: 1 },
+                                                height: { xs: 20, sm: 24 },
+                                                "& .MuiChip-label": {
+                                                  px: { xs: 0.5, sm: 1 },
+                                                  fontSize: {
+                                                    xs: "0.62rem",
+                                                    sm: "0.72rem",
+                                                  },
+                                                },
                                               }}
                                             />
                                           </TableCell>
-                                          <TableCell sx={{ py: 1.5 }}>
+                                          <TableCell>
                                             <Typography
                                               variant="body2"
                                               fontWeight={500}
+                                              sx={{
+                                                fontSize: {
+                                                  xs: "0.65rem",
+                                                  sm: "0.75rem",
+                                                },
+                                              }}
                                             >
-                                              {report?.teachers ||
-                                                "Not assigned"}
+                                              {report?.teachers || "N/A"}
                                             </Typography>
                                           </TableCell>
-                                          <TableCell sx={{ py: 1.5 }}>
+                                          <TableCell>
                                             <Box
                                               sx={{
                                                 display: "inline-flex",
@@ -1155,11 +1096,14 @@ export default function ClassReportList() {
                                                   0.08,
                                                 ),
                                                 color: theme.palette.info.main,
-                                                px: 1.5,
-                                                py: 0.5,
+                                                px: { xs: 0.75, sm: 1 },
+                                                py: 0.25,
                                                 borderRadius: 1,
                                                 fontWeight: 500,
-                                                fontSize: "0.8125rem",
+                                                fontSize: {
+                                                  xs: "0.62rem",
+                                                  sm: "0.72rem",
+                                                },
                                               }}
                                             >
                                               {report.hour || "N/A"}
@@ -1170,16 +1114,25 @@ export default function ClassReportList() {
                                               icon={
                                                 evaluation?.attendance?.toLowerCase() ===
                                                 "উপস্থিত" ? (
-                                                  <CheckCircleIcon color="success" />
+                                                  <CheckCircleIcon
+                                                    color="success"
+                                                    sx={{
+                                                      fontSize:
+                                                        "14px !important",
+                                                    }}
+                                                  />
                                                 ) : (
                                                   <CancelIcon
-                                                    sx={{ color: "error.main" }}
+                                                    sx={{
+                                                      color: "error.main",
+                                                      fontSize:
+                                                        "14px !important",
+                                                    }}
                                                   />
                                                 )
                                               }
                                               label={
-                                                evaluation?.attendance ||
-                                                "Not Marked"
+                                                evaluation?.attendance || "N/A"
                                               }
                                               color={
                                                 evaluation?.attendance?.toLowerCase() ===
@@ -1190,19 +1143,14 @@ export default function ClassReportList() {
                                               size="small"
                                               sx={{
                                                 fontWeight: 500,
-                                                bgcolor:
-                                                  evaluation?.attendance?.toLowerCase() ===
-                                                  "উপস্থিত"
-                                                    ? alpha(
-                                                        theme.palette.success
-                                                          .main,
-                                                        0.1,
-                                                      )
-                                                    : alpha(
-                                                        theme.palette.error
-                                                          .main,
-                                                        0.1,
-                                                      ),
+                                                height: { xs: 20, sm: 24 },
+                                                "& .MuiChip-label": {
+                                                  px: { xs: 0.5, sm: 1 },
+                                                  fontSize: {
+                                                    xs: "0.6rem",
+                                                    sm: "0.7rem",
+                                                  },
+                                                },
                                               }}
                                             />
                                           </TableCell>
@@ -1213,21 +1161,30 @@ export default function ClassReportList() {
                                                 evaluation?.lessonEvaluation !==
                                                   "পড়া শিখেনি" ? (
                                                   <CheckCircleIcon
-                                                    sx={{ color: "#651FFF" }}
+                                                    sx={{
+                                                      color: "#651FFF",
+                                                      fontSize:
+                                                        "14px !important",
+                                                    }}
                                                   />
                                                 ) : (
                                                   <CancelIcon
-                                                    sx={{ color: "#FF1744" }}
+                                                    sx={{
+                                                      color: "#FF1744",
+                                                      fontSize:
+                                                        "14px !important",
+                                                    }}
                                                   />
                                                 )
                                               }
                                               label={
                                                 evaluation?.lessonEvaluation ||
-                                                "Not Done"
+                                                "N/A"
                                               }
                                               size="small"
                                               sx={{
                                                 fontWeight: 500,
+                                                height: { xs: 20, sm: 24 },
                                                 color:
                                                   evaluation?.lessonEvaluation &&
                                                   evaluation?.lessonEvaluation !==
@@ -1240,13 +1197,14 @@ export default function ClassReportList() {
                                                     "পড়া শিখেনি"
                                                     ? "#EDE7F6"
                                                     : "#FFEBEE",
-                                                border: `1px solid ${
-                                                  evaluation?.lessonEvaluation &&
-                                                  evaluation?.lessonEvaluation !==
-                                                    "পড়া শিখেনি"
-                                                    ? "#651FFF"
-                                                    : "#FF1744"
-                                                }`,
+                                                border: `1px solid ${evaluation?.lessonEvaluation && evaluation?.lessonEvaluation !== "পড়া শিখেনি" ? "#651FFF" : "#FF1744"}`,
+                                                "& .MuiChip-label": {
+                                                  px: { xs: 0.5, sm: 1 },
+                                                  fontSize: {
+                                                    xs: "0.6rem",
+                                                    sm: "0.7rem",
+                                                  },
+                                                },
                                               }}
                                             />
                                           </TableCell>
@@ -1257,21 +1215,29 @@ export default function ClassReportList() {
                                                 evaluation?.handwriting !==
                                                   "লিখেনি" ? (
                                                   <DrawIcon
-                                                    sx={{ color: "#00BFA6" }}
+                                                    sx={{
+                                                      color: "#00BFA6",
+                                                      fontSize:
+                                                        "14px !important",
+                                                    }}
                                                   />
                                                 ) : (
                                                   <BlockIcon
-                                                    sx={{ color: "#FF1744" }}
+                                                    sx={{
+                                                      color: "#FF1744",
+                                                      fontSize:
+                                                        "14px !important",
+                                                    }}
                                                   />
                                                 )
                                               }
                                               label={
-                                                evaluation?.handwriting ||
-                                                "Not Submitted"
+                                                evaluation?.handwriting || "N/A"
                                               }
                                               size="small"
                                               sx={{
                                                 fontWeight: 500,
+                                                height: { xs: 20, sm: 24 },
                                                 color:
                                                   evaluation?.handwriting &&
                                                   evaluation?.handwriting !==
@@ -1284,13 +1250,14 @@ export default function ClassReportList() {
                                                     "লিখেনি"
                                                     ? "#E0F7FA"
                                                     : "#FFEBEE",
-                                                border: `1px solid ${
-                                                  evaluation?.handwriting &&
-                                                  evaluation?.handwriting !==
-                                                    "লিখেনি"
-                                                    ? "#00BFA6"
-                                                    : "#FF1744"
-                                                }`,
+                                                border: `1px solid ${evaluation?.handwriting && evaluation?.handwriting !== "লিখেনি" ? "#00BFA6" : "#FF1744"}`,
+                                                "& .MuiChip-label": {
+                                                  px: { xs: 0.5, sm: 1 },
+                                                  fontSize: {
+                                                    xs: "0.6rem",
+                                                    sm: "0.7rem",
+                                                  },
+                                                },
                                               }}
                                             />
                                           </TableCell>
@@ -1298,13 +1265,22 @@ export default function ClassReportList() {
                                             {evaluation?.parentSignature &&
                                             evaluation?.parentSignature !==
                                               "" ? (
-                                              <CheckCircleIcon color="success" />
+                                              <CheckCircleIcon
+                                                color="success"
+                                                sx={{
+                                                  fontSize: { xs: 16, sm: 20 },
+                                                }}
+                                              />
                                             ) : (
-                                              <CancelIcon color="error" />
+                                              <CancelIcon
+                                                color="error"
+                                                sx={{
+                                                  fontSize: { xs: 16, sm: 20 },
+                                                }}
+                                              />
                                             )}
                                           </TableCell>
-                                          <TableCell sx={{ py: 1.5 }}>
-                                            {/* Enhanced Comments Display */}
+                                          <TableCell>
                                             {hasComment ? (
                                               <Box
                                                 sx={{
@@ -1316,17 +1292,31 @@ export default function ClassReportList() {
                                                   ),
                                                   color:
                                                     theme.palette.warning.main,
-                                                  px: 1.5,
-                                                  py: 0.5,
+                                                  px: { xs: 0.75, sm: 1 },
+                                                  py: 0.25,
                                                   borderRadius: 1,
                                                   fontWeight: 600,
-                                                  fontSize: "0.8125rem",
-                                                  maxWidth: 200,
+                                                  fontSize: {
+                                                    xs: "0.62rem",
+                                                    sm: "0.72rem",
+                                                  },
+                                                  maxWidth: {
+                                                    xs: 90,
+                                                    sm: 140,
+                                                    md: 180,
+                                                  },
                                                   border: `1px solid ${alpha(theme.palette.warning.main, 0.3)}`,
                                                 }}
                                               >
                                                 <CommentIcon
-                                                  sx={{ fontSize: 14, mr: 0.5 }}
+                                                  sx={{
+                                                    fontSize: {
+                                                      xs: 11,
+                                                      sm: 13,
+                                                    },
+                                                    mr: 0.5,
+                                                    flexShrink: 0,
+                                                  }}
                                                 />
                                                 <Typography
                                                   variant="caption"
@@ -1334,7 +1324,10 @@ export default function ClassReportList() {
                                                     overflow: "hidden",
                                                     textOverflow: "ellipsis",
                                                     whiteSpace: "nowrap",
-                                                    maxWidth: 150,
+                                                    fontSize: {
+                                                      xs: "0.6rem",
+                                                      sm: "0.7rem",
+                                                    },
                                                   }}
                                                   title={evaluation.comments}
                                                 >
@@ -1345,8 +1338,14 @@ export default function ClassReportList() {
                                               <Typography
                                                 variant="caption"
                                                 color="text.secondary"
+                                                sx={{
+                                                  fontSize: {
+                                                    xs: "0.6rem",
+                                                    sm: "0.7rem",
+                                                  },
+                                                }}
                                               >
-                                                No comments
+                                                —
                                               </Typography>
                                             )}
                                           </TableCell>
@@ -1354,7 +1353,8 @@ export default function ClassReportList() {
                                             <Box
                                               sx={{
                                                 display: "flex",
-                                                justifyContent: "flex-end",
+                                                alignItems: "center",
+                                                gap: 0.5,
                                               }}
                                             >
                                               {!isMobile && (
@@ -1365,7 +1365,7 @@ export default function ClassReportList() {
                                                     target="_blank"
                                                     rel="noreferrer"
                                                   >
-                                                    <Download />
+                                                    <Download fontSize="small" />
                                                   </a>
                                                   <Tooltip title="View Details">
                                                     <IconButton
@@ -1377,8 +1377,21 @@ export default function ClassReportList() {
                                                           evaluation,
                                                         )
                                                       }
+                                                      sx={{
+                                                        p: {
+                                                          xs: 0.5,
+                                                          sm: 0.75,
+                                                        },
+                                                      }}
                                                     >
-                                                      <VisibilityIcon fontSize="small" />
+                                                      <VisibilityIcon
+                                                        sx={{
+                                                          fontSize: {
+                                                            xs: 15,
+                                                            sm: 18,
+                                                          },
+                                                        }}
+                                                      />
                                                     </IconButton>
                                                   </Tooltip>
                                                   <Tooltip title="Edit Report">
@@ -1393,7 +1406,10 @@ export default function ClassReportList() {
                                                             .main,
                                                           0.1,
                                                         ),
-                                                        mr: 1,
+                                                        p: {
+                                                          xs: 0.5,
+                                                          sm: 0.75,
+                                                        },
                                                         "&:hover": {
                                                           bgcolor: alpha(
                                                             theme.palette
@@ -1401,12 +1417,7 @@ export default function ClassReportList() {
                                                             0.2,
                                                           ),
                                                           transform:
-                                                            "translateY(-2px)",
-                                                          boxShadow: `0 4px 8px ${alpha(
-                                                            theme.palette
-                                                              .warning.main,
-                                                            0.2,
-                                                          )}`,
+                                                            "translateY(-1px)",
                                                         },
                                                         transition: "all 0.2s",
                                                       }}
@@ -1414,7 +1425,14 @@ export default function ClassReportList() {
                                                         e.stopPropagation()
                                                       }
                                                     >
-                                                      <EditIcon fontSize="small" />
+                                                      <EditIcon
+                                                        sx={{
+                                                          fontSize: {
+                                                            xs: 15,
+                                                            sm: 18,
+                                                          },
+                                                        }}
+                                                      />
                                                     </IconButton>
                                                   </Tooltip>
                                                 </>
@@ -1428,6 +1446,7 @@ export default function ClassReportList() {
                                                       theme.palette.error.main,
                                                       0.1,
                                                     ),
+                                                    p: { xs: 0.5, sm: 0.75 },
                                                     "&:hover": {
                                                       bgcolor: alpha(
                                                         theme.palette.error
@@ -1435,8 +1454,7 @@ export default function ClassReportList() {
                                                         0.2,
                                                       ),
                                                       transform:
-                                                        "translateY(-2px)",
-                                                      boxShadow: `0 4px 8px ${alpha(theme.palette.error.main, 0.2)}`,
+                                                        "translateY(-1px)",
                                                     },
                                                     transition: "all 0.2s",
                                                   }}
@@ -1444,7 +1462,14 @@ export default function ClassReportList() {
                                                     handleDeleteClick(e, report)
                                                   }
                                                 >
-                                                  <DeleteIcon fontSize="small" />
+                                                  <DeleteIcon
+                                                    sx={{
+                                                      fontSize: {
+                                                        xs: 15,
+                                                        sm: 18,
+                                                      },
+                                                    }}
+                                                  />
                                                 </IconButton>
                                               </Tooltip>
                                             </Box>
@@ -1461,12 +1486,12 @@ export default function ClassReportList() {
                               <TableCell
                                 colSpan={12}
                                 align="center"
-                                sx={{ py: 8 }}
+                                sx={{ py: 6 }}
                               >
                                 <Box
                                   sx={{
                                     textAlign: "center",
-                                    p: 4,
+                                    p: { xs: 2, sm: 4 },
                                     borderRadius: 2,
                                     bgcolor: alpha(
                                       theme.palette.primary.main,
@@ -1479,12 +1504,12 @@ export default function ClassReportList() {
                                     <>
                                       <CommentIcon
                                         sx={{
-                                          fontSize: 64,
+                                          fontSize: { xs: 40, sm: 64 },
                                           color: alpha(
                                             theme.palette.warning.main,
                                             0.3,
                                           ),
-                                          mb: 2,
+                                          mb: 1,
                                         }}
                                       />
                                       <Typography
@@ -1493,6 +1518,10 @@ export default function ClassReportList() {
                                         sx={{
                                           fontWeight: 600,
                                           color: theme.palette.warning.main,
+                                          fontSize: {
+                                            xs: "0.95rem",
+                                            sm: "1.1rem",
+                                          },
                                         }}
                                       >
                                         No reports with comments found
@@ -1501,26 +1530,30 @@ export default function ClassReportList() {
                                         variant="body2"
                                         color="text.secondary"
                                         sx={{
-                                          maxWidth: 400,
+                                          maxWidth: 380,
                                           mx: "auto",
                                           mb: 2,
+                                          fontSize: {
+                                            xs: "0.75rem",
+                                            sm: "0.875rem",
+                                          },
                                         }}
                                       >
                                         Try adjusting your search or other
-                                        filters, or turn off the comments filter
-                                        to see all records.
+                                        filters, or turn off the comments
+                                        filter.
                                       </Typography>
                                     </>
                                   ) : (
                                     <>
                                       <SearchIcon
                                         sx={{
-                                          fontSize: 64,
+                                          fontSize: { xs: 40, sm: 64 },
                                           color: alpha(
                                             theme.palette.primary.main,
                                             0.3,
                                           ),
-                                          mb: 2,
+                                          mb: 1,
                                         }}
                                       />
                                       <Typography
@@ -1529,6 +1562,10 @@ export default function ClassReportList() {
                                         sx={{
                                           fontWeight: 600,
                                           color: theme.palette.primary.main,
+                                          fontSize: {
+                                            xs: "0.95rem",
+                                            sm: "1.1rem",
+                                          },
                                         }}
                                       >
                                         No class reports found
@@ -1537,9 +1574,13 @@ export default function ClassReportList() {
                                         variant="body2"
                                         color="text.secondary"
                                         sx={{
-                                          maxWidth: 400,
+                                          maxWidth: 380,
                                           mx: "auto",
                                           mb: 2,
+                                          fontSize: {
+                                            xs: "0.75rem",
+                                            sm: "0.875rem",
+                                          },
                                         }}
                                       >
                                         Try adjusting your search or filter to
@@ -1552,6 +1593,7 @@ export default function ClassReportList() {
                                     color="primary"
                                     onClick={handleClearFilters}
                                     startIcon={<RefreshIcon />}
+                                    size={isMobile ? "small" : "medium"}
                                     sx={{ mt: 1 }}
                                   >
                                     Clear Filters
@@ -1562,54 +1604,65 @@ export default function ClassReportList() {
                           )}
                         </TableBody>
                       </Table>
-                    </div>
+                    </Box>
 
-                    {/* Updated Pagination Component */}
+                    {/* ── Pagination ── */}
                     <Box
                       sx={{
                         display: "flex",
+                        flexDirection: { xs: "column", sm: "row" },
                         justifyContent: "space-between",
-                        alignItems: "center",
-                        py: 3,
+                        alignItems: { xs: "flex-start", sm: "center" },
+                        gap: { xs: 1.5, sm: 0 },
+                        py: { xs: 2, sm: 3 },
                         px: 2,
                         borderTop: `1px solid ${alpha(theme.palette.divider, 0.7)}`,
                         bgcolor: alpha(theme.palette.secondary.main, 0.02),
                       }}
                     >
-                      <Typography variant="body2" color="text.secondary">
-                        Showing {(page - 1) * rowsPerPage + 1} to{" "}
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        sx={{ fontSize: { xs: "0.7rem", sm: "0.8rem" } }}
+                      >
+                        Showing {(page - 1) * rowsPerPage + 1}–
                         {Math.min(page * rowsPerPage, totalCount)} of{" "}
-                        {totalCount} entries
+                        {totalCount}
                         {filters.hasComments && (
                           <Chip
                             size="small"
                             icon={<CommentIcon />}
                             label="Comments Only"
                             color="warning"
-                            sx={{ ml: 1 }}
+                            sx={{
+                              ml: 1,
+                              height: 20,
+                              "& .MuiChip-label": { fontSize: "0.65rem" },
+                            }}
                           />
                         )}
                       </Typography>
-
                       <Pagination
                         count={totalPages}
                         page={page}
                         onChange={handleChangePage}
                         color="secondary"
-                        size="large"
+                        size={isMobile ? "small" : "large"}
                         showFirstButton
                         showLastButton
                         sx={{
                           "& .MuiPaginationItem-root": {
                             fontWeight: 500,
                             border: `1px solid ${alpha(theme.palette.secondary.main, 0.2)}`,
+                            fontSize: { xs: "0.7rem", sm: "0.85rem" },
+                            minWidth: { xs: 28, sm: 36 },
+                            height: { xs: 28, sm: 36 },
                             "&:hover": {
                               bgcolor: alpha(
                                 theme.palette.secondary.main,
                                 0.08,
                               ),
                               transform: "translateY(-1px)",
-                              boxShadow: `0 2px 8px ${alpha(theme.palette.secondary.main, 0.15)}`,
                             },
                             transition: "all 0.2s ease",
                           },
@@ -1617,9 +1670,6 @@ export default function ClassReportList() {
                             fontWeight: 600,
                             bgcolor: `${theme.palette.secondary.main} !important`,
                             color: "white",
-                            "&:hover": {
-                              bgcolor: `${theme.palette.secondary.dark} !important`,
-                            },
                           },
                         }}
                       />
@@ -1632,7 +1682,6 @@ export default function ClassReportList() {
         </Container>
       </Box>
 
-      {/* Date Range Picker Dialog */}
       {typeof window !== "undefined" && (
         <DateRangePicker
           open={dateRangePickerOpen}
@@ -1642,7 +1691,6 @@ export default function ClassReportList() {
         />
       )}
 
-      {/* Delete Confirmation Dialog */}
       <Dialog
         open={deleteDialogOpen}
         onClose={handleDeleteCancel}
@@ -1650,27 +1698,34 @@ export default function ClassReportList() {
           sx: {
             borderRadius: 3,
             width: "100%",
-            maxWidth: 480,
+            maxWidth: { xs: "92vw", sm: 480 },
           },
         }}
       >
         <DialogTitle sx={{ pb: 1 }}>
-          <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
+          <Typography
+            variant="h6"
+            component="div"
+            sx={{ fontWeight: 600, fontSize: { xs: "1rem", sm: "1.1rem" } }}
+          >
             Delete Class Report
           </Typography>
         </DialogTitle>
         <DialogContent>
-          <DialogContentText>
+          <DialogContentText
+            sx={{ fontSize: { xs: "0.8rem", sm: "0.875rem" } }}
+          >
             Are you sure you want to delete this class report? This action
             cannot be undone.
           </DialogContentText>
         </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 3 }}>
+        <DialogActions sx={{ px: 3, pb: 3, gap: 1 }}>
           <Button
             onClick={handleDeleteCancel}
             variant="outlined"
             color="inherit"
-            sx={{ borderColor: "rgba(0, 0, 0, 0.12)" }}
+            size={isMobile ? "small" : "medium"}
+            sx={{ borderColor: "rgba(0,0,0,0.12)" }}
           >
             Cancel
           </Button>
@@ -1678,14 +1733,13 @@ export default function ClassReportList() {
             onClick={handleDeleteConfirm}
             variant="contained"
             color="error"
-            sx={{ ml: 2 }}
+            size={isMobile ? "small" : "medium"}
           >
             Delete
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* Details Modal */}
       <ClassReportDetailsModal
         open={detailsModalOpen}
         onClose={handleCloseDetailsModal}
