@@ -1,41 +1,42 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 import {
-  Box,
-  Grid,
-  Button,
+  AccountBalanceWallet,
+  AccountCircle,
+  AccountTree,
+  AttachMoney,
+  Balance,
+  CreditCard,
+  DateRange,
+  Download,
+  ExpandMore,
+  MoneyOff,
+  Receipt,
+  Savings,
+  ShowChart,
+  TrendingDown,
+  TrendingUp,
+} from "@mui/icons-material";
+import {
   Accordion,
-  AccordionSummary,
   AccordionDetails,
+  AccordionSummary,
+  Box,
+  Button,
+  Grid,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableRow,
   Typography,
+  useMediaQuery,
   useTheme,
 } from "@mui/material";
-import {
-  AccountBalanceWallet,
-  DateRange,
-  Download,
-  ExpandMore,
-  Receipt,
-  AttachMoney,
-  MoneyOff,
-  AccountTree,
-  Balance,
-  TrendingUp,
-  TrendingDown,
-  ShowChart,
-  Savings,
-  CreditCard,
-  AccountCircle,
-} from "@mui/icons-material";
 import { AccountingCard } from "./AccountingCard";
+import { CashFlowSummary } from "./CashFlowSummary";
 import { EquationCheck } from "./EquationCheck";
 import { FinancialHealthMeter } from "./FinancialHealthMeter";
-import { CashFlowSummary } from "./CashFlowSummary";
 
 const GradientTypography = ({ variant, children, gradient, sx = {} }: any) => {
   const theme = useTheme();
@@ -67,47 +68,102 @@ export const AccountingTab = ({
   onCardClick,
 }: any) => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isExtraSmall = useMediaQuery("(max-width:380px)");
 
   if (!accountingStats) return null;
 
   return (
-    <Box sx={{ mb: 4 }}>
+    <Box sx={{ mb: { xs: 2, sm: 3, md: 4 } }}>
+      {/* Header Section */}
       <Box
         sx={{
           display: "flex",
-          alignItems: "center",
+          alignItems: { xs: "flex-start", sm: "center" },
           justifyContent: "space-between",
-          mb: 3,
+          mb: { xs: 2, sm: 2.5, md: 3 },
+          flexDirection: { xs: "column", sm: "row" },
+          gap: { xs: 1.5, sm: 0 },
         }}
       >
         <GradientTypography
           variant="h4"
-          sx={{ display: "flex", alignItems: "center" }}
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            fontSize: { xs: "1.25rem", sm: "1.5rem", md: "2rem" },
+          }}
         >
-          <AccountBalanceWallet sx={{ mr: 1.5 }} />
+          <AccountBalanceWallet
+            sx={{
+              mr: 1.5,
+              fontSize: { xs: "1.25rem", sm: "1.5rem", md: "2rem" },
+            }}
+          />
           Accounting Overview
         </GradientTypography>
 
-        <Box>
-          <Button startIcon={<DateRange />} sx={{ mr: 1 }}>
-            Date Filter
+        <Box sx={{ display: "flex", gap: 1 }}>
+          <Button
+            startIcon={<DateRange />}
+            sx={{
+              mr: { xs: 0, sm: 0 },
+              px: { xs: 1.5, sm: 2 },
+              py: { xs: 0.75, sm: 1 },
+              fontSize: { xs: "0.7rem", sm: "0.875rem" },
+              minWidth: { xs: "auto", sm: "auto" },
+            }}
+            size="small"
+            variant="outlined"
+          >
+            {isExtraSmall ? (
+              <DateRange sx={{ fontSize: "0.9rem" }} />
+            ) : isMobile ? (
+              "Filter"
+            ) : (
+              "Date Filter"
+            )}
           </Button>
-          <Button startIcon={<Download />}>Export Report</Button>
+          <Button
+            startIcon={<Download />}
+            sx={{
+              px: { xs: 1.5, sm: 2 },
+              py: { xs: 0.75, sm: 1 },
+              fontSize: { xs: "0.7rem", sm: "0.875rem" },
+              minWidth: { xs: "auto", sm: "auto" },
+            }}
+            size="small"
+            variant="outlined"
+          >
+            {isExtraSmall ? (
+              <Download sx={{ fontSize: "0.9rem" }} />
+            ) : isMobile ? (
+              "Export"
+            ) : (
+              "Export Report"
+            )}
+          </Button>
         </Box>
       </Box>
 
       {/* Equation Check */}
-      <EquationCheck
-        assets={accountingStats.equationAssets}
-        liabilities={accountingStats.equationLiabilities}
-        equity={accountingStats.equationEquity}
-        isValid={accountingStats.equationValid}
-        loading={accountingLoading}
-      />
+      <Box sx={{ mb: { xs: 2, sm: 3 } }}>
+        <EquationCheck
+          assets={accountingStats.equationAssets}
+          liabilities={accountingStats.equationLiabilities}
+          equity={accountingStats.equationEquity}
+          isValid={accountingStats.equationValid}
+          loading={accountingLoading}
+        />
+      </Box>
 
-      {/* Financial Summary Cards */}
-      <Grid container spacing={3} sx={{ mb: 3 }}>
-        <Grid item xs={12} md={4}>
+      {/* Financial Summary Cards - 2 per row on mobile */}
+      <Grid
+        container
+        spacing={{ xs: 1.5, sm: 2, md: 3 }}
+        sx={{ mb: { xs: 2, sm: 3 } }}
+      >
+        <Grid item xs={12} sm={6} md={4}>
           <AccountingCard
             title="Total Income"
             value={`৳${accountingStats.totalIncome?.toLocaleString()}`}
@@ -116,10 +172,10 @@ export const AccountingTab = ({
             subValue={`৳${accountingStats.breakdown.totalAdmissionFee?.toLocaleString()}`}
             subTitle="From Admissions"
             loading={accountingLoading}
-            onClick={() => onCardClick("income")}
+            onClick={() => onCardClick?.("income")}
           />
         </Grid>
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} sm={6} md={4}>
           <AccountingCard
             title="Total Expenses"
             value={`৳${accountingStats.totalExpense?.toLocaleString()}`}
@@ -128,10 +184,10 @@ export const AccountingTab = ({
             subValue={`৳${accountingStats.breakdown.totalSalary?.toLocaleString()}`}
             subTitle="In Salaries"
             loading={accountingLoading}
-            onClick={() => onCardClick("expenses")}
+            onClick={() => onCardClick?.("expenses")}
           />
         </Grid>
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} sm={12} md={4}>
           <AccountingCard
             title="Net Profit"
             value={`৳${accountingStats.netProfit?.toLocaleString()}`}
@@ -140,13 +196,17 @@ export const AccountingTab = ({
             subValue={`${Math.round((accountingStats.netProfit / accountingStats.totalIncome) * 100)}%`}
             subTitle="Profit Margin"
             loading={accountingLoading}
-            onClick={() => onCardClick("profit")}
+            onClick={() => onCardClick?.("profit")}
           />
         </Grid>
       </Grid>
 
       {/* Financial Health and Cash Flow */}
-      <Grid container spacing={3} sx={{ mb: 3 }}>
+      <Grid
+        container
+        spacing={{ xs: 1.5, sm: 2, md: 3 }}
+        sx={{ mb: { xs: 2, sm: 3 } }}
+      >
         <Grid item xs={12} md={6}>
           <FinancialHealthMeter
             income={accountingStats.totalIncome}
@@ -165,9 +225,13 @@ export const AccountingTab = ({
         </Grid>
       </Grid>
 
-      {/* Assets, Liabilities, Equity */}
-      <Grid container spacing={3} sx={{ mb: 3 }}>
-        <Grid item xs={12} md={4}>
+      {/* Assets, Liabilities, Equity - 2 per row on mobile */}
+      <Grid
+        container
+        spacing={{ xs: 1.5, sm: 2, md: 3 }}
+        sx={{ mb: { xs: 2, sm: 3 } }}
+      >
+        <Grid item xs={12} sm={6} md={4}>
           <AccountingCard
             title="Total Assets"
             value={`৳${accountingStats.assets?.toLocaleString()}`}
@@ -176,10 +240,10 @@ export const AccountingTab = ({
             subValue={`৳${accountingStats.details.assets?.investments?.toLocaleString()}`}
             subTitle="In Investments"
             loading={accountingLoading}
-            onClick={() => onCardClick("assets")}
+            onClick={() => onCardClick?.("assets")}
           />
         </Grid>
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} sm={6} md={4}>
           <AccountingCard
             title="Total Liabilities"
             value={`৳${accountingStats.liabilities?.toLocaleString()}`}
@@ -188,10 +252,10 @@ export const AccountingTab = ({
             subValue={`৳${accountingStats.breakdown.outstandingTakenLoans?.toLocaleString()}`}
             subTitle="Outstanding Loans"
             loading={accountingLoading}
-            onClick={() => onCardClick("liabilities")}
+            onClick={() => onCardClick?.("liabilities")}
           />
         </Grid>
-        <Grid item xs={12} md={4}>
+        <Grid item xs={12} sm={12} md={4}>
           <AccountingCard
             title="Total Equity"
             value={`৳${accountingStats.equity?.toLocaleString()}`}
@@ -200,50 +264,128 @@ export const AccountingTab = ({
             subValue={`৳${accountingStats.details.equity?.capital?.toLocaleString()}`}
             subTitle="Capital"
             loading={accountingLoading}
-            onClick={() => onCardClick("equity")}
+            onClick={() => onCardClick?.("equity")}
           />
         </Grid>
       </Grid>
 
-      {/* Detailed Breakdown */}
+      {/* Detailed Breakdown Accordion */}
       <Accordion
         sx={{
-          mb: 3,
-          borderRadius: 3,
+          mb: { xs: 2, sm: 3 },
+          borderRadius: { xs: 2, sm: 3 },
           overflow: "hidden",
           bgcolor: "rgba(255, 255, 255, 0.8)",
           backdropFilter: "blur(10px)",
+          "&:before": { display: "none" },
+          boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
         }}
       >
-        <AccordionSummary expandIcon={<ExpandMore />}>
+        <AccordionSummary
+          expandIcon={<ExpandMore />}
+          sx={{
+            px: { xs: 1.5, sm: 2, md: 3 },
+            py: { xs: 1, sm: 1.5 },
+            minHeight: { xs: 48, sm: 64 },
+            "& .MuiAccordionSummary-content": {
+              my: { xs: 0.5, sm: 1 },
+            },
+          }}
+        >
           <Box sx={{ display: "flex", alignItems: "center" }}>
-            <Receipt sx={{ mr: 1.5, color: "primary.main" }} />
-            <Typography variant="h6">Detailed Financial Breakdown</Typography>
+            <Receipt
+              sx={{
+                mr: 1.5,
+                color: "primary.main",
+                fontSize: { xs: "1.25rem", sm: "1.5rem" },
+              }}
+            />
+            <Typography
+              variant="h6"
+              sx={{
+                fontSize: { xs: "0.9rem", sm: "1.1rem", md: "1.25rem" },
+                fontWeight: 600,
+              }}
+            >
+              Detailed Financial Breakdown
+            </Typography>
           </Box>
         </AccordionSummary>
-        <AccordionDetails>
-          <Grid container spacing={3}>
+        <AccordionDetails sx={{ p: { xs: 1.5, sm: 2, md: 3 } }}>
+          <Grid container spacing={{ xs: 2, sm: 3 }}>
+            {/* Income Details */}
             <Grid item xs={12} md={6}>
               <Typography
                 variant="subtitle1"
-                sx={{ mb: 2, display: "flex", alignItems: "center" }}
+                sx={{
+                  mb: { xs: 1.5, sm: 2 },
+                  display: "flex",
+                  alignItems: "center",
+                  fontSize: { xs: "0.85rem", sm: "1rem" },
+                  fontWeight: 600,
+                }}
               >
-                <AttachMoney sx={{ mr: 1, color: "success.main" }} /> Income
-                Details
+                <AttachMoney
+                  sx={{
+                    mr: 1,
+                    color: "success.main",
+                    fontSize: { xs: "1rem", sm: "1.25rem" },
+                  }}
+                />
+                Income Details
               </Typography>
-              <TableContainer>
+              <TableContainer
+                sx={{
+                  borderRadius: 2,
+                  border: "1px solid",
+                  borderColor: "divider",
+                  overflowX: "auto",
+                }}
+              >
                 <Table size="small">
                   <TableBody>
-                    <TableRow>
-                      <TableCell>Total Admission Fees</TableCell>
-                      <TableCell align="right">
+                    <TableRow hover>
+                      <TableCell
+                        sx={{
+                          py: { xs: 0.75, sm: 1.5 },
+                          fontSize: { xs: "0.7rem", sm: "0.875rem" },
+                          fontWeight: 500,
+                        }}
+                      >
+                        Total Admission Fees
+                      </TableCell>
+                      <TableCell
+                        align="right"
+                        sx={{
+                          py: { xs: 0.75, sm: 1.5 },
+                          fontSize: { xs: "0.7rem", sm: "0.875rem" },
+                          fontFamily: "monospace",
+                          fontWeight: 500,
+                        }}
+                      >
                         ৳
                         {accountingStats.breakdown.totalAdmissionFee?.toLocaleString()}
                       </TableCell>
                     </TableRow>
-                    <TableRow>
-                      <TableCell>Other Income</TableCell>
-                      <TableCell align="right">
+                    <TableRow hover>
+                      <TableCell
+                        sx={{
+                          py: { xs: 0.75, sm: 1.5 },
+                          fontSize: { xs: "0.7rem", sm: "0.875rem" },
+                          fontWeight: 500,
+                        }}
+                      >
+                        Other Income
+                      </TableCell>
+                      <TableCell
+                        align="right"
+                        sx={{
+                          py: { xs: 0.75, sm: 1.5 },
+                          fontSize: { xs: "0.7rem", sm: "0.875rem" },
+                          fontFamily: "monospace",
+                          fontWeight: 500,
+                        }}
+                      >
                         ৳
                         {(
                           accountingStats.totalIncome -
@@ -252,12 +394,30 @@ export const AccountingTab = ({
                       </TableCell>
                     </TableRow>
                     <TableRow
-                      sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                      hover
+                      sx={{
+                        "&:last-child td, &:last-child th": { border: 0 },
+                        bgcolor: "action.hover",
+                      }}
                     >
-                      <TableCell>
+                      <TableCell
+                        sx={{
+                          py: { xs: 0.75, sm: 1.5 },
+                          fontWeight: "bold",
+                          fontSize: { xs: "0.75rem", sm: "0.9rem" },
+                        }}
+                      >
                         <strong>Total Income</strong>
                       </TableCell>
-                      <TableCell align="right">
+                      <TableCell
+                        align="right"
+                        sx={{
+                          py: { xs: 0.75, sm: 1.5 },
+                          fontWeight: "bold",
+                          fontSize: { xs: "0.75rem", sm: "0.9rem" },
+                          fontFamily: "monospace",
+                        }}
+                      >
                         <strong>
                           ৳{accountingStats.totalIncome?.toLocaleString()}
                         </strong>
@@ -268,26 +428,79 @@ export const AccountingTab = ({
               </TableContainer>
             </Grid>
 
+            {/* Expense Details */}
             <Grid item xs={12} md={6}>
               <Typography
                 variant="subtitle1"
-                sx={{ mb: 2, display: "flex", alignItems: "center" }}
+                sx={{
+                  mb: { xs: 1.5, sm: 2 },
+                  display: "flex",
+                  alignItems: "center",
+                  fontSize: { xs: "0.85rem", sm: "1rem" },
+                  fontWeight: 600,
+                }}
               >
-                <MoneyOff sx={{ mr: 1, color: "error.main" }} /> Expense Details
+                <MoneyOff
+                  sx={{
+                    mr: 1,
+                    color: "error.main",
+                    fontSize: { xs: "1rem", sm: "1.25rem" },
+                  }}
+                />
+                Expense Details
               </Typography>
-              <TableContainer>
+              <TableContainer
+                sx={{
+                  borderRadius: 2,
+                  border: "1px solid",
+                  borderColor: "divider",
+                  overflowX: "auto",
+                }}
+              >
                 <Table size="small">
                   <TableBody>
-                    <TableRow>
-                      <TableCell>Salaries</TableCell>
-                      <TableCell align="right">
+                    <TableRow hover>
+                      <TableCell
+                        sx={{
+                          py: { xs: 0.75, sm: 1.5 },
+                          fontSize: { xs: "0.7rem", sm: "0.875rem" },
+                          fontWeight: 500,
+                        }}
+                      >
+                        Salaries
+                      </TableCell>
+                      <TableCell
+                        align="right"
+                        sx={{
+                          py: { xs: 0.75, sm: 1.5 },
+                          fontSize: { xs: "0.7rem", sm: "0.875rem" },
+                          fontFamily: "monospace",
+                          fontWeight: 500,
+                        }}
+                      >
                         ৳
                         {accountingStats.breakdown.totalSalary?.toLocaleString()}
                       </TableCell>
                     </TableRow>
-                    <TableRow>
-                      <TableCell>Other Expenses</TableCell>
-                      <TableCell align="right">
+                    <TableRow hover>
+                      <TableCell
+                        sx={{
+                          py: { xs: 0.75, sm: 1.5 },
+                          fontSize: { xs: "0.7rem", sm: "0.875rem" },
+                          fontWeight: 500,
+                        }}
+                      >
+                        Other Expenses
+                      </TableCell>
+                      <TableCell
+                        align="right"
+                        sx={{
+                          py: { xs: 0.75, sm: 1.5 },
+                          fontSize: { xs: "0.7rem", sm: "0.875rem" },
+                          fontFamily: "monospace",
+                          fontWeight: 500,
+                        }}
+                      >
                         ৳
                         {(
                           accountingStats.totalExpense -
@@ -296,12 +509,30 @@ export const AccountingTab = ({
                       </TableCell>
                     </TableRow>
                     <TableRow
-                      sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                      hover
+                      sx={{
+                        "&:last-child td, &:last-child th": { border: 0 },
+                        bgcolor: "action.hover",
+                      }}
                     >
-                      <TableCell>
+                      <TableCell
+                        sx={{
+                          py: { xs: 0.75, sm: 1.5 },
+                          fontWeight: "bold",
+                          fontSize: { xs: "0.75rem", sm: "0.9rem" },
+                        }}
+                      >
                         <strong>Total Expenses</strong>
                       </TableCell>
-                      <TableCell align="right">
+                      <TableCell
+                        align="right"
+                        sx={{
+                          py: { xs: 0.75, sm: 1.5 },
+                          fontWeight: "bold",
+                          fontSize: { xs: "0.75rem", sm: "0.9rem" },
+                          fontFamily: "monospace",
+                        }}
+                      >
                         <strong>
                           ৳{accountingStats.totalExpense?.toLocaleString()}
                         </strong>
@@ -312,52 +543,154 @@ export const AccountingTab = ({
               </TableContainer>
             </Grid>
 
+            {/* Assets Breakdown */}
             <Grid item xs={12} md={6}>
               <Typography
                 variant="subtitle1"
-                sx={{ mb: 2, display: "flex", alignItems: "center" }}
+                sx={{
+                  mb: { xs: 1.5, sm: 2 },
+                  display: "flex",
+                  alignItems: "center",
+                  fontSize: { xs: "0.85rem", sm: "1rem" },
+                  fontWeight: 600,
+                }}
               >
-                <AccountTree sx={{ mr: 1, color: "primary.main" }} /> Assets
-                Breakdown
+                <AccountTree
+                  sx={{
+                    mr: 1,
+                    color: "primary.main",
+                    fontSize: { xs: "1rem", sm: "1.25rem" },
+                  }}
+                />
+                Assets Breakdown
               </Typography>
-              <TableContainer>
+              <TableContainer
+                sx={{
+                  borderRadius: 2,
+                  border: "1px solid",
+                  borderColor: "divider",
+                  overflowX: "auto",
+                }}
+              >
                 <Table size="small">
                   <TableBody>
-                    <TableRow>
-                      <TableCell>Cash</TableCell>
-                      <TableCell align="right">
+                    <TableRow hover>
+                      <TableCell
+                        sx={{
+                          py: { xs: 0.75, sm: 1.5 },
+                          fontSize: { xs: "0.7rem", sm: "0.875rem" },
+                          fontWeight: 500,
+                        }}
+                      >
+                        Cash
+                      </TableCell>
+                      <TableCell
+                        align="right"
+                        sx={{
+                          py: { xs: 0.75, sm: 1.5 },
+                          fontSize: { xs: "0.7rem", sm: "0.875rem" },
+                          fontFamily: "monospace",
+                          fontWeight: 500,
+                        }}
+                      >
                         ৳
                         {accountingStats.details.assets?.cash?.toLocaleString()}
                       </TableCell>
                     </TableRow>
-                    <TableRow>
-                      <TableCell>Accounts Receivable</TableCell>
-                      <TableCell align="right">
+                    <TableRow hover>
+                      <TableCell
+                        sx={{
+                          py: { xs: 0.75, sm: 1.5 },
+                          fontSize: { xs: "0.7rem", sm: "0.875rem" },
+                          fontWeight: 500,
+                        }}
+                      >
+                        Accounts Receivable
+                      </TableCell>
+                      <TableCell
+                        align="right"
+                        sx={{
+                          py: { xs: 0.75, sm: 1.5 },
+                          fontSize: { xs: "0.7rem", sm: "0.875rem" },
+                          fontFamily: "monospace",
+                          fontWeight: 500,
+                        }}
+                      >
                         ৳
                         {accountingStats.details.assets?.accountsReceivable?.toLocaleString()}
                       </TableCell>
                     </TableRow>
-                    <TableRow>
-                      <TableCell>Investments</TableCell>
-                      <TableCell align="right">
+                    <TableRow hover>
+                      <TableCell
+                        sx={{
+                          py: { xs: 0.75, sm: 1.5 },
+                          fontSize: { xs: "0.7rem", sm: "0.875rem" },
+                          fontWeight: 500,
+                        }}
+                      >
+                        Investments
+                      </TableCell>
+                      <TableCell
+                        align="right"
+                        sx={{
+                          py: { xs: 0.75, sm: 1.5 },
+                          fontSize: { xs: "0.7rem", sm: "0.875rem" },
+                          fontFamily: "monospace",
+                          fontWeight: 500,
+                        }}
+                      >
                         ৳
                         {accountingStats.details.assets?.investments?.toLocaleString()}
                       </TableCell>
                     </TableRow>
-                    <TableRow>
-                      <TableCell>Fixed Assets</TableCell>
-                      <TableCell align="right">
+                    <TableRow hover>
+                      <TableCell
+                        sx={{
+                          py: { xs: 0.75, sm: 1.5 },
+                          fontSize: { xs: "0.7rem", sm: "0.875rem" },
+                          fontWeight: 500,
+                        }}
+                      >
+                        Fixed Assets
+                      </TableCell>
+                      <TableCell
+                        align="right"
+                        sx={{
+                          py: { xs: 0.75, sm: 1.5 },
+                          fontSize: { xs: "0.7rem", sm: "0.875rem" },
+                          fontFamily: "monospace",
+                          fontWeight: 500,
+                        }}
+                      >
                         ৳
                         {accountingStats.details.assets?.fixedAssets?.toLocaleString()}
                       </TableCell>
                     </TableRow>
                     <TableRow
-                      sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                      hover
+                      sx={{
+                        "&:last-child td, &:last-child th": { border: 0 },
+                        bgcolor: "action.hover",
+                      }}
                     >
-                      <TableCell>
+                      <TableCell
+                        sx={{
+                          py: { xs: 0.75, sm: 1.5 },
+                          fontWeight: "bold",
+                          fontSize: { xs: "0.75rem", sm: "0.9rem" },
+                        }}
+                      >
                         <strong>Total Assets</strong>
                       </TableCell>
-                      <TableCell align="right">
+                      <TableCell
+                        align="right"
+                        sx={{
+                          py: { xs: 0.75, sm: 1.5 },
+                          fontWeight: "bold",
+                          fontSize: { xs: "0.75rem", sm: "0.9rem" },
+                          fontFamily: "monospace",
+                        }}
+                      >
                         <strong>
                           ৳{accountingStats.assets?.toLocaleString()}
                         </strong>
@@ -368,62 +701,180 @@ export const AccountingTab = ({
               </TableContainer>
             </Grid>
 
+            {/* Liabilities & Equity Breakdown */}
             <Grid item xs={12} md={6}>
               <Typography
                 variant="subtitle1"
-                sx={{ mb: 2, display: "flex", alignItems: "center" }}
+                sx={{
+                  mb: { xs: 1.5, sm: 2 },
+                  display: "flex",
+                  alignItems: "center",
+                  fontSize: { xs: "0.85rem", sm: "1rem" },
+                  fontWeight: 600,
+                }}
               >
-                <Balance sx={{ mr: 1, color: "warning.main" }} /> Liabilities &
-                Equity
+                <Balance
+                  sx={{
+                    mr: 1,
+                    color: "warning.main",
+                    fontSize: { xs: "1rem", sm: "1.25rem" },
+                  }}
+                />
+                Liabilities & Equity
               </Typography>
-              <TableContainer>
+              <TableContainer
+                sx={{
+                  borderRadius: 2,
+                  border: "1px solid",
+                  borderColor: "divider",
+                  overflowX: "auto",
+                }}
+              >
                 <Table size="small">
                   <TableBody>
-                    <TableRow>
-                      <TableCell>Accounts Payable</TableCell>
-                      <TableCell align="right">
+                    <TableRow hover>
+                      <TableCell
+                        sx={{
+                          py: { xs: 0.75, sm: 1.5 },
+                          fontSize: { xs: "0.7rem", sm: "0.875rem" },
+                          fontWeight: 500,
+                        }}
+                      >
+                        Accounts Payable
+                      </TableCell>
+                      <TableCell
+                        align="right"
+                        sx={{
+                          py: { xs: 0.75, sm: 1.5 },
+                          fontSize: { xs: "0.7rem", sm: "0.875rem" },
+                          fontFamily: "monospace",
+                          fontWeight: 500,
+                        }}
+                      >
                         ৳
                         {accountingStats.details.liabilities?.accountsPayable?.toLocaleString()}
                       </TableCell>
                     </TableRow>
-                    <TableRow>
-                      <TableCell>Loans</TableCell>
-                      <TableCell align="right">
+                    <TableRow hover>
+                      <TableCell
+                        sx={{
+                          py: { xs: 0.75, sm: 1.5 },
+                          fontSize: { xs: "0.7rem", sm: "0.875rem" },
+                          fontWeight: 500,
+                        }}
+                      >
+                        Loans
+                      </TableCell>
+                      <TableCell
+                        align="right"
+                        sx={{
+                          py: { xs: 0.75, sm: 1.5 },
+                          fontSize: { xs: "0.7rem", sm: "0.875rem" },
+                          fontFamily: "monospace",
+                          fontWeight: 500,
+                        }}
+                      >
                         ৳
                         {accountingStats.details.liabilities?.loans?.toLocaleString()}
                       </TableCell>
                     </TableRow>
-                    <TableRow>
-                      <TableCell>Other Liabilities</TableCell>
-                      <TableCell align="right">
+                    <TableRow hover>
+                      <TableCell
+                        sx={{
+                          py: { xs: 0.75, sm: 1.5 },
+                          fontSize: { xs: "0.7rem", sm: "0.875rem" },
+                          fontWeight: 500,
+                        }}
+                      >
+                        Other Liabilities
+                      </TableCell>
+                      <TableCell
+                        align="right"
+                        sx={{
+                          py: { xs: 0.75, sm: 1.5 },
+                          fontSize: { xs: "0.7rem", sm: "0.875rem" },
+                          fontFamily: "monospace",
+                          fontWeight: 500,
+                        }}
+                      >
                         ৳
                         {accountingStats.details.liabilities?.otherLiabilities?.toLocaleString()}
                       </TableCell>
                     </TableRow>
                     <TableRow>
-                      <TableCell colSpan={2} sx={{ py: 1 }}></TableCell>
+                      <TableCell colSpan={2} sx={{ py: { xs: 0.5, sm: 1 } }} />
                     </TableRow>
-                    <TableRow>
-                      <TableCell>Capital</TableCell>
-                      <TableCell align="right">
+                    <TableRow hover>
+                      <TableCell
+                        sx={{
+                          py: { xs: 0.75, sm: 1.5 },
+                          fontSize: { xs: "0.7rem", sm: "0.875rem" },
+                          fontWeight: 500,
+                        }}
+                      >
+                        Capital
+                      </TableCell>
+                      <TableCell
+                        align="right"
+                        sx={{
+                          py: { xs: 0.75, sm: 1.5 },
+                          fontSize: { xs: "0.7rem", sm: "0.875rem" },
+                          fontFamily: "monospace",
+                          fontWeight: 500,
+                        }}
+                      >
                         ৳
                         {accountingStats.details.equity?.capital?.toLocaleString()}
                       </TableCell>
                     </TableRow>
-                    <TableRow>
-                      <TableCell>Retained Earnings</TableCell>
-                      <TableCell align="right">
+                    <TableRow hover>
+                      <TableCell
+                        sx={{
+                          py: { xs: 0.75, sm: 1.5 },
+                          fontSize: { xs: "0.7rem", sm: "0.875rem" },
+                          fontWeight: 500,
+                        }}
+                      >
+                        Retained Earnings
+                      </TableCell>
+                      <TableCell
+                        align="right"
+                        sx={{
+                          py: { xs: 0.75, sm: 1.5 },
+                          fontSize: { xs: "0.7rem", sm: "0.875rem" },
+                          fontFamily: "monospace",
+                          fontWeight: 500,
+                        }}
+                      >
                         ৳
                         {accountingStats.details.equity?.retainedEarnings?.toLocaleString()}
                       </TableCell>
                     </TableRow>
                     <TableRow
-                      sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                      hover
+                      sx={{
+                        "&:last-child td, &:last-child th": { border: 0 },
+                        bgcolor: "action.hover",
+                      }}
                     >
-                      <TableCell>
+                      <TableCell
+                        sx={{
+                          py: { xs: 0.75, sm: 1.5 },
+                          fontWeight: "bold",
+                          fontSize: { xs: "0.75rem", sm: "0.9rem" },
+                        }}
+                      >
                         <strong>Total Liabilities & Equity</strong>
                       </TableCell>
-                      <TableCell align="right">
+                      <TableCell
+                        align="right"
+                        sx={{
+                          py: { xs: 0.75, sm: 1.5 },
+                          fontWeight: "bold",
+                          fontSize: { xs: "0.75rem", sm: "0.9rem" },
+                          fontFamily: "monospace",
+                        }}
+                      >
                         <strong>
                           ৳
                           {(

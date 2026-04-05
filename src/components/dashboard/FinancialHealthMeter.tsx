@@ -8,6 +8,7 @@ import {
   Chip,
   CircularProgress,
   useTheme,
+  useMediaQuery,
 } from "@mui/material";
 import { BarChart } from "@mui/icons-material";
 import { GlassCard } from "@/style/customStyle";
@@ -19,6 +20,8 @@ export const FinancialHealthMeter = ({
   loading = false,
 }: any) => {
   const theme = useTheme();
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+
   const profitMargin = income > 0 ? (profit / income) * 100 : 0;
   let healthStatus = "Excellent";
   let healthColor = theme.palette.success.main;
@@ -34,12 +37,29 @@ export const FinancialHealthMeter = ({
     healthColor = theme.palette.info.main;
   }
 
+  // Responsive donut size
+  const donutSize = isMobile ? 90 : 120;
+  const donutThickness = isMobile ? 3.5 : 4;
+
   return (
     <GlassCard sx={{ height: "100%" }}>
-      <CardContent sx={{ p: 3 }}>
-        <Box sx={{ display: "flex", alignItems: "center", mb: 3 }}>
-          <BarChart sx={{ mr: 1.5, color: "primary.main" }} />
-          <Typography variant="h6" component="div">
+      <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
+        {/* Header */}
+        <Box
+          sx={{ display: "flex", alignItems: "center", mb: { xs: 2, sm: 3 } }}
+        >
+          <BarChart
+            sx={{
+              mr: 1.5,
+              color: "primary.main",
+              fontSize: { xs: 20, sm: 24 },
+            }}
+          />
+          <Typography
+            variant={isMobile ? "subtitle1" : "h6"}
+            component="div"
+            sx={{ fontWeight: 700 }}
+          >
             Financial Health
           </Typography>
         </Box>
@@ -50,13 +70,20 @@ export const FinancialHealthMeter = ({
           </Box>
         ) : (
           <>
-            <Box sx={{ display: "flex", justifyContent: "center", mb: 3 }}>
+            {/* Donut Chart — responsive size */}
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "center",
+                mb: { xs: 2, sm: 3 },
+              }}
+            >
               <Box sx={{ position: "relative", display: "inline-flex" }}>
                 <CircularProgress
                   variant="determinate"
                   value={profitMargin > 100 ? 100 : profitMargin}
-                  size={120}
-                  thickness={4}
+                  size={donutSize}
+                  thickness={donutThickness}
                   sx={{ color: healthColor }}
                 />
                 <Box
@@ -73,16 +100,19 @@ export const FinancialHealthMeter = ({
                   }}
                 >
                   <Typography
-                    variant="h6"
                     component="div"
-                    sx={{ fontWeight: 800 }}
+                    sx={{
+                      fontWeight: 800,
+                      fontSize: { xs: "0.9rem", sm: "1.1rem" },
+                      lineHeight: 1.2,
+                    }}
                   >
                     {profitMargin.toFixed(1)}%
                   </Typography>
                   <Typography
-                    variant="caption"
                     component="div"
                     color="text.secondary"
+                    sx={{ fontSize: { xs: "0.6rem", sm: "0.7rem" } }}
                   >
                     Margin
                   </Typography>
@@ -90,7 +120,8 @@ export const FinancialHealthMeter = ({
               </Box>
             </Box>
 
-            <Box sx={{ textAlign: "center", mb: 2 }}>
+            {/* Health Status Chip */}
+            <Box sx={{ textAlign: "center", mb: { xs: 2, sm: 3 } }}>
               <Chip
                 label={healthStatus}
                 color={
@@ -102,38 +133,61 @@ export const FinancialHealthMeter = ({
                         ? "warning"
                         : "error"
                 }
-                sx={{ fontWeight: 700 }}
+                sx={{
+                  fontWeight: 700,
+                  fontSize: { xs: "0.75rem", sm: "0.8rem" },
+                  height: { xs: 26, sm: 32 },
+                }}
               />
             </Box>
 
-            <Box sx={{ mt: 3 }}>
-              <Typography
-                variant="body2"
-                gutterBottom
-                sx={{ display: "flex", justifyContent: "space-between" }}
-              >
-                <span>Income:</span>{" "}
-                <strong>৳{income?.toLocaleString()}</strong>
-              </Typography>
-              <Typography
-                variant="body2"
-                gutterBottom
-                sx={{ display: "flex", justifyContent: "space-between" }}
-              >
-                <span>Expenses:</span>{" "}
-                <strong>৳{expenses?.toLocaleString()}</strong>
-              </Typography>
-              <Divider sx={{ my: 1.5 }} />
+            {/* Stats Rows */}
+            <Box sx={{ mt: { xs: 1, sm: 3 } }}>
               <Typography
                 variant="body2"
                 gutterBottom
                 sx={{
                   display: "flex",
                   justifyContent: "space-between",
-                  fontWeight: 800,
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                  gap: 0.5,
+                  fontSize: { xs: "0.78rem", sm: "0.875rem" },
                 }}
               >
-                <span>Profit:</span>{" "}
+                <span>Income:</span>
+                <strong>৳{income?.toLocaleString()}</strong>
+              </Typography>
+              <Typography
+                variant="body2"
+                gutterBottom
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                  gap: 0.5,
+                  fontSize: { xs: "0.78rem", sm: "0.875rem" },
+                }}
+              >
+                <span>Expenses:</span>
+                <strong>৳{expenses?.toLocaleString()}</strong>
+              </Typography>
+              <Divider sx={{ my: { xs: 1, sm: 1.5 } }} />
+              <Typography
+                variant="body2"
+                gutterBottom
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                  gap: 0.5,
+                  fontWeight: 800,
+                  fontSize: { xs: "0.85rem", sm: "0.95rem" },
+                }}
+              >
+                <span>Profit:</span>
                 <strong>৳{profit?.toLocaleString()}</strong>
               </Typography>
             </Box>

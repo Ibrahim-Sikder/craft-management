@@ -1,56 +1,50 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable react/no-unescaped-entities */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
-import { AcademicTab } from "@/components/dashboard/AcademicTab";
 import { AccountingTab } from "@/components/dashboard/AccountingTab";
-import { ExamsTab } from "@/components/dashboard/ExamsTab";
 import { ModuleCard } from "@/components/dashboard/ModuleCard";
 import { OverviewTab } from "@/components/dashboard/OverviewTab";
-import { StaffTab } from "@/components/dashboard/StaffTab";
-import { StudentsTab } from "@/components/dashboard/StudentsTab";
 import {
   useGetAccountingReportQuery,
   useGetAllMetaQuery,
 } from "@/redux/api/metaApi";
 import {
   AccountBalanceWallet,
-  AccountBox,
+  AdminPanelSettings,
   Apartment,
-  CalendarMonth,
+  Assignment,
+  AutoStories,
+  Badge,
+  Campaign,
+  CollectionsBookmark,
   Dashboard as DashboardIcon,
-  Group,
-  Help,
-  Language,
+  EditNote,
+  EmojiEvents,
+  EventNote,
+  FactCheck,
+  ImportContacts,
   LocalPrintshop,
-  Logout,
   Menu as MenuIcon,
-  MonetizationOn,
-  NoteAlt,
-  Notifications,
+  Payment,
+  PeopleAlt,
+  Restaurant,
   School,
-  Search,
   Settings,
   Sms,
   VolunteerActivism,
+  Web,
   Work,
   WorkspacePremium,
 } from "@mui/icons-material";
 import {
   alpha,
-  Avatar,
-  Badge,
   Box,
-  Button,
-  Divider,
   Grid,
   IconButton,
-  InputAdornment,
-  Menu,
-  MenuItem,
   Paper,
   Tab,
   Tabs,
-  TextField,
   Typography,
   useMediaQuery,
   useTheme,
@@ -85,9 +79,11 @@ const GradientTypography = ({ variant, children, gradient, sx = {} }: any) => {
 export default function DashboardHome() {
   const router = useRouter();
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
+  const isMd = useMediaQuery(theme.breakpoints.down("md"));
+
   const [profileAnchorEl, setProfileAnchorEl] = useState(null);
-  const [sidebarOpen, setSidebarOpen] = useState(!isMobile);
+  const [sidebarOpen, setSidebarOpen] = useState(!isMd);
   const [activeTab, setActiveTab] = useState(0);
 
   const { data, isLoading } = useGetAllMetaQuery({});
@@ -100,11 +96,10 @@ export default function DashboardHome() {
   const handleProfileMenuOpen = (event: any) =>
     setProfileAnchorEl(event.currentTarget);
   const handleProfileMenuClose = () => setProfileAnchorEl(null);
-  const handleTabChange = (event: any, newValue: any) => setActiveTab(newValue);
-
+  const handleTabChange = (_event: any, newValue: any) =>
+    setActiveTab(newValue);
   const navigateToModule = (path: any) => router.push(path);
 
-  // Stats state
   const [stats, setStats] = useState({
     students: { total: 0, trend: "up", trendValue: 12 },
     teachers: { total: 0, trend: "up", trendValue: 8 },
@@ -143,7 +138,6 @@ export default function DashboardHome() {
     }
   }, [metaData]);
 
-  // Accounting stats from API
   const accountingStats = accountingReport
     ? {
         totalIncome: accountingReport.summary?.income,
@@ -162,105 +156,202 @@ export default function DashboardHome() {
       }
     : null;
 
-  // Modules data
   const modules = [
     {
-      title: "Manage Branch",
-      description: "Branch List, Update, Delete",
-      icon: <AccountBalanceWallet />,
+      title: "Dashboard",
+      description: "Overview",
+      icon: <DashboardIcon />,
       color: theme.palette.primary.main,
-      path: "/branch",
-    },
-    {
-      title: "Donation",
-      description: "Donor List, Update, Delete",
-      icon: <VolunteerActivism />,
-      color: "#FF5722",
-      path: "/donation",
-    },
-    {
-      title: "Certificate",
-      description: "Create Certificate, Update, Delete",
-      icon: <WorkspacePremium />,
-      color: "#FFC107",
-      path: "/certificate",
-    },
-    {
-      title: "Payroll",
-      description: "Teacher Salary Create, Update, Delete",
-      icon: <Work />,
-      color: "#2196F3",
-      path: "/payroll",
+      path: "/dashboard",
     },
     {
       title: "Website",
-      description: "Notice, Events, Blog, Contact",
-      icon: <Language />,
-      color: "#E91E63",
-      path: "/website",
+      description: "Notice, Events, Blog",
+      icon: <Web />,
+      color: "#2a52be",
+      path: "/dashboard/website",
+    },
+    {
+      title: "Admissions",
+      description: "Enrollments",
+      icon: <EditNote />,
+      color: "#5D4037",
+      path: "/dashboard/enrollments/list",
     },
     {
       title: "Academic",
-      description: "Class, Batch, Student, Attendance",
+      description: "Class, Batch, Attendance",
       icon: <School />,
-      color: "#4CAF50",
-      path: "/academic",
+      color: "#0F9D58",
+      path: "/dashboard/academic",
     },
     {
-      title: "Exam",
-      description: "Grading, Exam, Result, Marksheet",
-      icon: <NoteAlt />,
-      color: "#FF9800",
-      path: "/exam",
+      title: "Hifz Program",
+      description: "Daily Reports",
+      icon: <AutoStories />,
+      color: "#9C27B0",
+      path: "/dashboard/hifz/class/list",
     },
     {
-      title: "Accounting",
-      description: "Income, Expense, Transactions, Reports",
-      icon: <AccountBalanceWallet />,
-      color: "#009688",
-      path: "/accounting",
+      title: "Ampara",
+      description: "Daily & Weekly",
+      icon: <ImportContacts />,
+      color: "#2E7D32",
+      path: "/dashboard/ampara/daily-report/list",
     },
     {
-      title: "Fees",
-      description: "Fee, Discounts, Fine, Collection",
-      icon: <MonetizationOn />,
-      color: "#8BC34A",
-      path: "/fees",
+      title: "Nazera",
+      description: "Daily & Weekly",
+      icon: <ImportContacts />,
+      color: "#FF6B35",
+      path: "/dashboard/nazera/daily-report/list",
     },
     {
-      title: "Print",
-      description: "ID Card, Admit Card, Result",
-      icon: <LocalPrintshop />,
-      color: "#F44336",
-      path: "/print",
+      title: "Qaida/Noorani",
+      description: "Daily & Weekly",
+      icon: <CollectionsBookmark />,
+      color: "#00ACC1",
+      path: "/dashboard/qaida-noorani/daily-report/list",
     },
     {
-      title: "SMS",
-      description: "Send SMS and notice to teachers, students",
-      icon: <Sms />,
-      color: "#3F51B5",
-      path: "/sms",
+      title: "Teachers",
+      description: "Manage Teachers",
+      icon: <Work />,
+      color: "#FF5722",
+      path: "/dashboard/teacher/list",
+    },
+    {
+      title: "Staff",
+      description: "Staff List",
+      icon: <Badge />,
+      color: "#7B1FA2",
+      path: "/dashboard/staff/list",
+    },
+    {
+      title: "Students",
+      description: "Student List",
+      icon: <PeopleAlt />,
+      color: "#1976D2",
+      path: "/dashboard/student/list",
     },
     {
       title: "Attendance",
-      description: "Manage Attendance, Send attendance SMS",
-      icon: <CalendarMonth />,
-      color: "#9C27B0",
-      path: "/attendance",
+      description: "Manage, Send SMS",
+      icon: <EventNote />,
+      color: "#FFA000",
+      path: "/dashboard/attendance",
+    },
+    {
+      title: "Communications",
+      description: "Notice, Feedback",
+      icon: <Campaign />,
+      color: "#7B1FA2",
+      path: "/dashboard/notice-board",
+    },
+    {
+      title: "Meal Mgmt",
+      description: "Daily Meal Reports",
+      icon: <Restaurant />,
+      color: "#E91E63",
+      path: "/dashboard/daily-meal-report",
+    },
+    {
+      title: "Fees",
+      description: "Fee Collections",
+      icon: <Payment />,
+      color: "#009688",
+      path: "/dashboard/fees/list",
+    },
+    {
+      title: "Homework",
+      description: "Assign & Manage",
+      icon: <Assignment />,
+      color: "#FF9800",
+      path: "/dashboard/home-work",
+    },
+    {
+      title: "Examinations",
+      description: "Grading, Exams",
+      icon: <FactCheck />,
+      color: "#673AB7",
+      path: "/dashboard/exams",
+    },
+    {
+      title: "Results",
+      description: "View, Download",
+      icon: <EmojiEvents />,
+      color: "#0097A7",
+      path: "/dashboard/results",
+    },
+    {
+      title: "Accounting",
+      description: "Income, Expense",
+      icon: <AccountBalanceWallet />,
+      color: "#2E7D32",
+      path: "/dashboard/accounting/income",
+    },
+    {
+      title: "Payroll",
+      description: "Salary Management",
+      icon: <Work />,
+      color: "#1565C0",
+      path: "/dashboard/payroll",
+    },
+    {
+      title: "Donation",
+      description: "Donor List",
+      icon: <VolunteerActivism />,
+      color: "#FF5722",
+      path: "/dashboard/donation",
+    },
+    {
+      title: "Certificate",
+      description: "Create, Update",
+      icon: <WorkspacePremium />,
+      color: "#FFC107",
+      path: "/dashboard/certificate",
+    },
+    {
+      title: "Print",
+      description: "ID Card, Admit Card",
+      icon: <LocalPrintshop />,
+      color: "#F44336",
+      path: "/dashboard/print",
+    },
+    {
+      title: "SMS",
+      description: "Send SMS",
+      icon: <Sms />,
+      color: "#3F51B5",
+      path: "/dashboard/sms",
     },
     {
       title: "Department",
-      description: "Faculty And Department",
+      description: "Faculty & Dept",
       icon: <Apartment />,
       color: "#607D8B",
-      path: "/department",
+      path: "/dashboard/department",
+    },
+    {
+      title: "User Mgmt",
+      description: "Users & Permissions",
+      icon: <AdminPanelSettings />,
+      color: "#546E7A",
+      path: "/dashboard/user-management",
+    },
+    {
+      title: "Settings",
+      description: "Database, Security",
+      icon: <Settings />,
+      color: "#37474F",
+      path: "/dashboard/database-backup",
     },
   ];
 
   const currentDate = new Date().toLocaleDateString("en-US", {
-    weekday: "long",
+    weekday: isMobile ? "short" : "long",
     year: "numeric",
-    month: "long",
+    month: isMobile ? "short" : "long",
     day: "numeric",
   });
 
@@ -270,16 +361,16 @@ export default function DashboardHome() {
         minHeight: "100vh",
         background: `linear-gradient(135deg, ${alpha(theme.palette.primary.light, 0.15)} 0%, ${alpha(theme.palette.background.default, 0.8)} 100%)`,
         borderRadius: { xs: 0, md: 6 },
-        p: { xs: 1, sm: 3 },
+        p: { xs: 1, sm: 2, md: 3 },
         position: "relative",
         overflow: "hidden",
         "&::before": {
           content: '""',
           position: "absolute",
-          width: "300px",
-          height: "300px",
-          top: "-100px",
-          right: "-100px",
+          width: { xs: "120px", md: "300px" },
+          height: { xs: "120px", md: "300px" },
+          top: "-60px",
+          right: "-60px",
           borderRadius: "50%",
           background: `radial-gradient(${alpha(theme.palette.primary.light, 0.2)} 0%, transparent 70%)`,
           zIndex: 0,
@@ -287,135 +378,79 @@ export default function DashboardHome() {
         "&::after": {
           content: '""',
           position: "absolute",
-          width: "200px",
-          height: "200px",
-          bottom: "-50px",
-          left: "-50px",
+          width: { xs: "100px", md: "200px" },
+          height: { xs: "100px", md: "200px" },
+          bottom: "-40px",
+          left: "-40px",
           borderRadius: "50%",
           background: `radial-gradient(${alpha(theme.palette.secondary.light, 0.2)} 0%, transparent 70%)`,
           zIndex: 0,
         },
       }}
     >
-      {/* Header */}
       <Box sx={{ position: "relative", zIndex: 2 }}>
+        {/* ── Header ── */}
         <Box
           sx={{
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
-            mb: 4,
+            mb: { xs: 2, sm: 3, md: 4 },
+            gap: 1,
+            flexWrap: "nowrap",
           }}
         >
-          <Box sx={{ display: "flex", alignItems: "center" }}>
+          {/* Left: hamburger + title */}
+          <Box
+            sx={{ display: "flex", alignItems: "center", minWidth: 0, flex: 1 }}
+          >
             <IconButton
               onClick={toggleSidebar}
-              sx={{ mr: 2, display: { md: "none" }, color: "primary.main" }}
+              size={isMobile ? "small" : "medium"}
+              sx={{
+                mr: 1,
+                display: { md: "none" },
+                color: "primary.main",
+                flexShrink: 0,
+              }}
             >
               <MenuIcon />
             </IconButton>
-            <Box>
+            <Box sx={{ minWidth: 0 }}>
               <GradientTypography
                 variant="h3"
-                sx={{ fontSize: { xs: "1.8rem", md: "2.5rem" } }}
+                sx={{
+                  fontSize: {
+                    xs: "0.9rem",
+                    sm: "1.2rem",
+                    md: "1.75rem",
+                    lg: "2.2rem",
+                  },
+                  lineHeight: 1.2,
+                  whiteSpace: { xs: "nowrap", sm: "normal" },
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                }}
               >
-                Craft International Institute Dashboard
+                {isMobile
+                  ? "CI Dashboard"
+                  : "Craft International Institute Dashboard"}
               </GradientTypography>
               <Typography
-                variant="body1"
+                variant="body2"
                 color="text.secondary"
-                sx={{ mt: 0.5 }}
+                sx={{ mt: 0.25, fontSize: { xs: "0.65rem", sm: "0.8rem" } }}
               >
                 {currentDate}
               </Typography>
             </Box>
           </Box>
-
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <TextField
-              size="small"
-              placeholder="Search..."
-              variant="outlined"
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <Search color="action" />
-                  </InputAdornment>
-                ),
-                sx: {
-                  borderRadius: 3,
-                  bgcolor: "background.paper",
-                  width: { xs: 150, sm: 250 },
-                },
-              }}
-            />
-            <IconButton
-              sx={{
-                borderRadius: 3,
-                bgcolor: alpha(theme.palette.primary.main, 0.1),
-                color: theme.palette.primary.main,
-              }}
-            >
-              <Badge badgeContent={4} color="error">
-                <Notifications />
-              </Badge>
-            </IconButton>
-            <Button
-              onClick={handleProfileMenuOpen}
-              sx={{
-                display: "flex",
-                alignItems: "center",
-                gap: 1,
-                px: { xs: 1, sm: 2 },
-                py: 1,
-                borderRadius: 3,
-                bgcolor: alpha(theme.palette.primary.main, 0.1),
-                color: theme.palette.primary.main,
-              }}
-            >
-              <Avatar
-                sx={{
-                  width: 32,
-                  height: 32,
-                  bgcolor: theme.palette.primary.main,
-                }}
-              >
-                CI
-              </Avatar>
-              <Box sx={{ display: { xs: "none", sm: "block" } }}>
-                <Typography variant="body2" fontWeight="medium">
-                  Craft International
-                </Typography>
-                <Typography variant="caption" color="text.secondary">
-                  Administrator
-                </Typography>
-              </Box>
-            </Button>
-            <Menu
-              anchorEl={profileAnchorEl}
-              open={Boolean(profileAnchorEl)}
-              onClose={handleProfileMenuClose}
-              PaperProps={{ sx: { mt: 1.5, borderRadius: 2, minWidth: 180 } }}
-            >
-              <MenuItem onClick={handleProfileMenuClose}>
-                <AccountBox fontSize="small" sx={{ mr: 1 }} /> Profile
-              </MenuItem>
-              <MenuItem onClick={handleProfileMenuClose}>
-                <Settings fontSize="small" sx={{ mr: 1 }} /> Settings
-              </MenuItem>
-              <MenuItem onClick={handleProfileMenuClose}>
-                <Help fontSize="small" sx={{ mr: 1 }} /> Help Center
-              </MenuItem>
-              <Divider />
-              <MenuItem onClick={handleProfileMenuClose}>
-                <Logout fontSize="small" sx={{ mr: 1 }} /> Logout
-              </MenuItem>
-            </Menu>
-          </Box>
         </Box>
 
-        {/* Tabs */}
-        <Paper sx={{ borderRadius: 3, mb: 4, overflow: "hidden" }}>
+        {/* ── Tabs ── */}
+        <Paper
+          sx={{ borderRadius: 3, mb: { xs: 2, sm: 3 }, overflow: "hidden" }}
+        >
           <Tabs
             value={activeTab}
             onChange={handleTabChange}
@@ -423,20 +458,34 @@ export default function DashboardHome() {
             scrollButtons="auto"
             sx={{
               bgcolor: alpha(theme.palette.primary.main, 0.05),
-              "& .MuiTab-root": { fontWeight: 600, minHeight: 60 },
+              minHeight: { xs: 44, sm: 56 },
+              "& .MuiTab-root": {
+                fontWeight: 600,
+                minHeight: { xs: 44, sm: 56 },
+                fontSize: { xs: "0.72rem", sm: "0.85rem" },
+                px: { xs: 1.5, sm: 2.5 },
+                gap: { xs: 0.5, sm: 1 },
+                "& .MuiTab-iconWrapper": {
+                  fontSize: { xs: "1rem", sm: "1.25rem" },
+                },
+              },
               "& .Mui-selected": { color: theme.palette.primary.main },
             }}
           >
-            <Tab icon={<DashboardIcon />} label="Overview" />
-            <Tab icon={<AccountBalanceWallet />} label="Accounting" />
-            <Tab icon={<School />} label="Academic" />
-            <Tab icon={<Group />} label="Students" />
-            <Tab icon={<Work />} label="Staff" />
-            <Tab icon={<NoteAlt />} label="Exams" />
+            <Tab
+              icon={<DashboardIcon />}
+              iconPosition="start"
+              label="Overview"
+            />
+            <Tab
+              icon={<AccountBalanceWallet />}
+              iconPosition="start"
+              label="Accounting"
+            />
           </Tabs>
         </Paper>
 
-        {/* Tab Panels */}
+        {/* ── Tab Panels ── */}
         {activeTab === 0 && <OverviewTab stats={stats} isLoading={isLoading} />}
         {activeTab === 1 && (
           <AccountingTab
@@ -444,23 +493,31 @@ export default function DashboardHome() {
             accountingLoading={accountingLoading}
           />
         )}
-        {activeTab === 2 && <AcademicTab />}
-        {activeTab === 3 && <StudentsTab />}
-        {activeTab === 4 && <StaffTab />}
-        {activeTab === 5 && <ExamsTab />}
 
-        {/* Modules Grid */}
+        {/* ── Quick Access Modules ── */}
         <Box sx={{ mb: 2 }}>
           <GradientTypography
             variant="h4"
-            sx={{ mb: 3, display: "flex", alignItems: "center" }}
+            sx={{
+              mb: { xs: 1.5, sm: 2.5 },
+              display: "flex",
+              alignItems: "center",
+              fontSize: { xs: "1rem", sm: "1.25rem", md: "1.75rem" },
+            }}
           >
-            <DashboardIcon sx={{ mr: 1.5 }} />
+            <DashboardIcon
+              sx={{
+                mr: 1,
+                fontSize: { xs: "1rem", sm: "1.25rem", md: "1.75rem" },
+              }}
+            />
             Quick Access Modules
           </GradientTypography>
-          <Grid container spacing={3}>
+
+          {/* xs=6 → 2 cols mobile | sm=4 → 3 cols tablet | md=3 → 4 cols desktop */}
+          <Grid container spacing={{ xs: 1, sm: 1.5, md: 2 }}>
             {modules.map((module, index) => (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={index}>
+              <Grid item xs={6} sm={4} md={3} lg={2} key={index}>
                 <ModuleCard
                   title={module.title}
                   description={module.description}

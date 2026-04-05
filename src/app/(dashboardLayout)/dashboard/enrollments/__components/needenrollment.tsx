@@ -18,10 +18,7 @@
 //   useUpdateEnrollmentMutation,
 // } from "@/redux/api/enrollmentApi";
 // import { useGetAllStudentsQuery } from "@/redux/api/studentApi";
-// import {
-//   useGetAllAdmissionApplicationsQuery,
-//   useGetSingleAdmissionApplicationQuery,
-// } from "@/redux/api/admissionApplication";
+// import { useGetAllAdmissionApplicationsQuery } from "@/redux/api/admissionApplication";
 // import {
 //   AccessTime,
 //   AccountCircle,
@@ -52,6 +49,8 @@
 //   Print,
 //   Assignment,
 //   FileCopy,
+//   WhatsApp,
+//   School as EducationIcon,
 // } from "@mui/icons-material";
 // import {
 //   Alert,
@@ -1339,7 +1338,7 @@
 //                                             parseFloat(e.target.value),
 //                                           )
 //                                         }
-//                                         sx={{ width: 80 }}
+//                                         sx={{ width: 150 }}
 //                                       />
 //                                       <Button
 //                                         size="small"
@@ -1793,6 +1792,36 @@
 //           size="medium"
 //           margin="none"
 //           fullWidth
+//           label="WhatsApp"
+//           name="fatherWhatsapp"
+//           placeholder="WhatsApp Number"
+//           InputProps={{
+//             startAdornment: (
+//               <WhatsApp sx={{ color: "text.secondary", mr: 1 }} />
+//             ),
+//           }}
+//         />
+//       </Grid>
+//       <Grid item xs={12} md={4}>
+//         <CraftInputWithIcon
+//           size="medium"
+//           margin="none"
+//           fullWidth
+//           label="Education"
+//           name="fatherEducation"
+//           placeholder="Education"
+//           InputProps={{
+//             startAdornment: (
+//               <EducationIcon sx={{ color: "text.secondary", mr: 1 }} />
+//             ),
+//           }}
+//         />
+//       </Grid>
+//       <Grid item xs={12} md={4}>
+//         <CraftInputWithIcon
+//           size="medium"
+//           margin="none"
+//           fullWidth
 //           label={
 //             <span>
 //               Mother's Name English <span style={{ color: "red" }}>*</span>
@@ -1882,6 +1911,36 @@
 //           size="medium"
 //           margin="none"
 //           fullWidth
+//           label="WhatsApp"
+//           name="motherWhatsapp"
+//           placeholder="WhatsApp Number"
+//           InputProps={{
+//             startAdornment: (
+//               <WhatsApp sx={{ color: "text.secondary", mr: 1 }} />
+//             ),
+//           }}
+//         />
+//       </Grid>
+//       <Grid item xs={12} md={4}>
+//         <CraftInputWithIcon
+//           size="medium"
+//           margin="none"
+//           fullWidth
+//           label="Education"
+//           name="motherEducation"
+//           placeholder="Education"
+//           InputProps={{
+//             startAdornment: (
+//               <EducationIcon sx={{ color: "text.secondary", mr: 1 }} />
+//             ),
+//           }}
+//         />
+//       </Grid>
+//       <Grid item xs={12} md={4}>
+//         <CraftInputWithIcon
+//           size="medium"
+//           margin="none"
+//           fullWidth
 //           label="Guardian Name"
 //           name="guardianName"
 //           placeholder="Guardian Name"
@@ -1913,6 +1972,34 @@
 //           placeholder="01XXXXXXXXX"
 //           InputProps={{
 //             startAdornment: <Phone sx={{ color: "text.secondary", mr: 1 }} />,
+//           }}
+//         />
+//       </Grid>
+//       <Grid item xs={12} md={4}>
+//         <CraftInputWithIcon
+//           size="medium"
+//           margin="none"
+//           fullWidth
+//           label="WhatsApp"
+//           name="guardianWhatsapp"
+//           placeholder="WhatsApp Number"
+//           InputProps={{
+//             startAdornment: (
+//               <WhatsApp sx={{ color: "text.secondary", mr: 1 }} />
+//             ),
+//           }}
+//         />
+//       </Grid>
+//       <Grid item xs={12} md={4}>
+//         <CraftInputWithIcon
+//           size="medium"
+//           margin="none"
+//           fullWidth
+//           label="Profession"
+//           name="guardianProfession"
+//           placeholder="Profession"
+//           InputProps={{
+//             startAdornment: <Work sx={{ color: "text.secondary", mr: 1 }} />,
 //           }}
 //         />
 //       </Grid>
@@ -2608,7 +2695,6 @@
 //   const formattedClass = formatClassForForm(studentInfo.class);
 
 //   return {
-//     // ... existing fields
 //     studentId: application.applicationId || "",
 //     studentNameBangla: studentInfo.nameBangla || "",
 //     studentPhoto: studentInfo.studentPhoto || "",
@@ -2633,16 +2719,25 @@
 //     fatherName: fatherInfo.nameEnglish || "",
 //     fatherNameBangla: fatherInfo.nameBangla || "",
 //     fatherMobile: fatherInfo.mobile || "",
-//     fatherNid: "",
+//     fatherNid: fatherInfo.nid || "",
 //     fatherProfession: fatherInfo.profession || "",
-//     fatherIncome: 0,
+//     fatherIncome: fatherInfo.income || 0,
+//     fatherWhatsapp: fatherInfo.whatsapp || "",
+//     fatherEducation: fatherInfo.education || "",
 //     motherName: motherInfo.nameEnglish || "",
 //     motherNameBangla: motherInfo.nameBangla || "",
 //     motherMobile: motherInfo.mobile || "",
-//     motherNid: "",
+//     motherNid: motherInfo.nid || "",
 //     motherProfession: motherInfo.profession || "",
-//     motherIncome: 0,
-//     // Address fields
+//     motherIncome: motherInfo.income || 0,
+//     motherWhatsapp: motherInfo.whatsapp || "",
+//     motherEducation: motherInfo.education || "",
+//     guardianName: guardianInfo.nameEnglish || "",
+//     guardianRelation: guardianInfo.relation || "",
+//     guardianMobile: guardianInfo.mobile || "",
+//     guardianWhatsapp: guardianInfo.whatsapp || "",
+//     guardianProfession: guardianInfo.profession || "",
+//     guardianVillage: guardianInfo.address || "",
 //     village: presentAddress.village || "",
 //     postOffice: presentAddress.postOffice || "",
 //     postCode: presentAddress.postCode || "",
@@ -2653,20 +2748,14 @@
 //     permPostCode: permanentAddress.postCode || "",
 //     permPoliceStation: permanentAddress.policeStation || "",
 //     permDistrict: permanentAddress.district || "",
-//     guardianName: guardianInfo.nameEnglish || "",
-//     guardianRelation: guardianInfo.relation || "",
-//     guardianMobile: guardianInfo.mobile || "",
-//     guardianVillage: "",
 //     formerInstitution: academicInfo.previousSchool || "",
 //     formerVillage: "",
-//     // Documents
 //     birthCertificate: documents.birthCertificate || false,
 //     transferCertificate: documents.transferCertificate || false,
 //     characterCertificate: documents.characterCertificate || false,
 //     markSheet: documents.markSheet || false,
 //     photographs: documents.photographs || false,
 //     termsAccepted: application.termsAccepted || false,
-//     // NEW: Family environment and behavior skills
 //     familyEnvironment: {
 //       halalIncome: familyEnvironment.halalIncome || "",
 //       parentsPrayer: familyEnvironment.parentsPrayer || "",
@@ -2686,7 +2775,6 @@
 //       religiousInterest: behaviorSkills.religiousInterest || "",
 //       angerControl: behaviorSkills.angerControl || "",
 //     },
-//     // Fee related
 //     fees: [
 //       { category: [], className: formattedClass, feeItems: [], feeAmount: "" },
 //     ],
@@ -2704,6 +2792,8 @@
 //     advanceBalance: 0,
 //   };
 // };
+// // ─── শুধু এই function টা replace করুন EnrollmentForm.tsx এ ───────────────────
+// // বাকি সব code একই থাকবে
 
 // const transformEnrollmentDataToForm = (
 //   enrollmentData: any,
@@ -2713,45 +2803,44 @@
 //   if (!enrollmentData?.data) return null;
 //   const data = enrollmentData.data;
 
+//   // ── data.student থেকে parent info নেওয়া হচ্ছে ──
+//   // API response এ parentInfo আছে দুই জায়গায়:
+//   //   1. data.parentInfo           (enrollment level)
+//   //   2. data.student.parentInfo   (student level — এটাই সব data ধরে)
+//   const parentInfo = data.parentInfo || data.student?.parentInfo || {};
+//   const fatherInfo = parentInfo.father || {};
+//   const motherInfo = parentInfo.mother || {};
+//   const guardianInfo = parentInfo.guardian || {};
+
+//   // ── class format helper ───────────────────────────────────────────────────
 //   const formatClassForForm = (classData: any) => {
 //     if (!classData || classData.length === 0) return [];
 //     if (Array.isArray(classData)) {
 //       return classData.map((cls: any) => {
+//         // cls হতে পারে object {_id, className} অথবা plain string
 //         const classId = cls._id || cls;
 //         const classNameValue = cls.className || cls;
-//         let matchedClass = classOptions?.find(
-//           (option: any) => option.value === classId,
-//         );
-//         if (!matchedClass)
-//           matchedClass = classOptions?.find(
-//             (option: any) => option.label === classNameValue,
-//           );
-//         if (!matchedClass)
-//           matchedClass = {
+//         let matched = classOptions?.find((o: any) => o.value === classId);
+//         if (!matched)
+//           matched = classOptions?.find((o: any) => o.label === classNameValue);
+//         if (!matched)
+//           matched = {
 //             label: classNameValue,
 //             name: classNameValue,
 //             value: classId,
 //           };
-//         return matchedClass;
+//         return matched;
 //       });
-//     } else {
-//       const classId = classData._id || classData;
-//       const classNameValue = classData.className || classData;
-//       let matchedClass = classOptions?.find(
-//         (option: any) => option.value === classId,
-//       );
-//       if (!matchedClass)
-//         matchedClass = classOptions?.find(
-//           (option: any) => option.label === classNameValue,
-//         );
-//       if (!matchedClass)
-//         matchedClass = {
-//           label: classNameValue,
-//           name: classNameValue,
-//           value: classId,
-//         };
-//       return [matchedClass];
 //     }
+//     // single object
+//     const classId = classData._id || classData;
+//     const classNameValue = classData.className || classData;
+//     let matched = classOptions?.find((o: any) => o.value === classId);
+//     if (!matched)
+//       matched = classOptions?.find((o: any) => o.label === classNameValue);
+//     if (!matched)
+//       matched = { label: classNameValue, name: classNameValue, value: classId };
+//     return [matched];
 //   };
 
 //   const formatDate = (dateString: string) => {
@@ -2763,17 +2852,35 @@
 //     }
 //   };
 
+//   // ── className: enrollment এ object, student এ populated object ────────────
+//   // data.className = { _id, className, ... }  (single object, not array)
+//   // so wrap in array for formatClassForForm
+//   const rawClassName = data.className
+//     ? Array.isArray(data.className)
+//       ? data.className
+//       : [data.className]
+//     : data.student?.className
+//       ? Array.isArray(data.student.className)
+//         ? data.student.className
+//         : [data.student.className]
+//       : [];
+
+//   const formattedClass = formatClassForForm(rawClassName);
+
 //   const MONTH_SET = new Set(MONTHS);
 //   const uniqueFeeItemsMap = new Map<string, any>();
 
-//   if (data.fees && Array.isArray(data.fees)) {
+//   const feesArray: any[] = data.student?.fees || data.fees || [];
+
+//   if (feesArray.length > 0) {
 //     const feeGroups = new Map<string, any[]>();
 
-//     data.fees.forEach((fee: any) => {
+//     feesArray.forEach((fee: any) => {
 //       let baseFeeType: string = fee.feeType || "";
 //       let isMonthlyFee = false;
-//       let month = null;
+//       let month: string | null = null;
 
+//       // detect "Monthly Fee - April" pattern
 //       const dashIdx = baseFeeType.lastIndexOf(" - ");
 //       if (dashIdx !== -1) {
 //         const possibleMonth = baseFeeType.slice(dashIdx + 3);
@@ -2785,9 +2892,12 @@
 //       }
 
 //       if (!feeGroups.has(baseFeeType)) feeGroups.set(baseFeeType, []);
-//       feeGroups
-//         .get(baseFeeType)!
-//         .push({ ...fee, originalFeeType: fee.feeType, month, isMonthlyFee });
+//       feeGroups.get(baseFeeType)!.push({
+//         ...fee,
+//         originalFeeType: fee.feeType,
+//         month,
+//         isMonthlyFee,
+//       });
 //     });
 
 //     feeGroups.forEach((fees, baseFeeType) => {
@@ -2799,6 +2909,7 @@
 //       let baseDiscount = firstFee.discount || 0;
 
 //       if (isMonthlyGroup && fees.length > 1) {
+//         // find most common discount (= base discount)
 //         const discountCounts: { [key: number]: number } = {};
 //         fees.forEach((f) => {
 //           const d = f.discount || 0;
@@ -2806,11 +2917,12 @@
 //         });
 //         let maxCount = 0;
 //         Object.entries(discountCounts).forEach(([discount, count]) => {
-//           if (count > maxCount) {
-//             maxCount = count;
+//           if ((count as number) > maxCount) {
+//             maxCount = count as number;
 //             baseDiscount = parseFloat(discount);
 //           }
 //         });
+//         // find range months (months with different discount)
 //         const rangeMonths: string[] = [];
 //         fees.forEach((f) => {
 //           if ((f.discount || 0) !== baseDiscount && f.month)
@@ -2820,10 +2932,8 @@
 //           rangeMonths.sort((a, b) => MONTHS.indexOf(a) - MONTHS.indexOf(b));
 //           discountRangeStart = rangeMonths[0];
 //           discountRangeEnd = rangeMonths[rangeMonths.length - 1];
-//           const rangeMonthFee = fees.find(
-//             (f) => f.month === discountRangeStart,
-//           );
-//           discountRangeAmount = rangeMonthFee?.discount || 0;
+//           discountRangeAmount =
+//             fees.find((f) => f.month === discountRangeStart)?.discount || 0;
 //         }
 //       }
 
@@ -2843,14 +2953,44 @@
 //   }
 
 //   const uniqueFeeItems = Array.from(uniqueFeeItemsMap.values());
-//   const formattedClass = formatClassForForm(data.className);
+
+//   // ── guardian info: check both enrollment and student level ────────────────
+//   const guardianName =
+//     data.guardianName ||
+//     guardianInfo.nameEnglish ||
+//     data.student?.guardianInfo?.name ||
+//     "";
+//   const guardianRelation =
+//     data.guardianRelation ||
+//     guardianInfo.relation ||
+//     data.student?.guardianInfo?.relation ||
+//     "";
+//   const guardianMobile =
+//     data.guardianMobile ||
+//     guardianInfo.mobile ||
+//     data.student?.guardianInfo?.mobile ||
+//     "";
+//   const guardianWhatsapp =
+//     data.guardianWhatsapp ||
+//     guardianInfo.whatsapp ||
+//     data.student?.guardianInfo?.whatsapp ||
+//     "";
+//   const guardianProfession =
+//     data.guardianProfession ||
+//     guardianInfo.profession ||
+//     data.student?.guardianInfo?.profession ||
+//     "";
+//   const guardianVillage =
+//     data.guardianVillage ||
+//     guardianInfo.address ||
+//     data.student?.guardianInfo?.address ||
+//     "";
 
 //   return {
+//     // ── Student basic ──────────────────────────────────────────────────────
 //     studentId: data.studentId || data.student?.studentId || "",
 //     studentNameBangla: data.nameBangla || data.student?.nameBangla || "",
 //     studentPhoto: data.studentPhoto || data.student?.studentPhoto || "",
-//     fatherNameBangla: data.fatherNameBangla || data.student?.fatherName || "",
-//     motherNameBangla: data.motherNameBangla || data.student?.motherName || "",
 //     studentName: data.studentName || data.student?.name || "",
 //     mobileNo: data.mobileNo || data.student?.mobile || "",
 //     session: data.session || new Date().getFullYear().toString(),
@@ -2864,59 +3004,131 @@
 //     bloodGroup: data.bloodGroup || data.student?.bloodGroup || "",
 //     nationality: data.nationality || "Bangladeshi",
 //     className: formattedClass,
-//     studentDepartment: data.studentDepartment || "hifz",
-//     rollNumber: data.roll || data.student?.studentClassRoll || "",
+//     studentDepartment:
+//       data.studentDepartment || data.student?.studentDepartment || "hifz",
+//     rollNumber:
+//       data.roll || data.rollNumber || data.student?.studentClassRoll || "",
 //     section: data.section || data.student?.section?.[0] || "",
 //     group: data.group || data.student?.batch || "",
 //     optionalSubject: data.optionalSubject || "",
-//     shift: data.shift || "",
+//     shift: data.shift || data.student?.session || "",
 //     admissionType: data.admissionType || "",
-//     fatherName: data.fatherName || data.student?.fatherName || "",
-//     fatherMobile: data.fatherMobile || "",
-//     fatherNid: data.fatherNid || "",
-//     fatherProfession: data.fatherProfession || "",
-//     fatherIncome: data.fatherIncome || data.student?.fatherIncome || 0,
-//     motherName: data.motherName || data.student?.motherName || "",
-//     motherMobile: data.motherMobile || "",
-//     motherNid: data.motherNid || "",
-//     motherProfession: data.motherProfession || "",
-//     motherIncome: data.motherIncome || data.student?.motherIncome || 0,
-//     village: data.presentAddress?.village || "",
-//     postOffice: data.presentAddress?.postOffice || "",
-//     postCode: data.presentAddress?.postCode || "",
-//     policeStation: data.presentAddress?.policeStation || "",
-//     district: data.presentAddress?.district || "",
-//     permVillage: data.permanentAddress?.village || "",
-//     permPostOffice: data.permanentAddress?.postOffice || "",
-//     permPostCode: data.permanentAddress?.postCode || "",
-//     permPoliceStation: data.permanentAddress?.policeStation || "",
-//     permDistrict: data.permanentAddress?.district || "",
-//     guardianName:
-//       data.guardianInfo?.name || data.student?.guardianInfo?.name || "",
-//     guardianRelation:
-//       data.guardianInfo?.relation || data.student?.guardianInfo?.relation || "",
-//     guardianMobile:
-//       data.guardianInfo?.mobile || data.student?.guardianInfo?.mobile || "",
-//     guardianVillage:
-//       data.guardianInfo?.address || data.student?.guardianInfo?.address || "",
-//     formerInstitution: data.previousSchool?.institution || "",
-//     formerVillage: data.previousSchool?.address || "",
-//     birthCertificate: data.documents?.birthCertificate || false,
-//     transferCertificate: data.documents?.transferCertificate || false,
-//     characterCertificate: data.documents?.characterCertificate || false,
-//     markSheet: data.documents?.markSheet || false,
-//     photographs: data.documents?.photographs || false,
-//     termsAccepted: data.termsAccepted || false,
+
+//     // ── Father ────────────────────────────────────────────────────────────
+//     fatherName: data.fatherName || fatherInfo.nameEnglish || "",
+//     fatherNameBangla: data.fatherNameBangla || fatherInfo.nameBangla || "",
+//     fatherMobile: data.fatherMobile || fatherInfo.mobile || "",
+//     fatherNid: data.fatherNid || fatherInfo.nid || "",
+//     fatherProfession: data.fatherProfession || fatherInfo.profession || "",
+//     fatherIncome: data.fatherIncome || fatherInfo.income || 0,
+//     fatherWhatsapp: data.fatherWhatsapp || fatherInfo.whatsapp || "",
+//     fatherEducation: data.fatherEducation || fatherInfo.education || "",
+
+//     // ── Mother ────────────────────────────────────────────────────────────
+//     motherName: data.motherName || motherInfo.nameEnglish || "",
+//     motherNameBangla: data.motherNameBangla || motherInfo.nameBangla || "",
+//     motherMobile: data.motherMobile || motherInfo.mobile || "",
+//     motherNid: data.motherNid || motherInfo.nid || "",
+//     motherProfession: data.motherProfession || motherInfo.profession || "",
+//     motherIncome: data.motherIncome || motherInfo.income || 0,
+//     motherWhatsapp: data.motherWhatsapp || motherInfo.whatsapp || "",
+//     motherEducation: data.motherEducation || motherInfo.education || "",
+
+//     // ── Guardian ──────────────────────────────────────────────────────────
+//     guardianName,
+//     guardianRelation,
+//     guardianMobile,
+//     guardianWhatsapp,
+//     guardianProfession,
+//     guardianVillage,
+
+//     // ── Address ───────────────────────────────────────────────────────────
+//     village:
+//       data.presentAddress?.village ||
+//       data.student?.presentAddress?.village ||
+//       "",
+//     postOffice:
+//       data.presentAddress?.postOffice ||
+//       data.student?.presentAddress?.postOffice ||
+//       "",
+//     postCode:
+//       data.presentAddress?.postCode ||
+//       data.student?.presentAddress?.postCode ||
+//       "",
+//     policeStation:
+//       data.presentAddress?.policeStation ||
+//       data.student?.presentAddress?.policeStation ||
+//       "",
+//     district:
+//       data.presentAddress?.district ||
+//       data.student?.presentAddress?.district ||
+//       "",
+
+//     permVillage:
+//       data.permanentAddress?.village ||
+//       data.student?.permanentAddress?.village ||
+//       "",
+//     permPostOffice:
+//       data.permanentAddress?.postOffice ||
+//       data.student?.permanentAddress?.postOffice ||
+//       "",
+//     permPostCode:
+//       data.permanentAddress?.postCode ||
+//       data.student?.permanentAddress?.postCode ||
+//       "",
+//     permPoliceStation:
+//       data.permanentAddress?.policeStation ||
+//       data.student?.permanentAddress?.policeStation ||
+//       "",
+//     permDistrict:
+//       data.permanentAddress?.district ||
+//       data.student?.permanentAddress?.district ||
+//       "",
+
+//     // ── Previous school ───────────────────────────────────────────────────
+//     formerInstitution:
+//       data.previousSchool?.institution ||
+//       data.student?.previousSchool?.institution ||
+//       "",
+//     formerVillage:
+//       data.previousSchool?.address ||
+//       data.student?.previousSchool?.address ||
+//       "",
+
+//     // ── Documents ─────────────────────────────────────────────────────────
+//     birthCertificate:
+//       data.documents?.birthCertificate ??
+//       data.student?.documents?.birthCertificate ??
+//       false,
+//     transferCertificate:
+//       data.documents?.transferCertificate ??
+//       data.student?.documents?.transferCertificate ??
+//       false,
+//     characterCertificate:
+//       data.documents?.characterCertificate ??
+//       data.student?.documents?.characterCertificate ??
+//       false,
+//     markSheet:
+//       data.documents?.markSheet ?? data.student?.documents?.markSheet ?? false,
+//     photographs:
+//       data.documents?.photographs ??
+//       data.student?.documents?.photographs ??
+//       false,
+//     termsAccepted: data.termsAccepted ?? data.student?.termsAccepted ?? false,
+
+//     // ── Fees ──────────────────────────────────────────────────────────────
 //     fees: [
 //       {
 //         category: [],
 //         className: formattedClass,
 //         feeItems: uniqueFeeItems,
 //         feeAmount: uniqueFeeItems
-//           .reduce((sum, item) => sum + item.amount, 0)
+//           .reduce((sum, item) => sum + (item.amount || 0), 0)
 //           .toString(),
 //       },
 //     ],
+
+//     // ── Payment summary ───────────────────────────────────────────────────
 //     admissionFee: data.admissionFee || data.student?.admissionFee || 0,
 //     monthlyFee: data.monthlyFee || data.student?.monthlyFee || 0,
 //     discountAmount: data.discountAmount || 0,
@@ -2932,7 +3144,7 @@
 //     paidAmount: data.paidAmount || 0,
 >>>>>>> 151d80f38fefc4d84dcc6315d4122e4e48bdc7cf
 //     dueAmount: data.dueAmount || 0,
-//     advanceBalance: data.advanceBalance || 0,
+//     advanceBalance: data.advanceBalance || data.student?.advanceBalance || 0,
 //   };
 // };
 
@@ -2965,6 +3177,8 @@
 //     page: page + 1,
 //     searchTerm,
 //   });
+
+//   console.log("studentData", singleEnrollment);
 
 //   const [submitting, setSubmitting] = useState(false);
 //   const [defaultValues, setDefaultValues] = useState<any>(null);
@@ -3130,6 +3344,7 @@
 //       setSubmitting(true);
 //       const { studentIdSelect, studentNameSelect, ...submitData } = data;
 
+//       // Validation
 //       if (!submitData.studentName) {
 //         toast.error("Student name is required");
 //         setSubmitting(false);
@@ -3167,6 +3382,7 @@
 //           : submitData.studentPhoto || "";
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 //       // ─────────────────────────────────────────────────────────────────────
 //       // FIXED: Send fee items as-is with isMonthly flag intact.
 //       // Do NOT expand monthly fees into 12 entries here.
@@ -3174,24 +3390,32 @@
 //       // ─────────────────────────────────────────────────────────────────────
 =======
 >>>>>>> 151d80f38fefc4d84dcc6315d4122e4e48bdc7cf
+=======
+//       // CRITICAL FIX: Properly format fees for the backend
+>>>>>>> 702db229e65d8a845a54bc8faea445f46425d2e8
 //       const fees: any[] = [];
 
 //       if (submitData.fees && Array.isArray(submitData.fees)) {
-//         submitData.fees.forEach((fee: any) => {
+//         for (const feeCategory of submitData.fees) {
 //           if (
-//             fee.feeItems &&
-//             Array.isArray(fee.feeItems) &&
-//             fee.feeItems.length > 0
+//             feeCategory.feeItems &&
+//             Array.isArray(feeCategory.feeItems) &&
+//             feeCategory.feeItems.length > 0
 //           ) {
 //             const processedFeeItems: any[] = [];
 
-//             fee.feeItems.forEach((item: any) => {
-//               const feeTypeStr =
-//                 typeof item.feeType === "object"
-//                   ? item.feeType?.label || item.feeType?.value || ""
-//                   : item.feeType || "";
+//             for (const item of feeCategory.feeItems) {
+//               // Get fee type string
+//               let feeTypeStr = "";
+//               if (typeof item.feeType === "object") {
+//                 feeTypeStr = item.feeType?.label || item.feeType?.value || "";
+//               } else if (typeof item.feeType === "string") {
+//                 feeTypeStr = item.feeType;
+//               }
+
 //               const isSelected = item.isSelected !== false;
-//               if (!feeTypeStr.trim() || !isSelected) return;
+
+//               if (!feeTypeStr.trim() || !isSelected) continue;
 
 <<<<<<< HEAD
 //               // Send isMonthly=true items as-is — backend handles month expansion
@@ -3208,30 +3432,29 @@
 //                 discountRangeEnd: item.discountRangeEnd || "",
 //                 discountRangeAmount:
 //                   parseFloat(String(item.discountRangeAmount)) || 0,
+//                 month: item.month || (item.isMonthly ? "Monthly" : "Admission"),
 //               });
-//             });
+//             }
 
 //             if (processedFeeItems.length > 0) {
 //               fees.push({
 //                 category:
-//                   fee.category && fee.category.length > 0
-//                     ? fee.category[0]?.label || fee.category[0] || ""
+//                   feeCategory.category && feeCategory.category.length > 0
+//                     ? feeCategory.category[0]?.label ||
+//                       feeCategory.category[0] ||
+//                       ""
 //                     : "",
 //                 className:
-//                   fee.className && fee.className.length > 0
-//                     ? fee.className[0]?.label || fee.className[0] || ""
+//                   feeCategory.className && feeCategory.className.length > 0
+//                     ? feeCategory.className[0]?.label ||
+//                       feeCategory.className[0] ||
+//                       ""
 //                     : "",
 //                 feeItems: processedFeeItems,
 //               });
 //             }
 //           }
-//         });
-//       }
-
-//       if (fees.length === 0) {
-//         toast.error("Please configure fee items before submitting");
-//         setSubmitting(false);
-//         return;
+//         }
 //       }
 
 //       const totalPaidAmount = parseFloat(String(submitData.paidAmount)) || 0;
@@ -3261,12 +3484,22 @@
 //         fatherNid: submitData.fatherNid || "",
 //         fatherProfession: submitData.fatherProfession || "",
 //         fatherIncome: Number(submitData.fatherIncome) || 0,
+//         fatherWhatsapp: submitData.fatherWhatsapp || "",
+//         fatherEducation: submitData.fatherEducation || "",
 //         motherName: submitData.motherName || "",
 //         motherNameBangla: submitData.motherNameBangla || "",
 //         motherMobile: submitData.motherMobile || "",
 //         motherNid: submitData.motherNid || "",
 //         motherProfession: submitData.motherProfession || "",
 //         motherIncome: Number(submitData.motherIncome) || 0,
+//         motherWhatsapp: submitData.motherWhatsapp || "",
+//         motherEducation: submitData.motherEducation || "",
+//         guardianName: submitData.guardianName || "",
+//         guardianRelation: submitData.guardianRelation || "",
+//         guardianMobile: submitData.guardianMobile || "",
+//         guardianWhatsapp: submitData.guardianWhatsapp || "",
+//         guardianProfession: submitData.guardianProfession || "",
+//         guardianVillage: submitData.guardianVillage || "",
 //         presentAddress: {
 //           village: submitData.village || "",
 //           postOffice: submitData.postOffice || "",
@@ -3281,12 +3514,6 @@
 //           policeStation: submitData.permPoliceStation || "",
 //           district: submitData.permDistrict || "",
 //         },
-//         guardianInfo: {
-//           name: submitData.guardianName || "",
-//           relation: submitData.guardianRelation || "",
-//           mobile: submitData.guardianMobile || "",
-//           address: submitData.guardianVillage || "",
-//         },
 //         previousSchool: {
 //           institution: submitData.formerInstitution || "",
 //           address: submitData.formerVillage || "",
@@ -3298,21 +3525,32 @@
 //           markSheet: Boolean(submitData.markSheet),
 //           photographs: Boolean(submitData.photographs),
 //         },
-//         fees,
+//         fees: fees, // Send the formatted fees array
 //         termsAccepted: Boolean(submitData.termsAccepted),
 //         advanceBalance: Number(submitData.advanceBalance) || 0,
 //         paidAmount: totalPaidAmount,
 //         paymentMethod: paymentMethodValue,
 //         collectedBy: "Admin",
+<<<<<<< HEAD
 
 <<<<<<< HEAD
 =======
 //         // ===== NEW FIELDS =====
+=======
+>>>>>>> 702db229e65d8a845a54bc8faea445f46425d2e8
 //         familyEnvironment: submitData.familyEnvironment,
 //         behaviorSkills: submitData.behaviorSkills,
 //       };
 
+<<<<<<< HEAD
 >>>>>>> 151d80f38fefc4d84dcc6315d4122e4e48bdc7cf
+=======
+//       console.log(
+//         "Submitting fees data:",
+//         JSON.stringify(finalSubmitData.fees, null, 2),
+//       );
+
+>>>>>>> 702db229e65d8a845a54bc8faea445f46425d2e8
 //       let res;
 //       if (id) {
 //         res = await updateEnrollment({ id, data: finalSubmitData }).unwrap();
@@ -3337,6 +3575,7 @@
 //         errorMessage = err.data.errorSources[0].message;
 //       else if (err?.message) errorMessage = err.message;
 //       toast.error(errorMessage);
+//       console.error("Submission error:", err);
 //     } finally {
 //       setSubmitting(false);
 //     }
@@ -3665,17 +3904,6 @@
 //               >
 //                 Print Receipt
 //               </Button>
-//               {/* <Button
-//                 variant="contained"
-//                 onClick={() => {
-//                   setOpenSuccessModal(false);
-//                   setOpenAddFeeModal(true);
-//                 }}
-//                 startIcon={<Payment />}
-//                 sx={{ borderRadius: 2, px: 3, bgcolor: "primary.main" }}
-//               >
-//                 Add Additional Fee
-//               </Button> */}
 //             </Box>
 //             <Button variant="text" onClick={handleFinishProcess}>
 //               Close & Go to List
@@ -3692,7 +3920,6 @@
 =======
 //           onClose={() => {
 //             console.log("Navigating to student list");
-//             // Use window.location.href for reliable navigation
 //             setTimeout(() => {
 //               window.location.href = "/dashboard/student/list";
 //             }, 100);
