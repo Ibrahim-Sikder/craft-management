@@ -1,24 +1,21 @@
 @import "tailwindcss";
 
-
-body {
+/* body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+} */
+
+.invoicePrintWrap {
+  background-color: #ddd;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  margin: 0 !important;
+  padding: 121px !important;
+  top: 77px;
 }
-
-
-
-  .invoicePrintWrap {
-    background-color: #ddd;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    margin: 0 !important;
-    padding: 121px !important;
-    top: 77px;
-  }
 
 .invoicePrint {
   width: 8.27in;
@@ -32,9 +29,7 @@ body {
   height: 100%;
 }
 
-
-
-  @media print {
+@media print {
   @page {
     margin: 0px;
   }
@@ -60,27 +55,27 @@ body {
   }
 }
 
-.receiptRow , .receiptRow td{
-    border: 1px solid #c0c2c1;
-  padding:2px !important;
+.receiptRow,
+.receiptRow td {
+  border: 1px solid #c0c2c1;
+  padding: 2px !important;
   font-size: 12px !important;
-    padding: 3px !important;
+  padding: 3px !important;
   margin: 0 !important;
   font-size: 12px !important;
   text-align: center !important;
 }
 
-
 .printInvoiceBtnGroup {
-    display: flex;
-    width: 500px;
-    justify-content: center;
-    align-items: center;
-    margin: 37px auto;
-    gap: 5px;
-    position: relative;
-    top: -43px;
-    right: -141px;
+  display: flex;
+  width: 500px;
+  justify-content: center;
+  align-items: center;
+  margin: 37px auto;
+  gap: 5px;
+  position: relative;
+  top: -43px;
+  right: -141px;
 }
 
 @media print {
@@ -97,7 +92,6 @@ body {
     padding: 0 !important;
   }
 
-
   .invoicePrintWrap,
   .invoicePrintWrap * {
     visibility: visible;
@@ -113,15 +107,13 @@ body {
   }
 
   .invoicePrint {
-    width: 210mm !important;  
-    min-height: 297mm !important; 
+    width: 210mm !important;
+    min-height: 297mm !important;
     margin: 0 auto !important;
     background: #fff !important;
     box-shadow: none !important;
     padding: 10mm !important;
-
   }
-
 
   .buttonGroup,
   .printInvoiceBtnGroup,
@@ -129,7 +121,6 @@ body {
   .submitQutationBtn {
     display: none !important;
   }
-
 
   .invoiceTable2,
   .invoicTable {
@@ -155,7 +146,6 @@ body {
     color: #fff !important;
     -webkit-print-color-adjust: exact;
   }
-
 }
 /* Add to your global CSS */
 .invoicePrintWrap {

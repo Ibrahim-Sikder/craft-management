@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import type React from "react";
@@ -64,13 +66,13 @@ const StyledCard = styled(Card)(({ theme }) => ({
   },
 }));
 
-const GlassCard = styled(Card)(({ theme }) => ({
-  background: "rgba(255, 255, 255, 0.7)",
-  backdropFilter: "blur(10px)",
-  borderRadius: 16,
-  border: "1px solid rgba(255, 255, 255, 0.18)",
-  boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
-}));
+// const GlassCard = styled(Card)(({ theme }) => ({
+//   background: "rgba(255, 255, 255, 0.7)",
+//   backdropFilter: "blur(10px)",
+//   borderRadius: 16,
+//   border: "1px solid rgba(255, 255, 255, 0.18)",
+//   boxShadow: "0 8px 32px 0 rgba(31, 38, 135, 0.37)",
+// }));
 
 const GradientButton = styled(Button)(({ theme }) => ({
   background: `linear-gradient(90deg, ${theme.palette.primary.main} 0%, ${theme.palette.primary.dark} 100%)`,
@@ -168,7 +170,7 @@ const examTypes = ["Term", "Assessment", "Quiz", "Monthly Test", "Special"];
 
 const ExamsPage = () => {
   const theme = useTheme();
-  const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+  // const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const [exams, setExams] = useState(mockExams);
   const [openDialog, setOpenDialog] = useState(false);
   const [selectedExam, setSelectedExam] = useState<any>(null);
@@ -181,9 +183,9 @@ const ExamsPage = () => {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
   const [refreshing, setRefreshing] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [filterAnchorEl, setFilterAnchorEl] = useState<null | HTMLElement>(
-    null
-  );
+  // const [filterAnchorEl, setFilterAnchorEl] = useState<null | HTMLElement>(
+  //   null
+  // );
 
   // Form state
   const [formData, setFormData] = useState({
@@ -205,17 +207,17 @@ const ExamsPage = () => {
     },
   };
 
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
-    visible: {
-      y: 0,
-      opacity: 1,
-      transition: {
-        type: "spring",
-        stiffness: 100,
-      },
-    },
-  };
+  // const itemVariants = {
+  //   hidden: { y: 20, opacity: 0 },
+  //   visible: {
+  //     y: 0,
+  //     opacity: 1,
+  //     transition: {
+  //       type: "spring",
+  //       stiffness: 100,
+  //     },
+  //   },
+  // };
 
   const handleOpenDialog = (exam?: any) => {
     if (exam) {
@@ -531,7 +533,7 @@ const ExamsPage = () => {
       >
         <Grid container spacing={3} sx={{ mb: 4 }}>
           <Grid item xs={12} md={3}>
-            <motion.div variants={itemVariants}>
+            <motion.div >
               <StyledCard
                 sx={{
                   background:
@@ -595,7 +597,7 @@ const ExamsPage = () => {
           </Grid>
 
           <Grid item xs={12} md={3}>
-            <motion.div variants={itemVariants}>
+            <motion.div >
               <StyledCard
                 sx={{
                   background:
@@ -659,7 +661,7 @@ const ExamsPage = () => {
           </Grid>
 
           <Grid item xs={12} md={3}>
-            <motion.div variants={itemVariants}>
+            <motion.div >
               <StyledCard
                 sx={{
                   background:
@@ -723,7 +725,7 @@ const ExamsPage = () => {
           </Grid>
 
           <Grid item xs={12} md={3}>
-            <motion.div variants={itemVariants}>
+            <motion.div >
               <StyledCard
                 sx={{
                   background:

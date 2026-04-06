@@ -1897,7 +1897,8 @@ export default function MealReport() {
               </Box>
             </FormGroup>
           </DialogContent>
-          <DialogActions sx={{ p: 2, bgcolor: "#f9f9f9" }}>
+          {/* <DialogActions sx={{ p: 2, bgcolor: "#f9f9f9" }}> */}
+          <DialogActions sx={{ p: 2, bgcolor: "background.default" }}>
             <Button
               onClick={() => setModalOpen(false)}
               variant="outlined"

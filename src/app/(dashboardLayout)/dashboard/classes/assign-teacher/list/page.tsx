@@ -34,7 +34,7 @@ import {
   Badge,
   Dialog,
   DialogActions,
-  DialogContent,
+  DialogContent, 
   DialogContentText,
   DialogTitle,
   Slide,

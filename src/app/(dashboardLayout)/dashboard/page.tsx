@@ -42,7 +42,7 @@ import {
   Box,
   Grid,
   IconButton,
-  Paper,
+  Paper, 
   Tab,
   Tabs,
   Typography,
@@ -249,7 +249,7 @@ export default function DashboardHome() {
       color: "#E91E63",
       path: "/dashboard/daily-meal-report",
     },
-    {
+    { 
       title: "Fees",
       description: "Fee Collections",
       icon: <Payment />,
@@ -283,37 +283,49 @@ export default function DashboardHome() {
 
   return (
     <Box
-      sx={{
-        minHeight: "100vh",
-        background: `linear-gradient(135deg, ${alpha(theme.palette.primary.light, 0.15)} 0%, ${alpha(theme.palette.background.default, 0.8)} 100%)`,
-        borderRadius: { xs: 0, md: 6 },
-        p: { xs: 1, sm: 2, md: 3 },
-        position: "relative",
-        overflow: "hidden",
-        "&::before": {
-          content: '""',
-          position: "absolute",
-          width: { xs: "120px", md: "300px" },
-          height: { xs: "120px", md: "300px" },
-          top: "-60px",
-          right: "-60px",
-          borderRadius: "50%",
-          background: `radial-gradient(${alpha(theme.palette.primary.light, 0.2)} 0%, transparent 70%)`,
-          zIndex: 0,
-        },
-        "&::after": {
-          content: '""',
-          position: "absolute",
-          width: { xs: "100px", md: "200px" },
-          height: { xs: "100px", md: "200px" },
-          bottom: "-40px",
-          left: "-40px",
-          borderRadius: "50%",
-          background: `radial-gradient(${alpha(theme.palette.secondary.light, 0.2)} 0%, transparent 70%)`,
-          zIndex: 0,
-        },
-      }}
-    >
+  sx={(theme) => ({
+    minHeight: "100vh",
+    background: `linear-gradient( 
+      135deg,
+      ${alpha(theme.palette.primary.light, theme.palette.mode === "dark" ? 0.25 : 0.15)} 0%,
+      ${alpha(theme.palette.background.default, theme.palette.mode === "dark" ? 0.95 : 0.8)} 100%
+    )`,
+    borderRadius: { xs: 0, md: 6 },
+    p: { xs: 1, sm: 2, md: 3 },
+    position: "relative",
+    overflow: "hidden",
+
+    "&::before": {
+      content: '""',
+      position: "absolute",
+      width: { xs: "120px", md: "300px" },
+      height: { xs: "120px", md: "300px" },
+      top: "-60px",
+      right: "-60px",
+      borderRadius: "50%",
+      background: `radial-gradient(${alpha(
+        theme.palette.primary.light,
+        theme.palette.mode === "dark" ? 0.3 : 0.2
+      )} 0%, transparent 70%)`,
+      zIndex: 0,
+    },
+
+    "&::after": {
+      content: '""',
+      position: "absolute",
+      width: { xs: "100px", md: "200px" },
+      height: { xs: "100px", md: "200px" },
+      bottom: "-40px",
+      left: "-40px",
+      borderRadius: "50%",
+      background: `radial-gradient(${alpha(
+        theme.palette.secondary?.light || theme.palette.primary.light,
+        theme.palette.mode === "dark" ? 0.3 : 0.2
+      )} 0%, transparent 70%)`,
+      zIndex: 0,
+    },
+  })}
+>
       <Box sx={{ position: "relative", zIndex: 2 }}>
         {/* ── Header ── */}
         <Box
@@ -353,13 +365,13 @@ export default function DashboardHome() {
                     lg: "2.2rem",
                   },
                   lineHeight: 1.2,
-                  whiteSpace: { xs: "nowrap", sm: "normal" },
+                  whiteSpace: { xs: "nowrap", sm: "normal" }, 
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                 }}
               >
                 {isMobile
-                  ? "CI Dashboard"
+                  ? "CI Dashboard" 
                   : "Craft International Institute Dashboard"}
               </GradientTypography>
               <Typography

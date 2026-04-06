@@ -710,7 +710,7 @@ const ExamSchedulePage = () => {
                   {uniqueDates.map((date, index) => (
                     <Grid item xs={12} key={date}>
                       <motion.div
-                        variants={itemVariants}
+                        // variants={itemVariants}
                         initial="hidden"
                         animate="visible"
                         transition={{ delay: index * 0.1 }}
