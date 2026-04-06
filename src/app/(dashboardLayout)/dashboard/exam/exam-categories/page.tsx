@@ -1106,7 +1106,7 @@ export default function ExamCategoriesPage() {
       </Menu>
 
       {/* CSS for animations */}
-      <style jsx global>{`
+      <style jsx global>{` 
         @keyframes spin {
           0% { transform: rotate(0deg); }
           100% { transform: rotate(360deg); }

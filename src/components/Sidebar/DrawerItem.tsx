@@ -9,7 +9,7 @@ import {
   AttachMoney,
   AutoDelete,
   AutoStories,
-  Badge,
+  Badge, 
   Calculate,
   CalendarMonth,
   Campaign,
@@ -901,7 +901,7 @@ export const navigationItems: NavigationItem[] = [
           },
           {
             path: "/dashboard/accounting/expense/category",
-            title: "Expense Categories",
+            title: "Expense Categories", 
             icon: (
               <ColorfulIcon color="#D32F2F">
                 <Category />
