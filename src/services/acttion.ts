@@ -4,26 +4,35 @@ import { cookies } from "next/headers";
 
 export const getUserInfo = async () => {
   try {
+    // Get cookies from the request
     const cookieStore = cookies();
-    const token = cookieStore.get("accessToken")?.value;
+    const cookieString = cookieStore.toString();
 
-    if (!token) return null;
+    console.log("Server Action - Cookies available:", !!cookieString);
 
-    // Call your backend API
     const response = await fetch(
       `${process.env.NEXT_PUBLIC_BASE_API_URL}/auth/me`,
       {
+        method: "GET",
         headers: {
-          Cookie: `accessToken=${token}`,
+          "Content-Type": "application/json",
+          // Forward all cookies to the backend
+          Cookie: cookieString,
         },
         cache: "no-store",
       },
     );
 
-    if (!response.ok) return null;
+    console.log("Server Action - Response status:", response.status);
+
+    if (!response.ok) {
+      console.error("Response not OK:", response.status);
+      return null;
+    }
 
     const result = await response.json();
-    console.log("result chckddddddd", result);
+    console.log("Server Action - User info result:", result);
+
     return result.data;
   } catch (error) {
     console.error("Failed to get user info:", error);

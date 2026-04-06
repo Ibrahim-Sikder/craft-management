@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Drawer,
   List,
@@ -36,8 +36,7 @@ import { alpha, createTheme } from "@mui/material/styles";
 import { useRouter, usePathname } from "next/navigation";
 import Cookies from "js-cookie";
 import { navigationItems } from "@/components/Sidebar/DrawerItem";
-import { UserRole } from "@/types/common";
-import { getUserInfo } from "@/services/acttion";
+import { useUserInfo } from "@/hooks/useUserInfo";
 
 const DRAWER_WIDTH = 280;
 const COLLAPSED_DRAWER_WIDTH = 75;
@@ -51,24 +50,15 @@ const CustomSidebar: React.FC<{ children: React.ReactNode }> = ({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [openItems, setOpenItems] = useState<Record<string, boolean>>({});
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
-  const [userRole, setUserRole] = useState<UserRole | null>(null);
 
-  useEffect(() => {
-    const fetchUserInfo = async () => {
-      const userInfo = await getUserInfo();
-      setUserRole(userInfo?.role || null);
-    };
-
-    fetchUserInfo();
-  }, []);
-
+  const { userInfo } = useUserInfo();
+  const userRole = userInfo?.role || null;
   const theme = createTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
 
   const toggleDrawer = () => setOpen(!open);
   const toggleMobileDrawer = () => setMobileOpen(!mobileOpen);
 
-  // ✅ Each accordion independent
   const toggleNestedList = (title: string) => {
     setOpenItems((prev) => ({
       ...prev,
@@ -152,7 +142,7 @@ const CustomSidebar: React.FC<{ children: React.ReactNode }> = ({
     ));
 
   const roleBasedItems = userRole
-    ? navigationItems.filter((item) =>
+    ? navigationItems.filter((item: any) =>
         item.roles ? item.roles.includes(userRole) : true,
       )
     : [];
