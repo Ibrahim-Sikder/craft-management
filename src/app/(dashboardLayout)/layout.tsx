@@ -5,7 +5,6 @@
 import { Box, Toolbar, useMediaQuery, useTheme } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { navigationItems } from "@/components/Sidebar/DrawerItem";
-import { useUserRole } from "@/hooks/useUserRole";
 import { useState } from "react";
 import { useSidebarState } from "@/hooks/useSidebarState";
 import { useHoverMenu } from "@/hooks/useHoverMenu";
@@ -14,12 +13,14 @@ import { SidebarDrawer } from "@/components/Sidebar/SidebarDrawer";
 import { NavigationList } from "@/components/Sidebar/NavigationList";
 import { HoverMenu } from "@/components/Sidebar/HoverMenu";
 import { useUser } from "@/hooks/useUser";
-
+import { useUserInfo } from "@/hooks/useUserInfo";
+import Cookies from "js-cookie";
 const CustomSidebar = ({ children }: any) => {
   const router = useRouter();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  const userRole = useUserRole();
+  const { userInfo } = useUserInfo();
+  const userRole = userInfo?.role || null;
   const {
     open,
     mobileOpen,
@@ -45,14 +46,21 @@ const CustomSidebar = ({ children }: any) => {
     closeHover();
   };
   const handleLogout = () => {
-    /* ... same as before */
+    Cookies.remove("accessToken", { path: "/" });
+    document.cookie.split(";").forEach((c) => {
+      document.cookie = c
+        .replace(/^ +/, "")
+        .replace(/=.*/, `=;expires=${new Date(0).toUTCString()};path=/`);
+    });
+    localStorage.clear();
+    router.push("/");
   };
   const handleProfileOpen = (e: any) => setProfileAnchorEl(e.currentTarget);
   const handleProfileClose = () => setProfileAnchorEl(null);
   const handleProfile = () => router.push("/profile");
 
   const roleBasedItems = userRole
-    ? navigationItems.filter((item) => item.roles?.includes(userRole))
+    ? navigationItems.filter((item: any) => item.roles?.includes(userRole))
     : [];
 
   const popoverItems =
