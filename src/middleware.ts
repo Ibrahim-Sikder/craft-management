@@ -32,18 +32,26 @@ export async function middleware(request: NextRequest) {
 
     // Check role-based access
     const role = (decoded as any)?.role;
+
+    // ✅ Updated allowed routes with all roles
     const allowedRoutes: Record<string, RegExp[]> = {
+      super_admin: [/^\/dashboard(\/.*)?$/],
       admin: [/^\/dashboard(\/.*)?$/],
       teacher: [/^\/dashboard(\/.*)?$/],
-      super_admin: [/^\/dashboard(\/.*)?$/],
+      accountant: [/^\/dashboard(\/.*)?$/], // ✅ Added accountant role
+      student: [/^\/dashboard(\/.*)?$/],
+      class_teacher: [/^\/dashboard(\/.*)?$/],
+      super_visor: [/^\/dashboard(\/.*)?$/],
     };
 
+    // Check if the role has access to the requested route
     if (allowedRoutes[role]?.some((route) => route.test(pathname))) {
+      console.log(`✅ Access granted for role: ${role} to ${pathname}`);
       return NextResponse.next();
     }
 
     // Role doesn't have access
-    console.log(`Role ${role} doesn't have access to ${pathname}`);
+    console.log(`❌ Role ${role} doesn't have access to ${pathname}`);
     return NextResponse.redirect(new URL("/", request.url));
   } catch (error) {
     console.error("Invalid token:", error);
