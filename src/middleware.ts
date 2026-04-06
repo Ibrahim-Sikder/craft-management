@@ -11,9 +11,6 @@ export async function middleware(request: NextRequest) {
   // Get token from cookies
   const accessToken = request.cookies.get("accessToken")?.value;
 
-  console.log("Middleware - Path:", pathname);
-  console.log("Middleware - Has token:", !!accessToken);
-
   // Allow public routes
   if (AuthRoutes.includes(pathname)) {
     return NextResponse.next();
@@ -21,14 +18,12 @@ export async function middleware(request: NextRequest) {
 
   // Redirect to home if no token
   if (!accessToken) {
-    console.log("No token, redirecting to home");
     return NextResponse.redirect(new URL("/", request.url));
   }
 
   // Decode token
   try {
     const decoded = jwtDecode(accessToken);
-    console.log("Decoded token:", decoded);
 
     // Check role-based access
     const role = (decoded as any)?.role;
@@ -46,12 +41,9 @@ export async function middleware(request: NextRequest) {
 
     // Check if the role has access to the requested route
     if (allowedRoutes[role]?.some((route) => route.test(pathname))) {
-      console.log(`✅ Access granted for role: ${role} to ${pathname}`);
       return NextResponse.next();
     }
 
-    // Role doesn't have access
-    console.log(`❌ Role ${role} doesn't have access to ${pathname}`);
     return NextResponse.redirect(new URL("/", request.url));
   } catch (error) {
     console.error("Invalid token:", error);

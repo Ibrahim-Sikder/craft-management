@@ -36,16 +36,11 @@ const LoginDashboard = () => {
 
   const handleSubmit = async (data: FieldValues) => {
     try {
-      console.log("Login attempt with:", data);
-
       const res = await login(data).unwrap();
-      console.log("Login response:", res);
 
       if (res?.success) {
         toast.success(res.message || "Login Successful!");
 
-        // Don't check for cookies with js-cookie - just redirect
-        // The browser will automatically include cookies in subsequent requests
         router.push("/dashboard");
       } else {
         toast.error("Invalid response from server");

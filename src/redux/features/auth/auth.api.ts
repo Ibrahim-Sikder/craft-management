@@ -9,9 +9,7 @@ const authApi = baseApi.injectEndpoints({
         method: "POST",
         data,
       }),
-      // Add this to handle the response properly
       transformResponse: (response: any) => {
-        console.log("Login response:", response);
         return response;
       },
     }),

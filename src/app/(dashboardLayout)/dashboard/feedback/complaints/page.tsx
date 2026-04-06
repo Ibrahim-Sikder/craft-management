@@ -57,7 +57,7 @@
 //   const [typeChangeDialogOpen, setTypeChangeDialogOpen] = useState(false)
 //   const [currentActionFeedback, setCurrentActionFeedback] = useState<any>(null)
 //   const [isEditing, setIsEditing] = useState(false)
-  
+
 //   // Map tabs to feedback types
 //   const tabToTypeMap = [
 //     undefined,
@@ -149,7 +149,6 @@
 //   }
 
 //   const handleTypeUpdate = () => {
-//     console.log(`Updating feedback ${editingFeedback._id} from ${editingFeedback.type} to ${newType}`)
 //     setTypeChangeDialogOpen(false)
 //     setEditingFeedback(null)
 //   }
@@ -529,9 +528,9 @@
 //       </Dialog>
 
 //       {/* Feedback Form Modal */}
-//       <FeedbackFormModal 
-//         open={feedbackModalOpen} 
-//         onClose={handleCloseFeedbackModal} 
+//       <FeedbackFormModal
+//         open={feedbackModalOpen}
+//         onClose={handleCloseFeedbackModal}
 //         feedbackId={editingFeedback?._id}
 
 //       />
@@ -541,15 +540,10 @@
 
 // export default FeedbackList
 
-
-import React from 'react';
+import React from "react";
 
 const page = () => {
-  return (
-    <div>
-      
-    </div>
-  );
+  return <div></div>;
 };
 
 export default page;

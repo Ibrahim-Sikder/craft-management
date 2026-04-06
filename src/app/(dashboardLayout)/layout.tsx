@@ -39,7 +39,6 @@ const CustomSidebar = ({ children }: any) => {
   } = useHoverMenu();
   const [profileAnchorEl, setProfileAnchorEl] = useState(null);
   const { user, loading: userLoading } = useUser();
-  console.log("User Info:", user);
 
   const handleNavigate = (path: any) => {
     if (path) router.push(path);

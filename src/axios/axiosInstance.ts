@@ -30,12 +30,9 @@ const processQueue = (error: unknown) => {
   });
   failedQueue = [];
 };
-// ────────────────────────────────────────────────────────────────────────────
 
-// Add a request interceptor
 instance.interceptors.request.use(
   function (config) {
-    console.log("Making request to:", config.url);
     return config;
   },
   function (error) {
@@ -43,14 +40,10 @@ instance.interceptors.request.use(
   },
 );
 
-// Add a response interceptor
 instance.interceptors.response.use(
   function (response) {
-    console.log("Response received:", response.status);
-
     const cookies = response.headers["set-cookie"];
     if (cookies) {
-      console.log("Cookies set:", cookies);
     }
 
     const responseObject: any = {
@@ -66,9 +59,7 @@ instance.interceptors.response.use(
 
     const originalRequest = error.config;
 
-    // Handle 401 errors (token expired)
     if (error?.response?.status === 401 && !originalRequest._retry) {
-      // If already refreshing, queue this request
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
@@ -81,7 +72,6 @@ instance.interceptors.response.use(
       isRefreshing = true;
 
       try {
-        // Use instance (not bare axios) so withCredentials is always consistent
         await instance.post("/auth/refresh-token", {});
         processQueue(null);
         return instance(originalRequest);
@@ -95,8 +85,6 @@ instance.interceptors.response.use(
         isRefreshing = false;
       }
     }
-
-    // Return error response
     const responseObject: IGenericErrorResponse = {
       statusCode: error?.response?.data?.statusCode || 500,
       message: error?.response?.data?.message || "Something went wrong!!!",

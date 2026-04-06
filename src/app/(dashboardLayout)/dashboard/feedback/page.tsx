@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
+import { useState, useEffect } from "react";
 import {
   Box,
   Card,
@@ -28,7 +28,7 @@ import {
   InputLabel,
   CircularProgress,
   Alert,
-} from "@mui/material"
+} from "@mui/material";
 import {
   MoreVert,
   Search,
@@ -40,128 +40,122 @@ import {
   Feedback,
   Edit,
   Delete,
-} from "@mui/icons-material"
+} from "@mui/icons-material";
 
-import { useDeleteFeedbackMutation, useGetAllFeedbacksQuery } from "@/redux/api/feedbackApi"
-import Swal from "sweetalert2"
-import FeedbackFormModal from "./_components/FeedbackForm"
+import {
+  useDeleteFeedbackMutation,
+  useGetAllFeedbacksQuery,
+} from "@/redux/api/feedbackApi";
+import Swal from "sweetalert2";
+import FeedbackFormModal from "./_components/FeedbackForm";
 
 const FeedbackList = () => {
-  const [searchTerm, setSearchTerm] = useState("")
-  const [selectedFeedback, setSelectedFeedback] = useState<any>(null)
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
-  const [feedbackModalOpen, setFeedbackModalOpen] = useState(false)
-  const [currentTab, setCurrentTab] = useState(0)
-  const [editingFeedback, setEditingFeedback] = useState<any>(null)
-  const [newType, setNewType] = useState("")
-  const [typeChangeDialogOpen, setTypeChangeDialogOpen] = useState(false)
-  const [currentActionFeedback, setCurrentActionFeedback] = useState<any>(null)
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedFeedback, setSelectedFeedback] = useState<any>(null);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [feedbackModalOpen, setFeedbackModalOpen] = useState(false);
+  const [currentTab, setCurrentTab] = useState(0);
+  const [editingFeedback, setEditingFeedback] = useState<any>(null);
+  const [newType, setNewType] = useState("");
+  const [typeChangeDialogOpen, setTypeChangeDialogOpen] = useState(false);
+  const [currentActionFeedback, setCurrentActionFeedback] = useState<any>(null);
 
   // Map tabs to feedback types
-  const tabToTypeMap = [
-    undefined,
-    "suggestion",
-    "idea",
-    "complaint"
-  ]
+  const tabToTypeMap = [undefined, "suggestion", "idea", "complaint"];
 
   // Fetch feedback data using Redux query
-  const { data: feedbackData, isLoading, isError, refetch } = useGetAllFeedbacksQuery({
+  const {
+    data: feedbackData,
+    isLoading,
+    isError,
+    refetch,
+  } = useGetAllFeedbacksQuery({
     type: tabToTypeMap[currentTab],
     searchTerm: searchTerm || undefined,
-  })
+  });
 
-  const [deleteFeedback] = useDeleteFeedbackMutation()
+  const [deleteFeedback] = useDeleteFeedbackMutation();
 
-  const feedbacks = feedbackData?.data?.feedbacks || []
+  const feedbacks = feedbackData?.data?.feedbacks || [];
 
   useEffect(() => {
     // Refetch data when filters change
-    refetch()
-  }, [currentTab, searchTerm, refetch])
+    refetch();
+  }, [currentTab, searchTerm, refetch]);
 
   const handleOpenFeedbackModal = () => {
-
-    setEditingFeedback(null)
-    setFeedbackModalOpen(true)
-  }
+    setEditingFeedback(null);
+    setFeedbackModalOpen(true);
+  };
 
   const handleEditFeedback = (feedback: any) => {
-
-    setEditingFeedback(feedback)
-    setFeedbackModalOpen(true)
-    setAnchorEl(null)
-  }
+    setEditingFeedback(feedback);
+    setFeedbackModalOpen(true);
+    setAnchorEl(null);
+  };
 
   const handleCloseFeedbackModal = () => {
-    setFeedbackModalOpen(false)
-    setEditingFeedback(null)
-
-  }
+    setFeedbackModalOpen(false);
+    setEditingFeedback(null);
+  };
 
   const getFeedbackIcon = (type: string) => {
     switch (type) {
       case "complaint":
-        return <ReportProblem />
+        return <ReportProblem />;
       case "suggestion":
-        return <Feedback />
+        return <Feedback />;
       case "idea":
-        return <Lightbulb />
+        return <Lightbulb />;
       default:
-        return <Feedback />
+        return <Feedback />;
     }
-  }
+  };
 
   const getFeedbackColor = (type: string) => {
     switch (type) {
       case "complaint":
-        return "#f44336"
+        return "#f44336";
       case "suggestion":
-        return "#2196f3"
+        return "#2196f3";
       case "idea":
-        return "#ff9800"
+        return "#ff9800";
       default:
-        return "#757575"
+        return "#757575";
     }
-  }
+  };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
       case "urgent":
-        return "#d32f2f"
+        return "#d32f2f";
       case "high":
-        return "#f44336"
+        return "#f44336";
       case "medium":
-        return "#ff9800"
+        return "#ff9800";
       case "low":
-        return "#4caf50"
+        return "#4caf50";
       default:
-        return "#757575"
+        return "#757575";
     }
-  }
+  };
 
   const handleTypeChange = (feedback: any) => {
-    setEditingFeedback(feedback)
-    setNewType(feedback.type)
-    setTypeChangeDialogOpen(true)
-    setAnchorEl(null)
-  }
+    setEditingFeedback(feedback);
+    setNewType(feedback.type);
+    setTypeChangeDialogOpen(true);
+    setAnchorEl(null);
+  };
 
   const handleTypeUpdate = () => {
-    console.log(`Updating feedback ${editingFeedback._id} from ${editingFeedback.type} to ${newType}`)
-    setTypeChangeDialogOpen(false)
-    setEditingFeedback(null)
-  }
+    setTypeChangeDialogOpen(false);
+    setEditingFeedback(null);
+  };
 
   const getTabTitle = (index: number) => {
-    const titles = [
-      "All Feedback",
-      "Suggestions",
-      "Ideas",
-      "Complaints"
-    ]
-    return titles[index]
-  }
+    const titles = ["All Feedback", "Suggestions", "Ideas", "Complaints"];
+    return titles[index];
+  };
 
   const handleDelete = async (id: string) => {
     try {
@@ -172,34 +166,34 @@ const FeedbackList = () => {
         showCancelButton: true,
         confirmButtonColor: "#3085d6",
         cancelButtonColor: "#d33",
-        confirmButtonText: "Yes, delete it!"
-      })
+        confirmButtonText: "Yes, delete it!",
+      });
 
       if (result.isConfirmed) {
-        await deleteFeedback(id).unwrap()
-        refetch()
+        await deleteFeedback(id).unwrap();
+        refetch();
 
         Swal.fire({
           title: "Deleted!",
           text: "Feedback has been deleted successfully.",
-          icon: "success"
-        })
+          icon: "success",
+        });
       }
     } catch (err: any) {
       Swal.fire({
         title: "Error!",
         text: err.data?.message || "Failed to delete feedback",
-        icon: "error"
-      })
+        icon: "error",
+      });
     }
-  }
+  };
 
   if (isLoading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 4 }}>
+      <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
         <CircularProgress />
       </Box>
-    )
+    );
   }
 
   if (isError) {
@@ -207,7 +201,7 @@ const FeedbackList = () => {
       <Alert severity="error" sx={{ mt: 2 }}>
         Error loading feedback data. Please try again later.
       </Alert>
-    )
+    );
   }
 
   return (
@@ -243,7 +237,10 @@ const FeedbackList = () => {
           }}
         >
           Submit New Feedback
-          <Typography variant="body2" sx={{ ml: 2, opacity: 0.9, fontSize: "0.85rem" }}>
+          <Typography
+            variant="body2"
+            sx={{ ml: 2, opacity: 0.9, fontSize: "0.85rem" }}
+          >
             নতুন ফিডব্যাক জমা দিন
           </Typography>
         </Button>
@@ -256,10 +253,7 @@ const FeedbackList = () => {
           sx={{ borderBottom: 1, borderColor: "divider" }}
         >
           {[0, 1, 2, 3].map((index) => (
-            <Tab
-              key={index}
-              label={getTabTitle(index)}
-            />
+            <Tab key={index} label={getTabTitle(index)} />
           ))}
         </Tabs>
       </Card>
@@ -313,9 +307,20 @@ const FeedbackList = () => {
                 }}
               >
                 <CardContent>
-                  <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", mb: 2 }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "flex-start",
+                      mb: 2,
+                    }}
+                  >
                     <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                      <Avatar sx={{ backgroundColor: getFeedbackColor(feedback.type) }}>
+                      <Avatar
+                        sx={{
+                          backgroundColor: getFeedbackColor(feedback.type),
+                        }}
+                      >
                         {getFeedbackIcon(feedback.type)}
                       </Avatar>
                       <Box>
@@ -324,61 +329,104 @@ const FeedbackList = () => {
                         </Typography>
                         <Box sx={{ display: "flex", gap: 1, mt: 1 }}>
                           <Chip
-                            label={feedback.type.charAt(0).toUpperCase() + feedback.type.slice(1)}
+                            label={
+                              feedback.type.charAt(0).toUpperCase() +
+                              feedback.type.slice(1)
+                            }
                             sx={{
-                              backgroundColor: getFeedbackColor(feedback.type) + "20",
+                              backgroundColor:
+                                getFeedbackColor(feedback.type) + "20",
                               color: getFeedbackColor(feedback.type),
                               fontWeight: 600,
                             }}
                             size="small"
                           />
                           <Chip
-                            label={feedback.priority.charAt(0).toUpperCase() + feedback.priority.slice(1)}
+                            label={
+                              feedback.priority.charAt(0).toUpperCase() +
+                              feedback.priority.slice(1)
+                            }
                             size="small"
                             sx={{
-                              backgroundColor: getPriorityColor(feedback.priority) + "20",
+                              backgroundColor:
+                                getPriorityColor(feedback.priority) + "20",
                               color: getPriorityColor(feedback.priority),
                             }}
                           />
-                          <Chip label={feedback.category} variant="outlined" size="small" />
+                          <Chip
+                            label={feedback.category}
+                            variant="outlined"
+                            size="small"
+                          />
                         </Box>
                       </Box>
                     </Box>
                     <IconButton
                       onClick={(e) => {
-                        setCurrentActionFeedback(feedback)
-                        setAnchorEl(e.currentTarget)
+                        setCurrentActionFeedback(feedback);
+                        setAnchorEl(e.currentTarget);
                       }}
                     >
                       <MoreVert />
                     </IconButton>
                   </Box>
 
-                  <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
+                  <Typography
+                    variant="body2"
+                    color="text.secondary"
+                    sx={{ mb: 2 }}
+                  >
                     {feedback.description}
                   </Typography>
 
-                  <Box sx={{ display: "flex", alignItems: "center", gap: 3, flexWrap: "wrap" }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: 3,
+                      flexWrap: "wrap",
+                    }}
+                  >
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <CalendarToday sx={{ fontSize: 16, color: "text.secondary" }} />
-                      <Typography variant="body2">{new Date(feedback.submittedAt).toLocaleDateString()}</Typography>
-                    </Box>
-                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                      <Category sx={{ fontSize: 16, color: "text.secondary" }} />
-                      <Typography variant="body2">{feedback.department}</Typography>
-                    </Box>
-                    {feedback.attachments && feedback.attachments.length > 0 && (
-                      <Typography variant="body2" color="primary">
-                        {feedback.attachments.length} attachment(s)
+                      <CalendarToday
+                        sx={{ fontSize: 16, color: "text.secondary" }}
+                      />
+                      <Typography variant="body2">
+                        {new Date(feedback.submittedAt).toLocaleDateString()}
                       </Typography>
-                    )}
+                    </Box>
+                    <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                      <Category
+                        sx={{ fontSize: 16, color: "text.secondary" }}
+                      />
+                      <Typography variant="body2">
+                        {feedback.department}
+                      </Typography>
+                    </Box>
+                    {feedback.attachments &&
+                      feedback.attachments.length > 0 && (
+                        <Typography variant="body2" color="primary">
+                          {feedback.attachments.length} attachment(s)
+                        </Typography>
+                      )}
                   </Box>
 
-                  <Box sx={{ mt: 2, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <Box
+                    sx={{
+                      mt: 2,
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
                     <Typography variant="body2" color="text.secondary">
                       ID: {feedback._id.slice(-8)}
                     </Typography>
-                    <Button variant="outlined" size="small" onClick={() => setSelectedFeedback(feedback)}>
+                    <Button
+                      variant="outlined"
+                      size="small"
+                      onClick={() => setSelectedFeedback(feedback)}
+                    >
                       View Details
                     </Button>
                   </Box>
@@ -390,7 +438,11 @@ const FeedbackList = () => {
       </Grid>
 
       {/* Action Menu */}
-      <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={() => setAnchorEl(null)}>
+      <Menu
+        anchorEl={anchorEl}
+        open={Boolean(anchorEl)}
+        onClose={() => setAnchorEl(null)}
+      >
         <MenuItem onClick={() => handleTypeChange(currentActionFeedback)}>
           <Edit sx={{ mr: 1 }} />
           Change Type
@@ -407,17 +459,27 @@ const FeedbackList = () => {
       </Menu>
 
       {/* Type Change Dialog */}
-      <Dialog open={typeChangeDialogOpen} onClose={() => setTypeChangeDialogOpen(false)} maxWidth="sm" fullWidth>
+      <Dialog
+        open={typeChangeDialogOpen}
+        onClose={() => setTypeChangeDialogOpen(false)}
+        maxWidth="sm"
+        fullWidth
+      >
         <DialogTitle>Change Feedback Type</DialogTitle>
         <DialogContent>
           {editingFeedback && (
             <Box sx={{ mt: 2 }}>
               <Typography variant="body1" sx={{ mb: 2 }}>
-                Change {editingFeedback.title} from <strong>{editingFeedback.type}</strong> to:
+                Change {editingFeedback.title} from{" "}
+                <strong>{editingFeedback.type}</strong> to:
               </Typography>
               <FormControl fullWidth>
                 <InputLabel>New Type</InputLabel>
-                <Select value={newType} label="New Type" onChange={(e) => setNewType(e.target.value)}>
+                <Select
+                  value={newType}
+                  label="New Type"
+                  onChange={(e) => setNewType(e.target.value)}
+                >
                   <MenuItem value="suggestion">Suggestion</MenuItem>
                   <MenuItem value="idea">Idea</MenuItem>
                   <MenuItem value="complaint">Complaint</MenuItem>
@@ -439,30 +501,47 @@ const FeedbackList = () => {
       </Dialog>
 
       {/* Detail Dialog */}
-      <Dialog open={Boolean(selectedFeedback)} onClose={() => setSelectedFeedback(null)} maxWidth="md" fullWidth>
+      <Dialog
+        open={Boolean(selectedFeedback)}
+        onClose={() => setSelectedFeedback(null)}
+        maxWidth="md"
+        fullWidth
+      >
         {selectedFeedback && (
           <>
             <DialogTitle>
               <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                <Avatar sx={{ backgroundColor: getFeedbackColor(selectedFeedback.type) }}>
+                <Avatar
+                  sx={{
+                    backgroundColor: getFeedbackColor(selectedFeedback.type),
+                  }}
+                >
                   {getFeedbackIcon(selectedFeedback.type)}
                 </Avatar>
                 <Box>
                   <Typography variant="h6">{selectedFeedback.title}</Typography>
                   <Box sx={{ display: "flex", gap: 1, mt: 1 }}>
                     <Chip
-                      label={selectedFeedback.type.charAt(0).toUpperCase() + selectedFeedback.type.slice(1)}
+                      label={
+                        selectedFeedback.type.charAt(0).toUpperCase() +
+                        selectedFeedback.type.slice(1)
+                      }
                       sx={{
-                        backgroundColor: getFeedbackColor(selectedFeedback.type) + "20",
+                        backgroundColor:
+                          getFeedbackColor(selectedFeedback.type) + "20",
                         color: getFeedbackColor(selectedFeedback.type),
                       }}
                       size="small"
                     />
                     <Chip
-                      label={selectedFeedback.priority.charAt(0).toUpperCase() + selectedFeedback.priority.slice(1)}
+                      label={
+                        selectedFeedback.priority.charAt(0).toUpperCase() +
+                        selectedFeedback.priority.slice(1)
+                      }
                       size="small"
                       sx={{
-                        backgroundColor: getPriorityColor(selectedFeedback.priority) + "20",
+                        backgroundColor:
+                          getPriorityColor(selectedFeedback.priority) + "20",
                         color: getPriorityColor(selectedFeedback.priority),
                       }}
                     />
@@ -479,35 +558,53 @@ const FeedbackList = () => {
                 <Typography variant="subtitle2" color="text.secondary">
                   Category:
                 </Typography>
-                <Typography variant="body2">{selectedFeedback.category}</Typography>
+                <Typography variant="body2">
+                  {selectedFeedback.category}
+                </Typography>
               </Box>
 
               <Box sx={{ mb: 3 }}>
                 <Typography variant="subtitle2" color="text.secondary">
                   Department:
                 </Typography>
-                <Typography variant="body2">{selectedFeedback.department}</Typography>
+                <Typography variant="body2">
+                  {selectedFeedback.department}
+                </Typography>
               </Box>
 
               <Box sx={{ mb: 3 }}>
                 <Typography variant="subtitle2" color="text.secondary">
                   Submitted:
                 </Typography>
-                <Typography variant="body2">{new Date(selectedFeedback.submittedAt).toLocaleString()}</Typography>
+                <Typography variant="body2">
+                  {new Date(selectedFeedback.submittedAt).toLocaleString()}
+                </Typography>
               </Box>
 
-              {selectedFeedback.attachments && selectedFeedback.attachments.length > 0 && (
-                <Box sx={{ mb: 3 }}>
-                  <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
-                    Attachments:
-                  </Typography>
-                  {selectedFeedback.attachments.map((attachment: string, index: number) => (
-                    <Typography key={index} variant="body2" color="primary" sx={{ cursor: "pointer" }}>
-                      📎 Attachment {index + 1}
+              {selectedFeedback.attachments &&
+                selectedFeedback.attachments.length > 0 && (
+                  <Box sx={{ mb: 3 }}>
+                    <Typography
+                      variant="subtitle2"
+                      color="text.secondary"
+                      sx={{ mb: 1 }}
+                    >
+                      Attachments:
                     </Typography>
-                  ))}
-                </Box>
-              )}
+                    {selectedFeedback.attachments.map(
+                      (attachment: string, index: number) => (
+                        <Typography
+                          key={index}
+                          variant="body2"
+                          color="primary"
+                          sx={{ cursor: "pointer" }}
+                        >
+                          📎 Attachment {index + 1}
+                        </Typography>
+                      ),
+                    )}
+                  </Box>
+                )}
 
               <Divider sx={{ my: 2 }} />
 
@@ -529,13 +626,12 @@ const FeedbackList = () => {
 
       {/* Feedback Form Modal */}
       <FeedbackFormModal
-        open={feedbackModalOpen} 
-        onClose={handleCloseFeedbackModal} 
-        feedbackId={editingFeedback?._id} 
-     
+        open={feedbackModalOpen}
+        onClose={handleCloseFeedbackModal}
+        feedbackId={editingFeedback?._id}
       />
     </Box>
-  )
-}
+  );
+};
 
-export default FeedbackList
+export default FeedbackList;

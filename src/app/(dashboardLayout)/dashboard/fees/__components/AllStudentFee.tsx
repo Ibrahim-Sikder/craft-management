@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // app/dashboard/fees/list/page.tsx (Updated)
 /* eslint-disable react/no-unescaped-entities */
 /* eslint-disable @typescript-eslint/no-explicit-any */
@@ -42,7 +43,7 @@ export default function AllStudentFee() {
             "Content-Type": "application/json",
           },
           body: JSON.stringify(adjustmentData),
-        }
+        },
       );
 
       if (response.ok) {
@@ -67,23 +68,23 @@ export default function AllStudentFee() {
     const fees = feesData?.data?.data || [];
     const totalFees = fees.reduce(
       (sum: number, fee: any) => sum + (fee.amount || 0),
-      0
+      0,
     );
     const totalPaid = fees.reduce(
       (sum: number, fee: any) => sum + (fee.paidAmount || 0),
-      0
+      0,
     );
     const totalDue = fees.reduce(
       (sum: number, fee: any) => sum + (fee.dueAmount || 0),
-      0
+      0,
     );
     const totalDiscount = fees.reduce(
       (sum: number, fee: any) => sum + (fee.discount || 0),
-      0
+      0,
     );
     const totalWaiver = fees.reduce(
       (sum: number, fee: any) => sum + (fee.waiver || 0),
-      0
+      0,
     );
 
     return [
@@ -263,10 +264,7 @@ export default function AllStudentFee() {
     {
       label: "Apply Bulk Discount",
       icon: <Discount fontSize="small" />,
-      onClick: (selectedRows: any[]) => {
-        // Implement bulk discount functionality
-        console.log("Bulk discount for:", selectedRows);
-      },
+      onClick: (selectedRows: any[]) => {},
     },
     {
       label: "Delete Selected",
@@ -274,7 +272,7 @@ export default function AllStudentFee() {
       onClick: (selectedRows: any[]) => {
         if (
           confirm(
-            `Are you sure you want to delete ${selectedRows.length} records?`
+            `Are you sure you want to delete ${selectedRows.length} records?`,
           )
         ) {
           selectedRows.forEach((row) => deleteFee(row._id));
@@ -288,9 +286,7 @@ export default function AllStudentFee() {
     window.location.reload();
   };
 
-  const handleExport = () => {
-    console.log("Export all data");
-  };
+  const handleExport = () => {};
 
   const handlePrint = () => {
     window.print();

@@ -52,32 +52,32 @@ const FeeCollection = () => {
   const [selectedFee, setSelectedFee] = useState<any>(null);
 
   const { data, error, isLoading, refetch } = useGetDueFeesQuery({
-    year: year.toString(),
-    class: classFilter,
+    year: year?.toString() || "",
+    class: classFilter || "",
   });
-
-  console.log("student due fee ", dueFeesData);
-
-  // ---------- Process API data ----------
   useEffect(() => {
-    if (data && data.success) {
-      const dueFees = data.data?.dueFees || [];
-      const totalDue = data.data?.totalDue || 0;
-      const totalPaid = data.data?.totalPaid || 0;
-      const totalFees = data.data?.totalFees || 0;
+    if (data?.success) {
+      const dueFees = data?.data?.dueFees || [];
+      const totalDue = data?.data?.totalDue || 0;
+      const totalPaid = data?.data?.totalPaid || 0;
+      const totalFees = data?.data?.totalFees || 0;
 
       const studentsMap = new Map<string, any>();
 
-      dueFees.forEach((fee: any) => {
-        const studentId = fee.student._id;
+      dueFees?.forEach((fee: any) => {
+        const studentId = fee?.student?._id;
+
+        if (!studentId) return;
 
         if (!studentsMap.has(studentId)) {
-          // Get class name from student.className array
           let className = "";
-          if (fee.student.className && Array.isArray(fee.student.className)) {
-            const classObj = fee.student.className[0];
+          if (
+            fee?.student?.className &&
+            Array.isArray(fee?.student?.className)
+          ) {
+            const classObj = fee?.student?.className[0];
             if (classObj && typeof classObj === "object") {
-              className = classObj.className || "";
+              className = classObj?.className || "";
             } else if (typeof classObj === "string") {
               className = classObj;
             }
@@ -85,13 +85,13 @@ const FeeCollection = () => {
 
           studentsMap.set(studentId, {
             student: {
-              _id: fee.student._id,
-              studentId: fee.student.studentId,
-              name: fee.student.nameBangla || fee.student.name || "",
-              mobile: fee.student.mobile || "",
+              _id: fee?.student?._id || "",
+              studentId: fee?.student?.studentId || "",
+              name: fee?.student?.nameBangla || fee?.student?.name || "",
+              mobile: fee?.student?.mobile || "",
             },
             enrollment: {
-              _id: studentId, // Use student ID as fallback since enrollment might not exist
+              _id: studentId,
               rollNumber: "",
               className: className,
             },
@@ -103,42 +103,42 @@ const FeeCollection = () => {
           });
         }
 
-        const studentEntry = studentsMap.get(studentId)!;
+        const studentEntry = studentsMap.get(studentId);
 
-        // Get class name from the fee data or student
+        if (!studentEntry) return;
         const className =
-          fee.class || fee.student.className?.[0]?.className || "";
+          fee?.class || fee?.student?.className?.[0]?.className || "";
 
-        studentEntry.fees.push({
-          _id: fee._id,
-          feeType: fee.feeType,
-          month: fee.month,
+        studentEntry?.fees?.push({
+          _id: fee?._id || "",
+          feeType: fee?.feeType || "",
+          month: fee?.month || "",
           class: className,
-          amount: fee.amount,
-          paidAmount: fee.paidAmount,
-          dueAmount: fee.dueAmount,
-          status: fee.status,
-          academicYear: fee.academicYear,
-          isCurrentMonth: fee.isCurrentMonth,
-          advanceUsed: fee.advanceUsed || 0,
-          discount: fee.discount || 0,
-          waiver: fee.waiver || 0,
-          computedDue: fee.dueAmount,
+          amount: fee?.amount || 0,
+          paidAmount: fee?.paidAmount || 0,
+          dueAmount: fee?.dueAmount || 0,
+          status: fee?.status || "",
+          academicYear: fee?.academicYear || "",
+          isCurrentMonth: fee?.isCurrentMonth || false,
+          advanceUsed: fee?.advanceUsed || 0,
+          discount: fee?.discount || 0,
+          waiver: fee?.waiver || 0,
+          computedDue: fee?.dueAmount || 0,
         });
 
-        studentEntry.totalDue += fee.dueAmount || 0;
-        studentEntry.totalPaid += fee.paidAmount || 0;
-        studentEntry.totalAmount += fee.amount || 0;
-        studentEntry.feesCount = studentEntry.fees.length;
+        studentEntry.totalDue += fee?.dueAmount || 0;
+        studentEntry.totalPaid += fee?.paidAmount || 0;
+        studentEntry.totalAmount += fee?.amount || 0;
+        studentEntry.feesCount = studentEntry?.fees?.length || 0;
       });
 
       const studentsData = Array.from(studentsMap.values());
       const summaryData = {
-        totalStudents: studentsData.length,
-        totalFees,
-        totalDueAmount: totalDue,
-        totalPaidAmount: totalPaid,
-        totalAmount: totalFees,
+        totalStudents: studentsData?.length || 0,
+        totalFees: totalFees || 0,
+        totalDueAmount: totalDue || 0,
+        totalPaidAmount: totalPaid || 0,
+        totalAmount: totalFees || 0,
       };
 
       setDueFeesData(studentsData);
@@ -153,67 +153,73 @@ const FeeCollection = () => {
   }, [data, error]);
 
   useEffect(() => {
-    refetch();
+    refetch?.();
   }, [year, classFilter, refetch]);
 
   const getStudentOverallStatus = (fees: Fee[]): string => {
-    if (fees.every((f) => f.status === "paid")) return "paid";
-    if (fees.some((f) => f.status === "unpaid")) return "unpaid";
-    if (fees.some((f) => f.status === "partial")) return "partial";
+    if (!fees?.length) return "unknown";
+    if (fees?.every((f) => f?.status === "paid")) return "paid";
+    if (fees?.some((f) => f?.status === "unpaid")) return "unpaid";
+    if (fees?.some((f) => f?.status === "partial")) return "partial";
     return "unknown";
   };
 
   const studentTableData: StudentTableRow[] = useMemo(() => {
-    return dueFeesData.map((studentWithFees) => {
-      const firstFee = studentWithFees.fees[0];
-      return {
-        _id: studentWithFees.student._id,
-        studentName: studentWithFees.student.name,
-        studentId: studentWithFees.student.studentId,
-        rollNumber: studentWithFees.enrollment.rollNumber,
-        mobile: studentWithFees.student.mobile,
-        className: firstFee?.class || "",
-        totalAmount: studentWithFees.totalAmount,
-        totalPaid: studentWithFees.totalPaid,
-        totalDue: studentWithFees.totalDue,
-        feesCount: studentWithFees.fees.length,
-        overallStatus: getStudentOverallStatus(studentWithFees.fees),
-      };
-    });
+    return (
+      dueFeesData?.map((studentWithFees) => {
+        const firstFee = studentWithFees?.fees?.[0];
+        return {
+          _id: studentWithFees?.student?._id || "",
+          studentName: studentWithFees?.student?.name || "",
+          studentId: studentWithFees?.student?.studentId || "",
+          rollNumber: studentWithFees?.enrollment?.rollNumber || "",
+          mobile: studentWithFees?.student?.mobile || "",
+          className: firstFee?.class || "",
+          totalAmount: studentWithFees?.totalAmount || 0,
+          totalPaid: studentWithFees?.totalPaid || 0,
+          totalDue: studentWithFees?.totalDue || 0,
+          feesCount: studentWithFees?.fees?.length || 0,
+          overallStatus: getStudentOverallStatus(studentWithFees?.fees || []),
+        };
+      }) || []
+    );
   }, [dueFeesData]);
 
   const classFilterOptions = useMemo(() => {
     const seen = new Set<string>();
-    return studentTableData
-      .filter((row) => row.className && row.className.trim() !== "")
-      .reduce((acc: { label: string; value: string }[], row) => {
-        if (!seen.has(row.className)) {
-          seen.add(row.className);
-          acc.push({ label: row.className, value: row.className });
-        }
-        return acc;
-      }, [])
-      .sort((a, b) => a.label.localeCompare(b.label));
+    return (
+      studentTableData
+        ?.filter((row) => row?.className && row?.className?.trim() !== "")
+        ?.reduce((acc: { label: string; value: string }[], row) => {
+          if (!seen.has(row?.className)) {
+            seen.add(row?.className);
+            acc.push({ label: row?.className, value: row?.className });
+          }
+          return acc;
+        }, [])
+        ?.sort((a, b) => a?.label?.localeCompare(b?.label)) || []
+    );
   }, [studentTableData]);
 
   const statusFilterOptions = useMemo(() => {
     const seen = new Set<string>();
-    return studentTableData
-      .filter((row) => row.overallStatus)
-      .reduce((acc: { label: string; value: string }[], row) => {
-        if (!seen.has(row.overallStatus)) {
-          seen.add(row.overallStatus);
-          const label =
-            row.overallStatus.charAt(0).toUpperCase() +
-            row.overallStatus.slice(1);
-          acc.push({ label, value: row.overallStatus });
-        }
-        return acc;
-      }, [])
-      .sort((a, b) => a.label.localeCompare(b.label));
+    return (
+      studentTableData
+        ?.filter((row) => row?.overallStatus)
+        ?.reduce((acc: { label: string; value: string }[], row) => {
+          if (!seen.has(row?.overallStatus)) {
+            seen.add(row?.overallStatus);
+            const label =
+              row?.overallStatus?.charAt(0)?.toUpperCase() +
+              row?.overallStatus?.slice(1);
+            acc.push({ label, value: row?.overallStatus });
+          }
+          return acc;
+        }, [])
+        ?.sort((a, b) => a?.label?.localeCompare(b?.label)) || []
+    );
   }, [studentTableData]);
 
-  // ---------- Handlers ----------
   const handleViewDetails = (student: StudentWithFees) => {
     setSelectedStudent(student);
     setViewDetailsModalOpen(true);
@@ -231,7 +237,7 @@ const FeeCollection = () => {
 
   const handleBulkPaymentCompleted = (receiptData: any) => {
     setSelectedReceipt(receiptData);
-    setPrintModalOpen(true); // directly open print modal
+    setPrintModalOpen(true);
   };
 
   const handleClosePrintModal = () => {
@@ -246,11 +252,10 @@ const FeeCollection = () => {
 
   const handlePaymentSuccess = () => {
     toast.success("Payment processed successfully!");
-    refetch();
+    refetch?.();
     handleClosePaymentModal();
   };
 
-  // Handler for Bulk Payment from the details modal
   const handleBulkPaymentFromView = () => {
     if (selectedStudent) {
       handleOpenBulkPayment(selectedStudent);
@@ -274,7 +279,6 @@ const FeeCollection = () => {
         sortable: true,
         filterable: true,
       },
-
       {
         id: "mobile",
         label: "Mobile",
@@ -322,7 +326,6 @@ const FeeCollection = () => {
             </Typography>
           ),
         },
-
         {
           id: "overallStatus",
           label: "Status",
@@ -338,10 +341,10 @@ const FeeCollection = () => {
             };
             const config = statusMap[value] || {
               color: "default",
-              label: value,
+              label: value || "Unknown",
             };
             return (
-              <Chip label={config.label} color={config.color} size="small" />
+              <Chip label={config?.label} color={config?.color} size="small" />
             );
           },
         },
@@ -356,7 +359,7 @@ const FeeCollection = () => {
       label: "View Details",
       icon: <Visibility fontSize="small" />,
       onClick: (row) => {
-        const student = dueFeesData.find((s) => s.student._id === row._id);
+        const student = dueFeesData?.find((s) => s?.student?._id === row?._id);
         if (student) handleViewDetails(student);
       },
       color: "primary",
@@ -366,7 +369,7 @@ const FeeCollection = () => {
       label: "Collect Payment",
       icon: <Payment fontSize="small" />,
       onClick: (row) => {
-        const student = dueFeesData.find((s) => s.student._id === row._id);
+        const student = dueFeesData?.find((s) => s?.student?._id === row?._id);
         if (student) handleOpenBulkPayment(student);
       },
       color: "success",
@@ -379,7 +382,7 @@ const FeeCollection = () => {
       label: "Collect Selected",
       icon: <Payment />,
       onClick: (selectedRows: any[]) => {
-        if (selectedRows.length === 0) {
+        if (!selectedRows?.length) {
           toast.error("Please select at least one student");
           return;
         }
@@ -402,10 +405,10 @@ const FeeCollection = () => {
       </Typography>
 
       <Box sx={{ p: { xs: 1, sm: 2, md: 3 }, height: "100%", width: "100%" }}>
-        {studentTableData.length > 0 ? (
+        {studentTableData?.length > 0 ? (
           <CraftTable
             title="Due Fees (Student Wise)"
-            subtitle={`Showing ${studentTableData.length} students with due fees`}
+            subtitle={`Showing ${studentTableData?.length} students with due fees`}
             columns={getStudentColumns()}
             data={studentTableData}
             loading={loading}
@@ -440,8 +443,6 @@ const FeeCollection = () => {
           </Card>
         )}
       </Box>
-
-      {/* Student Fee Details Modal (using reusable CraftModal) */}
       <StudentFeeDetailsModal
         open={viewDetailsModalOpen}
         onClose={() => setViewDetailsModalOpen(false)}
@@ -453,22 +454,23 @@ const FeeCollection = () => {
         totalDue={selectedStudent?.totalDue || 0}
         onBulkPayment={handleBulkPaymentFromView}
       />
-
-      {/* Bulk Payment Modal */}
       {selectedStudentForBulk && (
         <BulkPaymentModal
           open={bulkPaymentModalOpen}
           onClose={handleCloseBulkPayment}
           student={{
-            _id: selectedStudentForBulk.student._id,
-            name: selectedStudentForBulk.student.name,
-            studentId: selectedStudentForBulk.student.studentId,
-            className: selectedStudentForBulk.fees[0]?.class || "",
-            roll: selectedStudentForBulk.enrollment.rollNumber,
+            _id: selectedStudentForBulk?.student?._id || "",
+            name: selectedStudentForBulk?.student?.name || "",
+            studentId: selectedStudentForBulk?.student?.studentId || "",
+            className: selectedStudentForBulk?.fees?.[0]?.class || "",
+            roll: selectedStudentForBulk?.enrollment?.rollNumber || "",
             section: "",
             jamatGroup: "",
           }}
-          fees={selectedStudentForBulk.fees.filter((fee) => fee.dueAmount > 0)}
+          fees={
+            selectedStudentForBulk?.fees?.filter((fee) => fee?.dueAmount > 0) ||
+            []
+          }
           refetch={refetch}
           onPaymentCompleted={handleBulkPaymentCompleted}
         />
@@ -478,7 +480,6 @@ const FeeCollection = () => {
         setOpen={handleClosePrintModal}
         receipt={selectedReceipt}
         onClose={() => {
-          console.log("Navigating to student list");
           setTimeout(() => {
             window.location.href = "/dashboard/student/list";
           }, 100);

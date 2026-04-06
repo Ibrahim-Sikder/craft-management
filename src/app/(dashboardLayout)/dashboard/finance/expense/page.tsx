@@ -254,7 +254,6 @@
 
 //   const handleSubmit = () => {
 //     // Here you would save the expense data to your backend
-//     console.log(formData)
 //     handleCloseDialog()
 //   }
 
@@ -923,8 +922,7 @@
 
 // export default ExpensePage
 
-
-import React from 'react';
+import React from "react";
 
 const page = () => {
   return (

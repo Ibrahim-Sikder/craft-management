@@ -228,11 +228,8 @@ export const AdmissionDetailModal = ({
     return <h2>Loading.........</h2>;
   }
 
-  console.log("Application data in modal:", application);
-
   if (!application) return null;
 
-  // Destructure all possible fields from the application object with optional chaining
   const {
     applicationId,
     _id,

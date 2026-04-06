@@ -288,9 +288,7 @@ const FeeCategoriesPage = () => {
     },
   ];
 
-  const handleExport = () => {
-    console.log("Export data:", feeCategoriesWithTotal);
-  };
+  const handleExport = () => {};
 
   const handlePrint = () => {
     window.print();

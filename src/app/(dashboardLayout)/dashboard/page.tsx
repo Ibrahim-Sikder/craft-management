@@ -8,7 +8,9 @@ import { OverviewTab } from "@/components/dashboard/OverviewTab";
 import {
   useGetAccountingReportQuery,
   useGetAllMetaQuery,
+  useGetStudentByClassQuery,
 } from "@/redux/api/metaApi";
+import { GradientTypography } from "@/style/Typography";
 import {
   AccountBalanceWallet,
   AdminPanelSettings,
@@ -42,7 +44,7 @@ import {
   Box,
   Grid,
   IconButton,
-  Paper, 
+  Paper,
   Tab,
   Tabs,
   Typography,
@@ -51,30 +53,6 @@ import {
 } from "@mui/material";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-
-const GradientTypography = ({ variant, children, gradient, sx = {} }: any) => {
-  const theme = useTheme();
-  const gradientColors =
-    gradient ||
-    `linear-gradient(135deg, ${theme.palette.primary.main} 0%, ${theme.palette.secondary.main} 100%)`;
-  return (
-    <Typography
-      variant={variant}
-      sx={{
-        background: gradientColors,
-        WebkitBackgroundClip: "text",
-        WebkitTextFillColor: "transparent",
-        backgroundClip: "text",
-        textFillColor: "transparent",
-        display: "inline-block",
-        fontWeight: 700,
-        ...sx,
-      }}
-    >
-      {children}
-    </Typography>
-  );
-};
 
 export default function DashboardHome() {
   const router = useRouter();
@@ -89,8 +67,14 @@ export default function DashboardHome() {
   const { data, isLoading } = useGetAllMetaQuery({});
   const { data: accountingData, isLoading: accountingLoading } =
     useGetAccountingReportQuery({});
+  const { data: classWiseData, isLoading: classWiseLoading } =
+    useGetStudentByClassQuery({});
+
+  console.log("Class Wise Student Data:", classWiseData);
+
   const metaData = data?.data;
   const accountingReport = accountingData?.data?.data;
+  const classWiseStudentData = classWiseData?.data || {};
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
   const handleProfileMenuOpen = (event: any) =>
@@ -234,7 +218,6 @@ export default function DashboardHome() {
       color: "#1976D2",
       path: "/dashboard/student/list",
     },
-
     {
       title: "Communications",
       description: "Notice, Feedback",
@@ -249,14 +232,13 @@ export default function DashboardHome() {
       color: "#E91E63",
       path: "/dashboard/daily-meal-report",
     },
-    { 
+    {
       title: "Fees",
       description: "Fee Collections",
       icon: <Payment />,
       color: "#009688",
       path: "/dashboard/fees/list",
     },
-
     {
       title: "Accounting",
       description: "Income, Expense",
@@ -264,7 +246,6 @@ export default function DashboardHome() {
       color: "#2E7D32",
       path: "/dashboard/accounting/income",
     },
-
     {
       title: "User Mgmt",
       description: "Users & Permissions",
@@ -283,49 +264,48 @@ export default function DashboardHome() {
 
   return (
     <Box
-  sx={(theme) => ({
-    minHeight: "100vh",
-    background: `linear-gradient( 
+      sx={(theme) => ({
+        background: `linear-gradient( 
       135deg,
       ${alpha(theme.palette.primary.light, theme.palette.mode === "dark" ? 0.25 : 0.15)} 0%,
       ${alpha(theme.palette.background.default, theme.palette.mode === "dark" ? 0.95 : 0.8)} 100%
     )`,
-    borderRadius: { xs: 0, md: 6 },
-    p: { xs: 1, sm: 2, md: 3 },
-    position: "relative",
-    overflow: "hidden",
+        borderRadius: { xs: 0, md: 6 },
+        p: { xs: 1, sm: 2, md: 3 },
+        position: "relative",
+        overflow: "hidden",
 
-    "&::before": {
-      content: '""',
-      position: "absolute",
-      width: { xs: "120px", md: "300px" },
-      height: { xs: "120px", md: "300px" },
-      top: "-60px",
-      right: "-60px",
-      borderRadius: "50%",
-      background: `radial-gradient(${alpha(
-        theme.palette.primary.light,
-        theme.palette.mode === "dark" ? 0.3 : 0.2
-      )} 0%, transparent 70%)`,
-      zIndex: 0,
-    },
+        "&::before": {
+          content: '""',
+          position: "absolute",
+          width: { xs: "120px", md: "300px" },
+          height: { xs: "120px", md: "300px" },
+          top: "-60px",
+          right: "-60px",
+          borderRadius: "50%",
+          background: `radial-gradient(${alpha(
+            theme.palette.primary.light,
+            theme.palette.mode === "dark" ? 0.3 : 0.2,
+          )} 0%, transparent 70%)`,
+          zIndex: 0,
+        },
 
-    "&::after": {
-      content: '""',
-      position: "absolute",
-      width: { xs: "100px", md: "200px" },
-      height: { xs: "100px", md: "200px" },
-      bottom: "-40px",
-      left: "-40px",
-      borderRadius: "50%",
-      background: `radial-gradient(${alpha(
-        theme.palette.secondary?.light || theme.palette.primary.light,
-        theme.palette.mode === "dark" ? 0.3 : 0.2
-      )} 0%, transparent 70%)`,
-      zIndex: 0,
-    },
-  })}
->
+        "&::after": {
+          content: '""',
+          position: "absolute",
+          width: { xs: "100px", md: "200px" },
+          height: { xs: "100px", md: "200px" },
+          bottom: "-40px",
+          left: "-40px",
+          borderRadius: "50%",
+          background: `radial-gradient(${alpha(
+            theme.palette.secondary?.light || theme.palette.primary.light,
+            theme.palette.mode === "dark" ? 0.3 : 0.2,
+          )} 0%, transparent 70%)`,
+          zIndex: 0,
+        },
+      })}
+    >
       <Box sx={{ position: "relative", zIndex: 2 }}>
         {/* ── Header ── */}
         <Box
@@ -365,13 +345,13 @@ export default function DashboardHome() {
                     lg: "2.2rem",
                   },
                   lineHeight: 1.2,
-                  whiteSpace: { xs: "nowrap", sm: "normal" }, 
+                  whiteSpace: { xs: "nowrap", sm: "normal" },
                   overflow: "hidden",
                   textOverflow: "ellipsis",
                 }}
               >
                 {isMobile
-                  ? "CI Dashboard" 
+                  ? "CI Dashboard"
                   : "Craft International Institute Dashboard"}
               </GradientTypography>
               <Typography
@@ -424,7 +404,13 @@ export default function DashboardHome() {
         </Paper>
 
         {/* ── Tab Panels ── */}
-        {activeTab === 0 && <OverviewTab stats={stats} isLoading={isLoading} />}
+        {activeTab === 0 && (
+          <OverviewTab
+            stats={stats}
+            isLoading={isLoading}
+            classWiseData={classWiseStudentData}
+          />
+        )}
         {activeTab === 1 && (
           <AccountingTab
             accountingStats={accountingStats}

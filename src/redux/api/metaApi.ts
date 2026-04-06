@@ -23,12 +23,18 @@ export const metaApi = baseApi.injectEndpoints({
         method: "GET",
       }),
     }),
+    getStudentByClass: build.query({
+      query: () => ({
+        url: "/meta/class-wise-student-count",
+        method: "GET",
+      }),
+    }),
   }),
 });
 
-// ✅ Hooks
 export const {
   useGetAllMetaQuery,
   useGetFinancialDashboardQuery,
   useGetAccountingReportQuery,
+  useGetStudentByClassQuery,
 } = metaApi;

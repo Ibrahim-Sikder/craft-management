@@ -361,9 +361,7 @@ export default function TeacherList() {
             {
               label: "Export Selected",
               icon: <FileDownloadIcon />,
-              onClick: (selectedRows) => {
-                console.log("Exporting selected:", selectedRows);
-              },
+              onClick: (selectedRows) => {},
             },
           ]}
         />

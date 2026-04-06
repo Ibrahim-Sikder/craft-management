@@ -178,7 +178,7 @@ const AllDueFees = () => {
             totalPaid: studentItem.totalPaid,
             totalAmount: studentItem.totalAmount,
             feesCount: studentItem.feesCount,
-          })
+          }),
         );
 
         setDueFeesData(transformedData);
@@ -234,7 +234,7 @@ const AllDueFees = () => {
         studentName: studentWithFees.student.name,
         rollNumber: studentWithFees.enrollment.rollNumber,
         mobile: studentWithFees.student.mobile,
-      }))
+      })),
   );
 
   // Define columns based on screen size
@@ -391,7 +391,7 @@ const AllDueFees = () => {
       icon: <Visibility fontSize="small" />,
       onClick: (row) => {
         const student = dueFeesData.find((s) =>
-          s.fees.some((fee) => fee._id === row._id)
+          s.fees.some((fee) => fee._id === row._id),
         );
         if (student) {
           handleViewDetails(student);
@@ -412,7 +412,6 @@ const AllDueFees = () => {
           toast.error("Please select at least one fee");
           return;
         }
-        console.log("Selected fees for payment:", selectedRows);
         toast.success(`Selected ${selectedRows.length} fees for payment`);
       },
       color: "success" as const,
@@ -422,12 +421,12 @@ const AllDueFees = () => {
   // Calculate totals from data
   const totalDueAmount = dueFeesData.reduce(
     (sum, student) => sum + student.totalDue,
-    0
+    0,
   );
   const totalStudents = dueFeesData.length;
   const totalFees = dueFeesData.reduce(
     (sum, student) => sum + student.fees.length,
-    0
+    0,
   );
 
   if (isLoading) {

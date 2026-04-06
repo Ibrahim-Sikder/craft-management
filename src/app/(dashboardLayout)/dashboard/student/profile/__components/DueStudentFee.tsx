@@ -50,7 +50,6 @@ const DueStudentFee = ({
     setViewModalOpen(true);
   };
 
-  console.log("Received studentFees:", studentFees);
   // State for print modal
   const [printModalOpen, setPrintModalOpen] = useState(false);
   const [selectedReceipt, setSelectedReceipt] = useState<any>(null);

@@ -72,16 +72,16 @@
 //     days.forEach(day => {
 //       // Sum total pages read
 //       totalPages += parseInt(data[`${day.key}TotalRead`] || 0, 10)
-      
+
 //       // Sum mistakes from all sessions
 //       totalMistakes += parseInt(data[`${day.key}MorningMistakes`] || 0, 10)
 //       totalMistakes += parseInt(data[`${day.key}AfternoonMistakes`] || 0, 10)
 //       totalMistakes += parseInt(data[`${day.key}NightMistakes`] || 0, 10)
-      
+
 //       // Parse dua/hadith/masala field
 //       const duaHadithMasala = data[`${day.key}DuaHadithMasala`] || ""
 //       const parts = duaHadithMasala.split('/').map(part => part.trim())
-      
+
 //       if (parts.length >= 1) {
 //         // First part is usually dua count
 //         totalDuas += parseInt(parts[0], 10) || 0
@@ -96,7 +96,7 @@
 //   }
 
 //   const handleSubmit = async (data: FieldValues) => {
-//     console.log(data)
+
 //     try {
 //       // Calculate weekly totals
 //       const weeklyTotals = calculateWeeklyTotals(data)
@@ -107,7 +107,7 @@
 //         studentName: data.studentName?.label,
 //         reportDate: data.reportDate,
 //         month: month || new Date().getMonth().toString(),
-  
+
 //         dailyEntries: {
 //           saturday: {
 //             morning: {
@@ -132,7 +132,7 @@
 //             duaHadithMasala: data.saturdayDuaHadithMasala || "",
 //             mashq: data.saturdayMashq || "না",
 //             tajweed: data.saturdayTajweed || "",
-    
+
 //           },
 //           sunday: {
 //             morning: {
@@ -157,7 +157,7 @@
 //             duaHadithMasala: data.sundayDuaHadithMasala || "",
 //             mashq: data.sundayMashq || "না",
 //             tajweed: data.sundayTajweed || "",
-       
+
 //           },
 //           monday: {
 //             morning: {
@@ -278,14 +278,12 @@
 //             duaHadithMasala: data.fridayDuaHadithMasala || "",
 //             mashq: data.fridayMashq || "না",
 //             tajweed: data.fridayTajweed || "",
- 
+
 //           },
 //         },
 //         // Include weekly totals
 //         ...weeklyTotals
 //       }
-
-//       console.log('formatted data', formattedData)
 
 //       // Submit the data using the mutation
 //       const result = await createNazeraReport(formattedData).unwrap()
@@ -532,16 +530,16 @@
 //                   <TableCell colSpan={15}>
 //                     <Grid container spacing={1} sx={{ fontSize: "0.75rem" }}>
 //                       <Grid item xs={3}>
-//                         Total Pages: ____ 
+//                         Total Pages: ____
 //                       </Grid>
 //                       <Grid item xs={3}>
-//                         Total Mistakes: ____ 
+//                         Total Mistakes: ____
 //                       </Grid>
 //                       <Grid item xs={3}>
-//                         Total Duas: ____ 
+//                         Total Duas: ____
 //                       </Grid>
 //                       <Grid item xs={3}>
-//                         Total Hadith: ____ 
+//                         Total Hadith: ____
 //                       </Grid>
 //                     </Grid>
 //                   </TableCell>

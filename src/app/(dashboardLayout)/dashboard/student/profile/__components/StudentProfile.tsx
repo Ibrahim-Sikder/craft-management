@@ -61,7 +61,6 @@ const StudentProfile = ({ params }: PageProps) => {
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
-  console.log("Fetched student data:", singleStudent);
   if (isLoading) {
     return <LoadingState />;
   }

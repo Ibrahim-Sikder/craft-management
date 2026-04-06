@@ -229,7 +229,6 @@
 
 //   const handleSubmit = () => {
 //     // Here you would save the income data to your backend
-//     console.log(formData)
 //     handleCloseDialog()
 //   }
 

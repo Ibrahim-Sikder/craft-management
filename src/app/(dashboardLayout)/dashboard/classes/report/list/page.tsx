@@ -165,8 +165,6 @@ export default function ClassReportList() {
 
   const { teacherOptions, subjectOptions, classOptions } = useAcademicOption();
 
-  console.log("class option this ", classOptions);
-
   const hourOptions = ["১ম", "২য়", "৩য়", "৪র্থ", "৫ম", "৬ষ্ঠ", "৭ম", "৮ম"];
   const lessonEvaluationOptions = [
     "পড়া শিখেছে",

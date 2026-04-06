@@ -49,8 +49,6 @@ function SobokiDailyReportForm({ studentName, reportDate, month, id }: any) {
   const { data: singleData, isLoading: singleReportLoading } =
     useGetSingleSobokiReportQuery(id);
 
-  console.log(singleData);
-
   const handleSubmit = async (formData: any) => {
     try {
       const weeklyTotals = calculateWeeklyTotals(formData);

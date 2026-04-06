@@ -284,7 +284,6 @@ export default function AdmissionApplicationList({
   const [modalOpen, setModalOpen] = useState(false);
   const [selectedApplication, setSelectedApplication] = useState<any>(null);
   const [modalLoading, setModalLoading] = useState(false);
-  console.log("selectedApplication", selectedApplication);
   useEffect(() => {
     setRowsPerPage(isMobile ? 5 : isTablet ? 8 : 10);
   }, [isMobile, isTablet]);
@@ -421,23 +420,13 @@ export default function AdmissionApplicationList({
     try {
       const original = (row as any).original;
 
-      // ✅ Debug: log raw API shape so you can verify field names
-      console.log(
-        "📋 Raw application data:",
-        JSON.stringify(original, null, 2),
-      );
-
       const formData = mapApplicationToFormData(original);
       const studentId =
         row.applicationId || row._id?.slice(-6).toUpperCase() || "STU";
 
-      // ✅ Debug: log mapped form data to confirm addresses etc.
-      console.log("📋 Mapped formData for PDF:", formData);
-
       await generatePDFFromData(formData, studentId);
       Swal.close();
     } catch (error) {
-      console.error("❌ PDF generation failed:", error);
       Swal.fire({
         icon: "error",
         title: "PDF Generation Failed",

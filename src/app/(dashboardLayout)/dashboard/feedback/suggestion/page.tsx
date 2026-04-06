@@ -83,7 +83,6 @@
 
 //   const handleUpdateFeedback = (updatedData: any) => {
 //     // Here you would typically call your update API
-//     console.log("Updated feedback:", updatedData)
 //     // You might want to refetch the data or update the local state
 //   }
 

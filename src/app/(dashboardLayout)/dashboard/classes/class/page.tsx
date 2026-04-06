@@ -104,9 +104,7 @@ export default function ClassesListPage() {
     // Navigate to add class page
   };
 
-  const handleExport = () => {
-    console.log("Export data");
-  };
+  const handleExport = () => {};
 
   const handlePrint = () => {
     window.print();
@@ -343,9 +341,7 @@ export default function ClassesListPage() {
                   {
                     label: "Export Selected",
                     icon: <FileDownloadIcon />,
-                    onClick: (selectedRows) => {
-                      console.log("Exporting selected classes:", selectedRows);
-                    },
+                    onClick: (selectedRows) => {},
                   },
                 ]}
               />
