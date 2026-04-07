@@ -16,24 +16,19 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Redirect to home if no token
   if (!accessToken) {
     return NextResponse.redirect(new URL("/", request.url));
   }
 
-  // Decode token
   try {
     const decoded = jwtDecode(accessToken);
-
-    // Check role-based access
     const role = (decoded as any)?.role;
 
-    // ✅ Updated allowed routes with all roles
     const allowedRoutes: Record<string, RegExp[]> = {
       super_admin: [/^\/dashboard(\/.*)?$/],
       admin: [/^\/dashboard(\/.*)?$/],
       teacher: [/^\/dashboard(\/.*)?$/],
-      accountant: [/^\/dashboard(\/.*)?$/], // ✅ Added accountant role
+      accountant: [/^\/dashboard(\/.*)?$/],
       student: [/^\/dashboard(\/.*)?$/],
       class_teacher: [/^\/dashboard(\/.*)?$/],
       super_visor: [/^\/dashboard(\/.*)?$/],
