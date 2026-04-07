@@ -47,11 +47,6 @@ import CraftTable, { Column, RowAction } from "@/components/Table";
 import { formatDate } from "@/utils/formateDate";
 import { customTheme } from "@/ThemeStyle";
 
-const roboto = Roboto({
-  weight: ["300", "400", "500", "700"],
-  subsets: ["latin"],
-});
-
 const roleConfig: Record<
   string,
   {

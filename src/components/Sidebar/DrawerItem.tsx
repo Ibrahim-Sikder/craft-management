@@ -202,57 +202,7 @@ export const navigationItems: NavigationItem[] = [
       },
     ],
   },
-  // Keep individual items for backward compatibility or specific access
-  {
-    title: "All Enrollments",
-    icon: (
-      <ColorfulIcon color="#5D4037">
-        <HowToReg />
-      </ColorfulIcon>
-    ),
-    path: "/dashboard/enrollments/list",
-    roles: ["admin", "super_admin", "teacher"],
-  },
-  {
-    title: "Pending Admissions",
-    icon: (
-      <ColorfulIcon color="#5D4037">
-        <PendingActions />
-      </ColorfulIcon>
-    ),
-    path: "/dashboard/online-application/pending",
-    roles: ["admin", "super_admin", "teacher"],
-  },
-  {
-    title: "Approved Admissions",
-    icon: (
-      <ColorfulIcon color="#5D4037">
-        <CheckCircle />
-      </ColorfulIcon>
-    ),
-    path: "/dashboard/online-application/approved",
-    roles: ["admin", "super_admin", "teacher"],
-  },
-  {
-    title: "Enrolled Applications",
-    icon: (
-      <ColorfulIcon color="#5D4037">
-        <HowToReg />
-      </ColorfulIcon>
-    ),
-    path: "/dashboard/online-application/enrolled",
-    roles: ["admin", "super_admin", "teacher"],
-  },
-  {
-    title: "Rejected Admissions",
-    icon: (
-      <ColorfulIcon color="#5D4037">
-        <Restore />
-      </ColorfulIcon>
-    ),
-    path: "/dashboard/online-application/rejected",
-    roles: ["admin", "super_admin", "teacher"],
-  },
+
   {
     title: "Discount Student",
     icon: (

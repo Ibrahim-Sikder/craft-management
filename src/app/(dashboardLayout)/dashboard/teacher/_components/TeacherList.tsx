@@ -18,6 +18,7 @@ import {
   alpha,
   Avatar,
   Box,
+  Chip,
   Container,
   Typography,
   useTheme,
@@ -37,8 +38,14 @@ export default function TeacherList() {
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
-  const [sortColumn, setSortColumn] = useState<string>("name");
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
+  const [sortColumn, setSortColumn] = useState<string>("createdAt");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc");
+
+  // Build sort string for backend
+  const getSortString = () => {
+    if (!sortColumn) return "-createdAt";
+    return sortDirection === "desc" ? `-${sortColumn}` : sortColumn;
+  };
 
   const {
     data: teacherData,
@@ -48,6 +55,7 @@ export default function TeacherList() {
     limit: rowsPerPage,
     page: page + 1,
     searchTerm: searchTerm,
+    sort: getSortString(), // Send sort to backend
   });
 
   const [deleteTeacher] = useDeleteTeacherMutation();
@@ -157,13 +165,10 @@ export default function TeacherList() {
     }
   };
 
-  const handleRefresh = () => {
-    refetch();
-  };
-
   const handleSortChange = (column: string, direction: "asc" | "desc") => {
     setSortColumn(column);
     setSortDirection(direction);
+    setPage(0); // Reset to first page when sorting changes
   };
 
   const handleSearchChange = (term: string) => {
@@ -171,24 +176,16 @@ export default function TeacherList() {
     setPage(0);
   };
 
-  const filteredTeachers = teachers.filter(
-    (teacher) =>
-      filterDepartment === "all" || teacher.department === filterDepartment,
-  );
+  // Get unique departments for filter
+  const departments = ["all", ...new Set(teachers.map((t) => t.department))];
 
-  const sortedTeachers = [...filteredTeachers].sort((a, b) => {
-    let comparison = 0;
-    if (sortColumn === "name") comparison = a.name.localeCompare(b.name);
-    else if (sortColumn === "department")
-      comparison = a.department.localeCompare(b.department);
-    else if (sortColumn === "experience")
-      comparison = a.experience - b.experience;
-    else if (sortColumn === "rating")
-      comparison = Number.parseFloat(a.rating) - Number.parseFloat(b.rating);
-    else if (sortColumn === "performance")
-      comparison = a.performance - b.performance;
-    return sortDirection === "asc" ? comparison : -comparison;
-  });
+  // Filter data on frontend (only for department filter)
+  const getFilteredData = () => {
+    if (filterDepartment === "all") return teachers;
+    return teachers.filter(
+      (teacher) => teacher.department === filterDepartment,
+    );
+  };
 
   const columns: Column[] = [
     {
@@ -217,7 +214,7 @@ export default function TeacherList() {
       id: "name",
       label: "Teacher Name",
       minWidth: 180,
-      sortable: true,
+      sortable: true, // Enable server-side sorting
       render: (row: Teacher) => (
         <Box>
           <Typography variant="body1" fontWeight={600}>
@@ -229,29 +226,17 @@ export default function TeacherList() {
         </Box>
       ),
     },
-    // {
-    //   id: "department",
-    //   label: "Department",
-    //   minWidth: 140,
-    //   sortable: true,
-    //   render: (row: Teacher) => (
-    //     <DepartmentChip
-    //       label={row.department}
-    //       size="small"
-    //       sx={{
-    //         backgroundColor: alpha(
-    //           departmentColors[row.department] ||
-    //             departmentColors["Not Specified"],
-    //           0.1,
-    //         ),
-    //         color:
-    //           departmentColors[row.department] ||
-    //           departmentColors["Not Specified"],
-    //         fontWeight: 500,
-    //       }}
-    //     />
-    //   ),
-    // },
+    {
+      id: "department",
+      label: "Department",
+      minWidth: 140,
+      sortable: true,
+      render: (row: Teacher) => (
+        <Typography variant="body2" fontWeight={500}>
+          {row.department}
+        </Typography>
+      ),
+    },
     {
       id: "qualifications",
       label: "Qualification",
@@ -311,12 +296,8 @@ export default function TeacherList() {
       color: "error",
     },
   ];
-
-  const getFilteredData = () => {
-    if (filterDepartment === "all") return sortedTeachers;
-    return sortedTeachers.filter(
-      (teacher) => teacher.department === filterDepartment,
-    );
+  const handleAddTeacher = () => {
+    window.location.href = "/dashboard/teacher/new";
   };
 
   return (
@@ -331,13 +312,14 @@ export default function TeacherList() {
           searchable={true}
           filterable={true}
           sortable={true}
+          onAdd={handleAddTeacher}
           pagination={true}
           selectable={true}
           onSortChange={handleSortChange}
           onSearchChange={handleSearchChange}
           idField="_id"
-          defaultSortColumn="name"
-          defaultSortDirection="asc"
+          defaultSortColumn="createdAt"
+          defaultSortDirection="desc"
           rowsPerPage={rowsPerPage}
           page={page}
           onPageChange={(newPage) => setPage(newPage)}
@@ -356,15 +338,31 @@ export default function TeacherList() {
           striped={true}
           hover={true}
           stickyHeader={true}
-          serverSideSorting={false}
+          serverSideSorting={true} // Enable server-side sorting
           bulkActions={[
             {
               label: "Export Selected",
               icon: <FileDownloadIcon />,
-              onClick: (selectedRows) => {},
+              onClick: (selectedRows) => {
+                console.log("Export selected rows:", selectedRows);
+              },
             },
           ]}
         />
+
+        {/* Optional: Department Filter UI */}
+        <Box sx={{ mt: 2, display: "flex", gap: 1, flexWrap: "wrap" }}>
+          {departments.map((dept) => (
+            <Chip
+              key={dept}
+              label={dept === "all" ? "All Departments" : dept}
+              onClick={() => setFilterDepartment(dept)}
+              color={filterDepartment === dept ? "primary" : "default"}
+              variant={filterDepartment === dept ? "filled" : "outlined"}
+              sx={{ cursor: "pointer" }}
+            />
+          ))}
+        </Box>
       </Container>
     </Box>
   );

@@ -1,10 +1,10 @@
-
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DesktopDatePicker } from "@mui/x-date-pickers/DesktopDatePicker";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import { Controller, useFormContext } from "react-hook-form";
 import dayjs, { Dayjs } from "dayjs";
 import { SxProps } from "@mui/material";
+import { useEffect } from "react";
 
 interface ITASDatepickerProps {
   name: string;
@@ -18,7 +18,6 @@ interface ITASDatepickerProps {
   disabled?: boolean;
 }
 
-
 const CraftDatePicker = ({
   name,
   size = "medium",
@@ -27,17 +26,47 @@ const CraftDatePicker = ({
   fullWidth = true,
   margin = "normal",
   sx,
-    disabled = false,
+  disabled = false,
 }: ITASDatepickerProps) => {
-  const { control } = useFormContext();
+  const { control, setValue, getValues } = useFormContext();
+
+  // Helper function to get today's date in YYYY-MM-DD format
+  const getTodayDate = () => {
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, "0");
+    const day = String(today.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  // Set default value when component mounts or when form is reset
+  useEffect(() => {
+    const currentValue = getValues(name);
+    if (!currentValue || currentValue === "") {
+      setValue(name, getTodayDate(), {
+        shouldValidate: true,
+        shouldDirty: false,
+      });
+    }
+  }, [name, setValue, getValues]);
 
   return (
     <Controller
       name={name}
       control={control}
-      defaultValue={dayjs().format("YYYY-MM-DD")} // Set default value
       render={({ field: { onChange, value, ...field } }) => {
-        const dateValue: Dayjs = value ? dayjs(value) : dayjs();
+        // If no value exists or value is empty, use today's date
+        let dateValue: Dayjs;
+
+        if (value && value !== "") {
+          dateValue = dayjs(value);
+          // Check if the date is valid
+          if (!dateValue.isValid()) {
+            dateValue = dayjs(getTodayDate());
+          }
+        } else {
+          dateValue = dayjs(getTodayDate());
+        }
 
         return (
           <LocalizationProvider dateAdapter={AdapterDayjs}>
@@ -45,11 +74,16 @@ const CraftDatePicker = ({
               label={label}
               {...field}
               onChange={(date: Dayjs | null) => {
-                const finalDate = date || dayjs();
-                onChange(finalDate.format("YYYY-MM-DD"));
+                if (date && date.isValid()) {
+                  onChange(date.format("YYYY-MM-DD"));
+                } else {
+                  // If date is null or invalid, use today's date
+                  const todayDate = getTodayDate();
+                  onChange(todayDate);
+                  setValue(name, todayDate);
+                }
               }}
               value={dateValue}
-              // maxDate={disableFuture ? dayjs() : undefined}
               slotProps={{
                 textField: {
                   required: required,
@@ -60,7 +94,7 @@ const CraftDatePicker = ({
                   variant: "outlined",
                   fullWidth: fullWidth,
                   margin: margin,
-                  disabled: disabled, 
+                  disabled: disabled,
                 },
               }}
             />

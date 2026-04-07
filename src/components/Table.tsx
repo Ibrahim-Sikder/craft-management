@@ -63,8 +63,6 @@ import {
 } from "@mui/material";
 import { format } from "date-fns";
 import React, { useEffect, useMemo, useState } from "react";
-
-// Styled components for enhanced design
 const StyledTableHead = styled(TableHead)(({ theme }) => ({
   "& .MuiTableCell-head": {
     backgroundColor: theme.palette.primary.main,
@@ -138,13 +136,13 @@ export interface Column {
   sortable?: boolean;
   filterable?: boolean;
   type?:
-  | "text"
-  | "number"
-  | "date"
-  | "boolean"
-  | "status"
-  | "avatar"
-  | "progress";
+    | "text"
+    | "number"
+    | "date"
+    | "boolean"
+    | "status"
+    | "avatar"
+    | "progress";
   visible?: boolean;
   render?: (row: any) => React.ReactNode;
   filterOptions?: { label: string; value: string }[];
@@ -1076,8 +1074,8 @@ const CraftTable: React.FC<EnhancedTableProps> = ({
                           transition: "all 0.2s ease-in-out",
                           "&:hover": column.sortable
                             ? {
-                              backgroundColor: theme.palette.primary.dark,
-                            }
+                                backgroundColor: theme.palette.primary.dark,
+                              }
                             : {},
                         }}
                         onClick={() => column.sortable && handleSort(column.id)}
@@ -1272,9 +1270,9 @@ const CraftTable: React.FC<EnhancedTableProps> = ({
                                 sx={{
                                   backgroundColor: action.color
                                     ? alpha(
-                                      theme.palette[action.color].main,
-                                      0.1,
-                                    )
+                                        theme.palette[action.color].main,
+                                        0.1,
+                                      )
                                     : undefined,
                                   color: action.color
                                     ? theme.palette[action.color].main
@@ -1302,7 +1300,7 @@ const CraftTable: React.FC<EnhancedTableProps> = ({
                                 // CRITICAL FIX: Use idField instead of hardcoded 'id'
                                 open={Boolean(
                                   actionMenuAnchor &&
-                                  currentRow?.[idField] === row?.[idField],
+                                    currentRow?.[idField] === row?.[idField],
                                 )}
                                 onClose={handleActionMenuClose}
                                 PaperProps={{
@@ -1385,9 +1383,9 @@ const CraftTable: React.FC<EnhancedTableProps> = ({
                 py: 2,
               },
               "& .MuiTablePagination-selectLabel, & .MuiTablePagination-displayedRows":
-              {
-                fontWeight: 500,
-              },
+                {
+                  fontWeight: 500,
+                },
             }}
           />
         )}

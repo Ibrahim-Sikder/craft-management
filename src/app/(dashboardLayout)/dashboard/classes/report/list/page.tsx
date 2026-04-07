@@ -416,7 +416,7 @@ export default function ClassReportList() {
             {options?.map((opt: any) => (
               <MenuItem
                 key={opt.value ?? opt}
-                value={opt.value ?? opt}
+                value={opt.label ?? opt}
                 sx={{ fontSize: { xs: "0.72rem", sm: "0.85rem" } }}
               >
                 {opt.label ?? opt}
