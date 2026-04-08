@@ -5,6 +5,8 @@
 import { AccountingTab } from "@/components/dashboard/AccountingTab";
 import { ModuleCard } from "@/components/dashboard/ModuleCard";
 import { OverviewTab } from "@/components/dashboard/OverviewTab";
+import { FeeCollectionOverview } from "@/components/dashboard/FeeCollectionOverview";
+import { useGetClassWiseFeeSummaryQuery } from "@/redux/api/feesApi";
 import {
   useGetAccountingReportQuery,
   useGetAllMetaQuery,
@@ -14,30 +16,20 @@ import { GradientTypography } from "@/style/Typography";
 import {
   AccountBalanceWallet,
   AdminPanelSettings,
-  Apartment,
-  Assignment,
   AutoStories,
   Badge,
   Campaign,
   CollectionsBookmark,
   Dashboard as DashboardIcon,
   EditNote,
-  EmojiEvents,
-  EventNote,
-  FactCheck,
   ImportContacts,
-  LocalPrintshop,
   Menu as MenuIcon,
   Payment,
   PeopleAlt,
   Restaurant,
   School,
-  Settings,
-  Sms,
-  VolunteerActivism,
   Web,
   Work,
-  WorkspacePremium,
 } from "@mui/icons-material";
 import {
   alpha,
@@ -59,8 +51,8 @@ export default function DashboardHome() {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isMd = useMediaQuery(theme.breakpoints.down("md"));
-
-  const [profileAnchorEl, setProfileAnchorEl] = useState(null);
+  const { data: classWiseFeeSummary, isLoading: feeSummaryLoading } =
+    useGetClassWiseFeeSummaryQuery({});
   const [sidebarOpen, setSidebarOpen] = useState(!isMd);
   const [activeTab, setActiveTab] = useState(0);
 
@@ -70,16 +62,12 @@ export default function DashboardHome() {
   const { data: classWiseData, isLoading: classWiseLoading } =
     useGetStudentByClassQuery({});
 
-  console.log("Class Wise Student Data:", classWiseData);
-
   const metaData = data?.data;
   const accountingReport = accountingData?.data?.data;
   const classWiseStudentData = classWiseData?.data || {};
+  const feeSummaryData = classWiseFeeSummary?.data;
 
   const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
-  const handleProfileMenuOpen = (event: any) =>
-    setProfileAnchorEl(event.currentTarget);
-  const handleProfileMenuClose = () => setProfileAnchorEl(null);
   const handleTabChange = (_event: any, newValue: any) =>
     setActiveTab(newValue);
   const navigateToModule = (path: any) => router.push(path);
@@ -274,40 +262,10 @@ export default function DashboardHome() {
         p: { xs: 1, sm: 2, md: 3 },
         position: "relative",
         overflow: "hidden",
-
-        "&::before": {
-          content: '""',
-          position: "absolute",
-          width: { xs: "120px", md: "300px" },
-          height: { xs: "120px", md: "300px" },
-          top: "-60px",
-          right: "-60px",
-          borderRadius: "50%",
-          background: `radial-gradient(${alpha(
-            theme.palette.primary.light,
-            theme.palette.mode === "dark" ? 0.3 : 0.2,
-          )} 0%, transparent 70%)`,
-          zIndex: 0,
-        },
-
-        "&::after": {
-          content: '""',
-          position: "absolute",
-          width: { xs: "100px", md: "200px" },
-          height: { xs: "100px", md: "200px" },
-          bottom: "-40px",
-          left: "-40px",
-          borderRadius: "50%",
-          background: `radial-gradient(${alpha(
-            theme.palette.secondary?.light || theme.palette.primary.light,
-            theme.palette.mode === "dark" ? 0.3 : 0.2,
-          )} 0%, transparent 70%)`,
-          zIndex: 0,
-        },
       })}
     >
       <Box sx={{ position: "relative", zIndex: 2 }}>
-        {/* ── Header ── */}
+        {/* Header */}
         <Box
           sx={{
             display: "flex",
@@ -318,7 +276,6 @@ export default function DashboardHome() {
             flexWrap: "nowrap",
           }}
         >
-          {/* Left: hamburger + title */}
           <Box
             sx={{ display: "flex", alignItems: "center", minWidth: 0, flex: 1 }}
           >
@@ -365,7 +322,15 @@ export default function DashboardHome() {
           </Box>
         </Box>
 
-        {/* ── Tabs ── */}
+        {/* Fee Collection Overview with Class-wise Data */}
+        <FeeCollectionOverview
+          feeSummaryData={feeSummaryData}
+          isLoading={feeSummaryLoading}
+          classWiseData={classWiseStudentData}
+          showClassWise={true}
+        />
+
+        {/* Tabs */}
         <Paper
           sx={{ borderRadius: 3, mb: { xs: 2, sm: 3 }, overflow: "hidden" }}
         >
@@ -383,9 +348,6 @@ export default function DashboardHome() {
                 fontSize: { xs: "0.72rem", sm: "0.85rem" },
                 px: { xs: 1.5, sm: 2.5 },
                 gap: { xs: 0.5, sm: 1 },
-                "& .MuiTab-iconWrapper": {
-                  fontSize: { xs: "1rem", sm: "1.25rem" },
-                },
               },
               "& .Mui-selected": { color: theme.palette.primary.main },
             }}
@@ -403,7 +365,7 @@ export default function DashboardHome() {
           </Tabs>
         </Paper>
 
-        {/* ── Tab Panels ── */}
+        {/* Tab Panels */}
         {activeTab === 0 && (
           <OverviewTab
             stats={stats}
@@ -418,7 +380,7 @@ export default function DashboardHome() {
           />
         )}
 
-        {/* ── Quick Access Modules ── */}
+        {/* Quick Access Modules */}
         <Box sx={{ mb: 2 }}>
           <GradientTypography
             variant="h4"
@@ -438,7 +400,6 @@ export default function DashboardHome() {
             Quick Access Modules
           </GradientTypography>
 
-          {/* xs=6 → 2 cols mobile | sm=4 → 3 cols tablet | md=3 → 4 cols desktop */}
           <Grid container spacing={{ xs: 1, sm: 1.5, md: 2 }}>
             {modules.map((module, index) => (
               <Grid item xs={6} sm={4} md={3} lg={2} key={index}>

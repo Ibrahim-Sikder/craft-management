@@ -52,7 +52,13 @@ export const feesApi = baseApi.injectEndpoints({
       }),
       invalidatesTags: ["fees"],
     }),
-
+    getClassWiseFeeSummary: build.query({
+      query: () => ({
+        url: "/fees/class-summary",
+        method: "GET",
+      }),
+      providesTags: ["fees"],
+    }),
     deleteFee: build.mutation({
       query: (id) => ({
         url: `/fees/${id}`,
@@ -71,4 +77,5 @@ export const {
   useDeleteFeeMutation,
   useGetDueFeesQuery,
   usePayFeeMutation,
+  useGetClassWiseFeeSummaryQuery
 } = feesApi;
