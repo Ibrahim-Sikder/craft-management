@@ -53,9 +53,10 @@ export const feesApi = baseApi.injectEndpoints({
       invalidatesTags: ["fees"],
     }),
     getClassWiseFeeSummary: build.query({
-      query: () => ({
+      query: ({ academicYear }) => ({
         url: "/fees/class-summary",
         method: "GET",
+        params: { academicYear }, // This will be a number now
       }),
       providesTags: ["fees"],
     }),
