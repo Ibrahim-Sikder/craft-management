@@ -336,17 +336,17 @@ const LoginDashboard = () => {
   const getCredentialPlaceholder = () => {
     switch (selectedRole) {
       case "superadmin":
-        return "superadmin@craft.edu";
+        return "";
       case "admin":
-        return "admin@craft.edu or Employee ID";
+        return "";
       case "teacher":
-        return "teacher@craft.edu or Teacher ID";
+        return "";
       case "accountant":
-        return "accountant@craft.edu or Staff ID";
+        return "";
       case "student":
-        return "Student ID, Email or Phone (e.g., student@craft.edu)";
+        return "Student ID";
       default:
-        return "Email, Phone or Student ID";
+        return "";
     }
   };
 
