@@ -68,40 +68,6 @@ type UserRole =
   | "student"
   | null;
 
-// Demo credentials for each role for Craft International Institute
-const demoCredentials = {
-  superadmin: {
-    email: "",
-    password: "",
-    displayEmail: "",
-    displayPassword: "",
-  },
-  admin: {
-    email: "",
-    password: "",
-    displayEmail: "",
-    displayPassword: "",
-  },
-  teacher: {
-    email: "",
-    password: "",
-    displayEmail: "",
-    displayPassword: "",
-  },
-  accountant: {
-    email: "",
-    password: "",
-    displayEmail: "",
-    displayPassword: "",
-  },
-  student: {
-    email: "",
-    password: "",
-    displayEmail: "",
-    displayPassword: "",
-  },
-};
-
 // World-class role configuration with DISTINCT VIBRANT COLORS for each role
 const roleConfig = {
   superadmin: {
@@ -190,7 +156,7 @@ const loginSchema = z.object({
     .string({
       required_error: "Please enter your password",
     })
-    .min(6, "Password must be at least 6 characters long"),
+    .min(1, "Password is required"),
 });
 
 const LoginDashboard = () => {
@@ -198,10 +164,7 @@ const LoginDashboard = () => {
   const [hoveredRole, setHoveredRole] = useState<UserRole>(null);
   const [showLoginForm, setShowLoginForm] = useState(false);
   const [animateCards, setAnimateCards] = useState(false);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [showPassword, setShowPassword] = useState(false);
-  const [credentialValue, setCredentialValue] = useState("");
-  const [passwordValue, setPasswordValue] = useState("");
   const [particles, setParticles] = useState<
     Array<{
       id: number;
@@ -241,29 +204,9 @@ const LoginDashboard = () => {
     setParticles(newParticles);
   }, [isMobile]);
 
-  useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({ x: e.clientX, y: e.clientY });
-    };
-    if (!isMobile) {
-      window.addEventListener("mousemove", handleMouseMove);
-    }
-    return () => {
-      if (!isMobile) {
-        window.removeEventListener("mousemove", handleMouseMove);
-      }
-    };
-  }, [isMobile]);
-
   const handleRoleSelect = (role: UserRole) => {
     setSelectedRole(role);
     setShowLoginForm(true);
-
-    if (role) {
-      const creds = demoCredentials[role];
-      setCredentialValue(creds.email);
-      setPasswordValue(creds.password);
-    }
 
     setTimeout(() => {
       const element = document.getElementById("login-form-section");
@@ -279,8 +222,6 @@ const LoginDashboard = () => {
   const handleBackToRoles = () => {
     setShowLoginForm(false);
     setSelectedRole(null);
-    setCredentialValue("");
-    setPasswordValue("");
     setTimeout(() => {
       const element = document.getElementById("role-section");
       if (element) {
@@ -290,16 +231,6 @@ const LoginDashboard = () => {
         });
       }
     }, 100);
-  };
-
-  const handleCopyCredentials = (type: "email" | "password") => {
-    if (!selectedRole) return;
-    const creds = demoCredentials[selectedRole];
-    const textToCopy = type === "email" ? creds.email : creds.password;
-    navigator.clipboard.writeText(textToCopy);
-    toast.success(
-      `${type === "email" ? "Email" : "Password"} copied to clipboard!`,
-    );
   };
 
   const handleSubmit = async (data: FieldValues) => {
@@ -330,23 +261,6 @@ const LoginDashboard = () => {
       const errorMessage =
         err?.data?.message || err?.message || "An error occurred during login.";
       toast.error(errorMessage);
-    }
-  };
-
-  const getCredentialPlaceholder = () => {
-    switch (selectedRole) {
-      case "superadmin":
-        return "";
-      case "admin":
-        return "";
-      case "teacher":
-        return "";
-      case "accountant":
-        return "";
-      case "student":
-        return "Student ID";
-      default:
-        return "";
     }
   };
 
@@ -736,16 +650,7 @@ const LoginDashboard = () => {
                             <Star
                               sx={{ fontSize: { xs: 8, sm: 10, md: 12 } }}
                             />
-                            <span
-                            // style={{ display: { xs: "none", sm: "inline" } }}
-                            >
-                              {roleConfig[role].rank}
-                            </span>
-                            <span
-                            // style={{ display: { xs: "inline", sm: "none" } }}
-                            >
-                              {roleConfig[role].rank.charAt(0)}
-                            </span>
+                            <span>{roleConfig[role].rank}</span>
                           </Box>
 
                           {/* Icon with Role Color */}
@@ -1090,10 +995,6 @@ const LoginDashboard = () => {
                     <CraftForm
                       onSubmit={handleSubmit}
                       resolver={zodResolver(loginSchema)}
-                      defaultValues={{
-                        credential: credentialValue,
-                        password: passwordValue,
-                      }}
                     >
                       <Box
                         sx={{
@@ -1127,12 +1028,10 @@ const LoginDashboard = () => {
                           </Typography>
                           <CraftInput
                             type="text"
-                            placeholder={getCredentialPlaceholder()}
                             name="credential"
+                            placeholder=""
                             fullWidth
                             size="medium"
-                            value={credentialValue}
-                            onChange={(e) => setCredentialValue(e.target.value)}
                             sx={{
                               "& .MuiOutlinedInput-root": {
                                 borderRadius: 3,
@@ -1189,10 +1088,8 @@ const LoginDashboard = () => {
                             type={showPassword ? "text" : "password"}
                             fullWidth
                             size="medium"
-                            placeholder="Enter your password"
                             name="password"
-                            value={passwordValue}
-                            onChange={(e) => setPasswordValue(e.target.value)}
+                            placeholder=""
                             InputProps={{
                               endAdornment: (
                                 <InputAdornment position="end">
