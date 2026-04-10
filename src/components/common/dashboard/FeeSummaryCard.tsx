@@ -107,7 +107,8 @@ const FeeSummaryCard = ({
         background: `linear-gradient(135deg, ${alpha(finalColor, 0.1)} 0%, ${alpha(finalColor, 0.02)} 100%)`,
         borderLeft: `4px solid ${finalColor}`,
         transition: "transform 0.2s, box-shadow 0.2s",
-        cursor: onClick ? "pointer" : "default",
+
+        cursor: onClick ? "pointer" : "pointer",
         "&:hover": onClick
           ? {
               transform: "translateY(-4px)",

@@ -24,12 +24,14 @@ import {
   useTheme,
 } from "@mui/material";
 import FeeSummaryCard from "../common/dashboard/FeeSummaryCard";
+import { useRouter } from "next/navigation";
 
 export const FeeCollectionOverview = ({
   feeSummaryData,
   isLoading = false,
 }: FeeCollectionOverviewProps) => {
   const theme = useTheme();
+  const router = useRouter();
 
   const calculateFeeTotals = () => {
     if (!feeSummaryData?.classes) {
@@ -118,6 +120,11 @@ export const FeeCollectionOverview = ({
       ? ((grandTotal.totalDue / grandTotal.totalAmount) * 100).toFixed(1)
       : "0";
 
+  // Handle card click navigation
+  const handleCardClick = (cardType: string) => {
+    router.push(`/dashboard/fees/summary?tab=${cardType.toLowerCase()}`);
+  };
+
   // Create stat cards data array for StatCard component
   const feeStatCards = [
     {
@@ -127,6 +134,7 @@ export const FeeCollectionOverview = ({
       color: theme.palette.info.main,
       subtitle: `Target: ${formatCurrency(currentMonthTotal.totalAmount)}`,
       variant: "default" as const,
+      cardType: "current-month",
     },
     {
       title: "YEARLY COLLECTION",
@@ -135,6 +143,7 @@ export const FeeCollectionOverview = ({
       color: theme.palette.success.main,
       subtitle: `Total: ${formatCurrency(yearlyTotal.totalAmount)}`,
       variant: "default" as const,
+      cardType: "yearly",
     },
     {
       title: "GRAND TOTAL",
@@ -143,6 +152,7 @@ export const FeeCollectionOverview = ({
       color: theme.palette.primary.main,
       subtitle: `Overall: ${formatCurrency(grandTotal.totalAmount)}`,
       variant: "default" as const,
+      cardType: "grand-total",
     },
     {
       title: "TOTAL DUE",
@@ -151,6 +161,7 @@ export const FeeCollectionOverview = ({
       color: theme.palette.error.main,
       subtitle: `${duePercentage}% of total`,
       variant: "default" as const,
+      cardType: "due",
     },
     {
       title: "TOTAL DISCOUNT",
@@ -159,6 +170,7 @@ export const FeeCollectionOverview = ({
       color: theme.palette.warning.main,
       subtitle: `${discountRate}% of total`,
       variant: "default" as const,
+      cardType: "discount",
     },
     {
       title: "COLLECTION RATE",
@@ -167,6 +179,7 @@ export const FeeCollectionOverview = ({
       color: theme.palette.success.main,
       subtitle: `${formatCurrency(grandTotal.totalPaid)} collected`,
       variant: "default" as const,
+      cardType: "collection-rate",
     },
     {
       title: "TOTAL CLASSES",
@@ -175,6 +188,7 @@ export const FeeCollectionOverview = ({
       color: theme.palette.info.main,
       subtitle: "Active classes",
       variant: "default" as const,
+      cardType: "classes",
     },
     {
       title: "DISCOUNT RATE",
@@ -183,6 +197,7 @@ export const FeeCollectionOverview = ({
       color: theme.palette.warning.main,
       subtitle: `${formatCurrency(grandTotal.totalDiscount)} given`,
       variant: "default" as const,
+      cardType: "discount-rate",
     },
   ];
 
@@ -216,15 +231,20 @@ export const FeeCollectionOverview = ({
           <Grid container spacing={2}>
             {feeStatCards.map((card, index) => (
               <Grid item xs={6} sm={4} md={3} lg={3} key={`fee-${index}`}>
-                <FeeSummaryCard
-                  title={card.title}
-                  value={card.value}
-                  icon={card.icon}
-                  color={card.color}
-                  subtitle={card.subtitle}
-                  variant={card.variant}
-                  loading={isLoading}
-                />
+                <Box
+                  onClick={() => handleCardClick(card.cardType)}
+                  sx={{ cursor: "pointer" }}
+                >
+                  <FeeSummaryCard
+                    title={card.title}
+                    value={card.value}
+                    icon={card.icon}
+                    color={card.color}
+                    subtitle={card.subtitle}
+                    variant={card.variant}
+                    loading={isLoading}
+                  />
+                </Box>
               </Grid>
             ))}
           </Grid>
