@@ -13,12 +13,13 @@ import { useGetAllAdmissionApplicationsQuery } from "@/redux/api/admissionApplic
 export function useAcademicOption(limit = 100, initialSearch = "") {
   const [page] = useState(0);
   const [searchTerm] = useState(initialSearch);
-  const studentDepartment = "Hifz Student";
-
+  const department = 'academic'
   const { data: classData } = useGetAllClassesQuery({
     limit: limit,
     page: page + 1,
     searchTerm: searchTerm,
+    department: department
+
   });
   const { data: applicationData } = useGetAllAdmissionApplicationsQuery({
     limit: 100,
@@ -52,7 +53,9 @@ export function useAcademicOption(limit = 100, initialSearch = "") {
       limit,
       page: page + 1,
       searchTerm,
+      department: department
     });
+
 
   // Fetch students
   const { data: studentData, isLoading: studentLoading } =
@@ -60,8 +63,8 @@ export function useAcademicOption(limit = 100, initialSearch = "") {
       limit,
       page: page + 1,
       searchTerm,
-      studentDepartment,
-    });
+      studentDepartment: department
+    })
 
   // Transform to select options
   const teacherOptions = useMemo(

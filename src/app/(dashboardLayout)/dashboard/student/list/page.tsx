@@ -81,6 +81,8 @@ const StudentList = () => {
     page: 1,
   });
 
+  console.log("meta ", metaData);
+
   const { data: sectionData } = useGetAllSectionsQuery({});
 
   const [deleteStudent] = useDeleteStudentMutation();
@@ -88,17 +90,14 @@ const StudentList = () => {
   const students = studentData?.data || [];
   const totalStudents = studentData?.meta?.total || 0;
 
-  // Prepare table data with flattened fields for class and section
   const tableData = useMemo(() => {
     return students.map((student: any) => {
-      // Extract class name
       let className = "N/A";
       if (Array.isArray(student.className) && student.className.length > 0) {
         className =
           student.className[0].className || student.className[0].name || "N/A";
       }
 
-      // Extract section name
       let sectionName = "N/A";
       if (Array.isArray(student.section) && student.section.length > 0) {
         sectionName =
@@ -124,8 +123,6 @@ const StudentList = () => {
         options.push({ value: cls, label: cls });
       }
     });
-
-    // Sort according to the reference order
     return options.sort((a, b) => {
       const ia = classOrder.indexOf(a.value);
       const ib = classOrder.indexOf(b.value);
@@ -135,8 +132,6 @@ const StudentList = () => {
       return a.label.localeCompare(b.label);
     });
   }, [tableData]);
-
-  // Build section filter options from sectionData (all available sections)
   const sectionFilterOptions = useMemo(() => {
     if (!sectionData?.data) return [];
     let sections: any[] = [];
@@ -198,7 +193,6 @@ const StudentList = () => {
     });
   };
 
-  // Define table columns – using only fields that actually exist in the data
   const columns: Column[] = [
     {
       id: "studentId",
@@ -388,11 +382,11 @@ const StudentList = () => {
           <div className="flex flex-row justify-center items-center content-center text-white">
             <School sx={{ mr: 1, fontSize: { sm: 25, md: 40 } }} />
             <div className="text-lg md:text-4xl font-bold">
-              Student Management System
+              Student Management
             </div>
           </div>
 
-          <div className="mt-2">
+          {/* <div className="mt-2">
             <div className="flex justify-center mb-2">
               <Chip
                 label={`Total Students: ${metaData?.data?.totalStudents}`}
@@ -451,7 +445,7 @@ const StudentList = () => {
                 />
               </div>
             </div>
-          </div>
+          </div> */}
         </div>
       </Paper>
 
@@ -463,50 +457,6 @@ const StudentList = () => {
           boxShadow: `0 4px 20px 0 ${alpha(theme.palette.grey[500], 0.2)}`,
         }}
       >
-        <Box
-          sx={{
-            p: 2,
-            background: `linear-gradient(90deg, ${alpha(customColors.secondary, 0.1)} 0%, ${alpha(customColors.accent2, 0.05)} 100%)`,
-            borderBottom: `1px solid ${alpha(theme.palette.divider, 0.1)}`,
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            flexWrap: "wrap",
-            gap: 2,
-          }}
-        >
-          <Typography
-            variant="h6"
-            sx={{ color: customColors.secondary, fontWeight: "bold" }}
-          >
-            Student Directory
-          </Typography>
-
-          <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
-            <Button
-              variant="outlined"
-              startIcon={<Refresh />}
-              onClick={handleRefresh}
-              sx={{ borderRadius: 6 }}
-            >
-              Refresh
-            </Button>
-            <Button
-              component={Link}
-              href="/dashboard/student/create"
-              variant="contained"
-              startIcon={<Add />}
-              sx={{
-                borderRadius: 6,
-                background: `linear-gradient(45deg, ${customColors.primary} 30%, ${customColors.accent3} 90%)`,
-                boxShadow: `0 3px 5px 2px ${alpha(customColors.primary, 0.3)}`,
-              }}
-            >
-              Add Student
-            </Button>
-          </Box>
-        </Box>
-
         {/* CraftTable */}
         <CraftTable
           title="Students"

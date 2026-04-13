@@ -12,10 +12,10 @@ export const classApi = baseApi.injectEndpoints({
     }),
 
     getAllClasses: build.query({
-      query: ({ limit, page, searchTerm }) => ({
+      query: ({ limit, page, searchTerm, department }) => ({
         url: "/class",
         method: "GET",
-        params: { page, limit, searchTerm },
+        params: { page, limit, searchTerm, department },
       }),
       providesTags: ["class"],
     }),

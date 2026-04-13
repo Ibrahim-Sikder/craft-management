@@ -44,6 +44,9 @@ import {
 } from "@/redux/api/classApi";
 import { theme } from "@/lib/Theme/Theme";
 
+import ClassModal from "./_components/ClassForm";
+import Swal from "sweetalert2";
+
 const departmentColors: Record<string, string> = {
   Languages: "#3a7bd5",
   Mathematics: "#00d2ff",
@@ -61,8 +64,11 @@ export default function ClassesListPage() {
   const [rowsPerPage, setRowsPerPage] = useState(10);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedClass, setSelectedClass] = useState<any | null>(null);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleteClass] = useDeleteClassMutation();
+
+  // Single modal state for both create and update
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingClassId, setEditingClassId] = useState<string | null>(null);
 
   const {
     data: classData,
@@ -83,25 +89,70 @@ export default function ClassesListPage() {
     setPage(0);
   };
 
-  const handleDeleteConfirm = async () => {
-    if (selectedClass?._id) {
+  const handleDeleteConfirm = async (classItem: any) => {
+    const result = await Swal.fire({
+      title: "Delete Class?",
+      html: `Are you sure you want to delete <strong>${classItem?.className}</strong>?<br><span style="font-size: 0.9rem;">This action cannot be undone. All sections and student records may be affected.</span>`,
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
+      reverseButtons: true,
+      customClass: {
+        popup: "swal2-popup-custom",
+        title: "swal2-title-custom",
+        htmlContainer: "swal2-html-custom",
+      },
+    });
+
+    if (result.isConfirmed) {
       try {
-        await deleteClass(selectedClass._id).unwrap();
+        await deleteClass(classItem._id).unwrap();
         refetch();
+
+        Swal.fire({
+          title: "Deleted!",
+          text: "Class has been deleted successfully.",
+          icon: "success",
+          timer: 2000,
+          showConfirmButton: false,
+        });
       } catch (error) {
         console.error("Error deleting class:", error);
+
+        Swal.fire({
+          title: "Error!",
+          text: "Failed to delete class. Please try again.",
+          icon: "error",
+          confirmButtonText: "OK",
+        });
       }
     }
-    setDeleteDialogOpen(false);
-    setSelectedClass(null);
   };
 
-  const handleDeleteCancel = () => {
-    setDeleteDialogOpen(false);
-  };
-
+  // Open modal for create
   const handleAddClass = () => {
-    // Navigate to add class page
+    setEditingClassId(null); // Clear any edit ID
+    setIsModalOpen(true);
+  };
+
+  // Open modal for edit
+  const handleEditClass = (id: string) => {
+    setEditingClassId(id); // Set the edit ID
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setEditingClassId(null); // Reset editing ID when closing
+  };
+
+  const handleModalSuccess = () => {
+    refetch(); // Refresh the table data
+    setIsModalOpen(false); // Close modal
+    setEditingClassId(null); // Reset editing ID
   };
 
   const handleExport = () => {};
@@ -111,140 +162,13 @@ export default function ClassesListPage() {
   };
 
   const classes = classData?.data?.classes || [];
-  const totalCount = classData?.data?.meta?.total || 0;
 
-  // Define table columns
   const columns: Column[] = [
     {
       id: "className",
       label: "Class Name",
       minWidth: 180,
       sortable: true,
-      render: (row: any) => (
-        <Stack direction="row" spacing={2} alignItems="center">
-          <Avatar
-            sx={{
-              width: 48,
-              height: 48,
-              bgcolor:
-                departmentColors[row.className] ||
-                departmentColors["Not Specified"],
-              border: `2px solid ${alpha(theme.palette.primary.main, 0.2)}`,
-            }}
-          >
-            {row.className?.charAt(0) || "C"}
-          </Avatar>
-          <Box>
-            <Typography variant="body1" fontWeight={600}>
-              {row.className}
-            </Typography>
-            <Typography variant="caption" color="text.secondary">
-              Class Code: {row.classCode || "N/A"}
-            </Typography>
-          </Box>
-        </Stack>
-      ),
-    },
-    {
-      id: "sections",
-      label: "Sections",
-      minWidth: 150,
-      sortable: false,
-      render: (row: any) => (
-        <Stack direction="row" spacing={1} flexWrap="wrap" useFlexGap>
-          {row.sections?.map((section: any, idx: number) => (
-            <Chip
-              key={idx}
-              label={section.name || `Section ${idx + 1}`}
-              size="small"
-              sx={{
-                bgcolor: alpha(theme.palette.info.main, 0.1),
-                color: theme.palette.info.main,
-                fontWeight: 500,
-              }}
-            />
-          ))}
-          {(!row.sections || row.sections.length === 0) && (
-            <Typography variant="body2" color="text.secondary">
-              No sections
-            </Typography>
-          )}
-        </Stack>
-      ),
-    },
-    {
-      id: "classTeacher",
-      label: "Class Teacher",
-      minWidth: 180,
-      sortable: true,
-      render: (row: any) => (
-        <Stack direction="row" spacing={1} alignItems="center">
-          <PersonIcon fontSize="small" color="action" />
-          <Typography variant="body2">
-            {row.classTeacher?.name || row.teacherName || "Not Assigned"}
-          </Typography>
-        </Stack>
-      ),
-    },
-    {
-      id: "totalStudents",
-      label: "Students",
-      minWidth: 100,
-      align: "center",
-      sortable: true,
-      render: (row: any) => (
-        <Stack
-          direction="row"
-          spacing={1}
-          alignItems="center"
-          justifyContent="center"
-        >
-          <GroupIcon fontSize="small" color="primary" />
-          <Typography variant="body2" fontWeight={600}>
-            {row.totalStudents || row.studentCount || 0}
-          </Typography>
-        </Stack>
-      ),
-    },
-    {
-      id: "totalSubjects",
-      label: "Subjects",
-      minWidth: 100,
-      align: "center",
-      sortable: true,
-      render: (row: any) => (
-        <Stack
-          direction="row"
-          spacing={1}
-          alignItems="center"
-          justifyContent="center"
-        >
-          <BookIcon fontSize="small" color="secondary" />
-          <Typography variant="body2" fontWeight={600}>
-            {row.totalSubjects || row.subjectCount || 0}
-          </Typography>
-        </Stack>
-      ),
-    },
-    {
-      id: "totalTeachers",
-      label: "Teachers",
-      minWidth: 100,
-      align: "center",
-      sortable: true,
-      render: (row: any) => (
-        <Stack
-          direction="row"
-          spacing={1}
-          alignItems="center"
-          justifyContent="center"
-        >
-          <SchoolIcon fontSize="small" color="success" />
-          <Typography variant="body2" fontWeight={600}>
-            {row.totalTeachers || row.teacherCount || 0}
-          </Typography>
-        </Stack>
-      ),
     },
   ];
 
@@ -254,7 +178,7 @@ export default function ClassesListPage() {
       label: "Edit",
       icon: <EditIcon fontSize="small" />,
       onClick: (row: any) => {
-        window.location.href = `/dashboard/classes/class/update?id=${row._id}`;
+        handleEditClass(row._id);
       },
       tooltip: "Edit Class",
       color: "warning",
@@ -263,8 +187,7 @@ export default function ClassesListPage() {
       label: "Delete",
       icon: <DeleteIcon fontSize="small" />,
       onClick: (row: any) => {
-        setSelectedClass(row);
-        setDeleteDialogOpen(true);
+        handleDeleteConfirm(row);
       },
       tooltip: "Delete Class",
       color: "error",
@@ -309,13 +232,9 @@ export default function ClassesListPage() {
                 sortable={true}
                 pagination={true}
                 selectable={true}
-                onRefresh={handleRefresh}
-                onExport={handleExport}
-                onPrint={handlePrint}
                 onAdd={handleAddClass}
                 onSearchChange={handleSearchChange}
                 idField="_id"
-                defaultSortColumn="className"
                 defaultSortDirection="asc"
                 rowsPerPage={rowsPerPage}
                 page={page}
@@ -349,50 +268,13 @@ export default function ClassesListPage() {
           </Fade>
         </Container>
       </Box>
-
-      {/* Delete Confirmation Dialog */}
-      <Dialog
-        open={deleteDialogOpen}
-        onClose={handleDeleteCancel}
-        PaperProps={{
-          sx: {
-            borderRadius: 3,
-            width: "100%",
-            maxWidth: 480,
-          },
-        }}
-      >
-        <DialogTitle sx={{ pb: 1 }}>
-          <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
-            Delete Class
-          </Typography>
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Are you sure you want to delete the class
-            {selectedClass?.className}? This action cannot be undone. All
-            sections and student records may be affected.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 3 }}>
-          <Button
-            onClick={handleDeleteCancel}
-            variant="outlined"
-            color="inherit"
-            sx={{ borderColor: "rgba(0, 0, 0, 0.12)" }}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleDeleteConfirm}
-            variant="contained"
-            color="error"
-            sx={{ ml: 2 }}
-          >
-            Delete
-          </Button>
-        </DialogActions>
-      </Dialog>
+      <ClassModal
+        id={editingClassId}
+        onSuccess={handleModalSuccess}
+        open={isModalOpen}
+        setOpen={setIsModalOpen}
+        onClose={handleCloseModal}
+      />
     </>
   );
 }
