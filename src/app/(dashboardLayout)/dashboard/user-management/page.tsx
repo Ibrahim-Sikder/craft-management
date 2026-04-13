@@ -13,11 +13,6 @@ import {
   IconButton,
   Avatar,
   Chip,
-  Dialog,
-  DialogActions,
-  DialogContent,
-  DialogContentText,
-  DialogTitle,
   Snackbar,
   Alert,
   alpha,
@@ -38,7 +33,6 @@ import {
   SupervisorAccount,
   Engineering,
 } from "@mui/icons-material";
-import { Roboto } from "next/font/google";
 import {
   useDeleteUserMutation,
   useGetAllUsersQuery,
@@ -46,6 +40,7 @@ import {
 import CraftTable, { Column, RowAction } from "@/components/Table";
 import { formatDate } from "@/utils/formateDate";
 import { customTheme } from "@/ThemeStyle";
+import Swal from "sweetalert2";
 
 const roleConfig: Record<
   string,
@@ -96,7 +91,6 @@ const roleConfig: Record<
 
 export default function UserManagementPage() {
   const [selectedUser, setSelectedUser] = useState<any | null>(null);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
   const [snackbarMessage, setSnackbarMessage] = useState("");
   const [snackbarSeverity, setSnackbarSeverity] = useState<"success" | "error">(
@@ -147,36 +141,55 @@ export default function UserManagementPage() {
   };
 
   const handleDeleteClick = (user: any) => {
-    setSelectedUser(user);
-    setDeleteDialogOpen(true);
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!selectedUser) return;
-
-    try {
-      await deleteUser(selectedUser._id).unwrap();
-      setSnackbarMessage(`User "${selectedUser.name}" deleted successfully`);
-      setSnackbarSeverity("success");
-      setSnackbarOpen(true);
-      refetch();
-    } catch (error: any) {
-      setSnackbarMessage(error?.data?.message || "Failed to delete user");
-      setSnackbarSeverity("error");
-      setSnackbarOpen(true);
-    } finally {
-      setDeleteDialogOpen(false);
-      setSelectedUser(null);
-    }
-  };
-
-  const handleDeleteCancel = () => {
-    setDeleteDialogOpen(false);
-    setSelectedUser(null);
-  };
-
-  const handleSnackbarClose = () => {
-    setSnackbarOpen(false);
+    Swal.fire({
+      title: "Delete User",
+      html: `Are you sure you want to delete <strong>${user.name}</strong>?`,
+      text: "This action cannot be undone!",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonColor: "#d33",
+      cancelButtonColor: "#3085d6",
+      confirmButtonText: "Yes, delete it!",
+      cancelButtonText: "Cancel",
+      reverseButtons: true,
+      showLoaderOnConfirm: true,
+      preConfirm: async () => {
+        try {
+          await deleteUser(user._id).unwrap();
+          Swal.fire({
+            title: "Deleted!",
+            text: `User "${user.name}" has been deleted successfully.`,
+            icon: "success",
+            confirmButtonColor: "#3085d6",
+            timer: 2000,
+            showConfirmButton: true,
+          });
+          refetch();
+        } catch (error: any) {
+          Swal.showValidationMessage(
+            error?.data?.message || "Failed to delete user",
+          );
+          throw new Error(error?.data?.message || "Failed to delete user");
+        }
+      },
+      allowOutsideClick: () => !Swal.isLoading(),
+    }).then((result) => {
+      if (result.isConfirmed) {
+        // Success handled in preConfirm
+        setSnackbarMessage(`User "${user.name}" deleted successfully`);
+        setSnackbarSeverity("success");
+        setSnackbarOpen(true);
+      } else if (result.dismiss === Swal.DismissReason.cancel) {
+        Swal.fire({
+          title: "Cancelled",
+          text: "Your user is safe :)",
+          icon: "info",
+          confirmButtonColor: "#3085d6",
+          timer: 1500,
+          showConfirmButton: false,
+        });
+      }
+    });
   };
 
   const getStatusChipProps = (status: string) => {
@@ -217,7 +230,6 @@ export default function UserManagementPage() {
     return colors[index];
   };
 
-  // Define table columns
   const columns: Column[] = [
     {
       id: "name",
@@ -310,7 +322,6 @@ export default function UserManagementPage() {
     },
   ];
 
-  // Define row actions
   const rowActions: RowAction[] = [
     {
       label: "View",
@@ -389,49 +400,14 @@ export default function UserManagementPage() {
         </Container>
       </Box>
 
-      {/* Delete Confirmation Dialog */}
-      <Dialog open={deleteDialogOpen} onClose={handleDeleteCancel}>
-        <DialogTitle sx={{ pb: 1 }}>
-          <Typography variant="h6" component="div" sx={{ fontWeight: 600 }}>
-            Delete User
-          </Typography>
-        </DialogTitle>
-        <DialogContent>
-          <DialogContentText>
-            Are you sure you want to delete the user {selectedUser?.name} ? This
-            action cannot be undone.
-          </DialogContentText>
-        </DialogContent>
-        <DialogActions sx={{ px: 3, pb: 3 }}>
-          <Button
-            onClick={handleDeleteCancel}
-            variant="outlined"
-            color="inherit"
-            sx={{ borderColor: "rgba(0, 0, 0, 0.12)" }}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={handleDeleteConfirm}
-            variant="contained"
-            color="error"
-            sx={{ ml: 2 }}
-            disabled={isDeleting}
-          >
-            {isDeleting ? "Deleting..." : "Delete"}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* Snackbar for notifications */}
       <Snackbar
         open={snackbarOpen}
         autoHideDuration={6000}
-        onClose={handleSnackbarClose}
+        onClose={() => setSnackbarOpen(false)}
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
       >
         <Alert
-          onClose={handleSnackbarClose}
+          onClose={() => setSnackbarOpen(false)}
           severity={snackbarSeverity}
           variant="filled"
           sx={{ width: "100%" }}

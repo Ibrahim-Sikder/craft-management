@@ -28,7 +28,7 @@ type TModalProps = {
   children: React.ReactNode;
   sx?: SxProps;
   size?: "sm" | "md" | "lg" | "xl";
-  onClose?: () => void; // 👈 added
+  onClose?: () => void;
 };
 
 export default function CraftModal({
@@ -44,7 +44,7 @@ export default function CraftModal({
 
   const handleClose = () => {
     setOpen(false);
-    if (onClose) onClose(); // 👈 call the external handler
+    if (onClose) onClose();
   };
 
   const sizeMap = {

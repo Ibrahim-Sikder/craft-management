@@ -12,7 +12,7 @@ import {
   Divider,
   Box,
   Avatar,
-  useTheme, 
+  useTheme,
   Paper,
   alpha,
   Chip,
@@ -30,15 +30,7 @@ import {
   Subject as SubjectIcon,
 } from "@mui/icons-material";
 import React from "react";
-
-interface ClassReportDetailsModalProps {
-  open: boolean;
-  onClose: () => void;
-  data: {
-    reportData: any;
-    studentEvaluation: any;
-  };
-}
+import { ClassReportDetailsModalProps } from "@/interface/classReport";
 
 const ClassReportDetailsModal = ({
   open,

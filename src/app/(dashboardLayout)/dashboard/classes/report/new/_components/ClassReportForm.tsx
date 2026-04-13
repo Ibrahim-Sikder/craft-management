@@ -68,15 +68,7 @@ import toast from "react-hot-toast";
 import TodayLesson from "./TodayLesson";
 import TodayTask from "./TodayTask";
 import { sortClassOptions } from "@/options/classReport";
-
-type StudentEvaluation = {
-  studentId: string;
-  lessonEvaluation: string;
-  handwriting: string;
-  attendance: string;
-  parentSignature: boolean;
-  comments: string;
-};
+import { StudentEvaluation } from "@/interface/classReport";
 
 export default function ClassReportForm({ id }: any) {
   const router = useRouter();
